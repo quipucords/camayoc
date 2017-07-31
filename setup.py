@@ -2,7 +2,7 @@
 # coding=utf-8
 """A setuptools-based script for installing camayoc."""
 import os
-from setuptools import setup
+from setuptools import find_packages, setup
 
 _project_root = os.path.abspath(os.path.dirname(__file__))
 
@@ -30,9 +30,26 @@ setup(
         'A GPL-licensed Python library that facilitates functional testing of '
         'quipucords.'
     ),
-    include_package_data=True,
+    extras_require={
+        'dev': [
+            # For `make docs`
+            'sphinx',
+            # For `make lint`
+            'flake8',
+            'flake8-docstrings',
+            'flake8-quotes',
+            # For `make package`
+            'wheel',
+            # For `make package-upload`
+            'twine',
+            # For `make test`
+            'pytest',
+            # For `make test-coverage`
+            'pytest-cov',
+        ],
+    },
     license='GPLv3',
     long_description=long_description,
-    package_data={'': ['LICENSE']},
+    packages=find_packages(include=['camayoc*']),
     url='https://github.com/quipucords/camayoc',
 )
