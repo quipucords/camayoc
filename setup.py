@@ -48,6 +48,9 @@ setup(
             'pytest-cov',
         ],
     },
+    install_requires=[
+        'plumbum',
+    ],
     license='GPLv3',
     long_description=long_description,
     packages=find_packages(include=['camayoc*']),
