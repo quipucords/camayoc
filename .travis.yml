@@ -1,0 +1,15 @@
+cache: pip
+language: python
+sudo: false
+python:
+    - '3.4'
+    - '3.5'
+    - '3.6'
+install:
+    - make install-dev
+    - pip install coveralls
+script:
+    - make lint
+    - make test-coverage
+after_success:
+    - coveralls
