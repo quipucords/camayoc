@@ -49,6 +49,7 @@ setup(
         ],
     },
     install_requires=[
+        'pexpect',
         'plumbum',
     ],
     license='GPLv3',
