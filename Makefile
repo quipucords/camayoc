@@ -43,7 +43,6 @@ test:
 	py.test tests
 
 test-coverage:
-	py.test --verbose --cov-report term --cov=camayoc tests
-
+	py.test --verbose --cov-report term --cov=camayoc.cli --cov=camayoc.exceptions --cov=camayoc.utils tests
 .PHONY: all docs-clean docs-html install install-dev lint package \
 	package-clean package-upload test test-coverage
