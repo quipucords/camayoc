@@ -13,7 +13,6 @@ import random
 from io import BytesIO
 
 import pexpect
-import pytest
 
 from camayoc import utils
 from camayoc.constants import (
@@ -219,7 +218,14 @@ def test_edit_username_negative(isolated_filesystem):
     :steps: Run ``rho auth edit --name <invalidname> --username <newusername>``
     :expectedresults: The command should fail with a proper message.
     """
-    pytest.skip('https://github.com/quipucords/rho/issues/165')
+    name = utils.uuid4()
+    username = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    auth_add({
+        'name': name,
+        'username': username,
+        'sshkeyfile': sshkeyfile,
+    })
 
     name = utils.uuid4()
     username = utils.uuid4()
@@ -314,7 +320,14 @@ def test_edit_password_negative(isolated_filesystem):
     <newpassword>``
     :expectedresults: The command should fail with a proper message.
     """
-    pytest.skip('https://github.com/quipucords/rho/issues/165')
+    name = utils.uuid4()
+    username = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    auth_add({
+        'name': name,
+        'username': username,
+        'sshkeyfile': sshkeyfile,
+    })
 
     name = utils.uuid4()
     rho_auth_edit = pexpect.spawn(
@@ -400,7 +413,14 @@ def test_edit_sshkeyfile_negative(isolated_filesystem):
     <newsshkeyfile>``
     :expectedresults: The command should fail with a proper message.
     """
-    pytest.skip('https://github.com/quipucords/rho/issues/165')
+    name = utils.uuid4()
+    username = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    auth_add({
+        'name': name,
+        'username': username,
+        'sshkeyfile': sshkeyfile,
+    })
 
     name = utils.uuid4()
     sshkeyfile = utils.uuid4()
