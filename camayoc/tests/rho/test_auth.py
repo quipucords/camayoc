@@ -435,6 +435,29 @@ def test_edit_sshkeyfile_negative(isolated_filesystem):
     assert rho_auth_edit.exitstatus != 0
 
 
+def test_edit_no_credentials(isolated_filesystem):
+    """Edit with no credentials created.
+
+    :id: 20725fc8-722e-498c-b035-ccc8498e44f5
+    :description: Edit any field of a not created auth entry when no
+        credentials where privously created.
+    :steps: Run ``rho auth edit --name <invalidname> --sshkeyfile
+    <sshkeyfile>``
+    :expectedresults: The command should fail with a proper message.
+    """
+    name = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    rho_auth_edit = pexpect.spawn(
+        'rho auth edit --name={} --sshkeyfile {}'.format(name, sshkeyfile)
+    )
+    input_vault_password(rho_auth_edit)
+    rho_auth_edit.logfile = BytesIO()
+    assert rho_auth_edit.expect('No auth credentials found') == 0
+    assert rho_auth_edit.expect(pexpect.EOF) == 0
+    rho_auth_edit.close()
+    assert rho_auth_edit.exitstatus != 0
+
+
 def test_clear(isolated_filesystem):
     """Clear an auth.
 
