@@ -498,10 +498,8 @@ def test_clear(isolated_filesystem):
         'rho auth clear --name={}'.format(name)
     )
     input_vault_password(rho_auth_clear)
-    rho_auth_clear.logfile = BytesIO()
+    assert rho_auth_clear.expect('Auth "{}" was removed'.format(name)) == 0
     assert rho_auth_clear.expect(pexpect.EOF) == 0
-    assert rho_auth_clear.logfile.getvalue().strip() == b''
-    rho_auth_clear.logfile.close()
     rho_auth_clear.close()
     assert rho_auth_clear.exitstatus == 0
 
