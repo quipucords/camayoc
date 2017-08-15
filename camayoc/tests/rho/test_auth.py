@@ -489,7 +489,10 @@ def test_clear_negative(isolated_filesystem):
     input_vault_password(rho_auth_clear)
     rho_auth_clear.logfile = BytesIO()
     assert rho_auth_clear.expect(pexpect.EOF) == 0
-    assert rho_auth_clear.logfile.getvalue().strip() == b''
+    assert (
+        rho_auth_clear.logfile.getvalue().strip() ==
+        b'All authorization credentials removed'
+    )
     rho_auth_clear.logfile.close()
     rho_auth_clear.close()
     assert rho_auth_clear.exitstatus == 0
