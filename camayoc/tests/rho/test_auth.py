@@ -54,7 +54,7 @@ def test_add_with_username_password(isolated_filesystem):
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
         '    "password": "{}",\r\n'
-        '    "ssh_key_file": "empty",\r\n'
+        '    "ssh_key_file": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
@@ -92,7 +92,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem):
         '{{\r\n'
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
-        '    "password": "",\r\n'
+        '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
@@ -130,7 +130,7 @@ def test_edit_username(isolated_filesystem):
         '{{\r\n'
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
-        '    "password": "",\r\n'
+        '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
@@ -157,7 +157,7 @@ def test_edit_username(isolated_filesystem):
         '{{\r\n'
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
-        '    "password": "",\r\n'
+        '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
@@ -230,7 +230,7 @@ def test_edit_password(isolated_filesystem):
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
         '    "password": "{}",\r\n'
-        '    "ssh_key_file": "empty",\r\n'
+        '    "ssh_key_file": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
@@ -259,7 +259,7 @@ def test_edit_password(isolated_filesystem):
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
         '    "password": "{}",\r\n'
-        '    "ssh_key_file": "empty",\r\n'
+        '    "ssh_key_file": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
@@ -324,7 +324,7 @@ def test_edit_sshkeyfile(isolated_filesystem):
         '{{\r\n'
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
-        '    "password": "",\r\n'
+        '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
@@ -351,7 +351,7 @@ def test_edit_sshkeyfile(isolated_filesystem):
         '{{\r\n'
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
-        '    "password": "",\r\n'
+        '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
@@ -442,7 +442,7 @@ def test_clear(isolated_filesystem):
         '{{\r\n'
         '    "id": "(.*)",\r\n'
         '    "name": "{}",\r\n'
-        '    "password": "",\r\n'
+        '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
@@ -496,7 +496,7 @@ def test_clear_negative(isolated_filesystem):
 
 
 def test_clear_all(isolated_filesystem):
-    """Clear an auth.
+    """Clear all auth entries.
 
     :id: 1110b433-b5a2-45d3-bd7d-8440ae2a0bf8
     :description: Clear multiple auth entries using the ``--all`` option.
@@ -505,16 +505,20 @@ def test_clear_all(isolated_filesystem):
     """
     auths = []
     for _ in range(random.randint(2, 3)):
+        name = utils.uuid4()
+        username = utils.uuid4()
+        sshkeyfile = utils.uuid4()
         auth = {
-            'name': utils.uuid4(),
-            'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'name': name,
+            'password': None,
+            'ssh_key_file': sshkeyfile,
+            'username': username,
         }
         auths.append(auth)
         auth_add({
-            'name': auth['name'],
-            'username': auth['username'],
-            'sshkeyfile': auth['sshkeyfile'],
+            'name': name,
+            'username': username,
+            'sshkeyfile': sshkeyfile,
         })
 
     rho_auth_list = pexpect.spawn('rho auth list')
@@ -528,12 +532,8 @@ def test_clear_all(isolated_filesystem):
     output = json.loads(logfile.getvalue().decode('utf-8'))
     logfile.close()
 
-    for auth in auths:
-        auth['ssh_key_file'] = auth.pop('sshkeyfile')
     for auth in output:
         del auth['id']
-        if auth['password'] == '':
-            del auth['password']
     assert auths == output
 
     rho_auth_clear = pexpect.spawn(
