@@ -631,10 +631,9 @@ def test_clear(isolated_filesystem):
         'rho profile clear --name={}'.format(name)
     )
     input_vault_password(rho_profile_clear)
-    # TODO: https://github.com/quipucords/rho/issues/177
-    # assert rho_profile_clear.expect(
-    #     'Profile "{}" was removed'.format(name)
-    # ) == 0
+    assert rho_profile_clear.expect(
+        'Profile "{}" was removed'.format(name)
+    ) == 0
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 0
