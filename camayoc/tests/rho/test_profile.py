@@ -44,10 +44,8 @@ def test_add_with_auth_hosts(isolated_filesystem):
         .format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -104,10 +102,8 @@ def test_add_with_sshport(isolated_filesystem):
         .format(name, auth_name, hosts, sshport)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -199,10 +195,8 @@ def test_edit_auth(isolated_filesystem):
         .format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -290,10 +284,8 @@ def test_edit_auth_negative(isolated_filesystem):
         .format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -335,10 +327,8 @@ def test_edit_hosts(isolated_filesystem):
         .format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -427,10 +417,8 @@ def test_edit_hosts_negative(isolated_filesystem):
         .format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -474,10 +462,8 @@ def test_edit_sshport(isolated_filesystem):
         .format(name, auth_name, hosts, sshport)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -569,10 +555,8 @@ def test_edit_sshport_negative(isolated_filesystem):
         .format(name, auth_name, hosts, sshport)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -614,10 +598,8 @@ def test_clear(isolated_filesystem):
         .format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
-    rho_profile_add.logfile = BytesIO()
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
-    assert rho_profile_add.logfile.getvalue().strip() == b''
-    rho_profile_add.logfile.close()
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
@@ -725,10 +707,9 @@ def test_clear_all(isolated_filesystem):
             .format(name, auth_name, hosts)
         )
         input_vault_password(rho_profile_add)
-        rho_profile_add.logfile = BytesIO()
+        assert rho_profile_add.expect(
+            'Profile "{}" was added'.format(name)) == 0
         assert rho_profile_add.expect(pexpect.EOF) == 0
-        assert rho_profile_add.logfile.getvalue().strip() == b''
-        rho_profile_add.logfile.close()
         rho_profile_add.close()
         assert rho_profile_add.exitstatus == 0
 

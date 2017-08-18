@@ -44,6 +44,9 @@ def auth_add(
     for key, value in inputs.items():
         assert rho_auth_add.expect(key) == 0
         rho_auth_add.sendline(value)
+    if 'name' in options:
+        assert rho_auth_add.expect(
+            'Auth "{}" was added'.format(options['name'])) == 0
     assert rho_auth_add.expect(pexpect.EOF) == 0
     rho_auth_add.close()
     assert rho_auth_add.exitstatus == exitstatus
