@@ -55,6 +55,7 @@ def test_add_with_username_password(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": "{}",\r\n'
         '    "ssh_key_file": null,\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
@@ -94,6 +95,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, sshkeyfile, username)
@@ -132,6 +134,7 @@ def test_edit_username(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, sshkeyfile, username)
@@ -159,6 +162,7 @@ def test_edit_username(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, sshkeyfile, new_username)
@@ -231,6 +235,7 @@ def test_edit_password(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": "{}",\r\n'
         '    "ssh_key_file": null,\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
@@ -260,6 +265,7 @@ def test_edit_password(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": "{}",\r\n'
         '    "ssh_key_file": null,\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
@@ -326,6 +332,7 @@ def test_edit_sshkeyfile(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, sshkeyfile, username)
@@ -353,6 +360,7 @@ def test_edit_sshkeyfile(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, new_sshkeyfile, username)
@@ -444,6 +452,7 @@ def test_clear(isolated_filesystem):
         '    "name": "{}",\r\n'
         '    "password": null,\r\n'
         '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, sshkeyfile, username)
@@ -515,6 +524,7 @@ def test_clear_all(isolated_filesystem):
             'name': name,
             'password': None,
             'ssh_key_file': sshkeyfile,
+            'sudo_password': None,
             'username': username,
         }
         auths.append(auth)
