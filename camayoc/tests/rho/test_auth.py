@@ -16,8 +16,9 @@ import pexpect
 
 from camayoc import utils
 from camayoc.constants import (
+    CONNECTION_PASSWORD_INPUT,
     MASKED_PASSWORD_OUTPUT,
-    PASSWORD_INPUT,
+    SUDO_PASSWORD_INPUT,
 )
 from camayoc.tests.rho.utils import auth_add, input_vault_password
 
@@ -40,9 +41,9 @@ def test_add_with_username_password(isolated_filesystem):
             'username': username,
             'password': None,
         },
-        {
-            PASSWORD_INPUT: utils.uuid4(),
-        },
+        [
+            (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
+        ],
     )
 
     rho_auth_show = pexpect.spawn(
@@ -59,6 +60,52 @@ def test_add_with_username_password(isolated_filesystem):
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, MASKED_PASSWORD_OUTPUT, username)
+    ) == 0, rho_auth_show.stdout
+    assert rho_auth_show.expect(pexpect.EOF) == 0
+    rho_auth_show.close()
+    assert rho_auth_show.exitstatus == 0
+
+
+def test_add_with_username_password_sudo_password(isolated_filesystem):
+    """Add an auth with username, password and sudo password.
+
+    :id: 34d3d28e-b15f-4dc7-a4da-2e3e879742d2
+    :description: Add an auth entry providing the ``--name``, ``--username``,
+        ``--pasword`` and ``--sudo-password`` options.
+    :steps: Run ``rho auth add --name <name> --username <username> --password
+    --sudo-password``
+    :expectedresults: A new auth entry is created with the data provided as
+        input.
+    """
+    name = utils.uuid4()
+    username = utils.uuid4()
+    auth_add(
+        {
+            'name': name,
+            'username': username,
+            'password': None,
+            'sudo-password': None,
+        },
+        [
+            (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
+            (SUDO_PASSWORD_INPUT, utils.uuid4()),
+        ],
+    )
+
+    rho_auth_show = pexpect.spawn(
+        'rho auth show --name={}'.format(name)
+    )
+    input_vault_password(rho_auth_show)
+    assert rho_auth_show.expect(
+        '{{\r\n'
+        '    "id": "(.*)",\r\n'
+        '    "name": "{}",\r\n'
+        '    "password": "{}",\r\n'
+        '    "ssh_key_file": null,\r\n'
+        '    "sudo_password": "{}",\r\n'
+        '    "username": "{}"\r\n'
+        '}}\r\n'
+        .format(name, MASKED_PASSWORD_OUTPUT, MASKED_PASSWORD_OUTPUT, username)
     ) == 0, rho_auth_show.stdout
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -99,6 +146,52 @@ def test_add_with_username_sshkeyfile(isolated_filesystem):
         '    "username": "{}"\r\n'
         '}}\r\n'
         .format(name, sshkeyfile, username)
+    ) == 0
+    assert rho_auth_show.expect(pexpect.EOF) == 0
+    rho_auth_show.close()
+    assert rho_auth_show.exitstatus == 0
+
+
+def test_add_with_username_sshkeyfile_sudo_password(isolated_filesystem):
+    """Add an auth with username, sshkeyfile and sudo password.
+
+    :id: c70b3a8e-1390-4a9d-a693-1eb410751f66
+    :description: Add an auth entry providing the ``--name``, ``--username``,
+        ``--sshkeyfile`` and ``--sudo-password`` options.
+    :steps: Run ``rho auth add --name <name> --username <username> --sshkeyfile
+        <sshkeyfile> --sudo-password``
+    :expectedresults: A new auth entry is created with the data provided as
+        input.
+    """
+    name = utils.uuid4()
+    username = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    auth_add(
+        {
+            'name': name,
+            'username': username,
+            'sshkeyfile': sshkeyfile,
+            'sudo-password': None,
+        },
+        [
+            (SUDO_PASSWORD_INPUT, utils.uuid4()),
+        ]
+    )
+
+    rho_auth_show = pexpect.spawn(
+        'rho auth show --name={}'.format(name)
+    )
+    input_vault_password(rho_auth_show)
+    assert rho_auth_show.expect(
+        '{{\r\n'
+        '    "id": "(.*)",\r\n'
+        '    "name": "{}",\r\n'
+        '    "password": null,\r\n'
+        '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": "{}",\r\n'
+        '    "username": "{}"\r\n'
+        '}}\r\n'
+        .format(name, sshkeyfile, MASKED_PASSWORD_OUTPUT, username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -220,9 +313,9 @@ def test_edit_password(isolated_filesystem):
             'username': username,
             'password': None,
         },
-        {
-            PASSWORD_INPUT: password,
-        },
+        [
+            (CONNECTION_PASSWORD_INPUT, password),
+        ],
     )
 
     rho_auth_show = pexpect.spawn(
@@ -248,7 +341,7 @@ def test_edit_password(isolated_filesystem):
         'rho auth edit --name={} --password'.format(name, new_password)
     )
     input_vault_password(rho_auth_edit)
-    assert rho_auth_edit.expect(PASSWORD_INPUT) == 0
+    assert rho_auth_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     rho_auth_edit.sendline(new_password)
     assert rho_auth_edit.expect('Auth \'{}\' updated'.format(name)) == 0
     assert rho_auth_edit.expect(pexpect.EOF) == 0
@@ -395,6 +488,110 @@ def test_edit_sshkeyfile_negative(isolated_filesystem):
     )
     input_vault_password(rho_auth_edit)
     rho_auth_edit.logfile = BytesIO()
+    assert rho_auth_edit.expect('Auth "{}" does not exist'.format(name)) == 0
+    assert rho_auth_edit.expect(pexpect.EOF) == 0
+    rho_auth_edit.close()
+    assert rho_auth_edit.exitstatus != 0
+
+
+def test_edit_sudo_password(isolated_filesystem):
+    """Edit an auth's sudo password.
+
+    :id: 3f2f7393-41c6-42eb-913e-a19213f5d586
+    :description: Edit the password of an auth entry.
+    :steps: Run ``rho auth edit --name <name> --sudo-password``
+    :expectedresults: The auth sudo password must be updated.
+    """
+    name = utils.uuid4()
+    username = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    sudo_password = utils.uuid4()
+    new_sudo_password = utils.uuid4()
+    auth_add(
+        {
+            'name': name,
+            'username': username,
+            'sshkeyfile': sshkeyfile,
+            'sudo-password': None,
+        },
+        [
+            (SUDO_PASSWORD_INPUT, sudo_password),
+        ],
+    )
+
+    rho_auth_show = pexpect.spawn(
+        'rho auth show --name={}'.format(name)
+    )
+    input_vault_password(rho_auth_show)
+    assert rho_auth_show.expect(
+        '{{\r\n'
+        '    "id": "(.*)",\r\n'
+        '    "name": "{}",\r\n'
+        '    "password": null,\r\n'
+        '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": "{}",\r\n'
+        '    "username": "{}"\r\n'
+        '}}\r\n'
+        .format(name, sshkeyfile, MASKED_PASSWORD_OUTPUT, username)
+    ) == 0
+    assert rho_auth_show.expect(pexpect.EOF) == 0
+    rho_auth_show.close()
+    assert rho_auth_show.exitstatus == 0
+
+    rho_auth_edit = pexpect.spawn(
+        'rho auth edit --name={} --sudo-password'
+        .format(name, new_sudo_password)
+    )
+    input_vault_password(rho_auth_edit)
+    assert rho_auth_edit.expect(SUDO_PASSWORD_INPUT) == 0
+    rho_auth_edit.sendline(new_sudo_password)
+    assert rho_auth_edit.expect('Auth \'{}\' updated'.format(name)) == 0
+    assert rho_auth_edit.expect(pexpect.EOF) == 0
+    rho_auth_edit.close()
+    assert rho_auth_edit.exitstatus == 0
+
+    rho_auth_show = pexpect.spawn(
+        'rho auth show --name={}'.format(name)
+    )
+    input_vault_password(rho_auth_show)
+    assert rho_auth_show.expect(
+        '{{\r\n'
+        '    "id": "(.*)",\r\n'
+        '    "name": "{}",\r\n'
+        '    "password": null,\r\n'
+        '    "ssh_key_file": "{}",\r\n'
+        '    "sudo_password": "{}",\r\n'
+        '    "username": "{}"\r\n'
+        '}}\r\n'
+        .format(name, sshkeyfile, MASKED_PASSWORD_OUTPUT, username)
+    ) == 0
+    assert rho_auth_show.expect(pexpect.EOF) == 0
+    rho_auth_show.close()
+    assert rho_auth_show.exitstatus == 0
+
+
+def test_edit_sudo_password_negative(isolated_filesystem):
+    """Edit the sudo password of a not created auth entry.
+
+    :id: abe8f6f3-6c45-42a1-abcf-ffd6952cf886
+    :description: Edit the sudo password of a not created auth entry.
+    :steps: Run ``rho auth edit --name <invalidname> --sudo-password``
+    :expectedresults: The command should fail with a proper message.
+    """
+    name = utils.uuid4()
+    username = utils.uuid4()
+    sshkeyfile = utils.uuid4()
+    auth_add({
+        'name': name,
+        'username': username,
+        'sshkeyfile': sshkeyfile,
+    })
+
+    name = utils.uuid4()
+    rho_auth_edit = pexpect.spawn(
+        'rho auth edit --name={} --sudo-password'.format(name)
+    )
+    input_vault_password(rho_auth_edit)
     assert rho_auth_edit.expect('Auth "{}" does not exist'.format(name)) == 0
     assert rho_auth_edit.expect(pexpect.EOF) == 0
     rho_auth_edit.close()

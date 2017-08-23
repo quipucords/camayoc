@@ -6,8 +6,11 @@ from camayoc import utils
 MASKED_PASSWORD_OUTPUT = '\*{8}'
 """Regex that matches password on outputs."""
 
-PASSWORD_INPUT = 'Password:'
-"""Password input prompt."""
+CONNECTION_PASSWORD_INPUT = 'Provide connection password.\r\nPassword:'
+"""Connection password input prompt."""
+
+SUDO_PASSWORD_INPUT = 'Provide password for sudo.\r\nPassword:'
+"""Sudo password input prompt."""
 
 VAULT_PASSWORD = utils.uuid4()
 """Vault password will be unique across Python sessions."""

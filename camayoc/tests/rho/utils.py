@@ -40,9 +40,9 @@ def auth_add(
     rho_auth_add = pexpect.spawn(command)
     input_vault_password(rho_auth_add, vault_password)
     if inputs is None:
-        inputs = {}
-    for key, value in inputs.items():
-        assert rho_auth_add.expect(key) == 0
+        inputs = []
+    for prompt, value in inputs:
+        assert rho_auth_add.expect(prompt) == 0
         rho_auth_add.sendline(value)
     if 'name' in options:
         assert rho_auth_add.expect(
