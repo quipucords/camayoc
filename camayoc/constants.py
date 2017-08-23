@@ -3,7 +3,7 @@
 from camayoc import utils
 
 
-MASKED_PASSWORD_OUTPUT = '\*{6}'
+MASKED_PASSWORD_OUTPUT = '\*{8}'
 """Regex that matches password on outputs."""
 
 PASSWORD_INPUT = 'Password:'
