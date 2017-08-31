@@ -8,6 +8,7 @@
 :testtype: functional
 :upstream: yes
 """
+import csv
 import hashlib
 from collections import OrderedDict
 from io import BytesIO
@@ -88,14 +89,13 @@ def test_fact_hash(isolated_filesystem):
     rho_fact_hash.close()
     assert rho_fact_hash.exitstatus == 0
 
-    hashed_facts = {
+    expected_hashed_facts = {
         k: hashlib.sha256(v.encode('utf-8')).hexdigest()
         for k, v in facts_to_hash.items()
     }
-    expected = '{}\n{}\n'.format(
-        ','.join(hashed_facts.keys()),
-        ','.join(hashed_facts.values()),
-    )
     with open(outputfile) as f:
-        read = f.read()
-        assert read.strip() == expected.strip()
+        reader = csv.DictReader(f)
+        rows = list(reader)
+        assert len(rows) == 1
+        parsed_facts = rows[0]
+        assert parsed_facts == expected_hashed_facts
