@@ -11,8 +11,10 @@
 import json
 import random
 from io import BytesIO
+from pathlib import Path
 
 import pexpect
+import pytest
 
 from camayoc import utils
 from camayoc.tests.rho.utils import auth_add, input_vault_password
@@ -627,6 +629,11 @@ def test_clear(isolated_filesystem):
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
+    # Create some files to mimic if the profile was used on a scan to check if
+    # RHO will properly deal with them
+    Path('rho/{}_hosts.yml'.format(name)).touch()
+    Path('rho/{}_host_auth_mapping'.format(name)).touch()
+
     rho_profile_clear = pexpect.spawn(
         'rho profile clear --name={}'.format(name)
     )
@@ -638,6 +645,17 @@ def test_clear(isolated_filesystem):
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 0
 
+    rho_profile_clear = pexpect.spawn(
+        'rho profile clear --name={}'.format(name)
+    )
+    input_vault_password(rho_profile_clear)
+    assert rho_profile_clear.expect(
+        'No such profile: \'{}\''.format(name)
+    ) == 0
+    assert rho_profile_clear.expect(pexpect.EOF) == 0
+    rho_profile_clear.close()
+    assert rho_profile_clear.exitstatus == 1
+
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
@@ -647,6 +665,36 @@ def test_clear(isolated_filesystem):
     ) == 0
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
+
+    # Check if RHO dealt with the created files.
+    assert not Path('rho/{}_hosts.yml'.format(name)).exists()
+    assert not Path('rho/{}_host_auth_mapping'.format(name)).exists()
+    assert Path(
+        'rho/(DELETED PROFILE){}_host_auth_mapping'.format(name)).exists()
+
+
+@pytest.mark.parametrize('option', ('--name', '--all'))
+def test_clear_no_profiles(isolated_filesystem, option):
+    """Clear profiles no profiles were created.
+
+    :id: 46a60d62-1797-4a75-b995-929b911486ae
+    :description: Clear profiles by either providing the ``--name`` or
+        ``--all`` options when no profiles are created.
+    :steps:
+        1. Ensure an empty RHO data dir
+        2. Run ``rho profile clear --name <name>`` or ``rho profile clear
+            --all``.
+    :expectedresults: A message stating that all network profiles were removed.
+    """
+    if option == '--name':
+        option = '{}={}'.format(option, utils.uuid4())
+    rho_profile_clear = pexpect.spawn(
+        'rho profile clear {}'.format(option)
+    )
+    assert rho_profile_clear.expect('All network profiles removed') == 0
+    assert rho_profile_clear.expect(pexpect.EOF) == 0
+    rho_profile_clear.close()
+    assert rho_profile_clear.exitstatus == 0
 
 
 def test_clear_negative(isolated_filesystem):
@@ -712,6 +760,11 @@ def test_clear_all(isolated_filesystem):
         rho_profile_add.close()
         assert rho_profile_add.exitstatus == 0
 
+        # Create some files to mimic if the profile was used on a scan to check
+        # if RHO will properly deal with them
+        Path('rho/{}_hosts.yml'.format(name)).touch()
+        Path('rho/{}_host_auth_mapping'.format(name)).touch()
+
     rho_profile_list = pexpect.spawn('rho profile list')
     input_vault_password(rho_profile_list)
     logfile = BytesIO()
@@ -734,6 +787,13 @@ def test_clear_all(isolated_filesystem):
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 0
+
+    for name in [profile['name'] for profile in profiles]:
+        # Check if RHO dealt with the created files.
+        assert not Path('rho/{}_hosts.yml'.format(name)).exists()
+        assert not Path('rho/{}_host_auth_mapping'.format(name)).exists()
+        assert Path(
+            'rho/(DELETED PROFILE){}_host_auth_mapping'.format(name)).exists()
 
     rho_profile_list = pexpect.spawn('rho profile list')
     input_vault_password(rho_profile_list)
