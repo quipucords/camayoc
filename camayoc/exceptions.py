@@ -15,3 +15,11 @@ class CalledProcessError(Exception):
             'stdout: {}\n\n'
             'stderr: {}'
         ).format(*self.args)
+
+
+class ConfigFileNotFoundError(Exception):
+    """We cannot find the requested Camayoc configuration file.
+
+    See :mod:`camayoc.config` for more information on how configuration files
+    are handled.
+    """

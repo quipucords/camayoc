@@ -51,6 +51,8 @@ setup(
     install_requires=[
         'pexpect',
         'plumbum',
+        'pyxdg',
+        'pyyaml',
     ],
     license='GPLv3',
     long_description=long_description,
