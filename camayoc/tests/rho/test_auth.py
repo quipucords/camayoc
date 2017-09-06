@@ -73,7 +73,7 @@ def test_add_with_username_password_sudo_password(isolated_filesystem):
     :description: Add an auth entry providing the ``--name``, ``--username``,
         ``--pasword`` and ``--sudo-password`` options.
     :steps: Run ``rho auth add --name <name> --username <username> --password
-    --sudo-password``
+        --sudo-password``
     :expectedresults: A new auth entry is created with the data provided as
         input.
     """
@@ -374,7 +374,7 @@ def test_edit_password_negative(isolated_filesystem):
     :id: 3469c05d-2dee-4b5a-84a8-e9f3ce391480
     :description: Edit the password of a not created auth entry.
     :steps: Run ``rho auth edit --name <invalidname> --password
-    <newpassword>``
+        <newpassword>``
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
@@ -469,7 +469,7 @@ def test_edit_sshkeyfile_negative(isolated_filesystem):
     :id: 4c43d7af-5dd8-4a97-8d48-9cd2e611844e
     :description: Edit the sshkeyfile of a not created auth entry.
     :steps: Run ``rho auth edit --name <invalidname> --sshkeyfile
-    <newsshkeyfile>``
+        <newsshkeyfile>``
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
@@ -605,7 +605,7 @@ def test_edit_no_credentials(isolated_filesystem):
     :description: Edit any field of a not created auth entry when no
         credentials where privously created.
     :steps: Run ``rho auth edit --name <invalidname> --sshkeyfile
-    <sshkeyfile>``
+        <sshkeyfile>``
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()

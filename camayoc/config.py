@@ -28,7 +28,6 @@ def get_config():
     configuration object is returned.
 
     :returns: A copy of the global server configuration object.
-    :rtype: dict
     """
     global _CONFIG  # pylint:disable=global-statement
     if _CONFIG is None:

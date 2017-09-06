@@ -683,7 +683,7 @@ def test_clear_no_profiles(isolated_filesystem, option):
     :steps:
         1. Ensure an empty RHO data dir
         2. Run ``rho profile clear --name <name>`` or ``rho profile clear
-            --all``.
+           --all``.
     :expectedresults: A message stating that all network profiles were removed.
     """
     if option == '--name':

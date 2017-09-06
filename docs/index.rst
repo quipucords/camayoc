@@ -1,11 +1,11 @@
-Welcome to Camayoc's documentation!
-===================================
+Camayoc
+=======
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   test_scenarios
+   api
 
 Indices and tables
 ==================

@@ -37,6 +37,13 @@ extensions = [
 ]
 language = None
 master_doc = 'index'
+nitpick_ignore = [
+    ('py:class', 'Exception'),
+    ('py:class', 'object'),
+    ('py:class', 'tuple'),
+    ('py:class', 'unittest.case.TestCase'),
+]
+nitpicky = True
 pygments_style = 'sphinx'
 source_suffix = '.rst'
 templates_path = ['_templates']

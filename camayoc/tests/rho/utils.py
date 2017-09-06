@@ -13,7 +13,7 @@ def input_vault_password(process, vault_password=VAULT_PASSWORD):
 
     :param process: A pexpect object returned by the ``pexpect.spawn``.
     :param vault_password: The vault password to be used, defaults to
-        :ref:`camayoc.constants.VAULT_PASSWORD`.
+        :data:`camayoc.constants.VAULT_PASSWORD`.
     """
     assert process.expect(VAULT_PASSWORD_INPUT) == 0
     process.sendline(vault_password)
@@ -29,7 +29,7 @@ def auth_add(
         filled.
     :param exitstatus: Expected exit status code.
     :param vault_password: The vault password to be used, defaults to
-        :ref:`camayoc.constants.VAULT_PASSWORD`.
+        :data:`camayoc.constants.VAULT_PASSWORD`.
     """
     command = 'rho auth add'
     for key, value in options.items():
