@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+    camayoc.tests.remote
     camayoc.tests.rho
 
 Submodules
