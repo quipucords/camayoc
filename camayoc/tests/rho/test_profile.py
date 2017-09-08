@@ -20,7 +20,8 @@ from camayoc import utils
 from camayoc.tests.rho.utils import auth_add, input_vault_password
 
 
-def test_add_with_auth_hosts(isolated_filesystem):
+@pytest.mark.parametrize('hosts', ('127.0.0.1', '192.168.0.0/24'))
+def test_add_with_auth_hosts(isolated_filesystem, hosts):
     """Add a profile with auth and hosts.
 
     :id: 51375fcd-c356-49a5-b192-6f222512d6b6
@@ -32,7 +33,6 @@ def test_add_with_auth_hosts(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
     auth_add(
         {
             'name': auth_name,
@@ -51,6 +51,8 @@ def test_add_with_auth_hosts(isolated_filesystem):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
+    if hosts.endswith('0/24'):
+        hosts = hosts.replace('0/24', '\[0:255\]')
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
@@ -304,7 +306,8 @@ def test_edit_auth_negative(isolated_filesystem):
     assert rho_profile_edit.exitstatus == 1
 
 
-def test_edit_hosts(isolated_filesystem):
+@pytest.mark.parametrize('new_hosts', ('127.0.0.42', '192.168.0.0/24'))
+def test_edit_hosts(isolated_filesystem, new_hosts):
     """Edit a profile's hosts.
 
     :id: 994aa922-e132-4b01-bec2-a8cea987fb74
@@ -315,7 +318,6 @@ def test_edit_hosts(isolated_filesystem):
     auth_name = utils.uuid4()
     name = utils.uuid4()
     hosts = '127.0.0.1'
-    new_hosts = '127.0.0.{}'.format(random.randint(2, 255))
     auth_add(
         {
             'name': auth_name,
@@ -368,6 +370,8 @@ def test_edit_hosts(isolated_filesystem):
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 0
 
+    if new_hosts.endswith('0/24'):
+        new_hosts = new_hosts.replace('0/24', '\[0:255\]')
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
