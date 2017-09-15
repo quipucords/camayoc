@@ -42,8 +42,6 @@ setup(
             'wheel',
             # For `make package-upload`
             'twine',
-            # For `make test`
-            'pytest',
             # For `make test-coverage`
             'pytest-cov',
         ],
@@ -53,6 +51,8 @@ setup(
         'plumbum',
         'pyxdg',
         'pyyaml',
+        'pyvmomi',
+        'pytest',
     ],
     license='GPLv3',
     long_description=long_description,
