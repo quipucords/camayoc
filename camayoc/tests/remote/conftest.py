@@ -2,7 +2,7 @@
 """Pytest customizations and fixtures for tests to execute on remote hosts."""
 import os
 import pytest
-from camayoc import config
+from camayoc import cli, config
 from camayoc.exceptions import ConfigFileNotFoundError
 from time import sleep
 from camayoc.constants import (
@@ -10,6 +10,42 @@ from camayoc.constants import (
     VCENTER_CLUSTER,
     VCENTER_HOST,
 )
+
+
+def is_live(client, server, num_pings=10):
+    """Test if server responds to ping.
+
+    Returns true if server is reachable, false otherwise.
+    """
+    client.response_handler = cli.echo_handler
+
+    ping = client.run(('ping', '-c', num_pings, server))
+    return ping.returncode == 0
+
+
+def wait_until_live(servers, timeout=60):
+    """Wait for servers to be live.
+
+    For each server in the "servers" list, verify if it is reachable.
+    Keep trying until a connection is made for all servers or the timeout
+    limit is reached.
+
+    If the timeout limit is reached, we exit even if there are unreached hosts.
+    This means tests could fail with "No auths valid for this profile" if every
+    host in the profile is unreachable. Otherwise, if there is at least one
+    valid host, the scan will go on and only facts about reached hosts will be
+    tested.
+
+    `See rho issue #302 <https://github.com/quipucords/rho/issues/302>`_
+    """
+    system = cli.System(hostname='localhost', transport='local')
+    client = cli.Client(system)
+
+    unreached = servers
+    while unreached and timeout > 0:
+        unreached = [host for host in unreached if not is_live(client, host)]
+        sleep(10)
+        timeout -= 10
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -100,15 +136,17 @@ def manage_systems(request):
         vm_host = fldr.childEntity[VCENTER_CLUSTER].host[VCENTER_HOST]
         # the host has a property "vm" which is a list of VMs
         vms = vm_host.vm
+        vc_hosts = []
         for host in cfg['rho']['hosts']:
             if ('provider' in host.keys()) and (
                     host['provider'] == 'vcenter'):
+                vc_hosts.append(host['ip'])
                 for vm in vms:
                     if vm.name == host['hostname']:
                         if vm.runtime.powerState == 'poweredOff':
                             vm.PowerOnVM_Task()
         # need to wait for machines to boot and start sshd
-        sleep(30)
+        wait_until_live(vc_hosts)
 
     def shutdown_systems():
         """Turn off hosts at the end of a session.
