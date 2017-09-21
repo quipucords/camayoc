@@ -78,6 +78,69 @@ def test_add_with_auth_hosts(isolated_filesystem, hosts):
     assert rho_profile_show.exitstatus == 0
 
 
+@pytest.mark.parametrize('hosts', ('127.0.0.1', '192.168.0.0/24'))
+def test_add_with_auth_hosts_file(isolated_filesystem, hosts):
+    """Add a profile with auth and hosts populated on a file.
+
+    :id: 3e5712b4-f53f-44f2-9083-df73f4b59fa4
+    :description: Add a profile entry providing the ``--name``, ``--auth`` and
+        ``--hosts`` options, the value of the ``--hosts`` options should be a
+        file.
+    :steps: Run ``rho profile add --name <name> --auth <auth> --hosts
+        <hosts_file>``
+    :expectedresults: A new profile entry is created with the data provided as
+        input.
+    """
+    auth_name = utils.uuid4()
+    name = utils.uuid4()
+    auth_add(
+        {
+            'name': auth_name,
+            'username': utils.uuid4(),
+            'sshkeyfile': utils.uuid4(),
+        },
+    )
+
+    with open('hosts_file', 'w') as handler:
+        handler.write(hosts + '\n')
+
+    rho_profile_add = pexpect.spawn(
+        'rho profile add --name {} --auth {} --hosts {}'
+        .format(name, auth_name, 'hosts_file')
+    )
+    input_vault_password(rho_profile_add)
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
+    assert rho_profile_add.expect(pexpect.EOF) == 0
+    rho_profile_add.close()
+    assert rho_profile_add.exitstatus == 0
+
+    if hosts.endswith('0/24'):
+        hosts = hosts.replace('0/24', '\[0:255\]')
+    rho_profile_show = pexpect.spawn(
+        'rho profile show --name={}'.format(name)
+    )
+    input_vault_password(rho_profile_show)
+    assert rho_profile_show.expect(
+        '{{\r\n'
+        '    "auth": \[\r\n'
+        '        {{\r\n'
+        '            "id": ".*",\r\n'
+        '            "name": "{}"\r\n'
+        '        }}\r\n'
+        '    \],\r\n'
+        '    "hosts": \[\r\n'
+        '        "{}"\r\n'
+        '    \],\r\n'
+        '    "name": "{}",\r\n'
+        '    "ssh_port": "22"\r\n'
+        '}}\r\n'
+        .format(auth_name, hosts, name)
+    ) == 0, rho_profile_show.stdout
+    assert rho_profile_show.expect(pexpect.EOF) == 0
+    rho_profile_show.close()
+    assert rho_profile_show.exitstatus == 0
+
+
 def test_add_with_sshport(isolated_filesystem):
     """Add a profile with auth, hosts and port.
 
@@ -363,6 +426,100 @@ def test_edit_hosts(isolated_filesystem, new_hosts):
     rho_profile_edit = pexpect.spawn(
         'rho profile edit --name {} --hosts {}'
         .format(name, new_hosts)
+    )
+    input_vault_password(rho_profile_edit)
+    assert rho_profile_edit.expect('Profile \'{}\' edited'.format(name)) == 0
+    assert rho_profile_edit.expect(pexpect.EOF) == 0
+    rho_profile_edit.close()
+    assert rho_profile_edit.exitstatus == 0
+
+    if new_hosts.endswith('0/24'):
+        new_hosts = new_hosts.replace('0/24', '\[0:255\]')
+    rho_profile_show = pexpect.spawn(
+        'rho profile show --name={}'.format(name)
+    )
+    input_vault_password(rho_profile_show)
+    assert rho_profile_show.expect(
+        '{{\r\n'
+        '    "auth": \[\r\n'
+        '        {{\r\n'
+        '            "id": ".*",\r\n'
+        '            "name": "{}"\r\n'
+        '        }}\r\n'
+        '    \],\r\n'
+        '    "hosts": \[\r\n'
+        '        "{}"\r\n'
+        '    \],\r\n'
+        '    "name": "{}",\r\n'
+        '    "ssh_port": "22"\r\n'
+        '}}\r\n'
+        .format(auth_name, new_hosts, name)
+    ) == 0, rho_profile_show.stdout
+    assert rho_profile_show.expect(pexpect.EOF) == 0
+    rho_profile_show.close()
+    assert rho_profile_show.exitstatus == 0
+
+
+@pytest.mark.parametrize('new_hosts', ('127.0.0.42', '192.168.0.0/24'))
+def test_edit_hosts_file(isolated_filesystem, new_hosts):
+    """Edit a profile's hosts.
+
+    :id: fa07821a-44f6-4192-8c9e-6e178fc3e681
+    :description: Edit the hosts of a profile entry.
+    :steps: Run ``rho profile edit --name <name> --hosts <newhosts>``
+    :expectedresults: The profile's hosts must be updated.
+    """
+    auth_name = utils.uuid4()
+    name = utils.uuid4()
+    hosts = '127.0.0.1'
+    auth_add(
+        {
+            'name': auth_name,
+            'username': utils.uuid4(),
+            'sshkeyfile': utils.uuid4(),
+        },
+    )
+
+    rho_profile_add = pexpect.spawn(
+        'rho profile add --name {} --auth {} --hosts {}'
+        .format(name, auth_name, hosts)
+    )
+    input_vault_password(rho_profile_add)
+    assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
+    assert rho_profile_add.expect(pexpect.EOF) == 0
+    rho_profile_add.close()
+    assert rho_profile_add.exitstatus == 0
+
+    rho_profile_show = pexpect.spawn(
+        'rho profile show --name={}'.format(name)
+    )
+    input_vault_password(rho_profile_show)
+    assert rho_profile_show.expect(
+        '{{\r\n'
+        '    "auth": \[\r\n'
+        '        {{\r\n'
+        '            "id": ".*",\r\n'
+        '            "name": "{}"\r\n'
+        '        }}\r\n'
+        '    \],\r\n'
+        '    "hosts": \[\r\n'
+        '        "{}"\r\n'
+        '    \],\r\n'
+        '    "name": "{}",\r\n'
+        '    "ssh_port": "22"\r\n'
+        '}}\r\n'
+        .format(auth_name, hosts, name)
+    ) == 0, rho_profile_show.stdout
+    assert rho_profile_show.expect(pexpect.EOF) == 0
+    rho_profile_show.close()
+    assert rho_profile_show.exitstatus == 0
+
+    with open('hosts_file', 'w') as handler:
+        handler.write(new_hosts + '\n')
+
+    rho_profile_edit = pexpect.spawn(
+        'rho profile edit --name {} --hosts {}'
+        .format(name, 'hosts_file')
     )
     input_vault_password(rho_profile_edit)
     assert rho_profile_edit.expect('Profile \'{}\' edited'.format(name)) == 0
