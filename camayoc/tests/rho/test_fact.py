@@ -10,12 +10,19 @@
 """
 import csv
 import hashlib
+import random
 from collections import OrderedDict
 from io import BytesIO
 
 import pexpect
+import pytest
 
 from camayoc import utils
+from camayoc.constants import (
+    RHO_CONNECTION_FACTS,
+    RHO_DEFAULT_FACTS,
+    RHO_JBOSS_FACTS,
+)
 
 
 def test_fact_list():
@@ -30,10 +37,11 @@ def test_fact_list():
     rho_fact_list.logfile = BytesIO()
     rho_fact_list.expect(pexpect.EOF)
     output = rho_fact_list.logfile.getvalue().decode('utf-8')
-    assert len(output.splitlines()) == 60
     rho_fact_list.logfile.close()
     rho_fact_list.close()
     assert rho_fact_list.exitstatus == 0
+    facts = [line.split(' - ')[0].strip() for line in output.splitlines()]
+    assert sorted(facts) == sorted(RHO_DEFAULT_FACTS)
 
 
 def test_fact_list_filter():
@@ -45,12 +53,15 @@ def test_fact_list_filter():
     :steps: Run ``rho fact list --filter <filter>``
     :expectedresults: Only the facts that match the filter are printed.
     """
-    rho_fact_list = pexpect.spawn('rho fact list --filter connection')
+    facts = random.choice((RHO_CONNECTION_FACTS, RHO_JBOSS_FACTS))
+    fact_filter = facts[0].split('.')[0]
+    rho_fact_list = pexpect.spawn(
+        'rho fact list --filter {}'.format(fact_filter))
     rho_fact_list.logfile = BytesIO()
     rho_fact_list.expect(pexpect.EOF)
     output = rho_fact_list.logfile.getvalue().decode('utf-8')
-    assert len(output.splitlines()) == 3
-    for fact in ('connection.port', 'connection.port', 'connection.uuid'):
+    assert len(output.splitlines()) == len(facts)
+    for fact in facts:
         assert fact in output
     rho_fact_list.logfile.close()
     rho_fact_list.close()
@@ -93,6 +104,64 @@ def test_fact_hash(isolated_filesystem):
         k: hashlib.sha256(v.encode('utf-8')).hexdigest()
         for k, v in facts_to_hash.items()
     }
+    with open(outputfile) as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+        assert len(rows) == 1
+        parsed_facts = rows[0]
+        assert parsed_facts == expected_hashed_facts
+
+
+@pytest.mark.parametrize('facts_value', ('file', 'string'))
+def test_fact_hash_with_facts(isolated_filesystem, facts_value):
+    """Hash only the specified facts from a generated report.
+
+    :id: 3ae721ff-f910-4f09-971e-bf96d0832df5
+    :description: Hash only the specified facts from a generated report.
+    :steps: Run ``rho fact hash --facts <facts> --reportfile <reportfile>
+        --outputfile <outputfile>``
+    :expectedresults: Only the specified facts are hashed.
+    """
+    facts = OrderedDict({
+        'connection.host': utils.uuid4(),
+        'connection.port': utils.uuid4(),
+        'uname.all': utils.uuid4(),
+        'uname.hostname': utils.uuid4(),
+    })
+    facts_to_hash = [
+        'connection.host',
+        'connection.port',
+    ]
+    reportfile = utils.uuid4()
+    outputfile = utils.uuid4()
+    with open(reportfile, 'w') as f:
+        f.write(','.join(facts.keys()) + '\n')
+        f.write(','.join(facts.values()) + '\n')
+
+    if facts_value == 'file':
+        facts_value = 'facts_file'
+        with open(facts_value, 'w') as handler:
+            for fact in facts_to_hash:
+                handler.write(fact + '\n')
+    else:
+        facts_value = ' '.join(facts_to_hash)
+    rho_fact_hash = pexpect.spawn(
+        'rho fact hash --facts {} --reportfile {} --outputfile {}'
+        .format(facts_value, reportfile, outputfile)
+    )
+    rho_fact_hash.logfile = BytesIO()
+    rho_fact_hash.expect(pexpect.EOF)
+    output = rho_fact_hash.logfile.getvalue().decode('utf-8')
+    assert len(output.splitlines()) == len(facts_to_hash)
+    rho_fact_hash.logfile.close()
+    rho_fact_hash.close()
+    assert rho_fact_hash.exitstatus == 0
+
+    expected_hashed_facts = facts.copy()
+    for fact in facts_to_hash:
+        expected_hashed_facts[fact] = hashlib.sha256(
+            expected_hashed_facts[fact].encode('utf-8')).hexdigest()
+
     with open(outputfile) as f:
         reader = csv.DictReader(f)
         rows = list(reader)
