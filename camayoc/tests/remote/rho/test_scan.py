@@ -73,7 +73,7 @@ def test_scan(isolated_filesystem, profile):
 
     reportfile = '{}-report.csv'.format(profile['name'])
     rho_scan = pexpect.spawn(
-        'rho scan --profile {} --reportfile {}'
+        'rho scan --profile {} --reportfile {} --facts all'
         .format(profile['name'], reportfile),
         timeout=300,
     )
@@ -96,22 +96,32 @@ def test_scan(isolated_filesystem, profile):
             known_facts = {}
             for host in cfg['rho']['hosts']:
                 # find the facts for the scanned host we are inspecting
-                if host['ip'] == row['connection.host']:
+                if host['ip'] == row.get('connection.host'):
                     known_facts = host['facts']
                     break
-            for fact in known_facts.keys():
+            missed_facts = known_facts.keys() - row.keys()
+            for fact in missed_facts:
+                msg = ('Expected {} fact in scan of {} host,'
+                       ' but it is missing'.format(fact, host['ip']))
+                scan_errors.append(msg)
+            # now we will test all facts that are indeed present
+            for fact in (known_facts.keys() - missed_facts):
+                if fact == 'cpu.bogomips':
+                    # this is a transitory measurement that is likely to
+                    # change from scan to scan
+                    continue
                 try:
-                    assert (str(known_facts[fact]) in str(row[fact]))
+                    assert (str(known_facts[fact]) == str(row.get(fact)))
                 except AssertionError:
-                    msg = 'Test failed on host {} in profile {}. \
-                           Scan found {} = {} instead of {}.'.format(
-                        host['ip'],
-                        profile['name'],
-                        fact,
-                        row[fact],
-                        known_facts[fact],
-                    )
+                    msg = ('Test failed on host {} in profile {}.'
+                           ' \n\tScan found {} = {} instead of {}.'.format(
+                            host['ip'],
+                            profile['name'],
+                            fact,
+                            row.get(fact),
+                            known_facts[fact],
+                           ))
                     scan_errors.append(msg)
-    if len(scan_errors) != 0:
+    if scan_errors:
         msg = '\n'.join(e for e in scan_errors)
         raise AssertionError(msg)
