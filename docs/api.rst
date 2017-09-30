@@ -28,3 +28,8 @@ reference for developers, not a gospel.
     api/camayoc.tests.remote.rst
     api/camayoc.tests.remote.conftest.rst
     api/camayoc.tests.remote.rho.test_scan.rst
+    api/camayoc.api.rst
+    api/camayoc.qcs_models.rst
+    api/camayoc.tests.qcs.rst
+    api/camayoc.tests.qcs.conftest.rst
+    api/camayoc.tests.qcs.test_host_cred.rst

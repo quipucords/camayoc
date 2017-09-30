@@ -18,9 +18,11 @@ Submodules
 
 .. toctree::
 
+   camayoc.api
    camayoc.cli
    camayoc.config
    camayoc.constants
    camayoc.exceptions
+   camayoc.qcs_models
    camayoc.utils
 

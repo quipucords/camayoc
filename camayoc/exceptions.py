@@ -23,3 +23,14 @@ class ConfigFileNotFoundError(Exception):
     See :mod:`camayoc.config` for more information on how configuration files
     are handled.
     """
+
+
+class QCSBaseUrlNotFound(Exception):
+    """No base url was specifed in the camayoc config file.
+
+    Specify a base url to contact the quipucords server in your camayoc
+    config file in the following manner:
+
+    qcs:
+      server: 'hostname_or_ip_with_port'
+    """

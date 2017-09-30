@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+    camayoc.tests.qcs
     camayoc.tests.remote
     camayoc.tests.rho
 
