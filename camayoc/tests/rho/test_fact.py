@@ -68,6 +68,33 @@ def test_fact_list_filter():
     assert rho_fact_list.exitstatus == 0
 
 
+def test_fact_list_regex_filter():
+    """Use a regex to filter the list of available facts.
+
+    :id: c4843f39-5c16-4154-9221-5e222fb6e4d5
+    :description: Filter the list of available facts by providing the
+        ``--filter`` option with a regular expression as a value.
+    :steps: Run ``rho fact list --filter <regex_filter>``
+    :expectedresults: Only the facts that match the regex filter are printed.
+    """
+    expected_facts = (
+        'subman.virt.host_type',
+        'virt-what.type',
+        'virt.type',
+    )
+    rho_fact_list = pexpect.spawn(
+        'rho fact list --filter {}'.format(r'"[\w.-]+type"'))
+    rho_fact_list.logfile = BytesIO()
+    rho_fact_list.expect(pexpect.EOF)
+    output = rho_fact_list.logfile.getvalue().decode('utf-8')
+    rho_fact_list.logfile.close()
+    rho_fact_list.close()
+    assert rho_fact_list.exitstatus == 0
+
+    facts = [line.split(' - ')[0].strip() for line in output.splitlines()]
+    assert sorted(facts) == sorted(expected_facts)
+
+
 def test_fact_hash(isolated_filesystem):
     """Hash some facts from a generated report.
 
