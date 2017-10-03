@@ -4,7 +4,8 @@
 :caseautomation: automated
 :casecomponent: profile
 :caseimportance: high
-:requirement: RHO
+:caselevel: integration
+:requirement: Rho
 :testtype: functional
 :upstream: yes
 """

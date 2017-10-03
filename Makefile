@@ -1,3 +1,6 @@
+TESTIMONY_TOKENS="caseautomation, casecomponent, caseimportance, caselevel, caseposneg, description, expectedresults, id, requirement, setup, subtype1, subtype2, steps, teardown, testtype, upstream, title"
+TESTIMONY_MINIMUM_TOKENS="id, requirement, caseautomation, caselevel, casecomponent, testtype, caseimportance, upstream"
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
 	@echo "  help            to show this message"
@@ -44,5 +47,9 @@ test:
 
 test-coverage:
 	py.test --verbose --cov-report term --cov=camayoc.cli --cov=camayoc.config --cov=camayoc.exceptions --cov=camayoc.utils tests
+
+validate-docstrings:
+	@testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
+
 .PHONY: all docs-clean docs-html install install-dev lint package \
 	package-clean package-upload test test-coverage

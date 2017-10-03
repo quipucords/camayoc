@@ -44,6 +44,8 @@ setup(
             'twine',
             # For `make test-coverage`
             'pytest-cov',
+            # For `make validate-docstrings`
+            'testimony',
         ],
     },
     install_requires=[

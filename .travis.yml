@@ -12,5 +12,6 @@ script:
     - make lint
     - make test-coverage
     - make docs-html
+    - make validate-docstrings
 after_success:
     - coveralls
