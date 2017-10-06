@@ -22,6 +22,9 @@ gen-api-docs: clean-api-docs
 html: gen-api-docs
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+serve: html
+	sphinx-serve
+
 .PHONY: clean-api-docs gen-api-docs help html Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new
