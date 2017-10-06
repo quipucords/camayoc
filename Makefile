@@ -49,6 +49,7 @@ test-coverage:
 	py.test --verbose --cov-report term --cov=camayoc.cli --cov=camayoc.config --cov=camayoc.exceptions --cov=camayoc.utils tests
 
 validate-docstrings:
+	@./scripts/validate_docstrings.sh
 	@testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
 
 .PHONY: all docs-clean docs-html install install-dev lint package \
