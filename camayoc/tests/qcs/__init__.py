@@ -8,7 +8,7 @@ QCS is interacted with over its API, and the base url should be specified in
 your camayoc config file with the following information:
 
 'qcs':
-  server: 'hostname_or_ip_with_port'
+  hostname: 'hostname_or_ip_with_port'
 
 Be sure to specify the port if you are running on a non-standard one.
 """
