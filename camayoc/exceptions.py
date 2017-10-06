@@ -32,5 +32,5 @@ class QCSBaseUrlNotFound(Exception):
     config file in the following manner:
 
     qcs:
-      server: 'hostname_or_ip_with_port'
+      hostname: 'hostname_or_ip_with_port'
     """

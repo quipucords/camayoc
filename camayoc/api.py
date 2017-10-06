@@ -14,8 +14,6 @@ from urllib.parse import urljoin
 from camayoc import config
 from camayoc import exceptions
 
-_SENTINEL = object()
-
 
 def echo_handler(server_config, response):  # pylint:disable=unused-argument
     """Immediately return ``response``."""
@@ -84,18 +82,30 @@ class Client(object):
         camayoc config file:
 
             qcs:
-              server: 'hostname_or_ip_with_port'
+              hostname: 'hostname_or_ip_with_port'
         """
         self._cfg = config.get_config()
         qcs_settings = self._cfg.get('qcs')
-        self.url = url
+        self.url = None
+        if url:
+            self.url = urljoin(url, 'api/v1/')
         if qcs_settings and not url:
-            self.url = urljoin(qcs_settings.get('server'), 'api/v1/')
+            if not qcs_settings.get('hostname'):
+                raise exceptions.QCSBaseUrlNotFound(
+                    '\n\'qcs\' section specified in camayoc config file, but'
+                    ' no \'hostname\' key found.'
+                )
+            self.url = urljoin(qcs_settings.get('hostname'), 'api/v1/')
         if not self.url:
             raise exceptions.QCSBaseUrlNotFound(
-                'No base url was specified to the client'
-                ' either with the url="host" option or with the camayoc'
+                '\nNo base url was specified to the client'
+                '\neither with the url="host" option or with the camayoc'
                 ' config file.')
+        if 'http' not in self.url:
+            raise exceptions.QCSBaseUrlNotFound(
+                'A hostname was provided, but we could not use it.'
+                '\nValid hostnames start with http:// or https://'
+            )
         if response_handler is None:
             self.response_handler = code_handler
         else:

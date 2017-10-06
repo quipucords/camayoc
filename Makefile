@@ -46,7 +46,9 @@ test:
 	py.test tests
 
 test-coverage:
-	py.test --verbose --cov-report term --cov=camayoc.cli --cov=camayoc.config --cov=camayoc.exceptions --cov=camayoc.utils tests
+	py.test --verbose --cov-report term --cov=camayoc.cli \
+	--cov=camayoc.config --cov=camayoc.exceptions --cov=camayoc.utils \
+	--cov=camayoc.api tests
 
 validate-docstrings:
 	@./scripts/validate_docstrings.sh

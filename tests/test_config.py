@@ -32,6 +32,10 @@ rho:
         - name2
       hosts:
         - localhost
+vcenter:
+    hostname: example1.com
+qcs:
+    hostname: example2.com
 """
 
 
