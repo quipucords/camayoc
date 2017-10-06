@@ -24,6 +24,9 @@ docs-clean:
 docs-html:
 	@cd docs; $(MAKE) html
 
+docs-serve:
+	@cd docs; $(MAKE) serve
+
 install:
 	pip install -e .
 

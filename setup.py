@@ -34,6 +34,8 @@ setup(
         'dev': [
             # For `make docs`
             'sphinx',
+            # For `make docs-serve`
+            'sphinx-serve',
             # For `make lint`
             'flake8',
             'flake8-docstrings',
