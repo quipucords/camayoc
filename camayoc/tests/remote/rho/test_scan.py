@@ -6,7 +6,7 @@ is successful, all facts will be validated before test fails, and then all
 failed facts will be reported with associated host.
 
 :caseautomation: automated
-:casecomponent: scan
+:casecomponent: cli
 :caseimportance: high
 :caselevel: integration
 :requirement: Rho

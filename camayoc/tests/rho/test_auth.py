@@ -2,7 +2,7 @@
 """Tests for ``rho auth`` commands.
 
 :caseautomation: automated
-:casecomponent: auth
+:casecomponent: cli
 :caseimportance: high
 :caselevel: integration
 :requirement: Rho
