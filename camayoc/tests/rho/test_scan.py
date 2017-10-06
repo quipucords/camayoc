@@ -2,7 +2,7 @@
 """Tests for ``rho scan`` commands.
 
 :caseautomation: automated
-:casecomponent: scan
+:casecomponent: cli
 :caseimportance: high
 :caselevel: integration
 :requirement: Rho

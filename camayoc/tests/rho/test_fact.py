@@ -2,7 +2,7 @@
 """Tests for ``rho fact`` commands.
 
 :caseautomation: automated
-:casecomponent: fact
+:casecomponent: cli
 :caseimportance: high
 :caselevel: integration
 :requirement: Rho

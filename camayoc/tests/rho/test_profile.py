@@ -2,7 +2,7 @@
 """Tests for ``rho profile`` commands.
 
 :caseautomation: automated
-:casecomponent: profile
+:casecomponent: cli
 :caseimportance: high
 :caselevel: integration
 :requirement: Rho
