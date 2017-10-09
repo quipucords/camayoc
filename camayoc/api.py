@@ -126,15 +126,15 @@ class Client(object):
         url = urljoin(self.url, endpoint)
         return self.request('HEAD', url, **kwargs)
 
-    def post(self, endpoint, packet, **kwargs):
+    def post(self, endpoint, payload, **kwargs):
         """Send an HTTP POST request."""
         url = urljoin(self.url, endpoint)
-        return self.request('POST', url, json=packet, **kwargs)
+        return self.request('POST', url, json=payload, **kwargs)
 
-    def put(self, endpoint, packet, **kwargs):
+    def put(self, endpoint, payload, **kwargs):
         """Send an HTTP PUT request."""
         url = urljoin(self.url, endpoint)
-        return self.request('PUT', url, json=packet, **kwargs)
+        return self.request('PUT', url, json=payload, **kwargs)
 
     def request(self, method, url, **kwargs):
         """Send an HTTP request.
@@ -154,7 +154,7 @@ class Client(object):
         )
 
 
-class QCS_Client(Client):
+class QCSClient(Client):
     """An even easier client for interacting with the quipucords API.
 
     This client inherits all methods and fields from api.Client and adds
@@ -163,7 +163,7 @@ class QCS_Client(Client):
 
     Example::
         >>> from camayoc import api
-        >>> client = api.QCS_Client()
+        >>> client = api.QCSClient()
         >>> client.read_host_creds()
     """
 
@@ -174,22 +174,51 @@ class QCS_Client(Client):
         as well as set the response_handler that the client will use.
         """
         self.host_cred_path = 'credentials/hosts/'
-        super(QCS_Client, self).__init__(*args, **kwargs)
+        self.net_prof_path = 'profiles/networks/'
+        super(QCSClient, self).__init__(*args, **kwargs)
 
-    def create_host_cred(self, packet):
+    def create_host_cred(self, payload):
         """Send POST to QCS to create new host credential."""
-        return self.post(self.host_cred_path, packet)
+        return self.post(self.host_cred_path, payload)
 
-    def read_host_creds(self):
-        """Send GET request to read all host credentials."""
-        return self.get(self.host_cred_path)
+    def read_host_creds(self, host_cred_id=None):
+        """Send GET request to read host credentials.
 
-    def update_host_cred(self, host_id, packet):
-        """Send PUT request to update given host_id with new data."""
-        path = urljoin(self.host_cred_path, urljoin(str(host_id), '/'))
-        return self.put(path, packet)
+        If no host_cred_id is specified, get all host credentials,
+        otherwise just get the one specified.
+        """
+        path = self.host_cred_path
+        if host_cred_id:
+            path = urljoin(path, '{}/'.format(host_cred_id))
+        return self.get(path)
 
-    def delete_host_cred(self, host_id):
-        """Send DELETE request for host_id to QCS."""
-        path = urljoin(self.host_cred_path, '{}/'.format(host_id))
+    def update_host_cred(self, host_cred_id, payload):
+        """Send PUT request to update given host_cred_id with new data."""
+        path = urljoin(self.host_cred_path, '{}/'.format(host_cred_id))
+        return self.put(path, payload)
+
+    def delete_host_cred(self, host_cred_id):
+        """Send DELETE request for host_cred_id to QCS."""
+        path = urljoin(self.host_cred_path, '{}/'.format(host_cred_id))
+        return self.delete(path)
+
+    def create_net_prof(self, payload):
+        """Send POST to QCS to create new network profile."""
+        return self.post(self.net_prof_path, payload)
+
+    def read_net_profs(self, net_prof_id=None):
+        """Send GET request to read all network profiles."""
+        path = self.net_prof_path
+        if net_prof_id:
+            path = urljoin(path, '{}/'.format(net_prof_id))
+        return self.get(path)
+
+    def update_net_prof(self, net_prof_id, payload):
+        """Send PUT request to update given net_prof_id with new data."""
+        path = urljoin(self.host_cred_path, '{}/'.format(net_prof_id))
+        return self.put(path, payload)
+
+    def delete_net_prof(self, net_prof_id):
+        """Send DELETE request for net_prof_id to QCS."""
+        path = urljoin(self.net_prof_path, '{}/'.format(net_prof_id))
         return self.delete(path)

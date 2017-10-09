@@ -33,3 +33,4 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.rst
     api/camayoc.tests.qcs.conftest.rst
     api/camayoc.tests.qcs.test_host_cred.rst
+    api/camayoc.tests.qcs.test_net_prof.rst

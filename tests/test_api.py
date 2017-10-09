@@ -31,7 +31,7 @@ class APIClientTestCase(unittest.TestCase):
         """If a hostname is specified in the config file, we use it."""
         with mock.patch.object(config, '_CONFIG', self.config):
             self.assertEqual(config.get_config(), self.config)
-            client = api.QCS_Client()
+            client = api.QCSClient()
             cfg_host = self.config['qcs']['hostname']
             self.assertEqual(cfg_host, client.url.strip('api/v1/'))
 
@@ -40,7 +40,7 @@ class APIClientTestCase(unittest.TestCase):
         with mock.patch.object(config, '_CONFIG', {}):
             self.assertEqual(config.get_config(), {})
             other_host = 'http://hostname.com'
-            client = api.QCS_Client(url=other_host)
+            client = api.QCSClient(url=other_host)
             cfg_host = self.config['qcs']['hostname']
             self.assertNotEqual(cfg_host, client.url.strip('/api/v1/'))
             self.assertEqual(other_host, client.url.strip('/api/v1/'))
@@ -49,7 +49,7 @@ class APIClientTestCase(unittest.TestCase):
         """If a base url is specified, we use that instead of config file."""
         with mock.patch.object(config, '_CONFIG', self.config):
             other_host = 'http://hostname.com'
-            client = api.QCS_Client(url=other_host)
+            client = api.QCSClient(url=other_host)
             cfg_host = self.config['qcs']['hostname']
             self.assertNotEqual(cfg_host, client.url.strip('/api/v1/'))
             self.assertEqual(other_host, client.url.strip('/api/v1/'))
@@ -59,11 +59,11 @@ class APIClientTestCase(unittest.TestCase):
         with mock.patch.object(config, '_CONFIG', {}):
             self.assertEqual(config.get_config(), {})
             with self.assertRaises(exceptions.QCSBaseUrlNotFound):
-                api.QCS_Client()
+                api.QCSClient()
 
     def test_invalid_hostname(self):
         """Raise an error if no config entry is found and no url specified."""
         with mock.patch.object(config, '_CONFIG', self.invalid_config):
             self.assertEqual(config.get_config(), self.invalid_config)
             with self.assertRaises(exceptions.QCSBaseUrlNotFound):
-                api.QCS_Client()
+                api.QCSClient()
