@@ -9,14 +9,14 @@
 :testtype: functional
 :upstream: yes
 """
-import re
+
+from uuid import uuid4
 
 from camayoc import api
 from camayoc.qcs_models import HostCredential
-from camayoc.constants import MASKED_PASSWORD_OUTPUT
 
 
-def test_create_with_password(isolated_filesystem, host_cred_cleanup):
+def test_create_with_password(isolated_filesystem, test_cleanup):
     """Create a host credential with username and password.
 
     :id: d04e3e1b-c7f1-4cc2-a4a4-a3d3317f95ce
@@ -24,26 +24,16 @@ def test_create_with_password(isolated_filesystem, host_cred_cleanup):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new host credential entry is created with the data.
     """
-    client = api.QCS_Client()
-    host = HostCredential()
-    host.password = 'foo'
-    password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
-    create_response = client.create_host_cred(host.payload())
-    host.host_id = create_response.json()['id']
-    read_response = client.read_host_creds()
-    artifact = None
-    for item in read_response.json():
-        if host.host_id == item.get('id'):
-            artifact = item
-    assert artifact is not None
-    for key, value in host.fields().items():
-        if key == 'password':
-            assert password_matcher.match(artifact.get(key))
-        else:
-            assert artifact.get(key) == value
+    client = api.QCSClient()
+    hostcred = HostCredential(password=str(uuid4()))
+    hostcred._id = client.create_host_cred(hostcred.payload()).json()['id']
+    created_creds = client.read_host_creds().json()
+    assert len(created_creds) == 1
+    artifact = created_creds[0]
+    assert hostcred == artifact
 
 
-def test_create_with_sshkey(isolated_filesystem, host_cred_cleanup):
+def test_create_with_sshkey(isolated_filesystem, test_cleanup):
     """Create a host credential with username and sshkey.
 
     :id: ab6fd574-2e9f-46b8-847d-17b23c19fdd2
@@ -54,7 +44,7 @@ def test_create_with_sshkey(isolated_filesystem, host_cred_cleanup):
     pass
 
 
-def test_negative_create_key_and_pass(isolated_filesystem, host_cred_cleanup):
+def test_negative_create_key_and_pass(isolated_filesystem, test_cleanup):
     """Attempt to create a host credential with sshkey and password.
 
     The request should be met with a 4XX response.
@@ -67,7 +57,7 @@ def test_negative_create_key_and_pass(isolated_filesystem, host_cred_cleanup):
     pass
 
 
-def test_negative_create_no_name(isolated_filesystem, host_cred_cleanup):
+def test_negative_create_no_name(isolated_filesystem, test_cleanup):
     """Attempt to create a host credential missing a name.
 
     The request should be met with a 4XX response.
@@ -81,7 +71,7 @@ def test_negative_create_no_name(isolated_filesystem, host_cred_cleanup):
 
 
 def test_negative_create_no_key_or_pass(
-        isolated_filesystem, host_cred_cleanup):
+        isolated_filesystem, test_cleanup):
     """Attempt to create a host credential missing both password and sshkey.
 
     The request should be met with a 4XX response.
@@ -94,7 +84,7 @@ def test_negative_create_no_key_or_pass(
     pass
 
 
-def test_read_all(isolated_filesystem, host_cred_cleanup):
+def test_read_all(isolated_filesystem, test_cleanup):
     """After created, retrieve all host credentials with GET to api.
 
     :id: fa05b857-5b01-4388-9226-8dfb5639c815
@@ -109,7 +99,22 @@ def test_read_all(isolated_filesystem, host_cred_cleanup):
     pass
 
 
-def test_delete(isolated_filesystem, host_cred_cleanup):
+def test_read_indv(isolated_filesystem, test_cleanup):
+    """After created, retrieve each host credential with GET to api.
+
+    :id: 4d381119-2dc3-42b6-9b41-e27307d61fcc
+    :description: The API should a single host credential when a GET is made
+        to the host credentials path and a host id is specified.
+    :steps:  1) Create collection of host credentials, saving the information.
+        2) Send GET request to host credential endpoint with the host id
+            specified.
+        3) Confirm that each host is retrieved
+    :expectedresults: All hosts are present in data returned by API.
+    """
+    pass
+
+
+def test_delete(isolated_filesystem, test_cleanup):
     """After creating several host credentials, delete one.
 
     :id: e71b521c-59f9-483a-9063-1fbd5087c667

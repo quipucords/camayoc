@@ -13,4 +13,5 @@ Submodules
 
    camayoc.tests.qcs.conftest
    camayoc.tests.qcs.test_host_cred
+   camayoc.tests.qcs.test_net_prof
 
