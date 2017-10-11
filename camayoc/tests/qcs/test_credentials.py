@@ -16,6 +16,19 @@ from camayoc import api
 from camayoc.qcs_models import HostCredential
 
 
+def confirm_credential(cred):
+    """Confirm that the credential is on the server and is correct."""
+    # we don't assume that this is the only credential in existence so we can
+    # run tests in parallel
+    client = api.QCSClient()
+    created_creds = client.read_credentials().json()
+    artifact = None
+    for c in created_creds:
+        if c.get('id') == cred._id:
+            artifact = c
+    assert cred == artifact
+
+
 def test_create_with_password(isolated_filesystem, cleanup_credentials):
     """Create a host credential with username and password.
 
@@ -34,16 +47,85 @@ def test_create_with_password(isolated_filesystem, cleanup_credentials):
 
     # add the id to the list to destroy after the test is done
     ids_to_cleanup.append(cred._id)
+    confirm_credential(cred)
 
-    created_creds = client.read_credentials().json()
 
-    # we don't assume that this is the only credential in existence so we can
-    # run tests in parallel
-    artifact = None
-    for c in created_creds:
-        if c.get('id') == cred._id:
-            artifact = c
-    assert cred == artifact
+def test_update_username(isolated_filesystem, cleanup_credentials):
+    """Create a host credential and then update its username.
+
+    :id: 73ed2ed5-e623-48ec-9ea6-153017464d9c
+    :description: Create a host credential with password, then update its
+        username.
+    :steps: 1) Create a host credential with a username and password.
+            2) Update the host credential with a new username.
+            3) Confirm host credential has been updated.
+    :expectedresults: The host credential is updated.
+    """
+    # obtain list of credentials to destroy after test is over
+    # from the cleanup_credentials fixture
+    ids_to_cleanup = cleanup_credentials
+
+    client = api.QCSClient()
+    cred = HostCredential(password=str(uuid4()))
+    cred._id = client.create_credential(cred.payload()).json()['id']
+
+    # add the id to the list to destroy after the test is done
+    ids_to_cleanup.append(cred._id)
+
+    confirm_credential(cred)
+
+    # give the cred a new username
+    cred.username = str(uuid4())
+    client.update_credential(cred._id, cred.payload())
+    confirm_credential(cred)
+
+
+def test_update_password_to_sshkeyfile(
+        isolated_filesystem,
+        cleanup_credentials):
+    """Create a host credential using password and switch it to use sshkey.
+
+    :id: 6e557092-192b-4f75-babc-abc5774fe965
+    :description: Create a host credential with password, then update it
+        to use a sshkey.
+    :steps: 1) Create a host credential with a username and password.
+            2) Update the host credential deleting password and adding sshkey.
+            3) Confirm host credential has been updated.
+    :expectedresults: The host credential is updated.
+    """
+    pass
+
+
+def test_update_sshkey_to_password(isolated_filesystem, cleanup_credentials):
+    """Create a host credential using password and switch it to use sshkey.
+
+    :id: d24a54b5-3d8c-44e4-a0ae-61584a15b127
+    :description: Create a host credential with a sshkey, then update it
+        to use a password.
+    :steps: 1) Create a host credential with a username and sshkey.
+            2) Update the host credential deleting sshkey and updating
+                password.
+            3) Confirm host credential has been updated.
+    :expectedresults: The host credential is updated.
+    """
+    pass
+
+
+def test_negative_update_to_invalid(isolated_filesystem, cleanup_credentials):
+    """Attempt to update valid credential with invalid data.
+
+    :id: c34ea917-ee36-4b93-8907-24a5f87bbed3
+    :description: Create valid host credentials, then attempt to update to be
+        invalid.
+    :steps: 1) Create valid credentials with passwords or sshkey.
+        2) Update the host credentials:
+            a) missing usernames
+            b) using both password and sshkey
+            c) missing both password and sshkey
+    :expectedresults: Error codes are returned and the host credentials are
+        not updated.
+    """
+    pass
 
 
 def test_create_with_sshkey(isolated_filesystem, cleanup_credentials):
