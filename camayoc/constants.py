@@ -101,3 +101,12 @@ VCENTER_CLUSTER = 1
 
 VCENTER_HOST = 0
 """The index of the host in the cluster in the VCenter MOB"""
+
+QCS_API_VERSION = 'api/v1/'
+"""The root path to access the QCS server API."""
+
+QCS_CREDENTIALS_PATH = 'credentials/hosts/'
+"""The path to the credentials endpoint for CRUD tasks."""
+
+QCS_PROFILES_PATH = 'profiles/networks/'
+"""The path to the profiles endpoint for CRUD tasks."""

@@ -12,6 +12,8 @@
 
 import pytest
 
+from uuid import uuid4
+
 from camayoc import api
 from camayoc.qcs_models import HostCredential
 from camayoc.qcs_models import NetworkProfile
@@ -20,7 +22,10 @@ CREATE_DATA = ['localhost', '127.0.0.1']
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
-def test_create(isolated_filesystem, test_cleanup, scan_host):
+def test_create(isolated_filesystem,
+                cleanup_credentials,
+                cleanup_profiles,
+                scan_host):
     """Create a Network Profile using a single credential.
 
     :id: db459fc2-d34c-45cf-915a-1535406a9320
@@ -30,13 +35,23 @@ def test_create(isolated_filesystem, test_cleanup, scan_host):
             credential to the profile endpoint.
     :expectedresults: A new network profile entry is created with the data.
     """
-    hostcred = HostCredential(password='foo')
+    # obtain list of credentials to destroy after test is over
+    # from the cleanup_credentials fixture
+    cred_ids_to_cleanup = cleanup_credentials
+    profile_ids_to_cleanup = cleanup_profiles
+
+    cred = HostCredential(password=str(uuid4()))
     client = api.QCSClient()
-    hostcred._id = client.create_host_cred(hostcred.payload()).json()['id']
-    netprof = NetworkProfile(
+    cred._id = client.create_credential(cred.payload()).json()['id']
+    profile = NetworkProfile(
         hosts=[scan_host],
-        credential_ids=[
-            hostcred._id])
-    netprof._id = client.create_net_prof(netprof.payload()).json()['id']
-    artifact = client.read_net_profs(net_prof_id=netprof._id).json()
-    assert netprof == artifact
+        credential_ids=[cred._id],
+    )
+    profile._id = client.create_profile(profile.payload()).json()['id']
+
+    # add the ids to the lists to destroy after the test is done
+    cred_ids_to_cleanup.append(cred._id)
+    profile_ids_to_cleanup.append(profile._id)
+
+    artifact = client.read_profiles(profile_id=profile._id).json()
+    assert profile == artifact

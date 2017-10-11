@@ -12,6 +12,6 @@ Submodules
 .. toctree::
 
    camayoc.tests.qcs.conftest
-   camayoc.tests.qcs.test_host_cred
-   camayoc.tests.qcs.test_net_prof
+   camayoc.tests.qcs.test_credentials
+   camayoc.tests.qcs.test_profiles
 

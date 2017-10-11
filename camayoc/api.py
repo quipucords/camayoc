@@ -13,6 +13,11 @@ from urllib.parse import urljoin
 
 from camayoc import config
 from camayoc import exceptions
+from camayoc.constants import (
+    QCS_API_VERSION,
+    QCS_CREDENTIALS_PATH,
+    QCS_PROFILES_PATH,
+)
 
 
 def echo_handler(server_config, response):  # pylint:disable=unused-argument
@@ -67,7 +72,7 @@ class Client(object):
         >>>
         >>> # now if I want to do something else,
         >>> # I can change the base url
-        >>> client.url = 'www.whatever.com'
+        >>> client.url = 'https://www.whatever.com'
 
     .. _Requests: http://docs.python-requests.org/en/master/
     """
@@ -82,20 +87,20 @@ class Client(object):
         camayoc config file:
 
             qcs:
-              hostname: 'hostname_or_ip_with_port'
+                hostname: 'http://hostname_or_ip_with_port'
         """
         self._cfg = config.get_config()
         qcs_settings = self._cfg.get('qcs')
-        self.url = None
-        if url:
-            self.url = urljoin(url, 'api/v1/')
+        self.url = self.url = urljoin(url, QCS_API_VERSION) if url else None
+
         if qcs_settings and not url:
             if not qcs_settings.get('hostname'):
                 raise exceptions.QCSBaseUrlNotFound(
                     '\n\'qcs\' section specified in camayoc config file, but'
                     ' no \'hostname\' key found.'
                 )
-            self.url = urljoin(qcs_settings.get('hostname'), 'api/v1/')
+            self.url = urljoin(qcs_settings.get('hostname'), QCS_API_VERSION)
+
         if not self.url:
             raise exceptions.QCSBaseUrlNotFound(
                 '\nNo base url was specified to the client'
@@ -106,6 +111,7 @@ class Client(object):
                 'A hostname was provided, but we could not use it.'
                 '\nValid hostnames start with http:// or https://'
             )
+
         if response_handler is None:
             self.response_handler = code_handler
         else:
@@ -164,7 +170,7 @@ class QCSClient(Client):
     Example::
         >>> from camayoc import api
         >>> client = api.QCSClient()
-        >>> client.read_host_creds()
+        >>> client.read_credentials()
     """
 
     def __init__(self, *args, **kwargs):
@@ -173,52 +179,52 @@ class QCSClient(Client):
         The call to super will set base url from the camayoc config file,
         as well as set the response_handler that the client will use.
         """
-        self.host_cred_path = 'credentials/hosts/'
-        self.net_prof_path = 'profiles/networks/'
+        self.credential_path = QCS_CREDENTIALS_PATH
+        self.profile_path = QCS_PROFILES_PATH
         super(QCSClient, self).__init__(*args, **kwargs)
 
-    def create_host_cred(self, payload):
+    def create_credential(self, payload):
         """Send POST to QCS to create new host credential."""
-        return self.post(self.host_cred_path, payload)
+        return self.post(self.credential_path, payload)
 
-    def read_host_creds(self, host_cred_id=None):
+    def read_credentials(self, credential_id=None):
         """Send GET request to read host credentials.
 
-        If no host_cred_id is specified, get all host credentials,
+        If no credential_id is specified, get all host credentials,
         otherwise just get the one specified.
         """
-        path = self.host_cred_path
-        if host_cred_id:
-            path = urljoin(path, '{}/'.format(host_cred_id))
+        path = self.credential_path
+        if credential_id:
+            path = urljoin(path, '{}/'.format(credential_id))
         return self.get(path)
 
-    def update_host_cred(self, host_cred_id, payload):
-        """Send PUT request to update given host_cred_id with new data."""
-        path = urljoin(self.host_cred_path, '{}/'.format(host_cred_id))
+    def update_credential(self, credential_id, payload):
+        """Send PUT request to update given credential_id with new data."""
+        path = urljoin(self.credential_path, '{}/'.format(credential_id))
         return self.put(path, payload)
 
-    def delete_host_cred(self, host_cred_id):
-        """Send DELETE request for host_cred_id to QCS."""
-        path = urljoin(self.host_cred_path, '{}/'.format(host_cred_id))
+    def delete_credential(self, credential_id):
+        """Send DELETE request for credential_id to QCS."""
+        path = urljoin(self.credential_path, '{}/'.format(credential_id))
         return self.delete(path)
 
-    def create_net_prof(self, payload):
+    def create_profile(self, payload):
         """Send POST to QCS to create new network profile."""
-        return self.post(self.net_prof_path, payload)
+        return self.post(self.profile_path, payload)
 
-    def read_net_profs(self, net_prof_id=None):
+    def read_profiles(self, profile_id=None):
         """Send GET request to read all network profiles."""
-        path = self.net_prof_path
-        if net_prof_id:
-            path = urljoin(path, '{}/'.format(net_prof_id))
+        path = self.profile_path
+        if profile_id:
+            path = urljoin(path, '{}/'.format(profile_id))
         return self.get(path)
 
-    def update_net_prof(self, net_prof_id, payload):
-        """Send PUT request to update given net_prof_id with new data."""
-        path = urljoin(self.host_cred_path, '{}/'.format(net_prof_id))
+    def update_profile(self, profile_id, payload):
+        """Send PUT request to update given profile_id with new data."""
+        path = urljoin(self.credential_path, '{}/'.format(profile_id))
         return self.put(path, payload)
 
-    def delete_net_prof(self, net_prof_id):
-        """Send DELETE request for net_prof_id to QCS."""
-        path = urljoin(self.net_prof_path, '{}/'.format(net_prof_id))
+    def delete_profile(self, profile_id):
+        """Send DELETE request for profile_id to QCS."""
+        path = urljoin(self.profile_path, '{}/'.format(profile_id))
         return self.delete(path)

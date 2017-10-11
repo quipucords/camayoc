@@ -35,7 +35,7 @@ rho:
 vcenter:
     hostname: example1.com
 qcs:
-    hostname: example2.com
+    hostname: 'http://example2.com'
 """
 
 

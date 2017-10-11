@@ -32,5 +32,5 @@ reference for developers, not a gospel.
     api/camayoc.qcs_models.rst
     api/camayoc.tests.qcs.rst
     api/camayoc.tests.qcs.conftest.rst
-    api/camayoc.tests.qcs.test_host_cred.rst
-    api/camayoc.tests.qcs.test_net_prof.rst
+    api/camayoc.tests.qcs.test_credentials.rst
+    api/camayoc.tests.qcs.test_profiles.rst
