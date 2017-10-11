@@ -5,16 +5,24 @@ from camayoc import api
 
 
 @pytest.fixture
-def test_cleanup(request):
+def cleanup_credentials():
     """Fixture that cleans up any created host credentials."""
-    def cleanup():
-        client = api.QCSClient()
-        read_response = client.read_host_creds()
-        for cred in read_response.json():
-            if cred.get('id'):
-                client.delete_host_cred(cred.get('id'))
-        read_response = client.read_net_profs()
-        for prof in read_response.json():
-            if prof.get('id'):
-                client.delete_net_prof(prof.get('id'))
-    request.addfinalizer(cleanup)
+    credential_ids = []
+
+    yield credential_ids
+
+    client = api.QCSClient()
+    for _id in credential_ids:
+        client.delete_credential(_id)
+
+
+@pytest.fixture
+def cleanup_profiles():
+    """Fixture that cleans up any created network profiles."""
+    profile_ids = []
+
+    yield profile_ids
+
+    client = api.QCSClient()
+    for _id in profile_ids:
+        client.delete_profile(_id)

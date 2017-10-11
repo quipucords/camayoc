@@ -16,7 +16,7 @@ from camayoc import api
 from camayoc.qcs_models import HostCredential
 
 
-def test_create_with_password(isolated_filesystem, test_cleanup):
+def test_create_with_password(isolated_filesystem, cleanup_credentials):
     """Create a host credential with username and password.
 
     :id: d04e3e1b-c7f1-4cc2-a4a4-a3d3317f95ce
@@ -24,16 +24,29 @@ def test_create_with_password(isolated_filesystem, test_cleanup):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new host credential entry is created with the data.
     """
+    # obtain list of credentials to destroy after test is over
+    # from the cleanup_credentials fixture
+    ids_to_cleanup = cleanup_credentials
+
     client = api.QCSClient()
-    hostcred = HostCredential(password=str(uuid4()))
-    hostcred._id = client.create_host_cred(hostcred.payload()).json()['id']
-    created_creds = client.read_host_creds().json()
-    assert len(created_creds) == 1
-    artifact = created_creds[0]
-    assert hostcred == artifact
+    cred = HostCredential(password=str(uuid4()))
+    cred._id = client.create_credential(cred.payload()).json()['id']
+
+    # add the id to the list to destroy after the test is done
+    ids_to_cleanup.append(cred._id)
+
+    created_creds = client.read_credentials().json()
+
+    # we don't assume that this is the only credential in existence so we can
+    # run tests in parallel
+    artifact = None
+    for c in created_creds:
+        if c.get('id') == cred._id:
+            artifact = c
+    assert cred == artifact
 
 
-def test_create_with_sshkey(isolated_filesystem, test_cleanup):
+def test_create_with_sshkey(isolated_filesystem, cleanup_credentials):
     """Create a host credential with username and sshkey.
 
     :id: ab6fd574-2e9f-46b8-847d-17b23c19fdd2
@@ -44,7 +57,9 @@ def test_create_with_sshkey(isolated_filesystem, test_cleanup):
     pass
 
 
-def test_negative_create_key_and_pass(isolated_filesystem, test_cleanup):
+def test_negative_create_key_and_pass(
+        isolated_filesystem,
+        cleanup_credentials):
     """Attempt to create a host credential with sshkey and password.
 
     The request should be met with a 4XX response.
@@ -57,7 +72,7 @@ def test_negative_create_key_and_pass(isolated_filesystem, test_cleanup):
     pass
 
 
-def test_negative_create_no_name(isolated_filesystem, test_cleanup):
+def test_negative_create_no_name(isolated_filesystem, cleanup_credentials):
     """Attempt to create a host credential missing a name.
 
     The request should be met with a 4XX response.
@@ -71,7 +86,7 @@ def test_negative_create_no_name(isolated_filesystem, test_cleanup):
 
 
 def test_negative_create_no_key_or_pass(
-        isolated_filesystem, test_cleanup):
+        isolated_filesystem, cleanup_credentials):
     """Attempt to create a host credential missing both password and sshkey.
 
     The request should be met with a 4XX response.
@@ -84,7 +99,7 @@ def test_negative_create_no_key_or_pass(
     pass
 
 
-def test_read_all(isolated_filesystem, test_cleanup):
+def test_read_all(isolated_filesystem, cleanup_credentials):
     """After created, retrieve all host credentials with GET to api.
 
     :id: fa05b857-5b01-4388-9226-8dfb5639c815
@@ -99,7 +114,7 @@ def test_read_all(isolated_filesystem, test_cleanup):
     pass
 
 
-def test_read_indv(isolated_filesystem, test_cleanup):
+def test_read_indv(isolated_filesystem, cleanup_credentials):
     """After created, retrieve each host credential with GET to api.
 
     :id: 4d381119-2dc3-42b6-9b41-e27307d61fcc
@@ -114,7 +129,7 @@ def test_read_indv(isolated_filesystem, test_cleanup):
     pass
 
 
-def test_delete(isolated_filesystem, test_cleanup):
+def test_delete(isolated_filesystem, cleanup_credentials):
     """After creating several host credentials, delete one.
 
     :id: e71b521c-59f9-483a-9063-1fbd5087c667
