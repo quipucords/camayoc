@@ -16,7 +16,7 @@ help:
 	@echo "  test            to run unit tests"
 	@echo "  test-coverage   to run unit tests and measure test coverage"
 
-all: test-coverage lint validate-docstrings
+all: test-coverage lint validate-docstrings docs-html
 
 docs-clean:
 	@cd docs; $(MAKE) clean
