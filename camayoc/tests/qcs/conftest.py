@@ -5,7 +5,7 @@ from camayoc import api
 
 
 @pytest.fixture
-def cleanup_credentials():
+def credentials_to_cleanup():
     """Fixture that cleans up any created host credentials."""
     credential_ids = []
 
@@ -17,7 +17,7 @@ def cleanup_credentials():
 
 
 @pytest.fixture
-def cleanup_profiles():
+def profiles_to_cleanup():
     """Fixture that cleans up any created network profiles."""
     profile_ids = []
 

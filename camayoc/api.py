@@ -20,12 +20,12 @@ from camayoc.constants import (
 )
 
 
-def echo_handler(server_config, response):  # pylint:disable=unused-argument
+def echo_handler(response):
     """Immediately return ``response``."""
     return response
 
 
-def code_handler(server_config, response):  # pylint:disable=unused-argument
+def code_handler(response):
     """Check the response status code, and return the response.
 
     :raises: ``requests.exceptions.HTTPError`` if the response status code is
@@ -35,7 +35,7 @@ def code_handler(server_config, response):  # pylint:disable=unused-argument
     return response
 
 
-def json_handler(server_config, response):
+def json_handler(response):
     """Like ``code_handler``, but also return a JSON-decoded response body.
 
     Do what :func:`camayoc.api.code_handler` does. In addition, decode the
@@ -91,13 +91,13 @@ class Client(object):
         """
         self._cfg = config.get_config()
         qcs_settings = self._cfg.get('qcs')
-        self.url = self.url = urljoin(url, QCS_API_VERSION) if url else None
+        self.url = urljoin(url, QCS_API_VERSION) if url else None
 
         if qcs_settings and not url:
             if not qcs_settings.get('hostname'):
                 raise exceptions.QCSBaseUrlNotFound(
-                    '\n\'qcs\' section specified in camayoc config file, but'
-                    ' no \'hostname\' key found.'
+                    "\n'qcs' section specified in camayoc config file, but"
+                    "no 'hostname' key found."
                 )
             self.url = urljoin(qcs_settings.get('hostname'), QCS_API_VERSION)
 
@@ -154,10 +154,7 @@ class Client(object):
         #
         #     request(method, url, **kwargs)
         #
-        return self.response_handler(
-            self._cfg,
-            requests.request(method, url, **kwargs),
-        )
+        return self.response_handler(requests.request(method, url, **kwargs))
 
 
 class QCSClient(Client):
@@ -181,7 +178,7 @@ class QCSClient(Client):
         """
         self.credential_path = QCS_CREDENTIALS_PATH
         self.profile_path = QCS_PROFILES_PATH
-        super(QCSClient, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_credential(self, payload):
         """Send POST to QCS to create new host credential."""
