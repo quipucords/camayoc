@@ -69,7 +69,7 @@ class HostCredential(QCSObject):
             >>> create_response = client.create_credential(host.payload())
             >>> host._id = create_response.json()['id']
         """
-        super(HostCredential, self).__init__(name=name, _id=_id)
+        super().__init__(name=name, _id=_id)
         self.username = str(uuid.uuid4()) if not username else username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
@@ -122,7 +122,7 @@ class NetworkProfile(QCSObject):
                                          credential_ids=['host._id'])
             >>> client.create_net_prof(netprof.payload())
         """
-        super(NetworkProfile, self).__init__(name=name, _id=_id)
+        super().__init__(name=name, _id=_id)
         self.hosts = hosts
         self.ssh_port = 22 if not name else name
         self.credentials = credential_ids
