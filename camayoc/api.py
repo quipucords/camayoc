@@ -13,11 +13,7 @@ from urllib.parse import urljoin
 
 from camayoc import config
 from camayoc import exceptions
-from camayoc.constants import (
-    QCS_API_VERSION,
-    QCS_CREDENTIALS_PATH,
-    QCS_PROFILES_PATH,
-)
+from camayoc.constants import QCS_API_VERSION
 
 
 def echo_handler(response):
@@ -155,73 +151,3 @@ class Client(object):
         #     request(method, url, **kwargs)
         #
         return self.response_handler(requests.request(method, url, **kwargs))
-
-
-class QCSClient(Client):
-    """An even easier client for interacting with the quipucords API.
-
-    This client inherits all methods and fields from api.Client and adds
-    more methods that protect the user from having to remember how to form
-    the proper relative paths to the different endpoints.
-
-    Example::
-        >>> from camayoc import api
-        >>> client = api.QCSClient()
-        >>> client.read_credentials()
-    """
-
-    def __init__(self, *args, **kwargs):
-        """Set base url and relative paths to API endpoints.
-
-        The call to super will set base url from the camayoc config file,
-        as well as set the response_handler that the client will use.
-        """
-        self.credential_path = QCS_CREDENTIALS_PATH
-        self.profile_path = QCS_PROFILES_PATH
-        super().__init__(*args, **kwargs)
-
-    def create_credential(self, payload):
-        """Send POST to QCS to create new host credential."""
-        return self.post(self.credential_path, payload)
-
-    def read_credentials(self, credential_id=None):
-        """Send GET request to read host credentials.
-
-        If no credential_id is specified, get all host credentials,
-        otherwise just get the one specified.
-        """
-        path = self.credential_path
-        if credential_id:
-            path = urljoin(path, '{}/'.format(credential_id))
-        return self.get(path)
-
-    def update_credential(self, credential_id, payload):
-        """Send PUT request to update given credential_id with new data."""
-        path = urljoin(self.credential_path, '{}/'.format(credential_id))
-        return self.put(path, payload)
-
-    def delete_credential(self, credential_id):
-        """Send DELETE request for credential_id to QCS."""
-        path = urljoin(self.credential_path, '{}/'.format(credential_id))
-        return self.delete(path)
-
-    def create_profile(self, payload):
-        """Send POST to QCS to create new network profile."""
-        return self.post(self.profile_path, payload)
-
-    def read_profiles(self, profile_id=None):
-        """Send GET request to read all network profiles."""
-        path = self.profile_path
-        if profile_id:
-            path = urljoin(path, '{}/'.format(profile_id))
-        return self.get(path)
-
-    def update_profile(self, profile_id, payload):
-        """Send PUT request to update given profile_id with new data."""
-        path = urljoin(self.credential_path, '{}/'.format(profile_id))
-        return self.put(path, payload)
-
-    def delete_profile(self, profile_id):
-        """Send DELETE request for profile_id to QCS."""
-        path = urljoin(self.profile_path, '{}/'.format(profile_id))
-        return self.delete(path)
