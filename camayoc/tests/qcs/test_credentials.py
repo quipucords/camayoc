@@ -14,24 +14,11 @@ import pytest
 
 from uuid import uuid4
 
-from camayoc import api
 from camayoc.qcs_models import HostCredential
+from camayoc.tests.qcs.utils import assert_matches_server
 
 
-def confirm_credential(cred):
-    """Confirm that the credential is on the server and is correct."""
-    # we don't assume that this is the only credential in existence so we can
-    # run tests in parallel
-    client = api.QCSClient()
-    created_creds = client.read_credentials().json()
-    artifact = None
-    for c in created_creds:
-        if c.get('id') == cred._id:
-            artifact = c
-    assert cred == artifact
-
-
-def test_create_with_password(credentials_to_cleanup):
+def test_create_with_password(shared_client, cleanup):
     """Create a host credential with username and password.
 
     :id: d04e3e1b-c7f1-4cc2-a4a4-a3d3317f95ce
@@ -39,16 +26,14 @@ def test_create_with_password(credentials_to_cleanup):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new host credential entry is created with the data.
     """
-    client = api.QCSClient()
-    cred = HostCredential(password=str(uuid4()))
-    cred._id = client.create_credential(cred.payload()).json()['id']
-
-    # add the id to the list to destroy after the test is done
-    credentials_to_cleanup.append(cred._id)
-    confirm_credential(cred)
+    cred = HostCredential(client=shared_client, password=str(uuid4()))
+    cred.create()
+    # add the credential to the list to destroy after the test is done
+    cleanup.append(cred)
+    assert_matches_server(cred)
 
 
-def test_update_username(credentials_to_cleanup):
+def test_update_username(shared_client, cleanup):
     """Create a host credential and then update its username.
 
     :id: 73ed2ed5-e623-48ec-9ea6-153017464d9c
@@ -60,22 +45,20 @@ def test_update_username(credentials_to_cleanup):
         3) Confirm host credential has been updated.
     :expectedresults: The host credential is updated.
     """
-    client = api.QCSClient()
-    cred = HostCredential(password=str(uuid4()))
-    cred._id = client.create_credential(cred.payload()).json()['id']
+    cred = HostCredential(shared_client, password=str(uuid4()))
+    cred.create()
     # add the id to the list to destroy after the test is done
-    credentials_to_cleanup.append(cred._id)
-
-    confirm_credential(cred)
+    cleanup.append(cred)
+    assert_matches_server(cred)
 
     # give the cred a new username
     cred.username = str(uuid4())
-    client.update_credential(cred._id, cred.payload())
-    confirm_credential(cred)
+    cred.update()
+    assert_matches_server(cred)
 
 
 @pytest.mark.skip
-def test_update_password_to_sshkeyfile(credentials_to_cleanup):
+def test_update_password_to_sshkeyfile(cleanup):
     """Create a host credential using password and switch it to use sshkey.
 
     :id: 6e557092-192b-4f75-babc-abc5774fe965
@@ -92,7 +75,7 @@ def test_update_password_to_sshkeyfile(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_update_sshkey_to_password(credentials_to_cleanup):
+def test_update_sshkey_to_password(cleanup):
     """Create a host credential using password and switch it to use sshkey.
 
     :id: d24a54b5-3d8c-44e4-a0ae-61584a15b127
@@ -110,7 +93,7 @@ def test_update_sshkey_to_password(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_negative_update_to_invalid(credentials_to_cleanup):
+def test_negative_update_to_invalid(cleanup):
     """Attempt to update valid credential with invalid data.
 
     :id: c34ea917-ee36-4b93-8907-24a5f87bbed3
@@ -130,7 +113,7 @@ def test_negative_update_to_invalid(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_create_with_sshkey(credentials_to_cleanup):
+def test_create_with_sshkey(cleanup):
     """Create a host credential with username and sshkey.
 
     :id: ab6fd574-2e9f-46b8-847d-17b23c19fdd2
@@ -143,7 +126,7 @@ def test_create_with_sshkey(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_negative_create_key_and_pass(credentials_to_cleanup):
+def test_negative_create_key_and_pass(cleanup):
     """Attempt to create a host credential with sshkey and password.
 
     The request should be met with a 4XX response.
@@ -158,7 +141,7 @@ def test_negative_create_key_and_pass(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_negative_create_no_name(credentials_to_cleanup):
+def test_negative_create_no_name(cleanup):
     """Attempt to create a host credential missing a name.
 
     The request should be met with a 4XX response.
@@ -173,7 +156,7 @@ def test_negative_create_no_name(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_negative_create_no_key_or_pass(credentials_to_cleanup):
+def test_negative_create_no_key_or_pass(cleanup):
     """Attempt to create a host credential missing both password and sshkey.
 
     The request should be met with a 4XX response.
@@ -188,7 +171,7 @@ def test_negative_create_no_key_or_pass(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_read_all(credentials_to_cleanup):
+def test_read_all(cleanup):
     """After created, retrieve all host credentials with GET to api.
 
     :id: fa05b857-5b01-4388-9226-8dfb5639c815
@@ -206,7 +189,7 @@ def test_read_all(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_read_indv(credentials_to_cleanup):
+def test_read_indv(cleanup):
     """After created, retrieve each host credential with GET to api.
 
     :id: 4d381119-2dc3-42b6-9b41-e27307d61fcc
@@ -224,7 +207,7 @@ def test_read_indv(credentials_to_cleanup):
 
 
 @pytest.mark.skip
-def test_delete(credentials_to_cleanup):
+def test_delete(cleanup):
     """After creating several host credentials, delete one.
 
     :id: e71b521c-59f9-483a-9063-1fbd5087c667

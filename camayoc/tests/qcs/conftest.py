@@ -5,24 +5,26 @@ from camayoc import api
 
 
 @pytest.fixture
-def credentials_to_cleanup():
+def cleanup():
     """Fixture that cleans up any created host credentials."""
-    credential_ids = []
+    trash = []
 
-    yield credential_ids
+    yield trash
 
-    client = api.QCSClient()
-    for _id in credential_ids:
-        client.delete_credential(_id)
+    for obj in trash:
+        obj.delete()
 
 
-@pytest.fixture
-def profiles_to_cleanup():
-    """Fixture that cleans up any created network profiles."""
-    profile_ids = []
+@pytest.fixture(scope='module')
+def shared_client():
+    """Yeild a single instance of api.Client() to many tests as fixture.
 
-    yield profile_ids
+    yeilds an api.Client() instance with the standard return code handler.
 
-    client = api.QCSClient()
-    for _id in profile_ids:
-        client.delete_profile(_id)
+    .. warning::
+       If you intend to change the return code handler, it would be best not to
+       use the shared client to avoid possible problems when running tests in
+       parallel.
+    """
+    client = api.Client()
+    yield client
