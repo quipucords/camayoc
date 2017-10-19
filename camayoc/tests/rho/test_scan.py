@@ -19,9 +19,9 @@ import pytest
 
 from camayoc import utils
 from camayoc.constants import (
+    RHO_ALL_FACTS,
     RHO_CONNECTION_FACTS,
     RHO_DEFAULT_FACTS,
-    RHO_JBOSS_ALL_FACTS,
     RHO_JBOSS_FACTS,
     RHO_RHEL_FACTS,
 )
@@ -108,7 +108,7 @@ def test_scan_with_facts(isolated_filesystem, facts):
     assert rho_profile_add.exitstatus == 0
 
     if facts == 'all':
-        expected_facts = RHO_DEFAULT_FACTS + RHO_JBOSS_ALL_FACTS
+        expected_facts = RHO_ALL_FACTS
     if facts == 'default':
         expected_facts = RHO_DEFAULT_FACTS
     elif facts == 'jboss':

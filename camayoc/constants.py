@@ -88,6 +88,9 @@ RHO_RHEL_FACTS = (
 RHO_DEFAULT_FACTS = RHO_CONNECTION_FACTS + RHO_JBOSS_FACTS + RHO_RHEL_FACTS
 """List of RHO's default facts."""
 
+RHO_ALL_FACTS = RHO_DEFAULT_FACTS + RHO_JBOSS_ALL_FACTS
+"""List of all rho facts."""
+
 MASKED_PASSWORD_OUTPUT = '\*{8}'
 """Regex that matches password on outputs."""
 

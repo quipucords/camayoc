@@ -20,8 +20,9 @@ import pytest
 
 from camayoc import utils
 from camayoc.constants import (
+    RHO_ALL_FACTS,
     RHO_CONNECTION_FACTS,
-    RHO_DEFAULT_FACTS,
+    RHO_JBOSS_ALL_FACTS,
     RHO_JBOSS_FACTS,
 )
 
@@ -42,7 +43,7 @@ def test_fact_list():
     rho_fact_list.close()
     assert rho_fact_list.exitstatus == 0
     facts = [line.split(' - ')[0].strip() for line in output.splitlines()]
-    assert sorted(facts) == sorted(RHO_DEFAULT_FACTS)
+    assert sorted(facts) == sorted(RHO_ALL_FACTS)
 
 
 def test_fact_list_filter():
@@ -54,7 +55,10 @@ def test_fact_list_filter():
     :steps: Run ``rho fact list --filter <filter>``
     :expectedresults: Only the facts that match the filter are printed.
     """
-    facts = random.choice((RHO_CONNECTION_FACTS, RHO_JBOSS_FACTS))
+    facts = random.choice((
+        RHO_CONNECTION_FACTS,
+        RHO_JBOSS_FACTS + RHO_JBOSS_ALL_FACTS,
+    ))
     fact_filter = facts[0].split('.')[0]
     rho_fact_list = pexpect.spawn(
         'rho fact list --filter {}'.format(fact_filter))
