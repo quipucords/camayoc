@@ -12,6 +12,7 @@
 import json
 import random
 from io import BytesIO
+from pathlib import Path
 
 import pexpect
 
@@ -126,11 +127,12 @@ def test_add_with_username_sshkeyfile(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     rho_auth_show = pexpect.spawn(
@@ -146,7 +148,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem):
         '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, username)
+        .format(name, sshkeyfile.resolve(), username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -166,12 +168,13 @@ def test_add_with_username_sshkeyfile_sudo_password(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add(
         {
             'name': name,
             'username': username,
-            'sshkeyfile': sshkeyfile,
+            'sshkeyfile': sshkeyfile.name,
             'sudo-password': None,
         },
         [
@@ -192,7 +195,7 @@ def test_add_with_username_sshkeyfile_sudo_password(isolated_filesystem):
         '    "sudo_password": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, MASKED_PASSWORD_OUTPUT, username)
+        .format(name, sshkeyfile.resolve(), MASKED_PASSWORD_OUTPUT, username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -211,11 +214,12 @@ def test_edit_username(isolated_filesystem):
     name = utils.uuid4()
     username = utils.uuid4()
     new_username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     rho_auth_show = pexpect.spawn(
@@ -231,7 +235,7 @@ def test_edit_username(isolated_filesystem):
         '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, username)
+        .format(name, sshkeyfile.resolve(), username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -259,7 +263,7 @@ def test_edit_username(isolated_filesystem):
         '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, new_username)
+        .format(name, sshkeyfile.resolve(), new_username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -276,11 +280,12 @@ def test_edit_username_negative(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     name = utils.uuid4()
@@ -380,11 +385,12 @@ def test_edit_password_negative(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     name = utils.uuid4()
@@ -408,12 +414,14 @@ def test_edit_sshkeyfile(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
-    new_sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
+    new_sshkeyfile = Path(utils.uuid4())
+    new_sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     rho_auth_show = pexpect.spawn(
@@ -429,14 +437,15 @@ def test_edit_sshkeyfile(isolated_filesystem):
         '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, username)
+        .format(name, sshkeyfile.resolve(), username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
     assert rho_auth_show.exitstatus == 0
 
     rho_auth_edit = pexpect.spawn(
-        'rho auth edit --name={} --sshkeyfile {}'.format(name, new_sshkeyfile)
+        'rho auth edit --name={} --sshkeyfile {}'
+        .format(name, new_sshkeyfile.name)
     )
     input_vault_password(rho_auth_edit)
     assert rho_auth_edit.expect('Auth \'{}\' updated'.format(name)) == 0
@@ -457,7 +466,7 @@ def test_edit_sshkeyfile(isolated_filesystem):
         '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, new_sshkeyfile, username)
+        .format(name, new_sshkeyfile.resolve(), username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -475,17 +484,19 @@ def test_edit_sshkeyfile_negative(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     name = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     rho_auth_edit = pexpect.spawn(
-        'rho auth edit --name={} --sshkeyfile {}'.format(name, sshkeyfile)
+        'rho auth edit --name={} --sshkeyfile {}'.format(name, sshkeyfile.name)
     )
     input_vault_password(rho_auth_edit)
     rho_auth_edit.logfile = BytesIO()
@@ -505,14 +516,15 @@ def test_edit_sudo_password(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     sudo_password = utils.uuid4()
     new_sudo_password = utils.uuid4()
     auth_add(
         {
             'name': name,
             'username': username,
-            'sshkeyfile': sshkeyfile,
+            'sshkeyfile': sshkeyfile.name,
             'sudo-password': None,
         },
         [
@@ -533,7 +545,7 @@ def test_edit_sudo_password(isolated_filesystem):
         '    "sudo_password": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, MASKED_PASSWORD_OUTPUT, username)
+        .format(name, sshkeyfile.resolve(), MASKED_PASSWORD_OUTPUT, username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -564,7 +576,7 @@ def test_edit_sudo_password(isolated_filesystem):
         '    "sudo_password": "{}",\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, MASKED_PASSWORD_OUTPUT, username)
+        .format(name, sshkeyfile.resolve(), MASKED_PASSWORD_OUTPUT, username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -581,11 +593,12 @@ def test_edit_sudo_password_negative(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     name = utils.uuid4()
@@ -610,9 +623,10 @@ def test_edit_no_credentials(isolated_filesystem):
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     rho_auth_edit = pexpect.spawn(
-        'rho auth edit --name={} --sshkeyfile {}'.format(name, sshkeyfile)
+        'rho auth edit --name={} --sshkeyfile {}'.format(name, sshkeyfile.name)
     )
     input_vault_password(rho_auth_edit)
     rho_auth_edit.logfile = BytesIO()
@@ -633,11 +647,12 @@ def test_clear(isolated_filesystem):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
     auth_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile,
+        'sshkeyfile': sshkeyfile.name,
     })
 
     rho_auth_show = pexpect.spawn(
@@ -653,7 +668,7 @@ def test_clear(isolated_filesystem):
         '    "sudo_password": null,\r\n'
         '    "username": "{}"\r\n'
         '}}\r\n'
-        .format(name, sshkeyfile, username)
+        .format(name, sshkeyfile.resolve(), username)
     ) == 0
     assert rho_auth_show.expect(pexpect.EOF) == 0
     rho_auth_show.close()
@@ -717,11 +732,12 @@ def test_clear_all(isolated_filesystem):
     for _ in range(random.randint(2, 3)):
         name = utils.uuid4()
         username = utils.uuid4()
-        sshkeyfile = utils.uuid4()
+        sshkeyfile = Path(utils.uuid4())
+        sshkeyfile.touch()
         auth = {
             'name': name,
             'password': None,
-            'ssh_key_file': sshkeyfile,
+            'ssh_key_file': str(sshkeyfile.resolve()),
             'sudo_password': None,
             'username': username,
         }
@@ -729,7 +745,7 @@ def test_clear_all(isolated_filesystem):
         auth_add({
             'name': name,
             'username': username,
-            'sshkeyfile': sshkeyfile,
+            'sshkeyfile': sshkeyfile.name,
         })
 
     rho_auth_list = pexpect.spawn('rho auth list')

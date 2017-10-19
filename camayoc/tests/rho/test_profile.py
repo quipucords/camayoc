@@ -18,6 +18,7 @@ import pexpect
 import pytest
 
 from camayoc import utils
+from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.tests.rho.utils import auth_add, input_vault_password
 
 
@@ -38,8 +39,9 @@ def test_add_with_auth_hosts(isolated_filesystem, hosts):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -98,8 +100,9 @@ def test_add_with_auth_hosts_file(isolated_filesystem, hosts):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     with open('hosts_file', 'w') as handler:
@@ -161,8 +164,9 @@ def test_add_with_sshport(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -219,8 +223,9 @@ def test_add_with_sshport_negative(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -254,8 +259,9 @@ def test_edit_auth(isolated_filesystem):
             {
                 'name': auth_name,
                 'username': utils.uuid4(),
-                'sshkeyfile': utils.uuid4(),
+                'password': None,
             },
+            [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
         )
 
     rho_profile_add = pexpect.spawn(
@@ -343,8 +349,9 @@ def test_edit_auth_negative(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -386,8 +393,9 @@ def test_edit_hosts(isolated_filesystem, new_hosts):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -477,8 +485,9 @@ def test_edit_hosts_file(isolated_filesystem, new_hosts):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -572,8 +581,9 @@ def test_edit_hosts_negative(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -617,8 +627,9 @@ def test_edit_sshport(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -710,8 +721,9 @@ def test_edit_sshport_negative(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -753,8 +765,9 @@ def test_clear(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
@@ -897,8 +910,9 @@ def test_clear_all(isolated_filesystem):
         {
             'name': auth_name,
             'username': utils.uuid4(),
-            'sshkeyfile': utils.uuid4(),
+            'password': None,
         },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
     profiles = []
     for _ in range(random.randint(2, 3)):
