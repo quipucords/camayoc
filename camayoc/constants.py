@@ -10,22 +10,32 @@ RHO_CONNECTION_FACTS = (
 """List of RHO's connection facts."""
 
 RHO_JBOSS_FACTS = (
-    'jboss.installed-versions',
-    'jboss.deploy-dates',
-    'jboss.running-versions',
-    'jboss.brms.kie-api-ver',
+    'jboss.eap.common-directories',
+    'jboss.eap.jboss-user',
+    'jboss.eap.packages',
+    'jboss.eap.processes',
+    'jboss.eap.running-versions',
+)
+"""List of RHO's jboss facts."""
+
+RHO_JBOSS_ALL_FACTS = (
     'jboss.brms.drools-core-ver',
+    'jboss.brms.kie-api-ver',
     'jboss.brms.kie-war-ver',
+    'jboss.eap.deploy-dates',
+    'jboss.eap.installed-versions',
     'jboss.fuse.activemq-ver',
     'jboss.fuse.camel-ver',
     'jboss.fuse.cxf-ver',
 )
-"""List of RHO's jboss facts."""
+"""List of rho's additional jboss facts (for --facts all)."""
 
 RHO_RHEL_FACTS = (
     'cpu.bogomips',
+    'cpu.core_count',
     'cpu.count',
     'cpu.cpu_family',
+    'cpu.hyperthreading',
     'cpu.model_name',
     'cpu.model_ver',
     'cpu.socket_count',

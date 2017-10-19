@@ -21,6 +21,7 @@ from camayoc import utils
 from camayoc.constants import (
     RHO_CONNECTION_FACTS,
     RHO_DEFAULT_FACTS,
+    RHO_JBOSS_ALL_FACTS,
     RHO_JBOSS_FACTS,
     RHO_RHEL_FACTS,
 )
@@ -71,7 +72,7 @@ def test_scan(isolated_filesystem):
     assert os.path.isfile(reportfile), logfile
     with open(reportfile) as f:
         fieldnames = csv.DictReader(f).fieldnames
-    assert sorted(fieldnames) == sorted(RHO_CONNECTION_FACTS + RHO_RHEL_FACTS)
+    assert sorted(fieldnames) == sorted(RHO_DEFAULT_FACTS)
 
 
 @pytest.mark.parametrize('facts', ('all', 'default', 'jboss', 'rhel', 'file'))
@@ -106,7 +107,9 @@ def test_scan_with_facts(isolated_filesystem, facts):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    if facts == 'all' or facts == 'default':
+    if facts == 'all':
+        expected_facts = RHO_DEFAULT_FACTS + RHO_JBOSS_ALL_FACTS
+    if facts == 'default':
         expected_facts = RHO_DEFAULT_FACTS
     elif facts == 'jboss':
         expected_facts = RHO_JBOSS_FACTS + RHO_CONNECTION_FACTS
