@@ -5,7 +5,7 @@
 :casecomponent: api
 :caseimportance: high
 :caselevel: integration
-:requirement: sonar
+:requirement: Sonar
 :testtype: functional
 :upstream: yes
 """
