@@ -10,11 +10,11 @@ RHO_CONNECTION_FACTS = (
 """List of RHO's connection facts."""
 
 RHO_JBOSS_FACTS = (
-    'jboss.eap.common-directories',
+    'jboss.eap.common-files',
     'jboss.eap.jboss-user',
     'jboss.eap.packages',
     'jboss.eap.processes',
-    'jboss.eap.running-versions',
+    'jboss.eap.running-paths',
 )
 """List of RHO's jboss facts."""
 
@@ -55,6 +55,11 @@ RHO_RHEL_FACTS = (
     'etc_release.version',
     'instnum.instnum',
     'redhat-packages.certs',
+    'redhat-packages.gpg.is_redhat',
+    'redhat-packages.gpg.last_built',
+    'redhat-packages.gpg.last_installed',
+    'redhat-packages.gpg.num_installed_packages',
+    'redhat-packages.gpg.num_rh_packages',
     'redhat-packages.is_redhat',
     'redhat-packages.last_built',
     'redhat-packages.last_installed',
