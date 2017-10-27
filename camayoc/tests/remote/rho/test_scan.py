@@ -35,7 +35,10 @@ def profiles():
 
 
 # The test will execute once per profile.
-@pytest.mark.parametrize('profile', profiles())
+@pytest.mark.parametrize(
+    'profile', profiles(),
+    ids=[p['name'] for p in profiles()]
+    )
 def test_scan(isolated_filesystem, profile):
     """Scan the machines listed in profile.
 
