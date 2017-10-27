@@ -18,11 +18,12 @@ import csv
 import os
 import pexpect
 import pytest
+import unittest
 from io import BytesIO
 
 from camayoc import config
-from camayoc.tests.rho.utils import auth_add, input_vault_password
 from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.tests.rho.utils import auth_add, input_vault_password
 
 
 def profiles():
@@ -33,7 +34,6 @@ def profiles():
         profs = []
     return profs
 
-
 # The test will execute once per profile.
 @pytest.mark.parametrize(
     'profile', profiles(),
@@ -42,16 +42,12 @@ def profiles():
 def test_scan(isolated_filesystem, profile):
     """Scan the machines listed in profile.
 
-    Then test facts for each host in profile.
-
     :id: 6ee18084-86db-45ea-8fdd-59fed5639170
-    :description: Scan a machine and test collected facts.
+    :description: Scan a profile
     :steps:
             1) Run ``rho scan --profile <profile> --reportfile <reportfile>``
-            2) Validate collected facts against known facts in config file
     :expectedresults:
-        A scan is performed and a report with valid facts are
-        generated.
+        A scan is performed and a report is generated
     """
     cfg = config.get_config()
 
@@ -90,42 +86,7 @@ def test_scan(isolated_filesystem, profile):
     assert rho_scan.exitstatus == 0, logfile
     assert os.path.isfile(reportfile)
 
-    # we will collect errors in scanned facts and report at end of test on the
-    # results if collected facts do not match expected values.
-    scan_errors = []
-    with open(reportfile) as csvfile:
-        scan_results = csv.DictReader(csvfile)
-        # each row corresponds to a scanned host
-        for row in scan_results:
-            known_facts = {}
-            for host in cfg['rho']['hosts']:
-                # find the facts for the scanned host we are inspecting
-                if host['ip'] == row.get('connection.host'):
-                    known_facts = host['facts']
-                    break
-            missed_facts = known_facts.keys() - row.keys()
-            for fact in missed_facts:
-                msg = ('Expected {} fact in scan of {} host,'
-                       ' but it is missing'.format(fact, host['ip']))
-                scan_errors.append(msg)
-            # now we will test all facts that are indeed present
-            for fact in (known_facts.keys() - missed_facts):
-                if fact == 'cpu.bogomips':
-                    # this is a transitory measurement that is likely to
-                    # change from scan to scan
-                    continue
-                try:
-                    assert (str(known_facts[fact]) == str(row.get(fact)))
-                except AssertionError:
-                    msg = ('Test failed on host {} in profile {}.'
-                           ' \n\tScan found {} = {} instead of {}.'.format(
-                            host['ip'],
-                            profile['name'],
-                            fact,
-                            row.get(fact),
-                            known_facts[fact],
-                           ))
-                    scan_errors.append(msg)
-    if scan_errors:
-        msg = '\n'.join(e for e in scan_errors)
-        raise AssertionError(msg)
+@pytest.mark.facts_needed
+@pytest.mark.parametrize('fact', profiles())
+def test_facts(fact):
+    assert fact['expected'] == fact['actual']
