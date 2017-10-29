@@ -11,5 +11,6 @@ Submodules
 
 .. toctree::
 
+   camayoc.tests.remote.rho.conftest
    camayoc.tests.remote.rho.test_scan
 

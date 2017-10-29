@@ -92,6 +92,177 @@ RHO_RHEL_FACTS = (
 )
 """List of RHO's RHEL facts."""
 
+RHO_PRIVILEGED_FACTS = {
+    'date.yum_history': {
+        'denials': [
+            'sudo: a password is required',
+            'error'
+        ]
+    },
+    'date.anaconda_log': {
+        'denials': [
+            'error',
+        ]
+    },
+    'dmi.bios-vendor': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (dmidecode not found)',
+            'error',
+        ]
+    },
+    'dmi.bios-version': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (dmidecode not found)',
+            'error',
+        ]
+    },
+    'dmi.processor-family': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (dmidecode not found)',
+            'error',
+        ]
+    },
+    'dmi.system-manufacturer': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (dmidecode not found)',
+            'error',
+        ]
+    },
+    'jboss.brms.kie-war-ver': {
+        'denials': [
+            '(jboss.brms.kie-war-ver not found)',
+        ]
+    },
+    'jboss.brms.kie-api-ver': {
+        'denials': [
+            '(jboss.brms.kie-api-ver not found)',
+        ]
+    },
+    'jboss.brms.drools-core-ver': {
+        'denials': [
+            '(jboss.brms.drools-core-ver not found)',
+        ]
+    },
+    'jboss.fuse.cxf-ver': {
+        'denials': [
+            '(jboss.fuse.cxf-ver not found)',
+        ]
+    },
+    'jboss.fuse.camel-ver': {
+        'denials': [
+            '(jboss.fuse.camel-ver not found)',
+        ]
+    },
+    'jboss.fuse.activemq-ver': {
+        'denials': [
+            '(jboss.fuse.activemq-ver not found)',
+        ]
+    },
+    'subman.consumed': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'subman.cpu.core(s)_per_socket': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'subman.cpu.cpu(s)': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'subman.cpu.cpu_socket(s)': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'subman.virt.host_type': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'subman.virt.is_guest': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'subman.virt.uuid': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (subscription-manager not found)',
+            'error',
+        ]
+    },
+    'virt.type': {
+        'denials': [
+            'sudo: a password is required',
+            'error',
+            'N/A (dmidecode not found)',
+            '',
+        ]
+    },
+    'virt.virt': {
+        'denials': [
+            'sudo: a password is required',
+            'error',
+            'N/A (dmidecode not found)',
+            '',
+        ]
+    },
+    'virt-what.type': {
+        'denials': [
+            'sudo: a password is required',
+            'error',
+            'N/A (virt-what not found)',
+            '',
+        ]
+    },
+    'virt.num_guests': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (virsh not found)',
+            'error',
+            '',
+        ]
+    },
+    'virt.num_running_guests': {
+        'denials': [
+            'sudo: a password is required',
+            'N/A (virsh not found)',
+            'error',
+            '',
+        ]
+    },
+}
+"""Dictionary of facts that change based on privilege level.
+
+When testing facts, we can differentiate between profiles that use credentials
+with root/sudo privilege and those that do not. Those with root/sudo privilege
+should obtain the fact as expected in the config file.
+
+If the user is not marked as privileged, then instead of the value that the
+root user should find, under privileged users may encounter any of the values
+in the list of 'denials' and these will be considered valid scan values.
+"""
+
 RHO_DEFAULT_FACTS = RHO_CONNECTION_FACTS + RHO_JBOSS_FACTS + RHO_RHEL_FACTS
 """List of RHO's default facts."""
 
