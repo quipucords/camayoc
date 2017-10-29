@@ -12,8 +12,8 @@ present in the profile csv file.
 .. note::
 
     This tool reads in your camayoc config file in $XDG_CONFIG_HOME and outputs
-    it to the $CWD with new data. It discards old hosts data but uses auth,
-    profile, and any other data provided in your $XDG_CONFIG_HOME config file
+    it to the $CWD with new data. It discards old hosts and profile data but
+    uses auth data and other data provided in your $XDG_CONFIG_HOME config file
     (if it exists). This does not modify your $XDG_CONFIG_HOME config file
     directly, that is left to you. Always backup your old config file before
     you replace it with the generated one!
@@ -89,16 +89,32 @@ def gen_hosts(profilepath, reportpath):
                 'facts': {},
                 'profile': row.get('profile', uuid.uuid4()),
                 'auth': row.get('auth', ''),
+                'privileged': row.get('privileged')
             })
     with open(reportpath) as csvfile:
         scan_results = csv.DictReader(csvfile)
         for row in scan_results:
             for host in hosts:
                 if host['ip'] == row.get('connection.host'):
-                    host['facts'] = {
-                        k: v for k, v in row.items() if 'date' not in k
-                    }
+                    for k, v in row.items():
+                        if 'date' not in k:
+                            if k in [
+                                'cpu.bogomips',
+                                    'dmi.bios-version'] and is_float(v):
+                                host['facts'][k] = '%.2f' % float(v)
+                            else:
+                                host['facts'][k] = v
+
     return hosts
+
+
+def is_float(s):
+    """Test to see if the string can be converted to float."""
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 
 def gen_profiles(cfg, hosts):
@@ -126,8 +142,8 @@ def gen_profiles(cfg, hosts):
     """
     profiles = cfg.get('profiles', [])
     for host in hosts:
-        profile_found = False
         # first append hosts to any existing profiles
+        profile_found = False
         for profile in profiles:
             if host.get('profile', '') == \
                     profile.get('name', uuid.uuid4()):
@@ -143,7 +159,9 @@ def gen_profiles(cfg, hosts):
                 'name': host['profile'],
                 'hosts': [host['ip']],
                 'auths': [host['auth']],
+                'privileged': host.get('privileged')
             })
+
     return profiles
 
 

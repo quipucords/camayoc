@@ -14,15 +14,15 @@ failed facts will be reported with associated host.
 :upstream: yes
 """
 
-import csv
 import os
+from io import BytesIO
+
 import pexpect
 import pytest
-import unittest
-from io import BytesIO
 
 from camayoc import config
 from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.constants import RHO_PRIVILEGED_FACTS
 from camayoc.tests.rho.utils import auth_add, input_vault_password
 
 
@@ -34,18 +34,21 @@ def profiles():
         profs = []
     return profs
 
+
 # The test will execute once per profile.
 @pytest.mark.parametrize(
     'profile', profiles(),
     ids=[p['name'] for p in profiles()]
-    )
+)
 def test_scan(isolated_filesystem, profile):
     """Scan the machines listed in profile.
 
     :id: 6ee18084-86db-45ea-8fdd-59fed5639170
     :description: Scan a profile
     :steps:
-            1) Run ``rho scan --profile <profile> --reportfile <reportfile>``
+        1) Run ``rho scan --profile <profile> --reportfile <reportfile>``
+        2) Check the exit code of the scan command
+        3) Confirm that a report file is created
     :expectedresults:
         A scan is performed and a report is generated
     """
@@ -86,7 +89,24 @@ def test_scan(isolated_filesystem, profile):
     assert rho_scan.exitstatus == 0, logfile
     assert os.path.isfile(reportfile)
 
+
 @pytest.mark.facts_needed
 @pytest.mark.parametrize('fact', profiles())
 def test_facts(fact):
-    assert fact['expected'] == fact['actual']
+    """Test each fact from the scan reports.
+
+    :id: d9eb29bd-1b61-421a-b680-f494e868b11e
+    :description: Test the facts from a scan report
+    :steps: For each fact collected, assert it is as expected
+    :expectedresults:
+        The fact will contain expected data based on privilege level of
+        credentials used to acquire it.
+    """
+    if fact['fact'] not in RHO_PRIVILEGED_FACTS:
+        assert fact['expected'] == fact['actual']
+
+    if fact['privileged'] and fact['fact'] in RHO_PRIVILEGED_FACTS:
+        assert fact['expected'] == fact['actual']
+
+    if fact['fact'] in RHO_PRIVILEGED_FACTS and not fact['privileged']:
+        assert fact['actual'] in RHO_PRIVILEGED_FACTS[fact['fact']]['denials']
