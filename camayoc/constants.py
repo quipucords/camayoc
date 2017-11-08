@@ -11,7 +11,9 @@ RHO_CONNECTION_FACTS = (
 
 RHO_JBOSS_FACTS = (
     'jboss.eap.common-files',
+    'jboss.eap.init-files',
     'jboss.eap.jboss-user',
+    'jboss.eap.locate-jboss-modules-jar',
     'jboss.eap.packages',
     'jboss.eap.processes',
     'jboss.eap.running-paths',
@@ -160,6 +162,18 @@ RHO_PRIVILEGED_FACTS = {
     'jboss.fuse.activemq-ver': {
         'denials': [
             '(jboss.fuse.activemq-ver not found)',
+        ]
+    },
+    'jboss.eap.init-files': {
+        'denials': [
+            'Error: could not get output from "chkconfig"',
+            'Error: all init system checks failed.',
+        ]
+    },
+    'jboss.eap.locate-jboss-modules-jar': {
+        'denials': [
+            "Error code 127 running 'locate jboss-modules.jar': bash: locate: command not found ",  # noqa: E501
+            'jboss-modules.jar not found',
         ]
     },
     'subman.consumed': {
