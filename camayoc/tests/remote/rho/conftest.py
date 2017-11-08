@@ -101,15 +101,42 @@ def testable_facts(profiles_to_scan):
                 assert os.path.isfile(reportfile)
             except (AssertionError, pexpect.exceptions.EOF):
                 # The scan failed for some reason.
-                # This is a fixture for tests that ensure scanned facts in a
-                # successful scan are correct, not that we can scan, so we
-                # will carry on.
-                pass
+                # We insert a fact that records that the scan failed
+                # so we will see a test failure for this profile scan
+                facts_to_test.append(
+                    {
+                        'fact': 'scan-performed',
+                        'expected': True,
+                        'actual': False,
+                        'host': 'N/A',
+                        'host-ip': 'N/A',
+                        'profile': profile['name'],
+                        'auth': profile['auths'],
+                        'scandir': path,
+                        'privileged': profile.get('privileged')
+                    }
+                )
 
             scan_results = []
             if os.path.isfile(reportfile):
                 # open the report and collect the facts of interest, injecting
                 # other useful information while we are at it.
+                # We insert a fact that records that the scan succeeded
+                # in producing a report so we will see a test success for this
+                # profile scan
+                facts_to_test.append(
+                    {
+                        'fact': 'scan-performed',
+                        'expected': True,
+                        'actual': True,
+                        'host': 'N/A',
+                        'host-ip': 'N/A',
+                        'profile': profile['name'],
+                        'auth': profile['auths'],
+                        'scandir': path,
+                        'privileged': profile.get('privileged')
+                    }
+                )
                 with open(reportfile) as csvfile:
                     reader = csv.DictReader(csvfile)
                     for row in reader:
