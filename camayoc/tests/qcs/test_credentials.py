@@ -9,12 +9,12 @@
 :testtype: functional
 :upstream: yes
 """
+import random
+from pathlib import Path
 
-import pytest
-
-from uuid import uuid4
-
+from camayoc import api
 from camayoc.qcs_models import HostCredential
+from camayoc.utils import uuid4
 from camayoc.tests.qcs.utils import assert_matches_server
 
 
@@ -26,7 +26,7 @@ def test_create_with_password(shared_client, cleanup):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new host credential entry is created with the data.
     """
-    cred = HostCredential(client=shared_client, password=str(uuid4()))
+    cred = HostCredential(client=shared_client, password=uuid4())
     cred.create()
     # add the credential to the list to destroy after the test is done
     cleanup.append(cred)
@@ -45,20 +45,20 @@ def test_update_username(shared_client, cleanup):
         3) Confirm host credential has been updated.
     :expectedresults: The host credential is updated.
     """
-    cred = HostCredential(shared_client, password=str(uuid4()))
+    cred = HostCredential(shared_client, password=uuid4())
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
     assert_matches_server(cred)
 
     # give the cred a new username
-    cred.username = str(uuid4())
+    cred.username = uuid4()
     cred.update()
     assert_matches_server(cred)
 
 
-@pytest.mark.skip
-def test_update_password_to_sshkeyfile(cleanup):
+def test_update_password_to_sshkeyfile(
+        shared_client, cleanup, isolated_filesystem):
     """Create a host credential using password and switch it to use sshkey.
 
     :id: 6e557092-192b-4f75-babc-abc5774fe965
@@ -69,13 +69,24 @@ def test_update_password_to_sshkeyfile(cleanup):
         2) Update the host credential deleting password and adding sshkey.
         3) Confirm host credential has been updated.
     :expectedresults: The host credential is updated.
-    :caseautomation: notautomated
     """
-    pass
+    cred = HostCredential(shared_client, password=uuid4())
+    cred.create()
+    # add the id to the list to destroy after the test is done
+    cleanup.append(cred)
+    assert_matches_server(cred)
+
+    sshkeyfile = Path(uuid4())
+    sshkeyfile.touch()
+
+    cred.ssh_keyfile = str(sshkeyfile.resolve())
+    cred.password = None
+    cred.update()
+    assert_matches_server(cred)
 
 
-@pytest.mark.skip
-def test_update_sshkey_to_password(cleanup):
+def test_update_sshkey_to_password(
+        shared_client, cleanup, isolated_filesystem):
     """Create a host credential using password and switch it to use sshkey.
 
     :id: d24a54b5-3d8c-44e4-a0ae-61584a15b127
@@ -87,13 +98,26 @@ def test_update_sshkey_to_password(cleanup):
            password.
         3) Confirm host credential has been updated.
     :expectedresults: The host credential is updated.
-    :caseautomation: notautomated
     """
-    pass
+    ssh_keyfile = Path(uuid4())
+    ssh_keyfile.touch()
+
+    cred = HostCredential(
+        shared_client,
+        ssh_keyfile=str(ssh_keyfile.resolve()),
+    )
+    cred.create()
+    # add the id to the list to destroy after the test is done
+    cleanup.append(cred)
+    assert_matches_server(cred)
+
+    cred.password = uuid4()
+    cred.ssh_keyfile = None
+    cred.update()
+    assert_matches_server(cred)
 
 
-@pytest.mark.skip
-def test_negative_update_to_invalid(cleanup):
+def test_negative_update_to_invalid(shared_client, cleanup):
     """Attempt to update valid credential with invalid data.
 
     :id: c34ea917-ee36-4b93-8907-24a5f87bbed3
@@ -107,25 +131,67 @@ def test_negative_update_to_invalid(cleanup):
             c) missing both password and sshkey
     :expectedresults: Error codes are returned and the host credentials are
         not updated.
-    :caseautomation: notautomated
     """
-    pass
+    ssh_keyfile = Path(uuid4())
+    ssh_keyfile.touch()
+
+    cred = HostCredential(
+        shared_client,
+        ssh_keyfile=str(ssh_keyfile.resolve()),
+    )
+    cred.create()
+    # add the id to the list to destroy after the test is done
+    cleanup.append(cred)
+    assert_matches_server(cred)
+
+    cred.client = api.Client(api.echo_handler)
+
+    # Try to update with username equals null
+    old = cred.username
+    cred.username = None
+    response = cred.update()
+    assert response.status_code == 400
+    cred.username = old
+    assert_matches_server(cred)
+
+    # Try to update with both sshkeyfile and password
+    cred.password = uuid4()
+    response = cred.update()
+    assert response.status_code == 400
+    cred.password = None
+    assert_matches_server(cred)
+
+    # Try to update with both sshkeyfile and password missing
+    old = cred.ssh_keyfile
+    cred.ssh_keyfile = None
+    response = cred.update()
+    assert response.status_code == 400
+    cred.ssh_keyfile = old
+    assert_matches_server(cred)
 
 
-@pytest.mark.skip
-def test_create_with_sshkey(cleanup):
+def test_create_with_sshkey(
+        shared_client, cleanup, isolated_filesystem):
     """Create a host credential with username and sshkey.
 
     :id: ab6fd574-2e9f-46b8-847d-17b23c19fdd2
     :description: Create a host credential with a user name and sshkey
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new host credential entry is created with the data.
-    :caseautomation: notautomated
     """
-    pass
+    ssh_keyfile = Path(uuid4())
+    ssh_keyfile.touch()
+
+    cred = HostCredential(
+        shared_client,
+        ssh_keyfile=str(ssh_keyfile.resolve()),
+    )
+    cred.create()
+    # add the id to the list to destroy after the test is done
+    cleanup.append(cred)
+    assert_matches_server(cred)
 
 
-@pytest.mark.skip
 def test_negative_create_key_and_pass(cleanup):
     """Attempt to create a host credential with sshkey and password.
 
@@ -135,12 +201,21 @@ def test_negative_create_key_and_pass(cleanup):
     :description: Create a host credential with username, sshkey, and password.
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: Error is thrown and no new host credential is created.
-    :caseautomation: notautomated
     """
-    pass
+    ssh_keyfile = Path(uuid4())
+    ssh_keyfile.touch()
+
+    client = api.Client(api.echo_handler)
+    cred = HostCredential(
+        client,
+        ssh_keyfile=str(ssh_keyfile.resolve()),
+        password=uuid4(),
+    )
+    response = cred.create()
+    assert response.status_code == 400
+    assert cred._id is None
 
 
-@pytest.mark.skip
 def test_negative_create_no_name(cleanup):
     """Attempt to create a host credential missing a name.
 
@@ -150,12 +225,18 @@ def test_negative_create_no_name(cleanup):
     :description: Create a host credential missing a name.
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: Error is thrown and no new host credential is created.
-    :caseautomation: notautomated
     """
-    pass
+    client = api.Client(api.echo_handler)
+    cred = HostCredential(
+        client,
+        username='',
+        password=uuid4(),
+    )
+    response = cred.create()
+    assert response.status_code == 400
+    assert cred._id is None
 
 
-@pytest.mark.skip
 def test_negative_create_no_key_or_pass(cleanup):
     """Attempt to create a host credential missing both password and sshkey.
 
@@ -165,13 +246,15 @@ def test_negative_create_no_key_or_pass(cleanup):
     :description: Create a host credential missing both password and sshkey.
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: Error is thrown and no new host credential is created.
-    :caseautomation: notautomated
     """
-    pass
+    client = api.Client(api.echo_handler)
+    cred = HostCredential(client)
+    response = cred.create()
+    assert response.status_code == 400
+    assert cred._id is None
 
 
-@pytest.mark.skip
-def test_read_all(cleanup):
+def test_read_all(shared_client, cleanup):
     """After created, retrieve all host credentials with GET to api.
 
     :id: fa05b857-5b01-4388-9226-8dfb5639c815
@@ -183,13 +266,22 @@ def test_read_all(cleanup):
            created host credentials.
         3) Confirm that all hosts are in the list.
     :expectedresults: All hosts are present in data returned by API.
-    :caseautomation: notautomated
     """
-    pass
+    host_credentials = []
+    for _ in range(random.randint(2, 5)):
+        cred = HostCredential(client=shared_client, password=uuid4())
+        cred.create()
+        # add the credential to the list to destroy after the test is done
+        cleanup.append(cred)
+        assert_matches_server(cred)
+        host_credentials.append(cred)
+
+    remote_host_credentials = HostCredential().list().json()
+    for local, remote in zip(host_credentials, remote_host_credentials):
+        local.equivalent(remote)
 
 
-@pytest.mark.skip
-def test_read_indv(cleanup):
+def test_read_indv(shared_client, cleanup):
     """After created, retrieve each host credential with GET to api.
 
     :id: 4d381119-2dc3-42b6-9b41-e27307d61fcc
@@ -201,13 +293,22 @@ def test_read_indv(cleanup):
            specified.
         3) Confirm that each host is retrieved
     :expectedresults: All hosts are present in data returned by API.
-    :caseautomation: notautomated
     """
-    pass
+    host_credentials = []
+    for _ in range(random.randint(2, 5)):
+        cred = HostCredential(client=shared_client, password=uuid4())
+        cred.create()
+        # add the credential to the list to destroy after the test is done
+        cleanup.append(cred)
+        assert_matches_server(cred)
+        host_credentials.append(cred)
+
+    for host_credential in host_credentials:
+        remote = HostCredential(_id=host_credential._id).read().json()
+        host_credential.equivalent(remote)
 
 
-@pytest.mark.skip
-def test_delete(cleanup):
+def test_delete(shared_client, cleanup):
     """After creating several host credentials, delete one.
 
     :id: e71b521c-59f9-483a-9063-1fbd5087c667
@@ -221,6 +322,22 @@ def test_delete(cleanup):
         5) Repeat until all hosts are deleted.
     :expectedresults: All hosts are present in data returned by API except
         the deleted credential.
-    :caseautomation: notautomated
     """
-    pass
+    host_credentials = []
+    for _ in range(random.randint(2, 5)):
+        cred = HostCredential(client=shared_client, password=uuid4())
+        cred.create()
+        # add the credential to the list to destroy after the test is done
+        cleanup.append(cred)
+        assert_matches_server(cred)
+        host_credentials.append(cred)
+
+    while host_credentials:
+        selected = random.choice(host_credentials)
+        cleanup.remove(selected)
+        host_credentials.remove(selected)
+        selected.delete()
+
+        for host_credential in host_credentials:
+            remote = HostCredential(_id=host_credential._id).read().json()
+            host_credential.equivalent(remote)

@@ -84,7 +84,7 @@ class QCSObject(object):
         the data associated with this object's ``self._id``.
         """
         response = self.client.post(self.endpoint, self.payload(), **kwargs)
-        self._id = response.json()['id']
+        self._id = response.json().get('id')
         return response
 
     def list(self, **kwargs):
@@ -201,7 +201,7 @@ class HostCredential(QCSObject):
         diffs = 0
         password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
         for key, value in self.fields().items():
-            if key == 'password':
+            if key == 'password' and other.get(key) is not None:
                 if not password_matcher.match(other.get(key)):
                     diffs += 1
             else:
