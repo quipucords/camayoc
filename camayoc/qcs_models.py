@@ -12,6 +12,7 @@ from camayoc.constants import MASKED_PASSWORD_OUTPUT
 from camayoc.constants import (
     QCS_CREDENTIALS_PATH,
     QCS_PROFILES_PATH,
+    QCS_SCAN_PATH,
 )
 
 
@@ -21,11 +22,9 @@ class QCSObject(object):
     def __init__(
             self,
             client=None,
-            name=None,
             _id=None):
         """Provide shared methods for QCS model objects."""
         # we want to allow for an empty string name
-        self.name = str(uuid.uuid4()) if name is None else name
         self._id = _id
         self.client = client if client else api.Client()
         self.endpoint = ''
@@ -173,7 +172,8 @@ class HostCredential(QCSObject):
         For a HostCredential to be successfully created on the QCS server,
         a password XOR a ssh_keyfile must be provided.
         """
-        super().__init__(client=client, name=name, _id=_id)
+        super().__init__(client=client, _id=_id)
+        self.name = str(uuid.uuid4()) if name is None else name
         self.endpoint = QCS_CREDENTIALS_PATH
         self.username = str(uuid.uuid4()) if username is None else username
         self.password = password
@@ -198,16 +198,15 @@ class HostCredential(QCSObject):
                 'HostCredential objects or dictionaries.'
             )
 
-        diffs = 0
         password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
         for key, value in self.fields().items():
             if key == 'password' and other.get(key) is not None:
                 if not password_matcher.match(other.get(key)):
-                    diffs += 1
+                    return False
             else:
                 if not other.get(key) == value:
-                    diffs += 1
-        return diffs == 0
+                    return False
+        return True
 
 
 class NetworkProfile(QCSObject):
@@ -245,7 +244,8 @@ class NetworkProfile(QCSObject):
         If no ssh_port is supplied, it will be set to 22 by default.
         A uuid4 name and api.Client are also supplied if none are provided.
         """
-        super().__init__(client=client, name=name, _id=_id)
+        super().__init__(client=client, _id=_id)
+        self.name = str(uuid.uuid4()) if name is None else name
         self.endpoint = QCS_PROFILES_PATH
         self.hosts = hosts
         self.ssh_port = ssh_port
@@ -270,7 +270,6 @@ class NetworkProfile(QCSObject):
                 'NetworkProfiles objects or dictionaries.'
             )
 
-        diffs = 0
         for key, value in self.fields().items():
             if key == 'credentials':
                 other_creds = other.get('credentials')
@@ -282,8 +281,130 @@ class NetworkProfile(QCSObject):
                 for cred in other_creds:
                     cred_ids.append(cred.get('id'))
                 if sorted(value) != sorted(cred_ids):
-                    diffs += 1
+                    return False
             else:
                 if not other.get(key) == value:
-                    diffs += 1
-        return diffs == 0
+                    return False
+        return True
+
+
+class Scan(QCSObject):
+    """A class to aid in CRUD test cases for scan jobs.
+
+    Scan jobs can be created on the quipucords server by instantiating a Scan
+    object and then calling its create() method.
+
+    The id of an existing NetworkProfile is necessary to create a scan
+    job.
+
+    Example::
+        >>> hostcred = HostCredential(password='foo')
+        >>> hostcred.create()
+        >>> netprof = NetworkProfile(hosts=['0.0.0.0'],
+                                     credential_ids=[hostcred._id])
+        >>> netprof.create()
+        >>> scan = Scan(profile_id=netprof._id)
+        >>> scan.create()
+        >>> scan.pause()
+        >>> assert scan.status() == 'paused'
+    """
+
+    def __init__(
+            self,
+            client=None,
+            profile_id=None,
+            max_concurrency=50,
+            scan_type='host',
+            _id=None):
+        """Iniitalize a Scan object with given data.
+
+        If no value for max_concurrency is given, it will be set to 50, and if
+        no value for scan_type is given, the default type is host (for which
+        facts are collected). The other valid option for scan_type is
+        'discovery' in which no facts are collected, the server simply sees how
+        many hosts in the profile it can make contact and log into.
+        """
+        super().__init__(client=client, _id=_id)
+
+        self.profile = profile_id
+        self.endpoint = QCS_SCAN_PATH
+
+        # valid scan types are 'host' and 'discovery'
+        self.scan_type = scan_type
+        self.max_concurrency = max_concurrency
+
+    def delete(self):
+        """No delete method is implemented for scan objects.
+
+        Raise an exception to alert the user of this instead of doing anything.
+        """
+        raise NotImplementedError(
+            'the DELETE method is not allowed for the scan endpoint, '
+            'so this method is not implemented for Scan objects.'
+        )
+
+    def pause(self, **kwargs):
+        """Send PUT request to self.endpoint/{id}/pause/ to pause a scan.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.path(), 'pause/')
+        return self.client.put(path, {}, **kwargs)
+
+    def cancel(self, **kwargs):
+        """Send PUT request to self.endpoint/{id}/cancel/ to cancel a scan.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.path(), 'cancel/')
+        return self.client.put(path, {}, **kwargs)
+
+    def restart(self, **kwargs):
+        """Send PUT request to self.endpoint/{id}/restart/ to restart a scan.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.path(), 'restart/')
+        return self.client.put(path, {}, **kwargs)
+
+    def status(self):
+        """Check on the status of the scan.
+
+        Note: only scans that have been posted to the server have a status.
+        If you call this method on a scan that does not exist on the server,
+        you will get an HTTPError.
+        """
+        return self.read().json().get('status')
+
+    def equivalent(self, other):
+        """Return true if both objects are equivalent.
+
+        :param other: This can be either another Scan or a dictionary
+            or json object returned from the QCS server (or crafted by hand.)
+            If `other` is a Scan instance, the two object's fields()
+            will be compared.
+
+            For a dictionary, we expect the format returned by the server with
+            self.read(), in which case we must extract the profile id from a
+            dictionary.
+        """
+        if isinstance(other, Scan):
+            return self.fields() == other.fields()
+
+        if not isinstance(other, dict):
+            raise TypeError(
+                'Objects of type Scan can only be compared to'
+                'Scan objects or dictionaries.'
+            )
+
+        for key, value in self.fields().items():
+            if key == 'profile':
+                if value != other.get(key).get('id'):
+                    return False
+            else:
+                if not other.get(key) == value:
+                    return False
+        return True

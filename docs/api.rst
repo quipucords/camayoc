@@ -34,3 +34,4 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.conftest.rst
     api/camayoc.tests.qcs.test_credentials.rst
     api/camayoc.tests.qcs.test_profiles.rst
+    api/camayoc.tests.qcs.test_scan.rst
