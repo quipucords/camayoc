@@ -14,5 +14,6 @@ Submodules
    camayoc.tests.qcs.conftest
    camayoc.tests.qcs.test_credentials
    camayoc.tests.qcs.test_profiles
+   camayoc.tests.qcs.test_scan
    camayoc.tests.qcs.utils
 

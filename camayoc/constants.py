@@ -315,3 +315,6 @@ QCS_CREDENTIALS_PATH = 'credentials/hosts/'
 
 QCS_PROFILES_PATH = 'profiles/networks/'
 """The path to the profiles endpoint for CRUD tasks."""
+
+QCS_SCAN_PATH = 'scans/'
+"""The path to the scans endpoint for CRUD tasks."""
