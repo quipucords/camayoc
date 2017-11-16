@@ -117,7 +117,8 @@ def test_update_sshkey_to_password(
     assert_matches_server(cred)
 
 
-def test_negative_update_to_invalid(shared_client, cleanup):
+def test_negative_update_to_invalid(
+        shared_client, cleanup, isolated_filesystem):
     """Attempt to update valid credential with invalid data.
 
     :id: c34ea917-ee36-4b93-8907-24a5f87bbed3
@@ -192,7 +193,7 @@ def test_create_with_sshkey(
     assert_matches_server(cred)
 
 
-def test_negative_create_key_and_pass(cleanup):
+def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
     """Attempt to create a host credential with sshkey and password.
 
     The request should be met with a 4XX response.
