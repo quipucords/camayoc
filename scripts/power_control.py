@@ -15,6 +15,7 @@ Example of a valid 'vcenter' section of a camayoc config file:
 
 import argparse
 import ssl
+import re
 import yaml
 
 from pyVim.connect import SmartConnect, Disconnect
@@ -49,34 +50,36 @@ def get_config():
     return cfg
 
 
-def power_control(VCENTER_HOST,
-                  VCENTER_USER,
-                  VCENTER_PASSWORD,
-                  VCENTER_ACTION):
+def power_control(vcenter_host,
+                  vcenter_user,
+                  vcenter_password,
+                  vcenter_action,
+                  pattern):
     """Connect to vcenter and perform action on all sonar machines."""
     try:
         c = SmartConnect(
-            host=VCENTER_HOST,
-            user=VCENTER_USER,
-            pwd=VCENTER_PASSWORD,
+            host=vcenter_host,
+            user=vcenter_user,
+            pwd=vcenter_password,
         )
     except ssl.SSLError:
         c = SmartConnect(
-            host=VCENTER_HOST,
-            user=VCENTER_USER,
-            pwd=VCENTER_PASSWORD,
+            host=vcenter_host,
+            user=vcenter_user,
+            pwd=vcenter_password,
             sslContext=ssl._create_unverified_context(),
         )
 
     dc = c.content.rootFolder.childEntity[VCENTER_DATA_CENTER]
     vms = dc.hostFolder.childEntity[VCENTER_CLUSTER].host[VCENTER_HOST_INDX].vm
 
+    pattern_matcher = re.compile(pattern)
     for vm in vms:
-        if vm.name.startswith('sonar-'):
-            if VCENTER_ACTION == 'ON':
+        if pattern_matcher.findall(vm.name):
+            if vcenter_action == 'ON':
                 if vm.runtime.powerState == 'poweredOff':
                     vm.PowerOnVM_Task()
-            if VCENTER_ACTION == 'OFF':
+            if vcenter_action == 'OFF':
                 if vm.runtime.powerState == 'poweredOn':
                     vm.PowerOffVM_Task()
 
@@ -91,7 +94,7 @@ if __name__ == '__main__':
         required=False,
         default=None,
         action='store',
-        dest='VCENTER_HOST',
+        dest='vcenter_host',
         type=str,
         help=('This is the hostname where you would log into vcenter from a'
               ' browser')
@@ -101,7 +104,7 @@ if __name__ == '__main__':
         required=False,
         default=None,
         action='store',
-        dest='VCENTER_USER',
+        dest='vcenter_user',
         type=str,
         help='Username on vcenter'
     )
@@ -110,9 +113,18 @@ if __name__ == '__main__':
         required=False,
         default=None,
         action='store',
-        dest='VCENTER_PASSWORD',
+        dest='vcenter_password',
         type=str,
         help='Password for given username on vcenter'
+    )
+    parser.add_argument(
+        '--pattern ',
+        required=False,
+        default='^sonar-',
+        action='store',
+        dest='pattern',
+        type=str,
+        help='String to match for VM names. Accepts regular expressions.'
     )
     parser.add_argument(
         '--action ',
@@ -121,7 +133,7 @@ if __name__ == '__main__':
         const='ON',
         nargs='?',
         choices=['ON', 'OFF'],
-        dest='VCENTER_ACTION',
+        dest='vcenter_action',
         type=str,
         default='ON',
         help=('Action that you would like to perform on VMs.'
@@ -130,20 +142,22 @@ if __name__ == '__main__':
     args = parser.parse_args()
     cfg = get_config()
 
-    if not args.VCENTER_HOST:
+    if not args.vcenter_host:
         if cfg.get('vcenter'):
-            args.VCENTER_HOST = cfg.get('vcenter').get('hostname')
+            args.vcenter_host = cfg.get('vcenter').get('hostname')
 
-    if not args.VCENTER_USER:
+    if not args.vcenter_user:
         if cfg.get('vcenter'):
-            args.VCENTER_USER = cfg.get('vcenter').get('username')
+            args.vcenter_user = cfg.get('vcenter').get('username')
 
-    if not args.VCENTER_PASSWORD:
+    if not args.vcenter_password:
         if cfg.get('vcenter'):
-            args.VCENTER_PASSWORD = cfg.get('vcenter').get('password')
+            args.vcenter_password = cfg.get('vcenter').get('password')
 
     power_control(
-        args.VCENTER_HOST,
-        args.VCENTER_USER,
-        args.VCENTER_PASSWORD,
-        args.VCENTER_ACTION)
+        args.vcenter_host,
+        args.vcenter_user,
+        args.vcenter_password,
+        args.vcenter_action,
+        args.pattern,
+    )
