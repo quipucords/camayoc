@@ -310,7 +310,7 @@ VCENTER_HOST = 0
 QCS_API_VERSION = 'api/v1/'
 """The root path to access the QCS server API."""
 
-QCS_CREDENTIALS_PATH = 'credentials/hosts/'
+QCS_CREDENTIALS_PATH = 'credentials/'
 """The path to the credentials endpoint for CRUD tasks."""
 
 QCS_PROFILES_PATH = 'profiles/networks/'
