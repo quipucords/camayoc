@@ -312,7 +312,7 @@ class Scan(QCSObject):
     def __init__(
             self,
             client=None,
-            profile_id=None,
+            source_id=None,
             max_concurrency=50,
             scan_type='host',
             _id=None):
@@ -326,7 +326,7 @@ class Scan(QCSObject):
         """
         super().__init__(client=client, _id=_id)
 
-        self.profile = profile_id
+        self.source = source_id
         self.endpoint = QCS_SCAN_PATH
 
         # valid scan types are 'host' and 'discovery'

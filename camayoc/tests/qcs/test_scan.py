@@ -93,7 +93,7 @@ def test_create(shared_client, cleanup, profile, isolated_filesystem):
     )
     netprof.create()
     cleanup.append(netprof)
-    scan = Scan(profile_id=netprof._id)
+    scan = Scan(source_id=netprof._id)
     scan.create()
     wait_until_complete(scan)
     assert scan.status() == 'completed'
