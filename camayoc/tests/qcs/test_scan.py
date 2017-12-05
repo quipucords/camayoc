@@ -26,7 +26,7 @@ def sources():
     """Gather sources from config file."""
     try:
         srcs = config.get_config()['qcs']['profiles']
-    except ConfigFileNotFoundError:
+    except (ConfigFileNotFoundError, KeyError):
         srcs = []
     return srcs
 

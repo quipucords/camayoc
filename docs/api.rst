@@ -26,7 +26,6 @@ reference for developers, not a gospel.
     api/tests.test_cli.rst
     api/tests.test_config.rst
     api/camayoc.tests.remote.rst
-    api/camayoc.tests.remote.conftest.rst
     api/camayoc.tests.remote.rho.test_scan.rst
     api/camayoc.api.rst
     api/camayoc.qcs_models.rst

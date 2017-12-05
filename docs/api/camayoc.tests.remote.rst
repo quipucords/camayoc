@@ -13,10 +13,3 @@ Subpackages
 
     camayoc.tests.remote.rho
 
-Submodules
-----------
-
-.. toctree::
-
-   camayoc.tests.remote.conftest
-
