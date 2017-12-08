@@ -13,7 +13,7 @@ import random
 from pathlib import Path
 
 from camayoc import api
-from camayoc.qcs_models import HostCredential
+from camayoc.qcs_models import Credential
 from camayoc.utils import uuid4
 from camayoc.tests.qcs.utils import assert_matches_server
 
@@ -26,7 +26,10 @@ def test_create_with_password(shared_client, cleanup):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new host credential entry is created with the data.
     """
-    cred = HostCredential(client=shared_client, password=uuid4())
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
+        password=uuid4())
     cred.create()
     # add the credential to the list to destroy after the test is done
     cleanup.append(cred)
@@ -45,7 +48,10 @@ def test_update_username(shared_client, cleanup):
         3) Confirm host credential has been updated.
     :expectedresults: The host credential is updated.
     """
-    cred = HostCredential(shared_client, password=uuid4())
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
+        password=uuid4())
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
@@ -70,7 +76,10 @@ def test_update_password_to_sshkeyfile(
         3) Confirm host credential has been updated.
     :expectedresults: The host credential is updated.
     """
-    cred = HostCredential(shared_client, password=uuid4())
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
+        password=uuid4())
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
@@ -102,15 +111,16 @@ def test_update_sshkey_to_password(
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
 
-    cred = HostCredential(
-        shared_client,
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
     assert_matches_server(cred)
-
+    cred.client.response_handler = api.echo_handler
     cred.password = uuid4()
     cred.ssh_keyfile = None
     cred.update()
@@ -136,8 +146,9 @@ def test_negative_update_to_invalid(
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
 
-    cred = HostCredential(
-        shared_client,
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
     cred.create()
@@ -146,7 +157,6 @@ def test_negative_update_to_invalid(
     assert_matches_server(cred)
 
     cred.client = api.Client(api.echo_handler)
-
     # Try to update with username equals null
     old = cred.username
     cred.username = None
@@ -183,8 +193,9 @@ def test_create_with_sshkey(
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
 
-    cred = HostCredential(
-        shared_client,
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
     cred.create()
@@ -207,8 +218,9 @@ def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
     ssh_keyfile.touch()
 
     client = api.Client(api.echo_handler)
-    cred = HostCredential(
-        client,
+    cred = Credential(
+        cred_type='network',
+        client=client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
         password=uuid4(),
     )
@@ -228,8 +240,9 @@ def test_negative_create_no_name(cleanup):
     :expectedresults: Error is thrown and no new host credential is created.
     """
     client = api.Client(api.echo_handler)
-    cred = HostCredential(
-        client,
+    cred = Credential(
+        cred_type='network',
+        client=client,
         username='',
         password=uuid4(),
     )
@@ -249,7 +262,7 @@ def test_negative_create_no_key_or_pass(cleanup):
     :expectedresults: Error is thrown and no new host credential is created.
     """
     client = api.Client(api.echo_handler)
-    cred = HostCredential(client)
+    cred = Credential(cred_type='network', client=client)
     response = cred.create()
     assert response.status_code == 400
     assert cred._id is None
@@ -268,17 +281,20 @@ def test_read_all(shared_client, cleanup):
         3) Confirm that all hosts are in the list.
     :expectedresults: All hosts are present in data returned by API.
     """
-    host_credentials = []
+    creds = []
     for _ in range(random.randint(2, 5)):
-        cred = HostCredential(client=shared_client, password=uuid4())
+        cred = Credential(
+            cred_type='network',
+            client=shared_client,
+            password=uuid4())
         cred.create()
         # add the credential to the list to destroy after the test is done
         cleanup.append(cred)
         assert_matches_server(cred)
-        host_credentials.append(cred)
+        creds.append(cred)
 
-    remote_host_credentials = HostCredential().list().json()
-    for local, remote in zip(host_credentials, remote_host_credentials):
+    remote_creds = Credential(cred_type='network', ).list().json()
+    for local, remote in zip(creds, remote_creds):
         local.equivalent(remote)
 
 
@@ -295,18 +311,21 @@ def test_read_indv(shared_client, cleanup):
         3) Confirm that each host is retrieved
     :expectedresults: All hosts are present in data returned by API.
     """
-    host_credentials = []
+    creds = []
     for _ in range(random.randint(2, 5)):
-        cred = HostCredential(client=shared_client, password=uuid4())
+        cred = Credential(
+            cred_type='network',
+            client=shared_client,
+            password=uuid4())
         cred.create()
         # add the credential to the list to destroy after the test is done
         cleanup.append(cred)
         assert_matches_server(cred)
-        host_credentials.append(cred)
+        creds.append(cred)
 
-    for host_credential in host_credentials:
-        remote = HostCredential(_id=host_credential._id).read().json()
-        host_credential.equivalent(remote)
+    for cred in creds:
+        remote = Credential(cred_type='network', _id=cred._id).read().json()
+        cred.equivalent(remote)
 
 
 def test_delete(shared_client, cleanup):
@@ -324,21 +343,24 @@ def test_delete(shared_client, cleanup):
     :expectedresults: All hosts are present in data returned by API except
         the deleted credential.
     """
-    host_credentials = []
+    creds = []
     for _ in range(random.randint(2, 5)):
-        cred = HostCredential(client=shared_client, password=uuid4())
+        cred = Credential(
+            cred_type='network',
+            client=shared_client,
+            password=uuid4())
         cred.create()
         # add the credential to the list to destroy after the test is done
         cleanup.append(cred)
         assert_matches_server(cred)
-        host_credentials.append(cred)
+        creds.append(cred)
 
-    while host_credentials:
-        selected = random.choice(host_credentials)
+    while creds:
+        selected = random.choice(creds)
         cleanup.remove(selected)
-        host_credentials.remove(selected)
+        creds.remove(selected)
         selected.delete()
 
-        for host_credential in host_credentials:
-            remote = HostCredential(_id=host_credential._id).read().json()
-            host_credential.equivalent(remote)
+        for cred in creds:
+            remote = Credential(_id=cred._id).read().json()
+            cred.equivalent(remote)

@@ -313,7 +313,7 @@ QCS_API_VERSION = 'api/v1/'
 QCS_CREDENTIALS_PATH = 'credentials/'
 """The path to the credentials endpoint for CRUD tasks."""
 
-QCS_PROFILES_PATH = 'sources/'
+QCS_SOURCE_PATH = 'sources/'
 """The path to the profiles endpoint for CRUD tasks."""
 
 QCS_SCAN_PATH = 'scans/'

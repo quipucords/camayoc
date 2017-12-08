@@ -7,8 +7,8 @@ import yaml
 
 from camayoc import config, exceptions, api
 from camayoc.qcs_models import (
-    HostCredential,
-    NetworkProfile,
+    Credential,
+    Source,
 )
 
 
@@ -28,15 +28,17 @@ MOCK_CREDENTIAL = {
     'password': '********',
     'ssh_keyfile': None,
     'sudo_password': None,
+    'cred_type': 'network',
     'username': '6c71666b-df97-4d50-91bd-10003569e843'
 }
 
-MOCK_PROFILE = {
+MOCK_SOURCE = {
     'credentials': [{'id': 34,
                      'name': '91311585-77b3-4352-a277-cf9507a04ffc'
                      }],
     'hosts': ['localhost'],
     'id': 25,
+    'source_type': 'network',
     'name': 'e193081c-2423-4407-b9e2-05d20b6443dc',
     'ssh_port': 22
 }
@@ -93,7 +95,7 @@ class APIClientTestCase(unittest.TestCase):
                 api.Client()
 
 
-class HostCredentialTestCase(unittest.TestCase):
+class CredentialTestCase(unittest.TestCase):
     """Test :mod:camayoc.api."""
 
     @classmethod
@@ -105,7 +107,8 @@ class HostCredentialTestCase(unittest.TestCase):
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
         with mock.patch.object(config, '_CONFIG', self.config):
-            h = HostCredential(
+            h = Credential(
+                cred_type='network',
                 username=MOCK_CREDENTIAL['username'],
                 name=MOCK_CREDENTIAL['name']
             )
@@ -116,7 +119,7 @@ class HostCredentialTestCase(unittest.TestCase):
                 h.equivalent([])
 
 
-class NetworkProfileTestCase(unittest.TestCase):
+class SourceTestCase(unittest.TestCase):
     """Test :mod:camayoc.api."""
 
     @classmethod
@@ -128,13 +131,14 @@ class NetworkProfileTestCase(unittest.TestCase):
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
         with mock.patch.object(config, '_CONFIG', self.config):
-            p = NetworkProfile(
-                name=MOCK_PROFILE['name'],
-                hosts=MOCK_PROFILE['hosts'],
-                credential_ids=[MOCK_PROFILE['credentials'][0]['id']]
+            p = Source(
+                source_type='network',
+                name=MOCK_SOURCE['name'],
+                hosts=MOCK_SOURCE['hosts'],
+                credential_ids=[MOCK_SOURCE['credentials'][0]['id']]
             )
-            p._id = MOCK_PROFILE['id']
-            self.assertTrue(p.equivalent(MOCK_PROFILE))
+            p._id = MOCK_SOURCE['id']
+            self.assertTrue(p.equivalent(MOCK_SOURCE))
             self.assertTrue(p.equivalent(p))
             with self.assertRaises(TypeError):
                 p.equivalent([])
