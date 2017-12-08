@@ -16,19 +16,19 @@ import time
 from camayoc import config
 from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.qcs_models import (
-    HostCredential,
-    NetworkProfile,
+    Credential,
+    Source,
     Scan,
 )
 
 
-def profiles():
-    """Gather profiles from config file."""
+def sources():
+    """Gather sources from config file."""
     try:
-        profs = config.get_config()['qcs']['profiles']
+        srcs = config.get_config()['qcs']['profiles']
     except ConfigFileNotFoundError:
-        profs = []
-    return profs
+        srcs = []
+    return srcs
 
 
 def wait_until_complete(scan, timeout=120):
@@ -45,7 +45,7 @@ def wait_until_complete(scan, timeout=120):
             'You have called wait_until_complete() on a scan '
             'that is paused or cancelled, and this could hang forever.'
             ' This exception has been raised instead.'
-            )
+        )
     while (
         not scan.status() or not scan.status() in [
             'failed',
@@ -54,20 +54,20 @@ def wait_until_complete(scan, timeout=120):
         timeout -= 5
 
 
-@pytest.mark.parametrize('profile', profiles(), ids=[
+@pytest.mark.parametrize('source', sources(), ids=[
                          '{}-{}'.format(
                              p['name'],
-                             p['auths']) for p in profiles()]
+                             p['auths']) for p in sources()]
                          )
-def test_create(shared_client, cleanup, profile, isolated_filesystem):
+def test_create(shared_client, cleanup, source, isolated_filesystem):
     """Run a scan on a system and confirm it completes.
 
     :id: ee3b0bc8-1489-443e-86bb-e2a2349e9c98
     :description: Create a scan and assert that it completes
     :steps:
         1) Create host credential
-        2) Send POST with data to create network profile using the host
-           credential to the profile endpoint.
+        2) Send POST with data to create network source using the host
+           credential to the source endpoint.
         3) Create a scan
         4) Assert that the scan completes and a fact id is generated
     :expectedresults: A scan is run and has facts associated with it
@@ -76,8 +76,9 @@ def test_create(shared_client, cleanup, profile, isolated_filesystem):
 
     auth_ids = []
     for auth in cfg['qcs'].get('auths'):
-        if auth['name'] in profile['auths']:
-            cred = HostCredential(
+        if auth['name'] in source['auths']:
+            cred = Credential(
+                cred_type='network',
                 client=shared_client,
                 ssh_keyfile=auth['sshkeyfile'],
                 username=auth['username'],
@@ -86,14 +87,15 @@ def test_create(shared_client, cleanup, profile, isolated_filesystem):
             cleanup.append(cred)
             auth_ids.append(cred._id)
 
-    netprof = NetworkProfile(
+    netsrc = Source(
+        source_type='network',
         client=shared_client,
-        hosts=profile['hosts'],
+        hosts=source['hosts'],
         credential_ids=auth_ids,
     )
-    netprof.create()
-    cleanup.append(netprof)
-    scan = Scan(source_id=netprof._id)
+    netsrc.create()
+    cleanup.append(netsrc)
+    scan = Scan(source_id=netsrc._id)
     scan.create()
     wait_until_complete(scan)
     assert scan.status() == 'completed'
@@ -101,15 +103,15 @@ def test_create(shared_client, cleanup, profile, isolated_filesystem):
 
 
 @pytest.mark.skip
-def test_pause_cancel(shared_client, cleanup, profile, isolated_filesystem):
+def test_pause_cancel(shared_client, cleanup, source, isolated_filesystem):
     """Run a scan on a system and confirm we can pause and cancel it.
 
     :id: 4d4b9839-1672-4183-bd27-11864787eb8e
     :description: Assert that scans can be paused and then cancelled.
     :steps:
         1) Create host credential
-        2) Send POST with data to create network profile using the host
-           credential to the profile endpoint.
+        2) Send POST with data to create network source using the host
+           credential to the source endpoint.
         3) Create a scan
         4) Assert that the scan can be paused
         5) Assert that the scan can be canceled
@@ -120,15 +122,15 @@ def test_pause_cancel(shared_client, cleanup, profile, isolated_filesystem):
 
 
 @pytest.mark.skip
-def test_restart(shared_client, cleanup, profile, isolated_filesystem):
+def test_restart(shared_client, cleanup, source, isolated_filesystem):
     """Run a scan on a system and confirm we can pause and restart it.
 
     :id: 6d81121d-500e-4188-8195-2e469ca606c0
     :description: Assert that scans can be paused and then restarted.
     :steps:
         1) Create host credential
-        2) Send POST with data to create network profile using the host
-           credential to the profile endpoint.
+        2) Send POST with data to create network source using the host
+           credential to the source endpoint.
         3) Create a scan
         4) Assert that the scan can be paused
         5) Assert that the scan can be restarted
@@ -143,7 +145,7 @@ def test_restart(shared_client, cleanup, profile, isolated_filesystem):
 def test_queue_mix_valid_invalid(
         shared_client,
         cleanup,
-        profile,
+        source,
         isolated_filesystem):
     """Create a series of scans and assert all valid ones complete.
 
@@ -165,7 +167,7 @@ def test_queue_mix_valid_invalid(
 def test_queue_mix_paused_cancelled(
         shared_client,
         cleanup,
-        profile,
+        source,
         isolated_filesystem):
     """Assert all non-cancelled and paused scans in a queue complete.
 
