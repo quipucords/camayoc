@@ -10,25 +10,35 @@ RHO_CONNECTION_FACTS = (
 """List of RHO's connection facts."""
 
 RHO_JBOSS_FACTS = (
+    'jboss.brms',
+    'jboss.brms.summary',
     'jboss.eap.common-files',
+    'jboss.eap.eap-home',
     'jboss.eap.init-files',
     'jboss.eap.jboss-user',
     'jboss.eap.locate-jboss-modules-jar',
     'jboss.eap.packages',
     'jboss.eap.processes',
     'jboss.eap.running-paths',
+    'jboss.eap.summary',
+    'jboss.fuse-on-karaf.karaf-home',
+    'jboss.fuse.fuse-on-eap',
+    'jboss.fuse.init-files',
+    'jboss.fuse.summary',
 )
 """List of RHO's jboss facts."""
 
 RHO_JBOSS_ALL_FACTS = (
+    'jboss.activemq-ver',
     'jboss.brms.drools-core-ver',
     'jboss.brms.kie-api-ver',
     'jboss.brms.kie-war-ver',
+    'jboss.camel-ver',
+    'jboss.cxf-ver',
     'jboss.eap.deploy-dates',
+    'jboss.eap.find-jboss-modules-jar',
     'jboss.eap.installed-versions',
-    'jboss.fuse.activemq-ver',
-    'jboss.fuse.camel-ver',
-    'jboss.fuse.cxf-ver',
+    'jboss.fuse-on-karaf.find-karaf-jar',
 )
 """List of rho's additional jboss facts (for --facts all)."""
 
@@ -62,11 +72,6 @@ RHO_RHEL_FACTS = (
     'redhat-packages.gpg.last_installed',
     'redhat-packages.gpg.num_installed_packages',
     'redhat-packages.gpg.num_rh_packages',
-    'redhat-packages.is_redhat',
-    'redhat-packages.last_built',
-    'redhat-packages.last_installed',
-    'redhat-packages.num_installed_packages',
-    'redhat-packages.num_rh_packages',
     'redhat-release.name',
     'redhat-release.release',
     'redhat-release.version',
