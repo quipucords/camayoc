@@ -40,7 +40,7 @@ MOCK_SOURCE = {
     'id': 25,
     'source_type': 'network',
     'name': 'e193081c-2423-4407-b9e2-05d20b6443dc',
-    'ssh_port': 22
+    'port': 22
 }
 
 

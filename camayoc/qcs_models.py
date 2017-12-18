@@ -253,20 +253,20 @@ class Source(QCSObject):
             client=None,
             name=None,
             hosts=None,
-            ssh_port=22,
+            port=22,
             credential_ids=None,
             source_type=None,
             _id=None):
         """Iniitalize a Source object with given data.
 
-        If no ssh_port is supplied, it will be set to 22 by default.
+        If no port is supplied, it will be set to 22 by default.
         A uuid4 name and api.Client are also supplied if none are provided.
         """
         super().__init__(client=client, _id=_id)
         self.name = str(uuid.uuid4()) if name is None else name
         self.endpoint = QCS_SOURCE_PATH
         self.hosts = hosts
-        self.ssh_port = ssh_port
+        self.port = port
         self.credentials = credential_ids
         self.source_type = source_type
 
@@ -325,7 +325,7 @@ class Scan(QCSObject):
                             credential_ids=[cred._id]
                             )
         >>> src.create()
-        >>> scan = Scan(source_id=src._id)
+        >>> scan = Scan(source_ids=[src._id])
         >>> scan.create()
         >>> scan.pause()
         >>> assert scan.status() == 'paused'
@@ -334,9 +334,9 @@ class Scan(QCSObject):
     def __init__(
             self,
             client=None,
-            source_id=None,
+            source_ids=None,
             max_concurrency=50,
-            scan_type='host',
+            scan_type='inspect',
             _id=None):
         """Iniitalize a Scan object with given data.
 
@@ -348,12 +348,12 @@ class Scan(QCSObject):
         """
         super().__init__(client=client, _id=_id)
 
-        self.source = source_id
+        self.sources = source_ids
         self.endpoint = QCS_SCAN_PATH
 
         # valid scan types are 'host' and 'discovery'
         self.scan_type = scan_type
-        self.max_concurrency = max_concurrency
+        self.options = {'max_concurrency': max_concurrency}
 
     def delete(self):
         """No delete method is implemented for scan objects.
