@@ -34,3 +34,12 @@ class QCSBaseUrlNotFound(Exception):
     qcs:
         hostname: 'http://hostname_or_ip_with_port'
     """
+
+
+class WaitTimeError(Exception):
+    """A task has raised this error because it has been waiting too long.
+
+    A task was waiting for a long running task, but it has exceeded the time
+    allowed. Instead of allowing the task to hang, it has aborted and raised
+    this error.
+    """
