@@ -95,7 +95,7 @@ def test_create(shared_client, cleanup, source, isolated_filesystem):
     )
     netsrc.create()
     cleanup.append(netsrc)
-    scan = Scan(source_id=netsrc._id)
+    scan = Scan(source_ids=[netsrc._id])
     scan.create()
     wait_until_complete(scan)
     assert scan.status() == 'completed'
