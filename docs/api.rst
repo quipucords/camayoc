@@ -33,7 +33,6 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.conftest.rst
     api/camayoc.tests.qcs.api.rst
     api/camayoc.tests.qcs.api.credentials.test_network_creds.rst
+    api/camayoc.tests.qcs.api.credentials.test_creds_common.rst
     api/camayoc.tests.qcs.api.sources.test_network_sources.rst
     api/camayoc.tests.qcs.api.scans.test_network_scans.rst
-    api/camayoc.tests.qcs.api.credentials.test_sat_creds.rst
-    api/camayoc.tests.qcs.api.credentials.test_vcenter_creds.rst
