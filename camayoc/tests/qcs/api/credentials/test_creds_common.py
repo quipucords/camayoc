@@ -40,7 +40,8 @@ def test_create_with_password(src_type, shared_client, cleanup):
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
-def test_update_username(src_type, shared_client, cleanup):
+@pytest.mark.parametrize('field', ['username', 'password'])
+def test_update(src_type, field, shared_client, cleanup):
     """Create a credential and then update its username.
 
     :id: 73ed2ed5-e623-48ec-9ea6-153017464d9c
@@ -48,7 +49,7 @@ def test_update_username(src_type, shared_client, cleanup):
         username.
     :steps:
         1) Create a credential with a username and password.
-        2) Update the credential with a new username.
+        2) Update the credential with a new username or password.
         3) Confirm credential has been updated.
     :expectedresults: The credential is updated.
     """
@@ -61,8 +62,8 @@ def test_update_username(src_type, shared_client, cleanup):
     cleanup.append(cred)
     assert_matches_server(cred)
 
-    # give the cred a new username
-    cred.username = uuid4()
+    # give the cred a new value for the field
+    setattr(cred, field, uuid4())
     cred.update()
     assert_matches_server(cred)
 
