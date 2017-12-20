@@ -315,6 +315,9 @@ def test_delete(src_type, cleanup, shared_client):
 def test_type_mismatch(src_type, cleanup, shared_client):
     """Attempt to create sources with credentials of the wrong type.
 
+    For example, if we create a 'network' typed credential, we can not create a
+    'vcenter' typed source using this credential.
+
     :id: 89bc1bb5-127b-48da-b106-82cd1ef7e00a
     :description: Test that we cannot create a source with the wrong type
         of credential.
@@ -322,5 +325,54 @@ def test_type_mismatch(src_type, cleanup, shared_client):
         1) Create a credential of one type
         2) Attempt to create a source with that credential of a different type
     :expectedresults: An error is thrown and no new source is created.
+    :caseautomation: notautomated
+    """
+    pass
+
+
+@pytest.mark.skip
+def test_port_default(src_type, cleanup, shared_client):
+    """Test that the correct default port is provided if it is not specified.
+
+    :id: 22af9909-887a-4bea-811c-6ef438a53fdb
+    :description: Test that the correct default port is chosen for each type.
+    :steps:
+        1) Create a credential
+        2) Create a source of the same type and do not specify the port
+        3) Test that the correct default port is provided based on type.
+    :expectedresults: A source is created with sensible default port.
+    :caseautomation: notautomated
+    """
+    pass
+
+
+@pytest.mark.skip
+def test_create_with_port(src_type, cleanup, shared_client):
+    """Test that we may create with a custom port specified.
+
+    :id: 9e83e1ed-e229-4822-a9c3-cbb8a7e4282e
+    :description: Test that sources can be created with custom ports.
+    :steps:
+        1) Create a credential
+        2) Create a source of the same type and specify a custom port.
+    :expectedresults: A source is created with user specified data.
+    :caseautomation: notautomated
+    """
+    pass
+
+
+@pytest.mark.skip
+def test_negative_invalid_port(src_type, cleanup, shared_client):
+    """Test that we are prevented from using a nonsense value for the port.
+
+    :id: e64df701-5819-4e80-a5d2-d26cbc6f71a7
+    :description: Test that sources cannot be created with bad values for the
+        port.
+    :steps:
+        1) Create a credential
+        2) Attempt to create a source of the same type and specify a custom
+           port with various nonsense values like 'foo**' or -1 or None
+    :expectedresults: The source is not created
+    :caseautomation: notautomated
     """
     pass

@@ -45,6 +45,23 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host):
 
 
 @pytest.mark.skip
+def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host):
+    """Create a Network Source using multiple credentials.
+
+    :id: 07f49731-0162-4eb1-b89a-3c95fddad428
+    :description: Create a network source with multiple credentials
+    :steps:
+        1) Create multiple host credentials using both sshkey and passwords
+        2) Send POST with data to create network source using the credentials
+           using a list of sources using multiple formats (alphabetical name,
+           CIDR, individual IPv4 address, etc.)
+    :expectedresults: The source is created.
+    :caseautomation: notautomated
+    """
+    pass
+
+
+@pytest.mark.skip
 def test_negative_update_invalid(shared_client, cleanup, scan_host):
     """Create a network source and then update it with invalid data.
 
