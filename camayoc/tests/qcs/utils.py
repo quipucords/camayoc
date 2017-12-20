@@ -38,13 +38,13 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
-def gen_valid_source(cleanup, host):
+def gen_valid_source(cleanup, src_type, host):
     """Create valid source and return it with echo_handler."""
     client = api.Client()
-    cred = Credential(cred_type='network', client=client, password=uuid4())
+    cred = Credential(cred_type=src_type, client=client, password=uuid4())
     cred.create()
     cleanup.append(cred)
-    source = Source(source_type='network',
+    source = Source(source_type=src_type,
                     hosts=[host],
                     credential_ids=[cred._id],
                     client=client,
