@@ -324,5 +324,8 @@ QCS_SOURCE_PATH = 'sources/'
 QCS_SCAN_PATH = 'scans/'
 """The path to the scans endpoint for CRUD tasks."""
 
-QCS_SOURCE_TYPES = ['vcenter', 'network']
+QCS_SOURCE_TYPES = ('vcenter', 'network')
 """Types of sources that the quipucords server supports."""
+
+QCS_HOST_MANAGER_TYPES = ('vcenter',)
+"""Types of host managers that the quipucords server supports."""

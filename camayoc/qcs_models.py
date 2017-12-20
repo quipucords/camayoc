@@ -100,6 +100,8 @@ class QCSObject(object):
         response = self.client.post(self.endpoint, self.payload(), **kwargs)
         if response.status_code in range(200, 203):
             self._id = response.json().get('id')
+            if response.json().get('port'):
+                self.port = response.json().get('port')
         return response
 
     def list(self, **kwargs):
@@ -253,7 +255,7 @@ class Source(QCSObject):
             client=None,
             name=None,
             hosts=None,
-            port=22,
+            port=None,
             credential_ids=None,
             source_type=None,
             _id=None):
@@ -266,7 +268,8 @@ class Source(QCSObject):
         self.name = str(uuid.uuid4()) if name is None else name
         self.endpoint = QCS_SOURCE_PATH
         self.hosts = hosts
-        self.port = port
+        if port is not None:
+            self.port = port
         self.credentials = credential_ids
         self.source_type = source_type
 

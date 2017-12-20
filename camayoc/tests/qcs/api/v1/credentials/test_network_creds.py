@@ -11,6 +11,8 @@
 """
 from pathlib import Path
 
+import pytest
+
 from camayoc import api
 from camayoc.qcs_models import Credential
 from camayoc.utils import uuid4
@@ -67,7 +69,6 @@ def test_update_sshkey_to_password(
 
     cred = Credential(
         cred_type='network',
-        client=shared_client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
     cred.create()
@@ -115,6 +116,7 @@ def test_negative_update_to_invalid(
     cred.password = uuid4()
     response = cred.update()
     assert response.status_code == 400
+    assert 'either a password or an ssh_keyfile, not both' in response.text
     cred.password = None
     assert_matches_server(cred)
 
@@ -123,6 +125,7 @@ def test_negative_update_to_invalid(
     del cred.ssh_keyfile
     response = cred.update()
     assert response.status_code == 400
+    assert 'must have either a password or an ssh_keyfile' in response.text
     cred.ssh_keyfile = old
     assert_matches_server(cred)
 
@@ -158,7 +161,7 @@ def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
     :id: 22a2ca65-5f9d-4c43-89ad-d7ab53223896
     :description: Create a network credential with username, sshkey, and
         password.
-    :steps: Send POST with necessary data to documented api endpoint.
+    :steps: Send POST with necessary data to the credential api endpoint.
     :expectedresults: Error is thrown and no new network credential is created.
     """
     ssh_keyfile = Path(uuid4())
@@ -173,4 +176,19 @@ def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
     )
     response = cred.create()
     assert response.status_code == 400
+    assert 'either a password or an ssh_keyfile, not both' in response.text
     assert cred._id is None
+
+
+@pytest.mark.skip
+def test_create_sudo_password(cleanup, isolated_filesystem):
+    """Create a network credential that has a sudo password.
+
+    :id: e49e497d-abb7-4d6a-8366-3409e297062a
+    :description: Create a network credential with username, password XOR
+        sshkey, and a sudo password.
+    :steps: Send a POST to the credential endpoint with data.
+    :expectedresults: A new network credential is created.
+    :caseautomation: notautomated
+    """
+    pass

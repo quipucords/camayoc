@@ -260,7 +260,7 @@ def test_queue_mix_valid_invalid(
     assert scan.read().json().get('fact_collection_id') > 0
 
     for scan in bad_scans:
-        assert scan.status() == 'failed'
+        wait_until_state(scan, state='failed')
 
 
 @pytest.mark.parametrize('source', first_source(), ids=[
