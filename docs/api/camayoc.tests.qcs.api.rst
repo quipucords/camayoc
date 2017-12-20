@@ -11,7 +11,7 @@ Subpackages
 
 .. toctree::
 
-    camayoc.tests.qcs.api.network
-    camayoc.tests.qcs.api.satellite
-    camayoc.tests.qcs.api.vcenter
+    camayoc.tests.qcs.api.credentials
+    camayoc.tests.qcs.api.scans
+    camayoc.tests.qcs.api.sources
 
