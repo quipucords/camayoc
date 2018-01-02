@@ -6,6 +6,13 @@ camayoc\.tests\.qcs package
     :undoc-members:
     :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+
+    camayoc.tests.qcs.cli
+
 Submodules
 ----------
 
