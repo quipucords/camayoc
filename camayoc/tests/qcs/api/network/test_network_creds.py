@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for ``Host Credential`` API endpoint for quipucords server.
+"""Tests for Network source use cases of ``Credential`` API endpoint.
 
 :caseautomation: automated
 :casecomponent: api
