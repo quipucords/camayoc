@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+    camayoc.tests.qcs.api
     camayoc.tests.qcs.cli
 
 Submodules
@@ -19,8 +20,5 @@ Submodules
 .. toctree::
 
    camayoc.tests.qcs.conftest
-   camayoc.tests.qcs.test_credentials
-   camayoc.tests.qcs.test_scan
-   camayoc.tests.qcs.test_sources
    camayoc.tests.qcs.utils
 
