@@ -14,15 +14,19 @@ import pytest
 import time
 
 from camayoc import config
-from camayoc.exceptions import ConfigFileNotFoundError, WaitTimeError
+from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.qcs_models import (
     Credential,
     Source,
     Scan,
 )
+from camayoc.tests.qcs.api.v1.scans.utils import (
+    wait_until_state,
+    prep_broken_scan,
+)
 
 
-def sources():
+def network_sources():
     """Gather sources from config file.
 
     If no config file is found, or no sources defined,
@@ -32,76 +36,33 @@ def sources():
     if no sources are found.
     """
     try:
-        srcs = config.get_config()['qcs']['sources']
+        srcs = [s for s in config.get_config()['qcs']['sources']
+                if s['type'] == 'network']
     except (ConfigFileNotFoundError, KeyError):
         srcs = []
     return srcs
 
 
-def first_source():
+def first_network_source():
     """Gather sources from config file.
 
     If no source is found in the config file, or no config file is found, a
     default source will be returned.
     """
     try:
-        src = [config.get_config()['qcs']['sources'][0]]
+        for s in config.get_config()['qcs']['sources']:
+            if s['type'] == 'network':
+                src = [s]
+                break
     except (ConfigFileNotFoundError, KeyError):
-        src = [{'hosts': ['localhost'], 'name':'localhost', 'auths':'default'}]
+        src = [
+            {
+             'hosts': ['localhost'],
+             'name':'localhost',
+             'credentials':'root'
+             }
+        ]
     return src
-
-
-def wait_until_state(scan, timeout=120, state='completed'):
-    """Wait until the scan has failed or reached desired state.
-
-    The default state is 'completed'.
-
-    This method should not be called on scan jobs that have not yet been
-    created, are paused, or are canceled.
-
-    The default timeout is set to 120 seconds, but can be overridden if it is
-    anticipated that a scan may take longer to complete.
-    """
-    while (
-        not scan.status() or not scan.status() in [
-            'failed',
-            state]) and timeout > 0:
-        time.sleep(5)
-        timeout -= 5
-        if timeout <= 0:
-            raise WaitTimeError(
-                'You have called wait_until_state() on a scan and the scan\n'
-                'timed out while waiting to achieve the state="{}" When the\n'
-                'scan timed out, it had the state="{}".\n'
-                .format(state, scan.status())
-            )
-
-
-def prep_broken_network_scan(cleanup):
-    """Return a scan that can be created but will fail to complete.
-
-    Create and return a source with a non-existent host and dummy credential.
-    It is returned ready to be POSTed to the server via the create() instance
-    method.
-    """
-    bad_cred = Credential(
-        username='broken',
-        password='broken',
-        cred_type='network'
-    )
-    bad_cred.create()
-    cleanup.append(bad_cred)
-    bad_src = Source(
-        source_type='network',
-        hosts=['1.0.0.0'],
-        credential_ids=[bad_cred._id],
-    )
-    bad_src.create()
-    cleanup.append(bad_src)
-    bad_scn = Scan(
-        source_ids=[bad_src._id],
-    )
-    return bad_scn
 
 
 def prep_network_scan(source, cleanup, client):
@@ -111,24 +72,27 @@ def prep_network_scan(source, cleanup, client):
     staging them for cleanup after the tests complete.
     """
     cfg = config.get_config()
-    auth_ids = []
-    for auth in cfg['qcs'].get('auths'):
-        if auth['name'] in source['auths']:
+    cred_ids = []
+    for c in cfg['credentials']:
+        if c['name'] in source['credentials'] and c['type'] == 'network':
             cred = Credential(
                 cred_type='network',
                 client=client,
-                ssh_keyfile=auth['sshkeyfile'],
-                username=auth['username'],
+                username=c['username'],
             )
+            if c.get('sshkeyfile'):
+                cred.ssh_keyfile = c['sshkeyfile']
+            else:
+                cred.password = c['password']
             cred.create()
             cleanup.append(cred)
-            auth_ids.append(cred._id)
+            cred_ids.append(cred._id)
 
     netsrc = Source(
         source_type='network',
         client=client,
         hosts=source['hosts'],
-        credential_ids=auth_ids,
+        credential_ids=cred_ids,
     )
     netsrc.create()
     cleanup.append(netsrc)
@@ -136,10 +100,10 @@ def prep_network_scan(source, cleanup, client):
     return scan
 
 
-@pytest.mark.parametrize('source', sources(), ids=[
+@pytest.mark.parametrize('source', network_sources(), ids=[
                          '{}-{}'.format(
                              s['name'],
-                             s['auths']) for s in sources()]
+                             s['credentials']) for s in network_sources()]
                          )
 def test_create(shared_client, cleanup, source, isolated_filesystem):
     """Run a scan on a system and confirm it completes.
@@ -156,15 +120,14 @@ def test_create(shared_client, cleanup, source, isolated_filesystem):
     """
     scan = prep_network_scan(source, cleanup, shared_client)
     scan.create()
-    wait_until_state(scan)
-    assert scan.status() == 'completed'
-    assert isinstance(scan.read().json().get('fact_collection_id'), int)
+    wait_until_state(scan, state='completed')
+    assert scan.read().json().get('fact_collection_id') > 0
 
 
-@pytest.mark.parametrize('source', first_source(), ids=[
+@pytest.mark.parametrize('source', first_network_source(), ids=[
                          '{}-{}'.format(
-                             first_source()[0]['name'],
-                             first_source()[0]['auths'])]
+                             first_network_source()[0]['name'],
+                             first_network_source()[0]['credentials'])]
                          )
 def test_pause_cancel(shared_client, cleanup, source, isolated_filesystem):
     """Run a scan on a system and confirm we can pause and cancel it.
@@ -189,10 +152,10 @@ def test_pause_cancel(shared_client, cleanup, source, isolated_filesystem):
     wait_until_state(scan, state='canceled')
 
 
-@pytest.mark.parametrize('source', first_source(), ids=[
+@pytest.mark.parametrize('source', first_network_source(), ids=[
                          '{}-{}'.format(
-                             first_source()[0]['name'],
-                             first_source()[0]['auths'])]
+                             first_network_source()[0]['name'],
+                             first_network_source()[0]['credentials'])]
                          )
 def test_restart(shared_client, cleanup, source, isolated_filesystem):
     """Run a scan on a system and confirm we can pause and restart it.
@@ -220,10 +183,10 @@ def test_restart(shared_client, cleanup, source, isolated_filesystem):
     assert scan.read().json().get('fact_collection_id') > 0
 
 
-@pytest.mark.parametrize('source', first_source(), ids=[
+@pytest.mark.parametrize('source', first_network_source(), ids=[
                          '{}-{}'.format(
-                             first_source()[0]['name'],
-                             first_source()[0]['auths'])]
+                             first_network_source()[0]['name'],
+                             first_network_source()[0]['credentials'])]
                          )
 def test_queue_mix_valid_invalid(
         shared_client,
@@ -247,7 +210,7 @@ def test_queue_mix_valid_invalid(
     for k in range(6):
         time.sleep(2)
         if not k % 2:
-            bad_scn = prep_broken_network_scan(cleanup)
+            bad_scn = prep_broken_scan('network', cleanup)
             bad_scn.create()
             bad_scans.append(bad_scn)
         else:
@@ -260,13 +223,13 @@ def test_queue_mix_valid_invalid(
     assert scan.read().json().get('fact_collection_id') > 0
 
     for scan in bad_scans:
-        wait_until_state(scan, state='failed')
+        wait_until_state(scan, state='failed', timeout=240)
 
 
-@pytest.mark.parametrize('source', first_source(), ids=[
+@pytest.mark.parametrize('source', first_network_source(), ids=[
                          '{}-{}'.format(
-                             first_source()[0]['name'],
-                             first_source()[0]['auths'])]
+                             first_network_source()[0]['name'],
+                             first_network_source()[0]['credentials'])]
                          )
 def test_queue_mix_paused_canceled(
         shared_client,
@@ -300,6 +263,7 @@ def test_queue_mix_paused_canceled(
         if k in [2, 5]:
             scan = prep_network_scan(source, cleanup, shared_client)
             scan.create()
+            wait_until_state(scan, state='running')
             scan.cancel()
             wait_until_state(scan, state='canceled')
             canceled_scans.append(scan)
@@ -311,10 +275,3 @@ def test_queue_mix_paused_canceled(
     for scan in good_scans:
         wait_until_state(scan, state='completed')
         assert scan.read().json().get('fact_collection_id') > 0
-
-    for scan in paused_scans:
-        assert scan.status() == 'paused'
-        scan.cancel()
-
-    for scan in paused_scans:
-        assert scan.status() == 'canceled'

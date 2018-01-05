@@ -329,3 +329,9 @@ QCS_SOURCE_TYPES = ('vcenter', 'network')
 
 QCS_HOST_MANAGER_TYPES = ('vcenter',)
 """Types of host managers that the quipucords server supports."""
+
+VCENTER_SCAN_TIMEOUT = 540
+"""Maximum amount of time to let vcenter scan run before timing out."""
+
+SATELLITE_SCAN_TIMEOUT = 120
+"""Maximum amount of time to let satellite scan run before timing out."""
