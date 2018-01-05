@@ -35,7 +35,9 @@ rho:
 vcenter:
     hostname: example1.com
 qcs:
-    hostname: 'http://example2.com'
+    hostname: example2.com
+    port: 8000
+    https: false
 """
 
 

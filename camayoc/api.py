@@ -9,7 +9,7 @@ on the context.
 
 import requests
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlunparse
 
 from camayoc import config
 from camayoc import exceptions
@@ -79,34 +79,42 @@ class Client(object):
         If no response handler is specified, use the `code_handler` which will
         raise an exception for 'bad' return codes.
 
-        To specify base url with config file, include the following your
-        camayoc config file:
+
+        If no URL is specified, then the config file will be parsed and the URL
+        will be built by reading the hostname, port and https values. You can
+        configure the default URL by including the following on your Camayoc
+        configuration file::
 
             qcs:
-                hostname: 'http://hostname_or_ip_with_port'
+                hostname: <machine_hostname_or_ip_address>
+                port: <port>  # if not defined will take the default port
+                              # depending on the https config: 80 if https is
+                              # false and 443 if https is true.
+                https: false  # change to true if server is published over
+                              # https. Defaults to false if not defined
         """
-        self._cfg = config.get_config()
-        qcs_settings = self._cfg.get('qcs')
-        self.url = urljoin(url, QCS_API_VERSION) if url else None
+        self.url = url
 
-        if qcs_settings and not url:
-            if not qcs_settings.get('hostname'):
+        if not self.url:
+            cfg = config.get_config().get('qcs', {})
+            hostname = cfg.get('hostname')
+
+            if not hostname:
                 raise exceptions.QCSBaseUrlNotFound(
                     "\n'qcs' section specified in camayoc config file, but"
                     "no 'hostname' key found."
                 )
-            self.url = urljoin(qcs_settings.get('hostname'), QCS_API_VERSION)
+
+            scheme = 'https' if cfg.get('https', False) else 'http'
+            port = str(cfg.get('port', ''))
+            netloc = hostname + ':{}'.format(port) if port else hostname
+            self.url = urlunparse(
+                (scheme, netloc, QCS_API_VERSION, '', '', ''))
 
         if not self.url:
             raise exceptions.QCSBaseUrlNotFound(
-                '\nNo base url was specified to the client'
-                '\neither with the url="host" option or with the camayoc'
-                ' config file.')
-        if 'http' not in self.url:
-            raise exceptions.QCSBaseUrlNotFound(
-                'A hostname was provided, but we could not use it.'
-                '\nValid hostnames start with http:// or https://'
-            )
+                'No base url was specified to the client either with the '
+                'url="host" option or with the camayoc config file.')
 
         if response_handler is None:
             self.response_handler = code_handler

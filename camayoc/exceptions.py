@@ -26,13 +26,10 @@ class ConfigFileNotFoundError(Exception):
 
 
 class QCSBaseUrlNotFound(Exception):
-    """No base url was specifed in the camayoc config file.
+    """Was not able to build a base URL with the config file information.
 
-    Specify a base url to contact the quipucords server in your camayoc
-    config file in the following manner:
-
-    qcs:
-        hostname: 'http://hostname_or_ip_with_port'
+    Check the expected configuration file format on the API Client
+    documentation.
     """
 
 

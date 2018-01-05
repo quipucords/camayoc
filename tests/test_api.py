@@ -14,12 +14,14 @@ from camayoc.qcs_models import (
 
 CAMAYOC_CONFIG = """
 qcs:
-    hostname: 'http://example.com'
+    hostname: example.com
+    https: false
 """
 
 INVALID_HOST_CONFIG = """
 qcs:
-    hostname: 'example.com'
+    port: 8000
+    https: true
 """
 
 MOCK_CREDENTIAL = {
@@ -58,8 +60,7 @@ class APIClientTestCase(unittest.TestCase):
         with mock.patch.object(config, '_CONFIG', self.config):
             self.assertEqual(config.get_config(), self.config)
             client = api.Client()
-            cfg_host = self.config['qcs']['hostname']
-            self.assertEqual(cfg_host, client.url.strip('api/v1/'))
+            self.assertEqual(client.url, 'http://example.com/api/v1/')
 
     def test_create_no_config(self):
         """If a base url is specified we use it."""
@@ -67,9 +68,8 @@ class APIClientTestCase(unittest.TestCase):
             self.assertEqual(config.get_config(), {})
             other_host = 'http://hostname.com'
             client = api.Client(url=other_host)
-            cfg_host = self.config['qcs']['hostname']
-            self.assertNotEqual(cfg_host, client.url.strip('/api/v1/'))
-            self.assertEqual(other_host, client.url.strip('/api/v1/'))
+            self.assertNotEqual('http://example.com/api/v1/', client.url)
+            self.assertEqual(other_host, client.url)
 
     def test_create_override_config(self):
         """If a base url is specified, we use that instead of config file."""
@@ -77,8 +77,8 @@ class APIClientTestCase(unittest.TestCase):
             other_host = 'http://hostname.com'
             client = api.Client(url=other_host)
             cfg_host = self.config['qcs']['hostname']
-            self.assertNotEqual(cfg_host, client.url.strip('/api/v1/'))
-            self.assertEqual(other_host, client.url.strip('/api/v1/'))
+            self.assertNotEqual(cfg_host, client.url)
+            self.assertEqual(other_host, client.url)
 
     def test_negative_create(self):
         """Raise an error if no config entry is found and no url specified."""
