@@ -14,7 +14,6 @@ from io import BytesIO
 from pathlib import Path
 
 import pexpect
-import pytest
 
 from camayoc import utils
 from camayoc.constants import (
@@ -166,8 +165,6 @@ def test_add_with_username_sshkeyfile_sudo_password(
     )
 
 
-@pytest.mark.xfail(
-    reason='https://github.com/quipucords/quipucords/issues/330')
 def test_edit_username(isolated_filesystem, qpc_server_config):
     """Edit an auth's username.
 
@@ -201,8 +198,8 @@ def test_edit_username(isolated_filesystem, qpc_server_config):
         'qpc cred edit --name={} --username={}'.format(name, new_username)
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect(pexpect.EOF) == 0
-    assert qpc_cred_edit.expect('Credential \'{}\' updated'.format(name)) == 0
+    assert qpc_cred_edit.expect(
+        'Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -248,8 +245,6 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.xfail(
-    reason='https://github.com/quipucords/quipucords/issues/330')
 def test_edit_password(isolated_filesystem, qpc_server_config):
     """Edit an auth's password.
 
@@ -287,7 +282,8 @@ def test_edit_password(isolated_filesystem, qpc_server_config):
     )
     assert qpc_cred_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_password)
-    assert qpc_cred_edit.expect('Credential \'{}\' updated'.format(name)) == 0
+    assert qpc_cred_edit.expect(
+        'Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -332,8 +328,6 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.xfail(
-    reason='https://github.com/quipucords/quipucords/issues/330')
 def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     """Edit an auth's sshkeyfile.
 
@@ -368,7 +362,8 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
         .format(name, new_sshkeyfile.name)
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect('Credential \'{}\' updated'.format(name)) == 0
+    assert qpc_cred_edit.expect(
+        'Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -416,8 +411,6 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.xfail(
-    reason='https://github.com/quipucords/quipucords/issues/330')
 def test_edit_sudo_password(isolated_filesystem, qpc_server_config):
     """Edit an auth's sudo password.
 
@@ -460,7 +453,8 @@ def test_edit_sudo_password(isolated_filesystem, qpc_server_config):
     )
     assert qpc_cred_edit.expect(SUDO_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_sudo_password)
-    assert qpc_cred_edit.expect('Credential \'{}\' updated'.format(name)) == 0
+    assert qpc_cred_edit.expect(
+        'Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
