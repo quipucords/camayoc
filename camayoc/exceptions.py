@@ -40,3 +40,11 @@ class WaitTimeError(Exception):
     allowed. Instead of allowing the task to hang, it has aborted and raised
     this error.
     """
+
+
+class FailedScanException(Exception):
+    """A test has raised this exception because a scan failed.
+
+    While waiting for the scan to acheive some other state, the scan failed.
+    The test expected the scan to succeed, so this exception has been raised.
+    """

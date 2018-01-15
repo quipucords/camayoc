@@ -395,6 +395,15 @@ class Scan(QCSObject):
         path = urljoin(self.path(), 'restart/')
         return self.client.put(path, {}, **kwargs)
 
+    def results(self, **kwargs):
+        """Send a GET self.endpoint/{id}/results/ to read scan details.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.path(), 'results/')
+        return self.client.get(path, **kwargs)
+
     def status(self):
         """Check on the status of the scan.
 
