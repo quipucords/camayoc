@@ -57,10 +57,10 @@ def first_network_source():
     except (ConfigFileNotFoundError, KeyError):
         src = [
             {
-             'hosts': ['localhost'],
-             'name':'localhost',
-             'credentials':'root'
-             }
+                'hosts': ['localhost'],
+                'name':'localhost',
+                'credentials':'root'
+            }
         ]
     return src
 

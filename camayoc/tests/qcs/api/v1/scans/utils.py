@@ -1,6 +1,7 @@
 # coding=utf-8
 """Shared utility functions for scan tests."""
 
+import pprint
 import time
 
 from camayoc.qcs_models import (
@@ -8,7 +9,7 @@ from camayoc.qcs_models import (
     Source,
     Scan
 )
-from camayoc.exceptions import WaitTimeError
+from camayoc.exceptions import WaitTimeError, FailedScanException
 
 
 def wait_until_state(scan, timeout=120, state='completed'):
@@ -23,17 +24,36 @@ def wait_until_state(scan, timeout=120, state='completed'):
     anticipated that a scan may take longer to complete.
     """
     while (
-        not scan.status() or not scan.status() in [
-            'failed',
-            state]) and timeout > 0:
+            not scan.status() or not scan.status() == state) and timeout > 0:
         time.sleep(5)
         timeout -= 5
         if timeout <= 0:
             raise WaitTimeError(
-                'You have called wait_until_state() on a scan and the scan\n'
-                'timed out while waiting to achieve the state="{}" When the\n'
-                'scan timed out, it had the state="{}".\n'
-                .format(state, scan.status())
+                'You have called wait_until_state() on a scan with ID={} and\n'
+                'the scan timed out while waiting to achieve the state="{}"\n'
+                'When the scan timed out, it had the state="{}".\n'
+                'The full details of the scan were \n{}\n'
+                'The "results" available from the scan were \n{}\n'
+                .format(
+                    scan._id,
+                    state,
+                    scan.status(),
+                    pprint.pformat(scan.read().json()),
+                    pprint.pformat(scan.results().json()),
+                )
+            )
+        if state != 'failed' and scan.status() == 'failed':
+            raise FailedScanException(
+                'You have called wait_until_state() on a scan with ID={} and\n'
+                'the scan failed instead of acheiving state={}.\n'
+                'When it failed, the details about the scan were \n{}\n'
+                'The "results" available from the scan were \n{}\n'
+                .format(
+                    scan._id,
+                    state,
+                    pprint.pformat(scan.read().json()),
+                    pprint.pformat(scan.results().json()),
+                )
             )
 
 
