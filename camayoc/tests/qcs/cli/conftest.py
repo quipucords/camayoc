@@ -5,6 +5,7 @@ import pexpect
 import pytest
 
 from camayoc.config import get_config
+from camayoc.constants import QCS_SOURCE_TYPES
 
 
 @pytest.fixture()
@@ -32,3 +33,9 @@ def qpc_server_config():
     assert qpc_server_config.expect(pexpect.EOF) == 0
     qpc_server_config.close()
     assert qpc_server_config.exitstatus == 0
+
+
+@pytest.fixture(params=QCS_SOURCE_TYPES)
+def source_type(request):
+    """Fixture that returns the quipucords source types."""
+    return request.param

@@ -70,3 +70,25 @@ def cred_show(options, output, exitstatus=0):
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
     assert qpc_cred_show.exitstatus == exitstatus
+
+
+def source_show(options, output, exitstatus=0):
+    """Show a source entry.
+
+    :param options: A dictionary mapping the option names and their values.
+        Pass ``None`` for flag options.
+    :param output: A regular expression pattern that matches the expected
+        output. Make sure to escape any regular expression especial character.
+    :param exitstatus: Expected exit status code.
+    """
+    command = 'qpc source show'
+    for key, value in options.items():
+        if value is None:
+            command += ' --{}'.format(key)
+        else:
+            command += ' --{}={}'.format(key, value)
+    qpc_cred_show = pexpect.spawn(command)
+    assert qpc_cred_show.expect(output) == 0
+    assert qpc_cred_show.expect(pexpect.EOF) == 0
+    qpc_cred_show.close()
+    assert qpc_cred_show.exitstatus == exitstatus

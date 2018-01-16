@@ -13,5 +13,6 @@ Submodules
 
    camayoc.tests.qcs.cli.conftest
    camayoc.tests.qcs.cli.test_credentials
+   camayoc.tests.qcs.cli.test_sources
    camayoc.tests.qcs.cli.utils
 
