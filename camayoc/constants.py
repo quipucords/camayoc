@@ -291,7 +291,7 @@ RHO_ALL_FACTS = RHO_DEFAULT_FACTS + RHO_JBOSS_ALL_FACTS
 MASKED_PASSWORD_OUTPUT = '\*{8}'
 """Regex that matches password on outputs."""
 
-CONNECTION_PASSWORD_INPUT = 'Provide connection password.\r\nPassword:'
+CONNECTION_PASSWORD_INPUT = 'Provide( a)? connection password.\r\nPassword:'
 """Connection password input prompt."""
 
 SUDO_PASSWORD_INPUT = 'Provide password for sudo.\r\nPassword:'

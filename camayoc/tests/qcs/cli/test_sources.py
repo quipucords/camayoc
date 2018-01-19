@@ -21,9 +21,6 @@ from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.tests.qcs.cli.utils import cred_add, source_show
 
 
-ISSUE_448_MARK = pytest.mark.xfail(
-    reason='https://github.com/quipucords/quipucords/issues/448', strict=True)
-
 ISSUE_449_MARK = pytest.mark.xfail(
     reason='https://github.com/quipucords/quipucords/issues/449', strict=True)
 
@@ -243,10 +240,6 @@ def test_add_with_port_negative(
     assert qpc_source_add.exitstatus == 2
 
 
-@pytest.mark.parametrize('source_type', [
-    'network',
-    pytest.param('vcenter', marks=ISSUE_448_MARK)
-])
 def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
     """Edit a source's cred.
 
@@ -524,10 +517,6 @@ def test_edit_hosts_negative(
     assert qpc_source_edit.exitstatus == 1
 
 
-@pytest.mark.parametrize('source_type', [
-    'network',
-    pytest.param('vcenter', marks=ISSUE_448_MARK),
-])
 def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     """Edit a source's port.
 
@@ -682,7 +671,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
         'qpc source clear --name={}'.format(name)
     )
     assert qpc_source_clear.expect(
-        'Source "{}" was not found'.format(name)
+        'Source "{}" was not found.'.format(name)
     ) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
@@ -716,7 +705,7 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     assert (
         qpc_source_clear.logfile.getvalue().strip() ==
-        'Source "{}" was not found'.format(name).encode('utf-8')
+        'Source "{}" was not found.'.format(name).encode('utf-8')
     )
     qpc_source_clear.logfile.close()
     qpc_source_clear.close()
