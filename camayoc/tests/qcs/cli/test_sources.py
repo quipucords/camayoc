@@ -468,9 +468,9 @@ def test_edit_hosts_file(
 
 @pytest.mark.parametrize(
     ('source_type,new_hosts'), (
-        pytest.param('vcenter', '192.168.0.1 192.168.0.2'),
-        pytest.param('vcenter', '192.168.0.0/24', marks=ISSUE_449_MARK),
-        pytest.param('vcenter', '192.168.0.[1:100]', marks=ISSUE_449_MARK),
+        ('vcenter', '192.168.0.1 192.168.0.2'),
+        ('vcenter', '192.168.0.0/24'),
+        ('vcenter', '192.168.0.[1:100]'),
     )
 )
 def test_edit_hosts_negative(

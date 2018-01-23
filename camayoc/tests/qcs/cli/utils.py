@@ -48,17 +48,6 @@ def cred_show(options, output, exitstatus=0):
         network and \d+ respectively.
     :param exitstatus: Expected exit status code.
     """
-    expected_output = '{\r\n'
-    if 'cred_type' not in output:
-        expected_output += '    "cred_type": "network",\r\n'
-    if 'id' not in output:
-        expected_output += '    "id": \\d+,\r\n'
-    expected_output += ',\r\n'.join([
-        '    "{}": "{}"'.format(key, value)
-        for key, value in output.items()
-    ])
-    expected_output += '\r\n}\r\n'
-
     command = 'qpc cred show'
     for key, value in options.items():
         if value is None:
@@ -66,7 +55,7 @@ def cred_show(options, output, exitstatus=0):
         else:
             command += ' --{}={}'.format(key, value)
     qpc_cred_show = pexpect.spawn(command)
-    assert qpc_cred_show.expect(expected_output) == 0
+    assert qpc_cred_show.expect(output) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
     assert qpc_cred_show.exitstatus == exitstatus
@@ -87,8 +76,8 @@ def source_show(options, output, exitstatus=0):
             command += ' --{}'.format(key)
         else:
             command += ' --{}={}'.format(key, value)
-    qpc_cred_show = pexpect.spawn(command)
-    assert qpc_cred_show.expect(output) == 0
-    assert qpc_cred_show.expect(pexpect.EOF) == 0
-    qpc_cred_show.close()
-    assert qpc_cred_show.exitstatus == exitstatus
+    qpc_source_show = pexpect.spawn(command)
+    assert qpc_source_show.expect(output) == 0
+    assert qpc_source_show.expect(pexpect.EOF) == 0
+    qpc_source_show.close()
+    assert qpc_source_show.exitstatus == exitstatus

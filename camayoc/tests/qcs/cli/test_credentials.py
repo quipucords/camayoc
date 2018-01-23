@@ -19,9 +19,32 @@ from camayoc import utils
 from camayoc.constants import (
     CONNECTION_PASSWORD_INPUT,
     MASKED_PASSWORD_OUTPUT,
-    SUDO_PASSWORD_INPUT,
+    BECOME_PASSWORD_INPUT,
 )
 from camayoc.tests.qcs.cli.utils import cred_add, cred_show
+
+
+def generate_show_output(data):
+    """Generate a regex pattern with the data for a qpc cred show output."""
+    output = '{\r\n'
+    output += '    "become_method": "{}",\r\n'.format(
+        data.get('become_method', 'sudo'))
+    if 'become_password' in data:
+        output += '    "become_password": "{}",\r\n'.format(
+            data['become_password'])
+    output += '    "become_user": "{}",\r\n'.format(
+        data.get('become_user', 'root'))
+    output += '    "cred_type": "{}",\r\n'.format(
+        data.get('cred_type', 'network'))
+    output += '    "id": {},\r\n'.format(data.get('id', '\\d+'))
+    output += '    "name": "{}",\r\n'.format(data['name'])
+    if 'password' in data:
+        output += '    "password": "{}",\r\n'.format(data['password'])
+    if 'ssh_keyfile' in data:
+        output += '    "ssh_keyfile": "{}",\r\n'.format(data['ssh_keyfile'])
+    output += '    "username": "{}"\r\n'.format(data['username'])
+    output += '}\r\n'
+    return output
 
 
 def test_add_with_username_password(isolated_filesystem, qpc_server_config):
@@ -49,23 +72,23 @@ def test_add_with_username_password(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
 
-def test_add_with_username_password_sudo_password(
+def test_add_with_username_password_become_password(
         isolated_filesystem, qpc_server_config):
-    """Add an auth with username, password and sudo password.
+    """Add an auth with username, password and become password.
 
     :id: df0d61d5-363f-400a-961c-04146f6089e1
     :description: Add an auth entry providing the ``--name``, ``--username``,
-        ``--pasword`` and ``--sudo-password`` options.
+        ``--pasword`` and ``--become-password`` options.
     :steps: Run ``qpc cred add --name <name> --username <username> --password
-        --sudo-password``
+        --become-password``
     :expectedresults: A new auth entry is created with the data provided as
         input.
     """
@@ -76,22 +99,22 @@ def test_add_with_username_password_sudo_password(
             'name': name,
             'username': username,
             'password': None,
-            'sudo-password': None,
+            'become-password': None,
         },
         [
             (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
-            (SUDO_PASSWORD_INPUT, utils.uuid4()),
+            (BECOME_PASSWORD_INPUT, utils.uuid4()),
         ],
     )
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
+            'become_password': MASKED_PASSWORD_OUTPUT,
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
-            'sudo_password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
 
@@ -118,23 +141,23 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
             'username': username,
-        }
+        })
     )
 
 
-def test_add_with_username_sshkeyfile_sudo_password(
+def test_add_with_username_sshkeyfile_become_password(
         isolated_filesystem, qpc_server_config):
-    """Add an auth with username, sshkeyfile and sudo password.
+    """Add an auth with username, sshkeyfile and become password.
 
     :id: 94a45a9b-cda7-41e7-8be5-caf598917ebb
     :description: Add an auth entry providing the ``--name``, ``--username``,
-        ``--sshkeyfile`` and ``--sudo-password`` options.
+        ``--sshkeyfile`` and ``--become-password`` options.
     :steps: Run ``qpc cred add --name <name> --username <username> --sshkeyfile
-        <sshkeyfile> --sudo-password``
+        <sshkeyfile> --become-password``
     :expectedresults: A new auth entry is created with the data provided as
         input.
     """
@@ -147,21 +170,21 @@ def test_add_with_username_sshkeyfile_sudo_password(
             'name': name,
             'username': username,
             'sshkeyfile': sshkeyfile.name,
-            'sudo-password': None,
+            'become-password': None,
         },
         [
-            (SUDO_PASSWORD_INPUT, utils.uuid4()),
+            (BECOME_PASSWORD_INPUT, utils.uuid4()),
         ]
     )
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
+            'become_password': MASKED_PASSWORD_OUTPUT,
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
-            'sudo_password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
 
@@ -187,11 +210,11 @@ def test_edit_username(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
             'username': username,
-        }
+        })
     )
 
     qpc_cred_edit = pexpect.spawn(
@@ -206,11 +229,11 @@ def test_edit_username(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
             'username': new_username,
-        }
+        })
     )
 
 
@@ -270,11 +293,11 @@ def test_edit_password(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
     qpc_cred_edit = pexpect.spawn(
@@ -290,11 +313,11 @@ def test_edit_password(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
 
@@ -350,11 +373,11 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
             'username': username,
-        }
+        })
     )
 
     qpc_cred_edit = pexpect.spawn(
@@ -370,11 +393,11 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'ssh_keyfile': new_sshkeyfile.resolve(),
             'username': username,
-        }
+        })
     )
 
 
@@ -411,48 +434,48 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-def test_edit_sudo_password(isolated_filesystem, qpc_server_config):
-    """Edit an auth's sudo password.
+def test_edit_become_password(isolated_filesystem, qpc_server_config):
+    """Edit an auth's become password.
 
     :id: e1230ce5-7cb5-40d5-8f50-ff33779eee9e
     :description: Edit the password of an auth entry.
-    :steps: Run ``qpc cred edit --name <name> --sudo-password``
-    :expectedresults: The auth sudo password must be updated.
+    :steps: Run ``qpc cred edit --name <name> --become-password``
+    :expectedresults: The auth become password must be updated.
     """
     name = utils.uuid4()
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    sudo_password = utils.uuid4()
-    new_sudo_password = utils.uuid4()
+    become_password = utils.uuid4()
+    new_become_password = utils.uuid4()
     cred_add(
         {
             'name': name,
             'username': username,
             'sshkeyfile': sshkeyfile.name,
-            'sudo-password': None,
+            'become-password': None,
         },
         [
-            (SUDO_PASSWORD_INPUT, sudo_password),
+            (BECOME_PASSWORD_INPUT, become_password),
         ],
     )
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
+            'become_password': MASKED_PASSWORD_OUTPUT,
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
-            'sudo_password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sudo-password'
-        .format(name, new_sudo_password)
+        'qpc cred edit --name={} --become-password'
+        .format(name, new_become_password)
     )
-    assert qpc_cred_edit.expect(SUDO_PASSWORD_INPUT) == 0
-    qpc_cred_edit.sendline(new_sudo_password)
+    assert qpc_cred_edit.expect(BECOME_PASSWORD_INPUT) == 0
+    qpc_cred_edit.sendline(new_become_password)
     assert qpc_cred_edit.expect(
         'Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
@@ -461,21 +484,21 @@ def test_edit_sudo_password(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
+            'become_password': MASKED_PASSWORD_OUTPUT,
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
-            'sudo_password': MASKED_PASSWORD_OUTPUT,
             'username': username,
-        }
+        })
     )
 
 
-def test_edit_sudo_password_negative(isolated_filesystem, qpc_server_config):
-    """Edit the sudo password of a not created auth entry.
+def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
+    """Edit the become password of a not created auth entry.
 
     :id: 6364d80b-97b1-404e-85fd-76eebb7c6b5e
-    :description: Edit the sudo password of a not created auth entry.
-    :steps: Run ``qpc cred edit --name <invalidname> --sudo-password``
+    :description: Edit the become password of a not created auth entry.
+    :steps: Run ``qpc cred edit --name <invalidname> --become-password``
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
@@ -490,7 +513,7 @@ def test_edit_sudo_password_negative(isolated_filesystem, qpc_server_config):
 
     name = utils.uuid4()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sudo-password'.format(name)
+        'qpc cred edit --name={} --become-password'.format(name)
     )
     assert qpc_cred_edit.expect(
         'Credential "{}" does not exist'.format(name)) == 0
@@ -544,11 +567,11 @@ def test_clear(isolated_filesystem, qpc_server_config):
 
     cred_show(
         {'name': name},
-        {
+        generate_show_output({
             'name': name,
             'ssh_keyfile': sshkeyfile.resolve(),
             'username': username,
-        }
+        })
     )
 
     qpc_cred_clear = pexpect.spawn(
@@ -588,7 +611,7 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     assert (
         qpc_cred_clear.logfile.getvalue().strip().decode('utf-8') ==
-        'Credential "{}" was not found'.format(name)
+        'Credential "{}" was not found.'.format(name)
     )
     qpc_cred_clear.logfile.close()
     qpc_cred_clear.close()
@@ -613,7 +636,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
             'name': name,
             'password': None,
             'ssh_keyfile': str(sshkeyfile.resolve()),
-            'sudo_password': None,
+            'become_password': None,
             'username': username,
         }
         auths.append(auth)
