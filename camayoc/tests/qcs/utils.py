@@ -26,6 +26,8 @@ def assert_source_update_fails(original_data, source):
     assert update_response.status_code == 400
     server_data = source.read().json()
     for key, value in server_data.items():
+        if key == 'options' and original_data.get(key) is None:
+            continue
         if key == 'credentials':
             # the server creds are dicts with other data besides the id
             cred_ids = []

@@ -332,14 +332,14 @@ QCS_SCAN_PATH = 'scans/'
 QCS_TOKEN_PATH = 'token/'
 """The path to the endpoint used for obtaining an authentication token."""
 
-QCS_SOURCE_TYPES = ('vcenter', 'network')
+QCS_SOURCE_TYPES = ('vcenter', 'network', 'satellite')
 """Types of sources that the quipucords server supports."""
 
-QCS_HOST_MANAGER_TYPES = ('vcenter',)
+QCS_HOST_MANAGER_TYPES = ('vcenter', 'satellite')
 """Types of host managers that the quipucords server supports."""
 
 VCENTER_SCAN_TIMEOUT = 540
 """Maximum amount of time to let vcenter scan run before timing out."""
 
-SATELLITE_SCAN_TIMEOUT = 120
+SATELLITE_SCAN_TIMEOUT = 360
 """Maximum amount of time to let satellite scan run before timing out."""

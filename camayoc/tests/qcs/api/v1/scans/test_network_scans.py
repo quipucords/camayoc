@@ -13,99 +13,22 @@
 import pytest
 import time
 
-from camayoc import config
-from camayoc.exceptions import ConfigFileNotFoundError
-from camayoc.qcs_models import (
-    Credential,
-    Source,
-    Scan,
-)
-from camayoc.tests.qcs.api.v1.scans.utils import (
+from camayoc.tests.qcs.api.v1.utils import (
     wait_until_state,
     prep_broken_scan,
+    prep_network_scan,
+    network_sources,
+    first_network_source,
 )
 
 
-def network_sources():
-    """Gather sources from config file.
-
-    If no config file is found, or no sources defined,
-    then an empty list will be returned.
-
-    If a test is parametrized on the sources in the config file, it will skip
-    if no sources are found.
-    """
-    try:
-        srcs = [s for s in config.get_config()['qcs']['sources']
-                if s['type'] == 'network']
-    except (ConfigFileNotFoundError, KeyError):
-        srcs = []
-    return srcs
-
-
-def first_network_source():
-    """Gather sources from config file.
-
-    If no source is found in the config file, or no config file is found, a
-    default source will be returned.
-    """
-    try:
-        for s in config.get_config()['qcs']['sources']:
-            if s['type'] == 'network':
-                src = [s]
-                break
-    except (ConfigFileNotFoundError, KeyError):
-        src = [
-            {
-                'hosts': ['localhost'],
-                'name':'localhost',
-                'credentials':'root'
-            }
-        ]
-    return src
-
-
-def prep_network_scan(source, cleanup, client):
-    """Given a source from config file, prep the scan.
-
-    Takes care of creating the Credential and Source objects on the server and
-    staging them for cleanup after the tests complete.
-    """
-    cfg = config.get_config()
-    cred_ids = []
-    for c in cfg['credentials']:
-        if c['name'] in source['credentials'] and c['type'] == 'network':
-            cred = Credential(
-                cred_type='network',
-                client=client,
-                username=c['username'],
-            )
-            if c.get('sshkeyfile'):
-                cred.ssh_keyfile = c['sshkeyfile']
-            else:
-                cred.password = c['password']
-            cred.create()
-            cleanup.append(cred)
-            cred_ids.append(cred._id)
-
-    netsrc = Source(
-        source_type='network',
-        client=client,
-        hosts=source['hosts'],
-        credential_ids=cred_ids,
-    )
-    netsrc.create()
-    cleanup.append(netsrc)
-    scan = Scan(source_ids=[netsrc._id])
-    return scan
-
-
+@pytest.mark.parametrize('scan_type', ['connect', 'inspect'])
 @pytest.mark.parametrize('source', network_sources(), ids=[
                          '{}-{}'.format(
                              s['name'],
                              s['credentials']) for s in network_sources()]
                          )
-def test_create(shared_client, cleanup, source, isolated_filesystem):
+def test_create(shared_client, cleanup, source, scan_type):
     """Run a scan on a system and confirm it completes.
 
     :id: ee3b0bc8-1489-443e-86bb-e2a2349e9c98
@@ -118,10 +41,28 @@ def test_create(shared_client, cleanup, source, isolated_filesystem):
         4) Assert that the scan completes and a fact id is generated
     :expectedresults: A scan is run and has facts associated with it
     """
-    scan = prep_network_scan(source, cleanup, shared_client)
+    scan = prep_network_scan(source, cleanup, shared_client, scan_type)
     scan.create()
     wait_until_state(scan, state='completed')
-    assert scan.read().json().get('fact_collection_id') > 0
+    if scan_type == 'inspect':
+        assert scan.read().json().get('fact_collection_id') > 0
+
+
+@pytest.mark.parametrize('scan_type', ['inspect'])
+def test_negative_create(shared_client, cleanup, scan_type):
+    """Run a scan on a system that we cannot access and confirm that it fails.
+
+    :id: 0d132fde-1c3f-4f81-b425-26adf4806c04
+    :description: Create a scan for a network source that we lack actual
+        credentials for, and assert that it fails
+    :steps:
+        1) Create a scan that should fail
+        2) Assert that the scan fails
+    :expectedresults: A scan is run and has facts associated with it
+    """
+    scan = prep_broken_scan('network', cleanup, scan_type)
+    scan.create()
+    wait_until_state(scan, state='failed')
 
 
 @pytest.mark.parametrize('source', first_network_source(), ids=[
@@ -129,7 +70,7 @@ def test_create(shared_client, cleanup, source, isolated_filesystem):
                              first_network_source()[0]['name'],
                              first_network_source()[0]['credentials'])]
                          )
-def test_pause_cancel(shared_client, cleanup, source, isolated_filesystem):
+def test_pause_cancel(shared_client, cleanup, source):
     """Run a scan on a system and confirm we can pause and cancel it.
 
     :id: 4d4b9839-1672-4183-bd27-11864787eb8e
@@ -157,7 +98,7 @@ def test_pause_cancel(shared_client, cleanup, source, isolated_filesystem):
                              first_network_source()[0]['name'],
                              first_network_source()[0]['credentials'])]
                          )
-def test_restart(shared_client, cleanup, source, isolated_filesystem):
+def test_restart(shared_client, cleanup, source):
     """Run a scan on a system and confirm we can pause and restart it.
 
     :id: 6d81121d-500e-4188-8195-2e469ca606c0
@@ -188,11 +129,7 @@ def test_restart(shared_client, cleanup, source, isolated_filesystem):
                              first_network_source()[0]['name'],
                              first_network_source()[0]['credentials'])]
                          )
-def test_queue_mix_valid_invalid(
-        shared_client,
-        cleanup,
-        source,
-        isolated_filesystem):
+def test_queue_mix_valid_invalid(shared_client, cleanup, source):
     """Create a series of scans and assert all valid ones complete.
 
     :id: eb6d07bd-39c5-4f9a-ae34-791c95f315fb
@@ -231,11 +168,7 @@ def test_queue_mix_valid_invalid(
                              first_network_source()[0]['name'],
                              first_network_source()[0]['credentials'])]
                          )
-def test_queue_mix_paused_canceled(
-        shared_client,
-        cleanup,
-        source,
-        isolated_filesystem):
+def test_queue_mix_paused_canceled(shared_client, cleanup, source):
     """Assert all non-canceled and paused scans in a queue complete.
 
     :id: 925e2a72-3e69-4947-bfd7-5298bc033963

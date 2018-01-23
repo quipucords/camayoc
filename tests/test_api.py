@@ -11,6 +11,7 @@ from camayoc.utils import uuid4
 from camayoc.qcs_models import (
     Credential,
     Source,
+    Scan,
 )
 
 
@@ -47,6 +48,27 @@ MOCK_SOURCE = {
     'source_type': 'network',
     'name': 'e193081c-2423-4407-b9e2-05d20b6443dc',
     'port': 22
+}
+
+MOCK_SAT6_SOURCE = {
+    'credentials': [{'id': 34,
+                     'name': '91311585-77b3-4352-a277-cf9507a04ffc'
+                     }],
+    'hosts': ['example.com'],
+    'id': 25,
+    'source_type': 'satellite',
+    'name': 'e193081c-2423-4407-b9e2-05d20b6443dc',
+    'port': 443,
+    'options': {'satellite_version': '6.2'},
+}
+
+
+MOCK_SCAN = {
+   'id': 21,
+   'options': {'max_concurrency': 50},
+   'scan_type': 'connect',
+   'sources': [153],
+   'status': 'created'
 }
 
 
@@ -159,7 +181,7 @@ class SourceTestCase(unittest.TestCase):
         cls.config = yaml.load(CAMAYOC_CONFIG)
         cls.invalid_config = yaml.load(INVALID_HOST_CONFIG)
 
-    def test_equivalent(self):
+    def test_equivalent_network(self):
         """If a hostname is specified in the config file, we use it."""
         with mock.patch.object(config, '_CONFIG', self.config):
             client = api.Client(authenticate=False)
@@ -175,3 +197,45 @@ class SourceTestCase(unittest.TestCase):
             self.assertTrue(p.equivalent(p))
             with self.assertRaises(TypeError):
                 p.equivalent([])
+
+    def test_equivalent_satellite(self):
+        """If a hostname is specified in the config file, we use it."""
+        with mock.patch.object(config, '_CONFIG', self.config):
+            client = api.Client(authenticate=False)
+            p = Source(
+                source_type='satellite',
+                name=MOCK_SAT6_SOURCE['name'],
+                hosts=MOCK_SAT6_SOURCE['hosts'],
+                credential_ids=[MOCK_SAT6_SOURCE['credentials'][0]['id']],
+                options={'satellite_version': '6.2'},
+                port=443,
+                client=client,
+            )
+            p._id = MOCK_SAT6_SOURCE['id']
+            self.assertTrue(p.equivalent(MOCK_SAT6_SOURCE))
+            self.assertTrue(p.equivalent(p))
+            with self.assertRaises(TypeError):
+                p.equivalent([])
+
+
+class ScanTestCase(unittest.TestCase):
+    """Test :mod:camayoc.api."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Create a parsed configuraton dictionary."""
+        cls.config = yaml.load(CAMAYOC_CONFIG)
+        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG)
+
+    def test_equivalent(self):
+        """If a hostname is specified in the config file, we use it."""
+        with mock.patch.object(config, '_CONFIG', self.config):
+            scn = Scan(
+                    source_ids=[153],
+                    scan_type='connect',
+                    )
+            scn._id = MOCK_SCAN['id']
+            self.assertTrue(scn.equivalent(MOCK_SCAN))
+            self.assertTrue(scn.equivalent(scn))
+            with self.assertRaises(TypeError):
+                scn.equivalent([])

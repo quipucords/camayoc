@@ -17,3 +17,10 @@ Subpackages
     camayoc.tests.qcs.api.v1.scans
     camayoc.tests.qcs.api.v1.sources
 
+Submodules
+----------
+
+.. toctree::
+
+   camayoc.tests.qcs.api.v1.utils
+

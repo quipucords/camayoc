@@ -258,6 +258,7 @@ class Source(QCSObject):
             port=None,
             credential_ids=None,
             source_type=None,
+            options=None,
             _id=None):
         """Iniitalize a Source object with given data.
 
@@ -270,6 +271,8 @@ class Source(QCSObject):
         self.hosts = hosts
         if port is not None:
             self.port = port
+        if options is not None:
+            self.options = options
         self.credentials = credential_ids
         self.source_type = source_type
 
