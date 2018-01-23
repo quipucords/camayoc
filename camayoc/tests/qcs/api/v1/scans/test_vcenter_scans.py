@@ -20,7 +20,7 @@ from camayoc.qcs_models import (
     Source,
     Scan
 )
-from camayoc.tests.qcs.api.v1.scans.utils import wait_until_state
+from camayoc.tests.qcs.api.v1.utils import wait_until_state
 
 
 def vcenter_source():

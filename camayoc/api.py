@@ -176,6 +176,15 @@ class Client(object):
             headers=self.default_headers(),
             **kwargs)
 
+    def options(self, endpoint, **kwargs):
+        """Send an HTTP OPTIONS request."""
+        url = urljoin(self.url, endpoint)
+        return self.request(
+            'OPTIONS',
+            url,
+            headers=self.default_headers(),
+            **kwargs)
+
     def head(self, endpoint, **kwargs):
         """Send an HTTP HEAD request."""
         url = urljoin(self.url, endpoint)
