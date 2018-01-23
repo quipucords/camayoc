@@ -291,6 +291,11 @@ RHO_ALL_FACTS = RHO_DEFAULT_FACTS + RHO_JBOSS_ALL_FACTS
 MASKED_PASSWORD_OUTPUT = '\*{8}'
 """Regex that matches password on outputs."""
 
+BECOME_PASSWORD_INPUT = (
+    'Provide a privilege escalation password to be used when running a '
+    'network scan.\r\nPassword:')
+"""Become password input prompt."""
+
 CONNECTION_PASSWORD_INPUT = 'Provide( a)? connection password.\r\nPassword:'
 """Connection password input prompt."""
 
