@@ -13,7 +13,10 @@ from urllib.parse import urljoin, urlunparse
 
 from camayoc import config
 from camayoc import exceptions
-from camayoc.constants import QCS_API_VERSION
+from camayoc.constants import (
+    QCS_API_VERSION,
+    QCS_TOKEN_PATH,
+)
 
 
 def echo_handler(response):
@@ -73,7 +76,7 @@ class Client(object):
     .. _Requests: http://docs.python-requests.org/en/master/
     """
 
-    def __init__(self, response_handler=None, url=None):
+    def __init__(self, response_handler=None, url=None, authenticate=True):
         """Initialize this object, collecting base URL from config file.
 
         If no response handler is specified, use the `code_handler` which will
@@ -94,6 +97,7 @@ class Client(object):
                               # https. Defaults to false if not defined
         """
         self.url = url
+        self.token = None
 
         if not self.url:
             cfg = config.get_config().get('qcs', {})
@@ -121,30 +125,85 @@ class Client(object):
         else:
             self.response_handler = response_handler
 
+        if authenticate:
+            self.login()
+
+    def login(self):
+        """Login to the server to receive an authorization token."""
+        cfg = config.get_config().get('qcs', {})
+        server_username = cfg.get('username', 'admin')
+        server_password = cfg.get('password', 'pass')
+        login_request = self.request(
+            'POST',
+            urljoin(self.url, QCS_TOKEN_PATH),
+            json={
+                'username': server_username,
+                'password': server_password
+            }
+        )
+        self.token = login_request.json()['token']
+        return login_request
+
+    def logout(self):
+        """Start sending unauthorized requests.
+
+        There is no API interaction that need occur to logout.
+        We simply must send unauthorized requests.
+        """
+        self.token = None
+
+    def default_headers(self):
+        """Build the headers for our request to the server."""
+        if self.token:
+            return {'Authorization': 'Token {}'.format(self.token)}
+        return {}
+
     def delete(self, endpoint, **kwargs):
         """Send an HTTP DELETE request."""
         url = urljoin(self.url, endpoint)
-        return self.request('DELETE', url, **kwargs)
+        return self.request(
+            'DELETE',
+            url,
+            headers=self.default_headers(),
+            **kwargs)
 
     def get(self, endpoint, **kwargs):
         """Send an HTTP GET request."""
         url = urljoin(self.url, endpoint)
-        return self.request('GET', url, **kwargs)
+        return self.request(
+            'GET',
+            url,
+            headers=self.default_headers(),
+            **kwargs)
 
     def head(self, endpoint, **kwargs):
         """Send an HTTP HEAD request."""
         url = urljoin(self.url, endpoint)
-        return self.request('HEAD', url, **kwargs)
+        return self.request(
+            'HEAD',
+            url,
+            headers=self.default_headers(),
+            **kwargs)
 
     def post(self, endpoint, payload, **kwargs):
         """Send an HTTP POST request."""
         url = urljoin(self.url, endpoint)
-        return self.request('POST', url, json=payload, **kwargs)
+        return self.request(
+            'POST',
+            url,
+            headers=self.default_headers(),
+            json=payload,
+            **kwargs)
 
     def put(self, endpoint, payload, **kwargs):
         """Send an HTTP PUT request."""
         url = urljoin(self.url, endpoint)
-        return self.request('PUT', url, json=payload, **kwargs)
+        return self.request(
+            'PUT',
+            url,
+            headers=self.default_headers(),
+            json=payload,
+            **kwargs)
 
     def request(self, method, url, **kwargs):
         """Send an HTTP request.

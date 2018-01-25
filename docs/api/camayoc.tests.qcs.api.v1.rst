@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+    camayoc.tests.qcs.api.v1.authentication
     camayoc.tests.qcs.api.v1.credentials
     camayoc.tests.qcs.api.v1.scans
     camayoc.tests.qcs.api.v1.sources
