@@ -41,3 +41,4 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.api.v1.scans.test_network_scans.rst
     api/camayoc.tests.qcs.api.v1.scans.test_satellite_scans.rst
     api/camayoc.tests.qcs.api.v1.scans.test_vcenter_scans.rst
+    api/camayoc.tests.qcs.api.v1.authentication.test_login.rst

@@ -329,6 +329,9 @@ QCS_SOURCE_PATH = 'sources/'
 QCS_SCAN_PATH = 'scans/'
 """The path to the scans endpoint for CRUD tasks."""
 
+QCS_TOKEN_PATH = 'token/'
+"""The path to the endpoint used for obtaining an authentication token."""
+
 QCS_SOURCE_TYPES = ('vcenter', 'network')
 """Types of sources that the quipucords server supports."""
 
