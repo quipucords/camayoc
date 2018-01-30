@@ -56,8 +56,26 @@ def wait_until_state(scan, timeout=120, state='completed'):
                 .format(
                     scan._id,
                     state,
+                    pprint.pformat(scan.read().json()),
+                    pprint.pformat(scan.results().json()),
                 )
             )
+
+
+def all_sources():
+    """Gather sources from config file.
+
+    If no config file is found, or no sources defined,
+    then an empty list will be returned.
+
+    If a test is parametrized on the sources in the config file, it will skip
+    if no sources are found.
+    """
+    try:
+        srcs = [s for s in config.get_config()['qcs']['sources']]
+    except (ConfigFileNotFoundError, KeyError):
+        srcs = []
+    return srcs
 
 
 def network_sources():
@@ -159,4 +177,42 @@ def prep_network_scan(source, cleanup, client, scan_type='inspect'):
     netsrc.create()
     cleanup.append(netsrc)
     scan = Scan(source_ids=[netsrc._id], scan_type=scan_type)
+    return scan
+
+
+def prep_all_source_scan(cleanup, client, scan_type='inspect'):
+    """Prep a scan that scans every source listed in the config file.
+
+    Takes care of creating the Credential and Source objects on the server and
+    staging them for cleanup after the tests complete.
+    """
+    cfg = config.get_config()
+    creds = {}
+    for c in cfg['credentials']:
+        cred = Credential(
+            cred_type=c['type'],
+            client=client,
+            username=c['username'],
+        )
+        if c.get('sshkeyfile'):
+            cred.ssh_keyfile = c['sshkeyfile']
+        else:
+            cred.password = c['password']
+        cred.create()
+        cleanup.append(cred)
+        creds[c['name']] = cred._id
+
+    all_sources = []
+    for s in cfg['qcs']['sources']:
+        src = Source(
+            source_type=s['type'],
+            client=client,
+            hosts=s['hosts'],
+            credential_ids=[creds[s['credentials'][0]]],
+        )
+        src.create()
+        all_sources.append(src._id)
+        cleanup.append(src)
+
+    scan = Scan(source_ids=all_sources, scan_type=scan_type)
     return scan

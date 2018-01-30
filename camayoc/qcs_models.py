@@ -2,12 +2,12 @@
 """Models for use with the Quipucords API."""
 
 import re
-import uuid
 
 from pprint import pformat
 from urllib.parse import urljoin
 
 from camayoc import api
+from camayoc.utils import uuid4
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
 from camayoc.constants import (
     QCS_CREDENTIALS_PATH,
@@ -180,8 +180,10 @@ class Credential(QCSObject):
             username=None,
             password=None,
             ssh_keyfile=None,
-            sudo_password=None,
             cred_type=None,
+            become_method=None,
+            become_password=None,
+            become_user=None,
             _id=None):
         """Create a host credential with given data.
 
@@ -192,13 +194,18 @@ class Credential(QCSObject):
         a password XOR a ssh_keyfile must be provided.
         """
         super().__init__(client=client, _id=_id)
-        self.name = str(uuid.uuid4()) if name is None else name
+        self.name = uuid4() if name is None else name
         self.endpoint = QCS_CREDENTIALS_PATH
-        self.username = str(uuid.uuid4()) if username is None else username
+        self.username = uuid4() if username is None else username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
-        self.sudo_password = sudo_password
         self.cred_type = cred_type
+        if become_method is not None:
+            self.become_method = become_method
+        if become_password is not None:
+            self.become_password = become_password
+        if become_user is not None:
+            self.become_user = become_user
 
     def equivalent(self, other):
         """Return true if both objects are equal.
@@ -219,12 +226,26 @@ class Credential(QCSObject):
             )
 
         password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
-        for key, value in self.fields().items():
-            if key == 'password' and other.get(key) is not None:
+        local_items = self.fields()
+        local_keys = local_items.keys()
+        other_keys = other.keys()
+        all_keys = set(local_keys).union(other_keys)
+        for key in all_keys:
+            if key not in [
+                'password',
+                'become_method',
+                'become_user',
+                    'become_password']:
+                if not local_items.get(key) == other.get(key):
+                    return False
+            if 'password' in key and local_items.get(key) is not None:
                 if not password_matcher.match(other.get(key)):
                     return False
-            else:
-                if not other.get(key) == value:
+            if key == 'become_method':
+                if not other.get(key) == local_items.get(key, 'sudo'):
+                    return False
+            if key == 'become_user':
+                if not other.get(key) == local_items.get(key, 'root'):
                     return False
         return True
 
@@ -266,7 +287,7 @@ class Source(QCSObject):
         A uuid4 name and api.Client are also supplied if none are provided.
         """
         super().__init__(client=client, _id=_id)
-        self.name = str(uuid.uuid4()) if name is None else name
+        self.name = uuid4() if name is None else name
         self.endpoint = QCS_SOURCE_PATH
         self.hosts = hosts
         if port is not None:
@@ -295,7 +316,23 @@ class Source(QCSObject):
                 'Sources objects or dictionaries.'
             )
 
-        for key, value in self.fields().items():
+        local_items = self.fields()
+        local_keys = local_items.keys()
+        other_keys = other.keys()
+        all_keys = set(local_keys).union(other_keys)
+        for key in all_keys:
+            if key == 'port':
+                default_port = 22 if self.source_type == 'network' else 443
+                if int(
+                    other.get(key)) != int(
+                    local_items.get(
+                        key,
+                        default_port)):
+                    return False
+            if key == 'options':
+                if self.source_type == 'satellite':
+                    if other.get(key).get('satellite_version') != '6.2':
+                        return False
             if key == 'credentials':
                 other_creds = other.get('credentials')
                 cred_ids = []
@@ -305,10 +342,11 @@ class Source(QCSObject):
                 # the list of id's we used to create the source
                 for cred in other_creds:
                     cred_ids.append(cred.get('id'))
-                if sorted(value) != sorted(cred_ids):
+                if sorted(local_items.get(key)) != sorted(cred_ids):
                     return False
-            else:
-                if not other.get(key) == value:
+
+            if key not in ['port', 'credentials', 'options']:
+                if not other.get(key) == local_items.get(key):
                     return False
         return True
 
@@ -437,11 +475,17 @@ class Scan(QCSObject):
                 'Scan objects or dictionaries.'
             )
 
-        for key, value in self.fields().items():
-            if key == 'source':
-                if value != other.get(key).get('id'):
+        local_items = self.fields()
+        local_keys = local_items.keys()
+        other_keys = other.keys()
+        all_keys = set(local_keys).union(other_keys)
+        for key in all_keys:
+            if key == 'status':
+                continue
+            if key == 'sources':
+                if sorted(local_items[key]) != sorted(other[key]):
                     return False
-            else:
-                if not other.get(key) == value:
+            if key not in ['status', 'sources']:
+                if not other[key] == local_items[key]:
                     return False
         return True

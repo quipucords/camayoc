@@ -9,11 +9,14 @@
 :testtype: functional
 :upstream: yes
 """
+import requests
+
 from pathlib import Path
 
 import pytest
 
 from camayoc import api
+from camayoc.constants import QCS_BECOME_METHODS
 from camayoc.qcs_models import Credential
 from camayoc.utils import uuid4
 from camayoc.tests.qcs.utils import assert_matches_server
@@ -180,15 +183,53 @@ def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
     assert cred._id is None
 
 
-@pytest.mark.skip
-def test_create_sudo_password(cleanup, isolated_filesystem):
-    """Create a network credential that has a sudo password.
+@pytest.mark.parametrize('method', QCS_BECOME_METHODS)
+def test_create_become_method(cleanup, shared_client, method):
+    """Create a network credential that uses become options.
 
     :id: e49e497d-abb7-4d6a-8366-3409e297062a
-    :description: Create a network credential with username, password XOR
-        sshkey, and a sudo password.
+    :description: Create a network credential with username, password
+        and uses a become method.
     :steps: Send a POST to the credential endpoint with data.
     :expectedresults: A new network credential is created.
-    :caseautomation: notautomated
     """
-    pass
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
+        password=uuid4(),
+        become_method=method,
+        become_password=uuid4(),
+        become_user=uuid4(),
+    )
+    cred.create()
+    # add the id to the list to destroy after the test is done
+    cleanup.append(cred)
+    assert_matches_server(cred)
+
+
+@pytest.mark.parametrize('invalid_method', ['not-a-method', 86])
+def test_negative_invalid_become_method(cleanup,
+                                        shared_client,
+                                        invalid_method
+                                        ):
+    """Attempt to create a network credential with unsupported become options.
+
+    :id: f05f2ea8-ae9f-4bad-a76f-5246128400d9
+    :description: Submit an otherwise well formed request to create a network
+        credential with a become method, but provide a become method that is
+        not supported.
+    :steps: Send a POST to the credential endpoint that is well formed except
+        contains a become method that the server does not know how to use.
+    :expectedresults: No new credential is created.
+    """
+    cred = Credential(
+        cred_type='network',
+        client=shared_client,
+        password=uuid4(),
+        become_method=invalid_method,
+        become_password=uuid4(),
+        become_user=uuid4(),
+    )
+    with pytest.raises(requests.HTTPError):
+        cred.create()
+        cleanup.append(cred)

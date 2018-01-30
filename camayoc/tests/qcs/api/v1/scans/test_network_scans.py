@@ -13,6 +13,12 @@
 import pytest
 import time
 
+
+from camayoc.utils import uuid4
+from camayoc.qcs_models import (
+    Credential,
+    Source,
+)
 from camayoc.tests.qcs.api.v1.utils import (
     wait_until_state,
     prep_broken_scan,
@@ -40,11 +46,62 @@ def test_create(shared_client, cleanup, source, scan_type):
         3) Create a scan
         4) Assert that the scan completes and a fact id is generated
     :expectedresults: A scan is run and has facts associated with it
+        Also, scan results should be available during the scan.
     """
     scan = prep_network_scan(source, cleanup, shared_client, scan_type)
     scan.create()
+    if scan_type == 'inspect':
+        wait_until_state(scan, state='running')
+        assert 'connection_results' in scan.results().json().keys()
+        assert 'inspection_results' in scan.results().json().keys()
     wait_until_state(scan, state='completed')
     if scan_type == 'inspect':
+        assert scan.read().json().get('fact_collection_id') > 0
+
+
+@pytest.mark.parametrize('scan_type', ['connect', 'inspect'])
+@pytest.mark.parametrize('source', network_sources(), ids=[
+                         '{}-{}'.format(
+                             s['name'],
+                             s['credentials']) for s in network_sources()]
+                         )
+def test_run_mixed_reachable(shared_client, cleanup, source, scan_type):
+    """Run a scan that includes reachable and unreachable hosts.
+
+    :id: f5f61ab1-d63e-40de-8546-6b2a6f8afb56
+    :description: Create a scan that has two sources, one that is known to
+        have all reachable, and the other that is constructed to have no
+        reachable hosts. The scan should complete, but show a failed
+        status for inspect scans. However, it still should have been
+        able to create a fact collection for those facts it was able to
+        collect.
+    :steps:
+        1) Create a scan that includes reachable and unreachable hosts
+        2) Assert that the scan completes and a fact id is generated
+    :expectedresults: A scan is run and has facts associated with it
+        Also, scan results should be available during the scan.
+    """
+    scan = prep_network_scan(source, cleanup, shared_client, scan_type)
+    cred = Credential(cred_type='network', username=uuid4(), password=uuid4())
+    cred.create()
+    cleanup.append(cred)
+    bad_src = Source(
+        source_type='network',
+        hosts=['example.com'],
+        credential_ids=[
+            cred._id])
+    bad_src.create()
+    cleanup.append(bad_src)
+    scan.sources.append(bad_src._id)
+    scan.create()
+    if scan_type == 'inspect':
+        wait_until_state(scan, state='running')
+        assert 'connection_results' in scan.results().json().keys()
+        assert 'inspection_results' in scan.results().json().keys()
+    if scan_type == 'connect':
+        wait_until_state(scan, state='completed')
+    if scan_type == 'inspect':
+        wait_until_state(scan, state='failed')
         assert scan.read().json().get('fact_collection_id') > 0
 
 

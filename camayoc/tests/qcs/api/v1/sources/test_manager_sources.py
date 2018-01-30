@@ -48,3 +48,23 @@ def test_negative_update_invalid(src_type, shared_client, cleanup, scan_host):
     :caseautomation: notautomated
     """
     pass
+
+
+@pytest.mark.skip
+@pytest.mark.parametrize('src_type', 'satellite')
+def test_negative_create_satellite(
+        src_type,
+        shared_client,
+        cleanup,
+        scan_host):
+    """Attempt to create a satellite source with an invalid version.
+
+    :id: d59891e6-b232-4ae0-b605-f0adf74ccc86
+    :description: Attempt to create satellite with non-supported or invalid
+        version.
+    :steps:
+        1) Attempt to create a satellite source with invalid version.
+    :expectedresults: An error is thrown and no new host is created.
+    :caseautomation: notautomated
+    """
+    pass
