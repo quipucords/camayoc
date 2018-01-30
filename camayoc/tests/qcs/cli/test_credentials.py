@@ -26,16 +26,17 @@ from camayoc.tests.qcs.cli.utils import cred_add, cred_show
 
 def generate_show_output(data):
     """Generate a regex pattern with the data for a qpc cred show output."""
+    cred_type = data.get('cred_type', 'network')
     output = '{\r\n'
-    output += '    "become_method": "{}",\r\n'.format(
-        data.get('become_method', 'sudo'))
-    if 'become_password' in data:
-        output += '    "become_password": "{}",\r\n'.format(
-            data['become_password'])
-    output += '    "become_user": "{}",\r\n'.format(
-        data.get('become_user', 'root'))
-    output += '    "cred_type": "{}",\r\n'.format(
-        data.get('cred_type', 'network'))
+    if cred_type == 'network':
+        output += '    "become_method": "{}",\r\n'.format(
+            data.get('become_method', 'sudo'))
+        if 'become_password' in data:
+            output += '    "become_password": "{}",\r\n'.format(
+                data['become_password'])
+        output += '    "become_user": "{}",\r\n'.format(
+            data.get('become_user', 'root'))
+    output += '    "cred_type": "{}",\r\n'.format(cred_type)
     output += '    "id": {},\r\n'.format(data.get('id', '\\d+'))
     output += '    "name": "{}",\r\n'.format(data['name'])
     if 'password' in data:
@@ -47,7 +48,8 @@ def generate_show_output(data):
     return output
 
 
-def test_add_with_username_password(isolated_filesystem, qpc_server_config):
+def test_add_with_username_password(
+        isolated_filesystem, qpc_server_config, source_type):
     """Add an auth with username and password.
 
     :id: c935d34c-54f6-443f-a85c-344934bc0cfb
@@ -64,6 +66,7 @@ def test_add_with_username_password(isolated_filesystem, qpc_server_config):
             'name': name,
             'username': username,
             'password': None,
+            'type': source_type,
         },
         [
             (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
@@ -73,6 +76,7 @@ def test_add_with_username_password(isolated_filesystem, qpc_server_config):
     cred_show(
         {'name': name},
         generate_show_output({
+            'cred_type': source_type,
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
@@ -188,7 +192,7 @@ def test_add_with_username_sshkeyfile_become_password(
     )
 
 
-def test_edit_username(isolated_filesystem, qpc_server_config):
+def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
     """Edit an auth's username.
 
     :id: 69e2d06e-5c29-42ab-916e-e724451afabe
@@ -200,19 +204,24 @@ def test_edit_username(isolated_filesystem, qpc_server_config):
     name = utils.uuid4()
     username = utils.uuid4()
     new_username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
-    sshkeyfile.touch()
-    cred_add({
-        'name': name,
-        'username': username,
-        'sshkeyfile': sshkeyfile.name,
-    })
+    cred_add(
+        {
+            'name': name,
+            'password': None,
+            'type': source_type,
+            'username': username,
+        },
+        [
+            (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
+        ],
+    )
 
     cred_show(
         {'name': name},
         generate_show_output({
+            'cred_type': source_type,
             'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
+            'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
         })
     )
@@ -230,8 +239,9 @@ def test_edit_username(isolated_filesystem, qpc_server_config):
     cred_show(
         {'name': name},
         generate_show_output({
+            'cred_type': source_type,
             'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
+            'password': MASKED_PASSWORD_OUTPUT,
             'username': new_username,
         })
     )
@@ -268,7 +278,7 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-def test_edit_password(isolated_filesystem, qpc_server_config):
+def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     """Edit an auth's password.
 
     :id: 07bbe78d-d140-449d-b835-59b35d9e9a59
@@ -285,6 +295,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config):
             'name': name,
             'username': username,
             'password': None,
+            'type': source_type,
         },
         [
             (CONNECTION_PASSWORD_INPUT, password),
@@ -294,6 +305,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config):
     cred_show(
         {'name': name},
         generate_show_output({
+            'cred_type': source_type,
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
@@ -314,6 +326,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config):
     cred_show(
         {'name': name},
         generate_show_output({
+            'cred_type': source_type,
             'name': name,
             'password': MASKED_PASSWORD_OUTPUT,
             'username': username,
