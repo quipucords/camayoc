@@ -40,7 +40,7 @@ def vcenter_source():
     return src
 
 
-def prep_vcenter_scan(source, cleanup, client):
+def prep_vcenter_scan(source, cleanup, client, scan_type='inspect'):
     """Given a source from config file, prep the scan.
 
     Takes care of creating the Credential and Source objects on the server and
@@ -68,13 +68,13 @@ def prep_vcenter_scan(source, cleanup, client):
     )
     vcentersrc.create()
     cleanup.append(vcentersrc)
-    scan = Scan(source_ids=[vcentersrc._id])
+    scan = Scan(source_ids=[vcentersrc._id], scan_type=scan_type)
     return scan
 
 
-@pytest.mark.create
+@pytest.mark.parametrize('scan_type', ['connect', 'inspect'])
 @pytest.mark.parametrize('source', vcenter_source())
-def test_create(shared_client, cleanup, source):
+def test_create(shared_client, cleanup, source, scan_type):
     """Run a scan on a system and confirm it completes.
 
     :id: e7d644c1-0a32-4eb4-a663-77b7607491db
@@ -84,10 +84,19 @@ def test_create(shared_client, cleanup, source):
         2) Create vcenter source
         3) Create a vcenter scan
         4) Assert that the scan completes
-    :expectedresults: A scan is run and reaches completion
+    :expectedresults: A scan is run and reaches completion.
+        Also, scan results should be available during the scan.
     """
-    scan = prep_vcenter_scan(source, cleanup, shared_client)
+    scan = prep_vcenter_scan(
+        source,
+        cleanup,
+        shared_client,
+        scan_type=scan_type)
     scan.create()
+    if scan_type == 'inspect':
+        wait_until_state(scan, state='running')
+        assert 'connection_results' in scan.results().json().keys()
+        assert 'inspection_results' in scan.results().json().keys()
     wait_until_state(scan, state='completed', timeout=VCENTER_SCAN_TIMEOUT)
 
 

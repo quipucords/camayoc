@@ -12,5 +12,6 @@ Submodules
 .. toctree::
 
    camayoc.tests.qcs.api.v1.credentials.test_creds_common
+   camayoc.tests.qcs.api.v1.credentials.test_manager_creds
    camayoc.tests.qcs.api.v1.credentials.test_network_creds
 

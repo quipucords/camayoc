@@ -185,18 +185,18 @@ class SourceTestCase(unittest.TestCase):
         """If a hostname is specified in the config file, we use it."""
         with mock.patch.object(config, '_CONFIG', self.config):
             client = api.Client(authenticate=False)
-            p = Source(
+            src = Source(
                 source_type='network',
                 name=MOCK_SOURCE['name'],
                 hosts=MOCK_SOURCE['hosts'],
                 credential_ids=[MOCK_SOURCE['credentials'][0]['id']],
                 client=client
             )
-            p._id = MOCK_SOURCE['id']
-            self.assertTrue(p.equivalent(MOCK_SOURCE))
-            self.assertTrue(p.equivalent(p))
+            src._id = MOCK_SOURCE['id']
+            self.assertTrue(src.equivalent(MOCK_SOURCE))
+            self.assertTrue(src.equivalent(src))
             with self.assertRaises(TypeError):
-                p.equivalent([])
+                src.equivalent([])
 
     def test_equivalent_satellite(self):
         """If a hostname is specified in the config file, we use it."""

@@ -24,7 +24,7 @@ from camayoc.tests.qcs.utils import assert_matches_server
 def test_create_with_password(cred_type, shared_client, cleanup):
     """Create a credential with username and password.
 
-    :id: d04e3e1b-c7f1-4cc2-a4a4-a3d3317f95ce
+    :id: bcc6a15f-a5b5-4939-9602-e5bccf4a75ca
     :description: Create a credential with a user name and password
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new credential entry is created with the data.

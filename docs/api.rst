@@ -35,11 +35,13 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.api.v1.rst
     api/camayoc.tests.qcs.api.v1.authentication.test_login.rst
     api/camayoc.tests.qcs.api.v1.credentials.test_network_creds.rst
+    api/camayoc.tests.qcs.api.v1.credentials.test_manager_creds.rst
     api/camayoc.tests.qcs.api.v1.credentials.test_creds_common.rst
     api/camayoc.tests.qcs.api.v1.reports.test_reports.rst
     api/camayoc.tests.qcs.api.v1.scans.test_network_scans.rst
     api/camayoc.tests.qcs.api.v1.scans.test_satellite_scans.rst
     api/camayoc.tests.qcs.api.v1.scans.test_vcenter_scans.rst
+    api/camayoc.tests.qcs.api.v1.scans.test_multi_source_scans.rst
     api/camayoc.tests.qcs.api.v1.sources.test_network_sources.rst
     api/camayoc.tests.qcs.api.v1.sources.test_manager_sources.rst
     api/camayoc.tests.qcs.api.v1.sources.test_sources_common.rst

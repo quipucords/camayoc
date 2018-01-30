@@ -114,9 +114,14 @@ def test_create(shared_client, cleanup, source, scan_type):
         3) Create a satellite scan
         4) Assert that the scan completes
     :expectedresults: A scan is run and reaches completion
+        Also, scan results should be available during the scan.
     """
     scan = prep_sat_scan(source, cleanup, shared_client, scan_type)
     scan.create()
+    if scan_type == 'inspect':
+        wait_until_state(scan, state='running')
+        assert 'connection_results' in scan.results().json().keys()
+        assert 'inspection_results' in scan.results().json().keys()
     wait_until_state(scan, state='completed', timeout=SATELLITE_SCAN_TIMEOUT)
 
 

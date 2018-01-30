@@ -338,6 +338,18 @@ QCS_SOURCE_TYPES = ('vcenter', 'network', 'satellite')
 QCS_HOST_MANAGER_TYPES = ('vcenter', 'satellite')
 """Types of host managers that the quipucords server supports."""
 
+QCS_BECOME_METHODS = (
+    'doas',
+    'dzdo',
+    'ksu',
+    'pbrun',
+    'pfexec',
+    'runas',
+    'su',
+    'sudo',
+)
+"""Supported become methods for quipucords server."""
+
 VCENTER_SCAN_TIMEOUT = 540
 """Maximum amount of time to let vcenter scan run before timing out."""
 
