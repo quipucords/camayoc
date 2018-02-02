@@ -24,19 +24,22 @@ def qpc_server_config():
     port = config.get('qcs', {}).get('port')
     username = config.get('qcs', {}).get('username', 'admin')
     password = config.get('qcs', {}).get('password', 'pass')
-    ssl_verify = config.get('qcs', {}).get('ssl-verify', False)
-    if not ssl_verify:
-        ssl_verify = ' --use-http'
-    elif ssl_verify is True:  # When ssl verify is not a path
-        ssl_verify = ''
+    https = config.get('qcs', {}).get('https', False)
+    if not https:
+        https = ' --use-http'
     else:
+        https = ''
+    ssl_verify = config.get('qcs', {}).get('ssl-verify', False)
+    if ssl_verify not in (True, False):
         ssl_verify = ' --ssl-verify={}'.format(ssl_verify)
+    else:
+        ssl_verify = ''
     if not all([hostname, port]):
         raise ValueError(
             'Both hostname and port must be defined under the qcs section on '
             'the Camayoc\'s configuration file.')
-    command = 'qpc server config --host {} --port {}{}'.format(
-        hostname, port, ssl_verify)
+    command = 'qpc server config --host {} --port {}{}{}'.format(
+        hostname, port, https, ssl_verify)
     qpc_server_config = pexpect.spawn(command)
     qpc_server_config.logfile = BytesIO()
     assert qpc_server_config.expect(pexpect.EOF) == 0
