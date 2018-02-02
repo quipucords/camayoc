@@ -17,7 +17,7 @@ import pexpect
 import pytest
 
 from camayoc import utils
-from camayoc.constants import CONNECTION_PASSWORD_INPUT
+from camayoc.constants import CONNECTION_PASSWORD_INPUT, QCS_HOST_MANAGER_TYPES
 from camayoc.tests.qcs.cli.utils import cred_add, source_show
 
 
@@ -34,31 +34,47 @@ VALID_SOURCE_TYPE_HOSTS = (
     ('vcenter', 'vcenter.example.com'),
 )
 
-QPC_SOURCE_SHOW_FMT = (
-    '{{\r\n'
-    '    "credentials": \[\r\n'
-    '        {{\r\n'
-    '            "id": \\d+,\r\n'
-    '            "name": "{}"\r\n'
-    '        }}\r\n'
-    '    \],\r\n'
-    '    "hosts": \[\r\n'
-    '        "{}"\r\n'
-    '    \],\r\n'
-    '    "id": \\d+,\r\n'
-    '    "name": "{}",\r\n'
-    '    "port": {},\r\n'
-    '    "source_type": "{}"\r\n'
-    '}}\r\n'
-)
-
 
 def default_port_for_source(source_type):
-    """Resolve the default port for a given resource type."""
-    if source_type == 'vcenter':
+    """Resolve the default port for a given source type."""
+    if source_type in QCS_HOST_MANAGER_TYPES:
         return 443
     else:
         return 22
+
+
+def generate_show_output(data):
+    """Generate a regex pattern with the data for a qpc cred show output."""
+    output = '{\r\n'
+    output += (
+        '    "credentials": \[\r\n'
+        '        {{\r\n'
+        '            "id": \\d+,\r\n'
+        '            "name": "{}"\r\n'
+        '        }}\r\n'
+        '    \],\r\n'
+        .format(data['cred_name'])
+    )
+    output += (
+        '    "hosts": \[\r\n'
+        '        "{}"\r\n'
+        '    \],\r\n'
+        .format(data['hosts'])
+    )
+    output += '    "id": \\d+,\r\n'
+    output += '    "name": "{}",\r\n'.format(data['name'])
+    source_type = data['source_type']
+    if source_type == 'satellite':
+        output += (
+            '    "options": {{\r\n'
+            '        "satellite_version": "{}"\r\n'
+            '    }},\r\n'
+            .format(data.get('satellite_version', '6.2'))
+        )
+    output += '    "port": {},\r\n'.format(data['port'])
+    output += '    "source_type": "{}"\r\n'.format(source_type)
+    output += '}\r\n'
+    return output
 
 
 @pytest.mark.parametrize('source_type,hosts', VALID_SOURCE_TYPE_HOSTS)
@@ -104,7 +120,13 @@ def test_add_with_cred_hosts(
         hosts = '",\r\n        "'.join(hosts.split(' '))
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -155,7 +177,13 @@ def test_add_with_cred_hosts_file(
         hosts = '",\r\n        "'.join(hosts.split(' '))
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -196,7 +224,13 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -275,7 +309,13 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
     qpc_source_edit = pexpect.spawn(
@@ -290,8 +330,13 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(
-            new_cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': new_cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -374,7 +419,13 @@ def test_edit_hosts(
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
     qpc_source_edit = pexpect.spawn(
@@ -395,8 +446,13 @@ def test_edit_hosts(
         new_hosts = '",\r\n        "'.join(new_hosts.split(' '))
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(
-            cred_name, new_hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': new_hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -436,7 +492,13 @@ def test_edit_hosts_file(
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
     with open('hosts_file', 'w') as handler:
@@ -461,8 +523,13 @@ def test_edit_hosts_file(
         new_hosts = '",\r\n        "'.join(new_hosts.split(' '))
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(
-            cred_name, new_hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': new_hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -552,7 +619,13 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
     qpc_source_edit = pexpect.spawn(
@@ -567,8 +640,13 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(
-            cred_name, hosts, name, new_port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': new_port,
+            'source_type': source_type,
+        })
     )
 
 
@@ -654,7 +732,13 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
 
     source_show(
         {'name': name},
-        QPC_SOURCE_SHOW_FMT.format(cred_name, hosts, name, port, source_type)
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
     )
 
     qpc_source_clear = pexpect.spawn(
@@ -750,6 +834,8 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
             'port': port,
             'source_type': source_type,
         }
+        if source_type == 'satellite':
+            source['options'] = {'satellite_version': '6.2'}
         sources.append(source)
         qpc_source_add = pexpect.spawn(
             'qpc source add --name {} --cred {} --hosts {} --type {}'
