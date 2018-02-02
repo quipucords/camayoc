@@ -98,9 +98,10 @@ class Client(object):
         """
         self.url = url
         self.token = None
+        cfg = config.get_config().get('qcs', {})
+        self.verify = cfg.get('ssl-verify', False)
 
         if not self.url:
-            cfg = config.get_config().get('qcs', {})
             hostname = cfg.get('hostname')
 
             if not hostname:
@@ -161,58 +162,32 @@ class Client(object):
     def delete(self, endpoint, **kwargs):
         """Send an HTTP DELETE request."""
         url = urljoin(self.url, endpoint)
-        return self.request(
-            'DELETE',
-            url,
-            headers=self.default_headers(),
-            **kwargs)
+        return self.request('DELETE', url, **kwargs)
 
     def get(self, endpoint, **kwargs):
         """Send an HTTP GET request."""
         url = urljoin(self.url, endpoint)
-        return self.request(
-            'GET',
-            url,
-            headers=self.default_headers(),
-            **kwargs)
+        return self.request('GET', url, **kwargs)
 
     def options(self, endpoint, **kwargs):
         """Send an HTTP OPTIONS request."""
         url = urljoin(self.url, endpoint)
-        return self.request(
-            'OPTIONS',
-            url,
-            headers=self.default_headers(),
-            **kwargs)
+        return self.request('OPTIONS', url, **kwargs)
 
     def head(self, endpoint, **kwargs):
         """Send an HTTP HEAD request."""
         url = urljoin(self.url, endpoint)
-        return self.request(
-            'HEAD',
-            url,
-            headers=self.default_headers(),
-            **kwargs)
+        return self.request('HEAD', url, **kwargs)
 
     def post(self, endpoint, payload, **kwargs):
         """Send an HTTP POST request."""
         url = urljoin(self.url, endpoint)
-        return self.request(
-            'POST',
-            url,
-            headers=self.default_headers(),
-            json=payload,
-            **kwargs)
+        return self.request('POST', url, json=payload, **kwargs)
 
     def put(self, endpoint, payload, **kwargs):
         """Send an HTTP PUT request."""
         url = urljoin(self.url, endpoint)
-        return self.request(
-            'PUT',
-            url,
-            headers=self.default_headers(),
-            json=payload,
-            **kwargs)
+        return self.request('PUT', url, json=payload, **kwargs)
 
     def request(self, method, url, **kwargs):
         """Send an HTTP request.
@@ -226,4 +201,8 @@ class Client(object):
         #
         #     request(method, url, **kwargs)
         #
+        headers = self.default_headers()
+        headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
+        kwargs.setdefault('verify', self.verify)
         return self.response_handler(requests.request(method, url, **kwargs))
