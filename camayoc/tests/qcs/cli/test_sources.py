@@ -67,9 +67,16 @@ def generate_show_output(data):
     if source_type == 'satellite':
         output += (
             '    "options": {{\r\n'
-            '        "satellite_version": "{}"\r\n'
+            '        "satellite_version": "{}",\r\n'
+            '        "ssl_cert_verify": true\r\n'
             '    }},\r\n'
             .format(data.get('satellite_version', '6.2'))
+        )
+    if source_type == 'vcenter':
+        output += (
+            '    "options": {\r\n'
+            '        "ssl_cert_verify": true\r\n'
+            '    },\r\n'
         )
     output += '    "port": {},\r\n'.format(data['port'])
     output += '    "source_type": "{}"\r\n'.format(source_type)
@@ -835,7 +842,12 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
             'source_type': source_type,
         }
         if source_type == 'satellite':
-            source['options'] = {'satellite_version': '6.2'}
+            source['options'] = {
+                'satellite_version': '6.2',
+                'ssl_cert_verify': True,
+            }
+        if source_type == 'vcenter':
+            source['options'] = {'ssl_cert_verify': True}
         sources.append(source)
         qpc_source_add = pexpect.spawn(
             'qpc source add --name {} --cred {} --hosts {} --type {}'
