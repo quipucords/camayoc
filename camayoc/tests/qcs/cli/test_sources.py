@@ -10,6 +10,7 @@
 :upstream: yes
 """
 import json
+import operator
 import random
 from io import BytesIO
 
@@ -872,7 +873,8 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
     for source in output:
         del source['credentials'][0]['id']
         del source['id']
-    assert sources == output
+    name = operator.itemgetter('name')
+    assert sorted(sources, key=name) == sorted(output, key=name)
 
     qpc_source_clear = pexpect.spawn(
         'qpc source clear --all'
