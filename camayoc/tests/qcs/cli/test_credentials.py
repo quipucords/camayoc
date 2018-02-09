@@ -140,7 +140,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     cred_show(
@@ -173,7 +173,7 @@ def test_add_with_username_sshkeyfile_become_password(
         {
             'name': name,
             'username': username,
-            'sshkeyfile': sshkeyfile.name,
+            'sshkeyfile': str(sshkeyfile.resolve()),
             'become-password': None,
         },
         [
@@ -262,7 +262,7 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     name = utils.uuid4()
@@ -350,7 +350,7 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     name = utils.uuid4()
@@ -381,7 +381,7 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     cred_show(
@@ -395,7 +395,7 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
 
     qpc_cred_edit = pexpect.spawn(
         'qpc cred edit --name={} --sshkeyfile {}'
-        .format(name, new_sshkeyfile.name)
+        .format(name, str(new_sshkeyfile.resolve()))
     )
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect(
@@ -430,14 +430,15 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     name = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sshkeyfile {}'.format(name, sshkeyfile.name)
+        'qpc cred edit --name={} --sshkeyfile {}'
+        .format(name, str(sshkeyfile.resolve()))
     )
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect(
@@ -465,7 +466,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
         {
             'name': name,
             'username': username,
-            'sshkeyfile': sshkeyfile.name,
+            'sshkeyfile': str(sshkeyfile.resolve()),
             'become-password': None,
         },
         [
@@ -521,7 +522,7 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     name = utils.uuid4()
@@ -549,7 +550,8 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sshkeyfile {}'.format(name, sshkeyfile.name)
+        'qpc cred edit --name={} --sshkeyfile {}'
+        .format(name, str(sshkeyfile.resolve()))
     )
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect(
@@ -575,7 +577,7 @@ def test_clear(isolated_filesystem, qpc_server_config):
     cred_add({
         'name': name,
         'username': username,
-        'sshkeyfile': sshkeyfile.name,
+        'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
     cred_show(
@@ -656,7 +658,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
         cred_add({
             'name': name,
             'username': username,
-            'sshkeyfile': sshkeyfile.name,
+            'sshkeyfile': str(sshkeyfile.resolve()),
         })
 
     qpc_cred_clear = pexpect.spawn(
