@@ -46,6 +46,8 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.api.v1.sources.test_manager_sources.rst
     api/camayoc.tests.qcs.api.v1.sources.test_sources_common.rst
     api/camayoc.tests.qcs.cli.test_credentials.rst
+    api/camayoc.tests.qcs.cli.test_scans.rst
     api/camayoc.tests.qcs.cli.test_sources.rst
+    api/camayoc.tests.qcs.cli.utils.rst
     api/camayoc.tests.qcs.cli.conftest.rst
     api/camayoc.tests.qcs.cli.utils.rst
