@@ -265,3 +265,22 @@ def test_queue_mix_paused_canceled(shared_client, cleanup, source):
     for scan in good_scans:
         wait_until_state(scan, state='completed')
         assert scan.read().json().get('fact_collection_id') > 0
+
+
+def test_scan_with_disabled_products():
+    """Perform a scan and disable an optional product.
+
+    :id: 366604ed-e423-4140-b0d8-38626e264688
+    :description: Perform a scan and disable an optional product.
+    :steps:
+        1) Create a network credential
+        2) Create network source using the network credential.
+        3) Create a scan using the network source. When creating the scan
+           disable the optional products.
+        4) Assert that the scan completes and generates a fact collection.
+        5) Assert that the facts related to the disabled optional products are
+           either not present or empty.
+    :expectedresults: The scan completes and the results do not include any
+        fact information for the disabled optional products.
+    :caseautomation: notautomated
+    """
