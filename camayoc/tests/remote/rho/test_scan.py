@@ -192,27 +192,41 @@ def scan_machines(vcenter_client, isolated_filesystem):
                 version: '6.9'
             products: {}
 
-        rho:
-          auths:
+        credentials:
             - name: root
               sshkeyfile: /path/to/.ssh/id_rsa
               username: root
+              type: network
+
             - name: admin
               sshkeyfile: /path/to/.ssh/id_rsa
               username: admin
+              type: network
+
+    If you need rho to skip using a network credential, add the field as
+    follows:
+
+            - name: admin
+              sshkeyfile: /path/to/.ssh/id_rsa
+              username: admin
+              type: network
+              rho: false
 
     In the sample configuration file above will be performed four scans, one
     for each auth and machine combination.
     """
     config = get_config()
-    auths = config['rho']['auths']
+    auths = [auth for auth in config['credentials']
+             if auth['type'] == 'network' and auth.get('rho', True)]
     inventory = {
         machine['hostname']: machine for machine in config['inventory']
         if machine['hypervisor'] == 'vcenter'
     }
     if not auths or not inventory:
         raise ValueError(
-            'Make sure to have auths and inventory on the configuration file')
+            'Make sure to have credentials and inventory'
+            ' items in the config file'
+        )
     hostnames = [machine['hostname'] for machine in inventory.values()]
     host_folder = vcenter_client.content.rootFolder \
         .childEntity[VCENTER_DATA_CENTER].hostFolder
@@ -269,7 +283,8 @@ def scan_permutations():
     """Generate a tuple of hostname and auth matching expected scans."""
     try:
         config = get_config()
-        auths = config['rho']['auths']
+        auths = [auth for auth in config['credentials']
+                 if auth['type'] == 'network' and auth.get('rho', True)]
         inventory = config['inventory']
         return list(itertools.product(inventory, auths))
     except (ConfigFileNotFoundError, KeyError):
