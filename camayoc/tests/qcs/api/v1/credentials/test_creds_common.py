@@ -144,7 +144,7 @@ def test_list(cred_type, shared_client, cleanup):
         assert_matches_server(cred)
         local_creds.append(cred)
 
-    remote_creds = Credential().list().json()
+    remote_creds = Credential().list().json()['results']
     for local in local_creds:
         match_exists = False
         for remote in remote_creds:

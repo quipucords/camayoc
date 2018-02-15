@@ -13,6 +13,7 @@ from camayoc.constants import (
     QCS_CREDENTIALS_PATH,
     QCS_SOURCE_PATH,
     QCS_SCAN_PATH,
+    QCS_HOST_MANAGER_TYPES,
 )
 
 
@@ -330,9 +331,21 @@ class Source(QCSObject):
                         default_port)):
                     return False
             if key == 'options':
-                if self.source_type == 'satellite':
-                    if other.get(key).get('satellite_version') != '6.2':
+                if self.source_type in QCS_HOST_MANAGER_TYPES:
+                    if hasattr(self, 'options'):
+                        ssl_verify = self.options.get('ssl_cert_verify', True)
+                    else:
+                        ssl_verify = True
+                    if other.get(key, {}).get('ssl_cert_verify') != ssl_verify:
                         return False
+                if self.source_type == 'satellite':
+                    if hasattr(self, 'options'):
+                        sat_ver = self.options.get('satellite_version', '6.2')
+                    else:
+                        sat_ver = '6.2'
+                    if other.get(key, {}).get('satellite_version') != sat_ver:
+                        return False
+
             if key == 'credentials':
                 other_creds = other.get('credentials')
                 cred_ids = []

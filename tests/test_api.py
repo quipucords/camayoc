@@ -59,16 +59,19 @@ MOCK_SAT6_SOURCE = {
     'source_type': 'satellite',
     'name': 'e193081c-2423-4407-b9e2-05d20b6443dc',
     'port': 443,
-    'options': {'satellite_version': '6.2'},
+    'options': {
+            'satellite_version': '6.2',
+            'ssl_cert_verify': False
+    },
 }
 
 
 MOCK_SCAN = {
-   'id': 21,
-   'options': {'max_concurrency': 50},
-   'scan_type': 'connect',
-   'sources': [153],
-   'status': 'created'
+    'id': 21,
+    'options': {'max_concurrency': 50},
+    'scan_type': 'connect',
+    'sources': [153],
+    'status': 'created'
 }
 
 
@@ -190,7 +193,7 @@ class SourceTestCase(unittest.TestCase):
                 name=MOCK_SOURCE['name'],
                 hosts=MOCK_SOURCE['hosts'],
                 credential_ids=[MOCK_SOURCE['credentials'][0]['id']],
-                client=client
+                client=client,
             )
             src._id = MOCK_SOURCE['id']
             self.assertTrue(src.equivalent(MOCK_SOURCE))
@@ -207,7 +210,7 @@ class SourceTestCase(unittest.TestCase):
                 name=MOCK_SAT6_SOURCE['name'],
                 hosts=MOCK_SAT6_SOURCE['hosts'],
                 credential_ids=[MOCK_SAT6_SOURCE['credentials'][0]['id']],
-                options={'satellite_version': '6.2'},
+                options=MOCK_SAT6_SOURCE['options'],
                 port=443,
                 client=client,
             )
@@ -231,9 +234,9 @@ class ScanTestCase(unittest.TestCase):
         """If a hostname is specified in the config file, we use it."""
         with mock.patch.object(config, '_CONFIG', self.config):
             scn = Scan(
-                    source_ids=[153],
-                    scan_type='connect',
-                    )
+                source_ids=[153],
+                scan_type='connect',
+            )
             scn._id = MOCK_SCAN['id']
             self.assertTrue(scn.equivalent(MOCK_SCAN))
             self.assertTrue(scn.equivalent(scn))

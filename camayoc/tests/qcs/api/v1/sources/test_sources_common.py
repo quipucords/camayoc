@@ -267,16 +267,18 @@ def test_read_all(src_type, cleanup, shared_client):
     :expectedresults: All sources are present in data returned by API.
     """
     created_srcs = []
-    for _ in range(random.randint(2, 20)):
+    for _ in range(random.randint(2, 10)):
         # gen_valid_srcs will take care of cleanup
         created_srcs.append(gen_valid_source(cleanup, src_type, 'localhost'))
-    server_srcs = Source().list().json()
-    for sp in server_srcs:
-        for i, cp in enumerate(created_srcs):
-            if sp['id'] == cp.fields()['id'] and cp.equivalent(sp):
-                created_srcs.remove(cp)
+    server_srcs = Source().list().json()['results']
+    num_srcs = len(created_srcs)
+    for server_source in server_srcs:
+        for created_source in created_srcs:
+            if server_source['id'] == created_source.fields()['id']:
+                assert_matches_server(created_source)
+                num_srcs -= 1
     # if we found everything we created, then the list should be empty
-    assert len(created_srcs) == 0
+    assert num_srcs == 0
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)

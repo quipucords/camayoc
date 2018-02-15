@@ -209,6 +209,7 @@ def prep_all_source_scan(cleanup, client, scan_type='inspect'):
             client=client,
             hosts=s['hosts'],
             credential_ids=[creds[s['credentials'][0]]],
+            options=s.get('options')
         )
         src.create()
         all_sources.append(src._id)
