@@ -40,7 +40,7 @@ def test_multi_source_create(shared_client, cleanup, scan_type):
     scan = prep_all_source_scan(cleanup, shared_client, scan_type)
     scan.create()
     if scan_type == 'inspect':
-        wait_until_state(scan, state='running')
+        wait_until_state(scan, state='running', timeout=600)
         assert 'connection_results' in scan.results().json().keys()
         assert 'inspection_results' in scan.results().json().keys()
     wait_until_state(scan, state='completed', timeout=600)
