@@ -47,6 +47,7 @@ def cred_add(options, inputs=None, exitstatus=0):
     """
     if 'type' not in options:
         options['type'] = 'network'
+    options.pop('rho', None)  # need to remove this data that is rho specific
     command = 'qpc cred add'
     for key, value in options.items():
         if value is None:
