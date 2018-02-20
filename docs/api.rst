@@ -44,6 +44,10 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.cli.test_sources
     api/camayoc.tests.qcs.cli.utils
     api/camayoc.tests.qcs.conftest
+    api/camayoc.tests.qcs.ui
+    api/camayoc.tests.qcs.ui.conftest
+    api/camayoc.tests.qcs.ui.test_login
+    api/camayoc.tests.qcs.ui.views
     api/camayoc.tests.qcs.utils
     api/camayoc.tests.remote
     api/camayoc.tests.remote.rho
@@ -60,3 +64,4 @@ reference for developers, not a gospel.
     api/tests.test_api
     api/tests.test_cli
     api/tests.test_config
+    api/tests.test_utils

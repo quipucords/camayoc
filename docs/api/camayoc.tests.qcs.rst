@@ -13,6 +13,7 @@ Subpackages
 
     camayoc.tests.qcs.api
     camayoc.tests.qcs.cli
+    camayoc.tests.qcs.ui
 
 Submodules
 ----------
