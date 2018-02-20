@@ -1,6 +1,7 @@
 # coding=utf-8
 """Utility functions."""
 import contextlib
+import operator
 import os
 import shutil
 import tempfile
@@ -13,6 +14,10 @@ from camayoc.config import get_config
 
 _XDG_ENV_VARS = ('XDG_DATA_HOME', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME')
 """Environment variables related to the XDG Base Directory specification."""
+
+
+name_getter = operator.itemgetter('name')
+"""Generate test IDs by fetching the ``name`` item."""
 
 
 def get_qcs_url():

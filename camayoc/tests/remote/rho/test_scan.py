@@ -16,15 +16,12 @@ failed facts will be reported with associated host.
 import csv
 import itertools
 import os
-import ssl
-import time
 from io import BytesIO
 
 import pexpect
 import pytest
-from pyVim.connect import SmartConnect, Disconnect
 
-from camayoc import cli, utils
+from camayoc import utils
 from camayoc.config import get_config
 from camayoc.constants import (
     CONNECTION_PASSWORD_INPUT,
@@ -35,89 +32,10 @@ from camayoc.constants import (
 )
 from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.tests.rho.utils import auth_add, input_vault_password
-
+from camayoc.tests.remote.utils import wait_until_live
 
 SCAN_RESULTS = {}
 """Cache for the scan results returned by :func:get_scan_result."""
-
-
-def is_live(client, server, num_pings=10):
-    """Test if server responds to ping.
-
-    Returns true if server is reachable, false otherwise.
-    """
-    client.response_handler = cli.echo_handler
-    ping = client.run(('ping', '-c', num_pings, server))
-    return ping.returncode == 0
-
-
-def wait_until_live(servers, timeout=60):
-    """Wait for servers to be live.
-
-    For each server in the "servers" list, verify if it is reachable.
-    Keep trying until a connection is made for all servers or the timeout
-    limit is reached.
-
-    If the timeout limit is reached, we exit even if there are unreached hosts.
-    This means tests could fail with "No auths valid for this profile" if every
-    host in the profile is unreachable. Otherwise, if there is at least one
-    valid host, the scan will go on and only facts about reached hosts will be
-    tested.
-
-    `See rho issue #302 <https://github.com/quipucords/rho/issues/302>`_
-    """
-    system = cli.System(hostname='localhost', transport='local')
-    client = cli.Client(system)
-
-    unreached = servers
-    while unreached and timeout > 0:
-        unreached = [host for host in unreached if not is_live(client, host)]
-        time.sleep(10)
-        timeout -= 10
-
-
-@pytest.fixture(scope='module')
-def vcenter_client():
-    """Create a vCetner client.
-
-    Get the client confifuration from environment variables and Camayoc's
-    configuration file in this order. Raise a KeyError if can't find the
-    expecting configuration.
-
-    The expected environment variables are VCHOSTNAME, VCUSER and VCPASS for
-    vcenter's hostname, username and password respectively.
-
-    The configuration in the Camayoc's configuration file should be as the
-    following::
-
-        vcenter:
-          hostname: vcenter.domain.example.com
-          username: gandalf
-          password: YouShallNotPass
-
-    The vcenter config can be mixed by using both environement variables and
-    the configuration file but environment variable takes precedence.
-    """
-    config = get_config()
-    vcenter_host = os.getenv('VCHOSTNAME', config['vcenter']['hostname'])
-    vcenter_user = os.getenv('VCUSER', config['vcenter']['username'])
-    vcenter_pwd = os.getenv('VCPASS', config['vcenter']['password'])
-
-    try:
-        c = SmartConnect(
-            host=vcenter_host,
-            user=vcenter_user,
-            pwd=vcenter_pwd,
-        )
-    except ssl.SSLError:
-        c = SmartConnect(
-            host=vcenter_host,
-            user=vcenter_user,
-            pwd=vcenter_pwd,
-            sslContext=ssl._create_unverified_context(),
-        )
-    yield c
-    Disconnect(c)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -220,7 +138,7 @@ def scan_machines(vcenter_client, isolated_filesystem):
              if auth['type'] == 'network' and auth.get('rho', True)]
     inventory = {
         machine['hostname']: machine for machine in config['inventory']
-        if machine['hypervisor'] == 'vcenter'
+        if machine.get('hypervisor') == 'vcenter'
     }
     if not auths or not inventory:
         raise ValueError(
@@ -285,7 +203,10 @@ def scan_permutations():
         config = get_config()
         auths = [auth for auth in config['credentials']
                  if auth['type'] == 'network' and auth.get('rho', True)]
-        inventory = config['inventory']
+        inventory = {
+                machine['hostname']: machine for machine in config['inventory']
+                if machine.get('hypervisor') == 'vcenter'
+                }
         return list(itertools.product(inventory, auths))
     except (ConfigFileNotFoundError, KeyError):
         return []

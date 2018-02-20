@@ -50,8 +50,12 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.ui.views
     api/camayoc.tests.qcs.utils
     api/camayoc.tests.remote
+    api/camayoc.tests.remote.conftest
+    api/camayoc.tests.remote.quipucords
+    api/camayoc.tests.remote.quipucords.test_scan
     api/camayoc.tests.remote.rho
     api/camayoc.tests.remote.rho.test_scan
+    api/camayoc.tests.remote.utils
     api/camayoc.tests.rho
     api/camayoc.tests.rho.test_auth
     api/camayoc.tests.rho.test_fact
