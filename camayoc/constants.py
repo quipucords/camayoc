@@ -329,6 +329,12 @@ QCS_SOURCE_PATH = 'sources/'
 QCS_SCAN_PATH = 'scans/'
 """The path to the scans endpoint for CRUD tasks."""
 
+QCS_SCAN_TERMINAL_STATES = ('completed', 'failed', 'paused', 'canceled')
+"""Scans to not change from these states without intervention."""
+
+QCS_SCAN_STATES = QCS_SCAN_TERMINAL_STATES + ('running',)
+"""All the states that a quipucords scan can take."""
+
 QCS_TOKEN_PATH = 'token/'
 """The path to the endpoint used for obtaining an authentication token."""
 

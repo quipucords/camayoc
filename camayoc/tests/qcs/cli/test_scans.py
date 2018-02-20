@@ -9,7 +9,6 @@
 :testtype: functional
 :upstream: yes
 """
-import operator
 import re
 import time
 from pprint import pformat
@@ -17,6 +16,7 @@ from pprint import pformat
 import pexpect
 import pytest
 
+from camayoc.utils import name_getter
 from .conftest import qpc_server_config
 from .utils import (
     cred_add,
@@ -34,10 +34,6 @@ from camayoc.exceptions import (
     FailedScanException,
     WaitTimeError,
 )
-
-
-name_getter = operator.itemgetter('name')
-"""Generate test IDs by fetching the ``name`` item."""
 
 
 def config_credentials():

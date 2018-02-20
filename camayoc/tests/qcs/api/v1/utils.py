@@ -10,6 +10,10 @@ from camayoc.exceptions import (
     FailedScanException,
     ConfigFileNotFoundError,
 )
+from camayoc.constants import (
+    QCS_SCAN_STATES,
+    QCS_SCAN_TERMINAL_STATES,
+)
 from camayoc.qcs_models import (
     Credential,
     Source,
@@ -22,14 +26,33 @@ def wait_until_state(scan, timeout=120, state='completed'):
 
     The default state is 'completed'.
 
+    Valid options for 'state': 'completed', 'failed', 'paused',
+    'canceled', 'running', 'stopped'.
+
+    If 'stopped' is selected, then any state other than 'running' will
+    cause `wait_until_state` to return.
+
     This method should not be called on scan jobs that have not yet been
     created, are paused, or are canceled.
 
     The default timeout is set to 120 seconds, but can be overridden if it is
     anticipated that a scan may take longer to complete.
     """
+    valid_states = QCS_SCAN_STATES + ('stopped',)
+    if state not in valid_states:
+        raise ValueError(
+            'You have called `wait_until_state` and specified an invalid\n'
+            'state={0}. Valid options for "state" are [ {1} ]'.format(
+                state,
+                pprint.pformat(valid_states),
+            )
+        )
+
     while (
             not scan.status() or not scan.status() == state) and timeout > 0:
+        if state == 'stopped' and scan.status() in QCS_SCAN_TERMINAL_STATES:
+            # scan is no longer running, so we will return
+            return
         time.sleep(5)
         timeout -= 5
         if timeout <= 0:
@@ -47,7 +70,7 @@ def wait_until_state(scan, timeout=120, state='completed'):
                     pprint.pformat(scan.results().json()),
                 )
             )
-        if state != 'failed' and scan.status() == 'failed':
+        if state not in ['stopped', 'failed'] and scan.status() == 'failed':
             raise FailedScanException(
                 'You have called wait_until_state() on a scan with ID={} and\n'
                 'the scan failed instead of acheiving state={}.\n'
