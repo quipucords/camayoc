@@ -18,6 +18,7 @@ clean-api-docs:
 gen-api-docs: clean-api-docs
 	@sphinx-apidoc -efMT -o api ../camayoc
 	@sphinx-apidoc -efMT -o api ../tests
+	@../scripts/gen_api_docs.sh
 
 html: gen-api-docs
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
