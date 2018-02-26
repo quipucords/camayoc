@@ -1,9 +1,11 @@
 # coding=utf-8
 """Unit tests for :mod:`camayoc.api`."""
+import json
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
 
+import requests
 import yaml
 
 from camayoc import config, exceptions, api
@@ -147,6 +149,54 @@ class APIClientTestCase(unittest.TestCase):
             cl.logout()
             assert cl.token is None
             assert cl.default_headers() == {}
+
+    def test_response_handler(self):
+        """Test that when we get a 4xx or 5xx response, an error is raised."""
+        with mock.patch.object(config, '_CONFIG', self.config):
+            self.assertEqual(config.get_config(), self.config)
+            client = api.Client(authenticate=False)
+            mock_request = mock.Mock(
+                body='{"Test Body"}',
+                path_url='/example/path/',
+                headers='{"Test Header"}',
+                text='Some text',
+            )
+            mock_response = mock.Mock(status_code=404)
+            mock_response.request = mock_request
+            mock_response.json = MagicMock(return_value=json.dumps(
+                '{"The resource you requested was not found"}'))
+            with self.subTest(msg='Test code handler'):
+                client.response_handler = api.code_handler
+                with self.assertRaises(requests.exceptions.HTTPError):
+                    client.response_handler(mock_response)
+
+            with self.subTest(msg='Test json handler'):
+                client.response_handler = api.json_handler
+                with self.assertRaises(requests.exceptions.HTTPError):
+                    client.response_handler(mock_response)
+
+            with self.subTest(msg='Test echo handler'):
+                client.response_handler = api.echo_handler
+                # no error should be raised with the echo handler
+                client.response_handler(mock_response)
+
+            # not all responses have valid json
+            mock_response.json = MagicMock(return_value='Not valid json')
+
+            with self.subTest(msg='Test code handler without json available'):
+                client.response_handler = api.code_handler
+                with self.assertRaises(requests.exceptions.HTTPError):
+                    client.response_handler(mock_response)
+
+            with self.subTest(msg='Test json handler without json available'):
+                client.response_handler = api.json_handler
+                with self.assertRaises(requests.exceptions.HTTPError):
+                    client.response_handler(mock_response)
+
+            with self.subTest(msg='Test echo handler without json available'):
+                client.response_handler = api.echo_handler
+                # no error should be raised with the echo handler
+                client.response_handler(mock_response)
 
 
 class CredentialTestCase(unittest.TestCase):

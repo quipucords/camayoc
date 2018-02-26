@@ -6,8 +6,11 @@ server, allowing the user to customize how return codes are handled depending
 on the context.
 
 """
+from json import JSONDecodeError
+from pprint import pformat
 
 import requests
+from requests.exceptions import HTTPError
 
 from urllib.parse import urljoin, urlunparse
 
@@ -17,6 +20,47 @@ from camayoc.constants import (
     QCS_API_VERSION,
     QCS_TOKEN_PATH,
 )
+
+
+def raise_error_for_status(response):
+    """Generate an error message and raise HTTPError for bad return codes.
+
+    :raises: ``requests.exceptions.HTTPError`` if the response status code is
+        in the 4XX or 5XX range.
+    """
+    r = response
+    if (r.status_code >= 400) and (r.status_code <= 599):
+        error_msgs = (
+            '\n============================================================\n'
+            '\nThe request you made received a status code that indicates\n'
+            'an error was encountered. Details about the request and the\n'
+            'response are below.\n'
+            '\n============================================================\n'
+        )
+
+        try:
+            response_message = 'json_error_message : {}'.format(
+                pformat(r.json()))
+        except JSONDecodeError:
+            response_message = 'text_error_message : {}'.format(
+                pformat(r.text))
+
+        error_msgs += '\n\n'.join(
+            [
+                'request path : {}'.format(pformat(
+                    r.request.path_url)),
+                'request body : {}'.format(pformat(
+                    r.request.body)),
+                'request headers : {}'.format(pformat(
+                    r.request.headers)),
+                'response code : {}'.format(r.status_code),
+                '{error_message}'.format(error_message=response_message)
+            ]
+        )
+        error_msgs += (
+            '\n============================================================\n'
+        )
+        raise HTTPError(error_msgs)
 
 
 def echo_handler(response):
@@ -30,7 +74,7 @@ def code_handler(response):
     :raises: ``requests.exceptions.HTTPError`` if the response status code is
         in the 4XX or 5XX range.
     """
-    response.raise_for_status()
+    raise_error_for_status(response)
     return response
 
 
@@ -40,7 +84,7 @@ def json_handler(response):
     Do what :func:`camayoc.api.code_handler` does. In addition, decode the
     response body as JSON and return the result.
     """
-    response.raise_for_status()
+    raise_error_for_status(response)
     return response.json()
 
 
