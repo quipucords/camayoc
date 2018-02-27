@@ -229,7 +229,7 @@ def test_scan(machine, auth):
         auth.
     :expectedresults: The generate report must have the expected fact values.
     """
-    profile_name = machine['hostname'] + '-' + auth['name']
+    profile_name = machine + '-' + auth['name']
     result = SCAN_RESULTS[profile_name]
     if result is None:
         with open(profile_name) as handler:
