@@ -40,19 +40,18 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
-def gen_valid_source(cleanup, src_type, host):
-    """Create valid source and return it with echo_handler."""
-    client = api.Client()
-    cred = Credential(cred_type=src_type, client=client, password=uuid4())
+def gen_valid_source(cleanup, src_type, host, create=True):
+    """Create valid source."""
+    cred = Credential(cred_type=src_type, password=uuid4())
     cred.create()
     cleanup.append(cred)
-    source = Source(source_type=src_type,
-                    hosts=[host],
-                    credential_ids=[cred._id],
-                    client=client,
+    source = Source(
+            source_type=src_type,
+            hosts=[host],
+            credential_ids=[cred._id],
                     )
-    source.create()
-    cleanup.append(source)
-    assert_matches_server(source)
-    source.client.response_handler = api.echo_handler
+    if create:
+        source.create()
+        cleanup.append(source)
+        assert_matches_server(source)
     return source

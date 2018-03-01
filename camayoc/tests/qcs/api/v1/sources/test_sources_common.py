@@ -18,7 +18,12 @@ import pytest
 from camayoc import api
 from camayoc.constants import QCS_SOURCE_TYPES
 from camayoc.utils import uuid4
-from camayoc.qcs_models import Credential, Source
+from camayoc.qcs_models import (
+    Credential,
+    Scan,
+    Source,
+)
+
 from camayoc.tests.qcs.utils import (
     assert_matches_server,
     assert_source_update_fails,
@@ -26,6 +31,7 @@ from camayoc.tests.qcs.utils import (
 )
 
 CREATE_DATA = ['localhost', '127.0.0.1', 'example.com']
+DEFAULT_PORT = {'network': 22, 'vcenter': 443, 'satellite': 443}
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
@@ -201,6 +207,8 @@ def test_negative_create_missing_data(src_type, cleanup, shared_client, field):
     delattr(src, field)
     create_response = src.create()
     assert create_response.status_code == 400
+    if create_response.status_code in [200, 201]:
+        cleanup.append(src)
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
@@ -251,6 +259,8 @@ def test_negative_create_invalid_data(
     )
     create_response = src.create()
     assert create_response.status_code == 400
+    if create_response.status_code in [200, 201]:
+        cleanup.append(src)
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
@@ -293,13 +303,13 @@ def test_read_all(src_type, cleanup, shared_client):
     # if we found everything we created, then the list should be empty
     if created_src_ids:
         raise AssertionError(
-                'Expected to find all sources with correct data on server,\n'
-                'but the following sources did not match expected or were'
-                'missing from the server: \n'
-                '{}'.format(
-                    ' '.join(created_src_ids)
-                    )
-                )
+            'Expected to find all sources with correct data on server,\n'
+            'but the following sources did not match expected or were'
+            'missing from the server: \n'
+            '{}'.format(
+                ' '.join(created_src_ids)
+            )
+        )
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
@@ -334,7 +344,7 @@ def test_delete(src_type, cleanup, shared_client):
             assert_matches_server(p)
 
 
-@pytest.mark.skip
+@pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
 def test_type_mismatch(src_type, cleanup, shared_client):
     """Attempt to create sources with credentials of the wrong type.
 
@@ -350,10 +360,24 @@ def test_type_mismatch(src_type, cleanup, shared_client):
     :expectedresults: An error is thrown and no new source is created.
     :caseautomation: notautomated
     """
-    pass
+    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    other_types = set(QCS_SOURCE_TYPES).difference(set((src_type,)))
+    other_cred = Credential(
+        password=uuid4(),
+        cred_type=random.choice(list(other_types)),
+    )
+    other_cred.create()
+    cleanup.append(other_cred)
+    src.credentials = [other_cred._id]
+    src.client = api.Client(api.echo_handler)
+    create_response = src.create()
+    assert create_response.status_code == 400
+    if create_response.status_code in [200, 201]:
+        cleanup.append(src)
+    assert 'source_type' in create_response.json().keys()
 
 
-@pytest.mark.skip
+@pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
 def test_port_default(src_type, cleanup, shared_client):
     """Test that the correct default port is provided if it is not specified.
 
@@ -366,10 +390,16 @@ def test_port_default(src_type, cleanup, shared_client):
     :expectedresults: A source is created with sensible default port.
     :caseautomation: notautomated
     """
-    pass
+    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src.port = None
+    src.create()
+    cleanup.append(src)
+    server_src = src.read().json()
+    assert server_src.get('port') == DEFAULT_PORT[src_type]
+    assert src.equivalent(server_src)
 
 
-@pytest.mark.skip
+@pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
 def test_create_with_port(src_type, cleanup, shared_client):
     """Test that we may create with a custom port specified.
 
@@ -381,11 +411,17 @@ def test_create_with_port(src_type, cleanup, shared_client):
     :expectedresults: A source is created with user specified data.
     :caseautomation: notautomated
     """
-    pass
+    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src.port = random.randint(20, 9000)
+    src.create()
+    cleanup.append(src)
+    server_src = src.read().json()
+    assert src.equivalent(server_src)
 
 
-@pytest.mark.skip
-def test_negative_invalid_port(src_type, cleanup, shared_client):
+@pytest.mark.parametrize('bad_port', ['string**', -1, False])
+@pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
+def test_negative_invalid_port(src_type, bad_port, cleanup, shared_client):
     """Test that we are prevented from using a nonsense value for the port.
 
     :id: e64df701-5819-4e80-a5d2-d26cbc6f71a7
@@ -394,8 +430,55 @@ def test_negative_invalid_port(src_type, cleanup, shared_client):
     :steps:
         1) Create a credential
         2) Attempt to create a source of the same type and specify a custom
-           port with various nonsense values like 'foo**' or -1 or None
+           port with various nonsense values like 'foo**' or -1 or a Boolean
     :expectedresults: The source is not created
     :caseautomation: notautomated
     """
-    pass
+    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src.port = bad_port
+    src.client = api.Client(api.echo_handler)
+    create_response = src.create()
+    assert create_response.status_code == 400
+    if create_response.status_code in [200, 201]:
+        cleanup.append(src)
+    # assert that the server tells us what we did wrong
+    assert 'port' in create_response.json().keys()
+
+
+@pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)
+def test_delete_with_dependencies(src_type, cleanup, shared_client):
+    """Test that cannot delete sources if other objects depend on them.
+
+    :id: 76d79090-a3f7-4750-a8b8-eaf6c2ed4b89
+    :description: Test that sources cannot be deleted if they are members
+        of a scan.
+    :steps:
+        1) Create a valid source and one or more scans that use it.
+        2) Attempt to delete the source, this should fail
+        3) Delete the scan(s)
+        4) Assert that we can now delete the source
+    :expectedresults: The source is not created
+    :caseautomation: notautomated
+    """
+    src1 = gen_valid_source(cleanup, src_type, 'localhost')
+    src2 = gen_valid_source(cleanup, src_type, 'localhost')
+    scns = []
+    for i in range(random.randint(2, 6)):
+        if i % 2 == 0:
+            scn = Scan(source_ids=[src1._id])
+        else:
+            scn = Scan(source_ids=[src1._id, src2._id])
+        scns.append(scn)
+        scn.create()
+        cleanup.append(scn)
+    src1.client = api.Client(api.echo_handler)
+    # this should fail
+    del_response = src1.delete()
+    assert del_response.status_code == 400
+    # now delete scan, and then we should be allowed to delete source
+    for scn in scns:
+        scn.delete()
+        cleanup.remove(scn)
+    src1.client = shared_client
+    src1.delete()
+    cleanup.remove(src1)

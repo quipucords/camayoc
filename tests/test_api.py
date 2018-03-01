@@ -70,6 +70,7 @@ MOCK_SAT6_SOURCE = {
 
 MOCK_SCAN = {
     'id': 21,
+    'name': 'testscan',
     'options': {'max_concurrency': 50},
     'scan_type': 'connect',
     'sources': [153],
@@ -286,6 +287,7 @@ class ScanTestCase(unittest.TestCase):
             scn = Scan(
                 source_ids=[153],
                 scan_type='connect',
+                name=MOCK_SCAN['name'],
             )
             scn._id = MOCK_SCAN['id']
             self.assertTrue(scn.equivalent(MOCK_SCAN))
