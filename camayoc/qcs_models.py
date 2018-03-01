@@ -394,6 +394,7 @@ class Scan(QCSObject):
             source_ids=None,
             max_concurrency=50,
             scan_type='inspect',
+            name=None,
             _id=None):
         """Iniitalize a Scan object with given data.
 
@@ -407,20 +408,22 @@ class Scan(QCSObject):
 
         self.sources = source_ids
         self.endpoint = QCS_SCAN_PATH
+        self.name = uuid4() if name is None else name
 
         # valid scan types are 'host' and 'discovery'
         self.scan_type = scan_type
         self.options = {'max_concurrency': max_concurrency}
 
-    def delete(self):
-        """No delete method is implemented for scan objects.
+    def delete(self, **kwargs):
+        """Send DELETE request to the self.endpoint/{id} of this object.
 
-        Raise an exception to alert the user of this instead of doing anything.
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+
+        Returns a requests.models.Response. A successful delete has the return
+        code `204`.
         """
-        raise NotImplementedError(
-            'the DELETE method is not allowed for the scan endpoint, '
-            'so this method is not implemented for Scan objects.'
-        )
+        return self.client.delete(self.path(), **kwargs)
 
     def pause(self, **kwargs):
         """Send PUT request to self.endpoint/{id}/pause/ to pause a scan.
