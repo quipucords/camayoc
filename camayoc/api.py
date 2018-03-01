@@ -189,13 +189,23 @@ class Client(object):
         self.token = login_request.json()['token']
         return login_request
 
-    def logout(self):
+    def logout(self, **kwargs):
         """Start sending unauthorized requests.
 
-        There is no API interaction that need occur to logout.
-        We simply must send unauthorized requests.
+        Send a PUT request /api/v1/users/logout to make
+        current token invalid.
         """
+        url = urljoin(self.url, 'users/logout/')
+        self.request('PUT', url, **kwargs)
         self.token = None
+
+    def get_user(self, **kwargs):
+        """Get the username of the user logged in.
+
+        Send a GET request ot /api/v1/users/current/' and return the response.
+        """
+        url = urljoin(self.url, 'users/current/')
+        return self.request('GET', url, **kwargs)
 
     def default_headers(self):
         """Build the headers for our request to the server."""

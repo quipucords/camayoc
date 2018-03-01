@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Shared utitlites for tests using remote infrastructure."""
+"""Utility functions."""
 
 import time
 

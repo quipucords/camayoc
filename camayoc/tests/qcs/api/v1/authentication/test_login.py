@@ -13,6 +13,7 @@ import pytest
 import requests
 
 from camayoc import api
+from camayoc import config
 from camayoc.constants import (
     QCS_SOURCE_PATH,
     QCS_CREDENTIALS_PATH,
@@ -41,12 +42,12 @@ def test_logout(endpoint):
     """Test that we can't access the server without a token.
 
     :id: ca51b2a0-1e33-491d-8bb2-5e81d135424d
-    :description: Test that  to the server
+    :description: Test that we can logout of the server
     :steps:
         1) Log into the server
-        2) "Logout" of the server (delete our token)
-        3) Try an access the server without our token
-    :expectedresults: Our request missing an auth token is rejected.
+        2) Logout of the server
+        3) Try an access the server
+    :expectedresults: Our request missing a valid auth token is rejected.
     """
     client = api.Client(authenticate=False)
     client.login()
@@ -54,3 +55,19 @@ def test_logout(endpoint):
     with pytest.raises(requests.HTTPError):
         # now that we are logged out, we should get rejected
         client.get(endpoint)
+
+
+def test_user():
+    """Test that when we log in the server reports our username.
+
+    :id: addd7d83-961a-4cdf-9473-7c6db93e6af9
+    :description: Test that we can see who is logged into the server
+    :steps:
+        1) Log into the server
+        2) Sent GET request to find out what user is logged in
+        3) Assert that it is the user we logged in as
+    :expectedresults: The server correctly reports our username.
+    """
+    client = api.Client()
+    qcs_user = config.get_config().get('qcs', {}).get('username')
+    assert client.get_user().json()['username'] == qcs_user

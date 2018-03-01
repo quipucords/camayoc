@@ -9,17 +9,11 @@ from camayoc.qcs_models import (
 )
 
 
-@pytest.fixture
-def cleanup():
-    """Fixture that cleans up any created host credentials."""
-    trash = []
-
-    yield trash
-
+def sort_and_delete(trash):
+    """Sort and delete a list of QCSObject typed items in the correct order."""
     creds = []
     sources = []
     scans = []
-
     # first sort into types because we have to delete scans before sources
     # and sources before scans
     for obj in trash:
@@ -36,6 +30,26 @@ def cleanup():
     for collection in [scans, sources, creds]:
         for obj in collection:
             obj.delete()
+
+
+@pytest.fixture(scope='function')
+def cleanup():
+    """Fixture that cleans up any created quipucords objects after a test."""
+    trash = []
+
+    yield trash
+
+    sort_and_delete(trash)
+
+
+@pytest.fixture(scope='module')
+def module_cleanup():
+    """Fixture that cleans up any created quipucords objects after a module."""
+    trash = []
+
+    yield trash
+
+    sort_and_delete(trash)
 
 
 @pytest.fixture(scope='module')

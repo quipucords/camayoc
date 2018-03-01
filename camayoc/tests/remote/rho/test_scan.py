@@ -32,7 +32,7 @@ from camayoc.constants import (
 )
 from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.tests.rho.utils import auth_add, input_vault_password
-from camayoc.tests.remote.utils import wait_until_live
+from camayoc.tests.utils import wait_until_live
 
 SCAN_RESULTS = {}
 """Cache for the scan results returned by :func:get_scan_result."""
