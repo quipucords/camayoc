@@ -10,12 +10,13 @@
 :upstream: yes
 """
 import random
+import re
 
 import pytest
 
 from camayoc import api
 from camayoc.constants import QCS_SOURCE_TYPES
-from camayoc.qcs_models import Credential
+from camayoc.qcs_models import Credential, Source
 from camayoc.utils import uuid4
 from camayoc.tests.qcs.utils import assert_matches_server
 
@@ -144,14 +145,23 @@ def test_list(cred_type, shared_client, cleanup):
         assert_matches_server(cred)
         local_creds.append(cred)
 
-    remote_creds = Credential().list().json()['results']
-    for local in local_creds:
-        match_exists = False
-        for remote in remote_creds:
-            if remote.get('id') == local._id:
-                match_exists = True
-                assert local.equivalent(remote)
-        assert match_exists
+    this_page = Credential().list().json()
+    matches = 0
+    while this_page:
+        remote_creds = this_page['results']
+        for local in local_creds:
+            for remote in remote_creds:
+                if remote.get('id') == local._id:
+                    if local.equivalent(remote):
+                        matches += 1
+        next_page = this_page.get('next')
+        if next_page:
+            # have to strip off host information from url
+            next_page = re.sub(r'.*/api', '/api', next_page)
+            this_page = shared_client.get(next_page).json()
+        else:
+            break
+    assert matches == len(local_creds)
 
 
 @pytest.mark.parametrize('cred_type', QCS_SOURCE_TYPES)
@@ -185,7 +195,7 @@ def test_read(cred_type, shared_client, cleanup):
 
 
 @pytest.mark.parametrize('cred_type', QCS_SOURCE_TYPES)
-def test_delete(cred_type, shared_client, cleanup):
+def test_delete_basic(cred_type, shared_client, cleanup):
     """After creating several credentials, delete one.
 
     :id: e71b521c-59f9-483a-9063-1fbd5087c667
@@ -222,6 +232,67 @@ def test_delete(cred_type, shared_client, cleanup):
         for cred in creds:
             remote = Credential(_id=cred._id).read().json()
             cred.equivalent(remote)
+
+
+@pytest.mark.parametrize('obj_type', QCS_SOURCE_TYPES)
+def test_delete__with_dependencies(obj_type, shared_client, cleanup):
+    """We should not be allowed to delete a credential if souces depend on it.
+
+    :id: cd88325e-d3e3-49a8-b39b-e0e7dffb0d92
+    :description: Test that we can delete a credential only when it has no
+        dependent sources.
+    :steps:
+        1) Create a credential.
+        2) Create multiple sources that depend on it.
+        3) Attempt to delete the credential.
+        4) Assert that this fails.
+        5) Delete the sources or replace the credential.
+        6) Now attempt to delete the credential.
+        7) Assert that this succeeds.
+    :expectedresults: We cannot delete a credential until no sources depend
+        on it.
+    """
+    cred = Credential(
+        cred_type=obj_type,
+        client=shared_client,
+        password=uuid4())
+    cred.create()
+    cleanup.append(cred)
+    srcs = []
+    for _ in range(random.randint(3, 6)):
+        src = Source(
+            credential_ids=[cred._id],
+            source_type=obj_type,
+            hosts=['localhost']
+        )
+        src.create()
+        cleanup.append(src)
+        srcs.append(src)
+
+    echo_client = api.Client(api.echo_handler)
+    cred.client = echo_client
+    del_response = cred.delete()
+    assert del_response.status_code == 400
+    assert 'sources' in del_response.json().keys()
+    cred.client = shared_client
+
+    for i, src in enumerate(srcs):
+        if i % 2 == 0:
+            src.delete()
+            cleanup.remove(src)
+        else:
+            new_cred = Credential(
+                cred_type=obj_type,
+                client=shared_client,
+                password=uuid4())
+            new_cred.create()
+            cleanup.append(new_cred)
+            src.credentials = [new_cred._id]
+            src.update()
+
+    # now we should be able to delete the credential
+    cred.delete()
+    cleanup.remove(cred)
 
 
 @pytest.mark.skip
