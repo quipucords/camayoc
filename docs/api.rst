@@ -28,10 +28,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.api.v1.reports
     api/camayoc.tests.qcs.api.v1.reports.test_reports
     api/camayoc.tests.qcs.api.v1.scans
-    api/camayoc.tests.qcs.api.v1.scans.test_multi_source_scans
-    api/camayoc.tests.qcs.api.v1.scans.test_network_scans
-    api/camayoc.tests.qcs.api.v1.scans.test_satellite_scans
-    api/camayoc.tests.qcs.api.v1.scans.test_vcenter_scans
+    api/camayoc.tests.qcs.api.v1.scans.test_scans_common
     api/camayoc.tests.qcs.api.v1.sources
     api/camayoc.tests.qcs.api.v1.sources.test_manager_sources
     api/camayoc.tests.qcs.api.v1.sources.test_network_sources
@@ -50,12 +47,8 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.ui.views
     api/camayoc.tests.qcs.utils
     api/camayoc.tests.remote
-    api/camayoc.tests.remote.conftest
-    api/camayoc.tests.remote.quipucords
-    api/camayoc.tests.remote.quipucords.test_scan
     api/camayoc.tests.remote.rho
     api/camayoc.tests.remote.rho.test_scan
-    api/camayoc.tests.remote.utils
     api/camayoc.tests.rho
     api/camayoc.tests.rho.test_auth
     api/camayoc.tests.rho.test_fact
@@ -63,6 +56,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.rho.test_profile
     api/camayoc.tests.rho.test_scan
     api/camayoc.tests.rho.utils
+    api/camayoc.tests.utils
     api/camayoc.utils
     api/tests
     api/tests.test_api

@@ -329,6 +329,9 @@ QCS_SOURCE_PATH = 'sources/'
 QCS_SCAN_PATH = 'scans/'
 """The path to the scans endpoint for CRUD tasks."""
 
+QCS_SCANJOB_PATH = 'jobs/'
+"""The path to the scanjob endpoint for CRUD tasks."""
+
 QCS_SCAN_TERMINAL_STATES = ('completed', 'failed', 'paused', 'canceled')
 """Scans to not change from these states without intervention."""
 
@@ -355,6 +358,13 @@ QCS_BECOME_METHODS = (
     'sudo',
 )
 """Supported become methods for quipucords server."""
+
+QCS_OPTIONAL_PRODUCTS = (
+    'jboss_brms',
+    'jboss_eap',
+    'jboss_fuse',
+)
+"""Optional products that can be enabled or disabled for a scan."""
 
 VCENTER_SCAN_TIMEOUT = 540
 """Maximum amount of time to let vcenter scan run before timing out."""

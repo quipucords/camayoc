@@ -11,10 +11,13 @@ from camayoc.utils import uuid4
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
 from camayoc.constants import (
     QCS_CREDENTIALS_PATH,
-    QCS_SOURCE_PATH,
-    QCS_SCAN_PATH,
     QCS_HOST_MANAGER_TYPES,
+    QCS_SCAN_PATH,
+    QCS_SCANJOB_PATH,
+    QCS_SOURCE_PATH,
 )
+
+OPTIONAL_PROD_KEY = 'disabled_optional_products'
 
 
 class QCSObject(object):
@@ -95,8 +98,8 @@ class QCSObject(object):
         Before returning the requests.models.Response to the caller, the
         ``_id`` of this object is set using the data from the response.
 
-        Returns a requests.models.Response. The json of this response contains
-        the data associated with this object's ``self._id``.
+        :returns: requests.models.Response. The json of this response contains
+            the data associated with this object's ``self._id``.
         """
         response = self.client.post(self.endpoint, self.payload(), **kwargs)
         if response.status_code in range(200, 203):
@@ -111,9 +114,9 @@ class QCSObject(object):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
 
-        Returns a requests.models.Response. The json of this response
-        contains a list of dictionaries with the data associated with each
-        object of this type stored on the server.
+        :returns: requests.models.Response. The json of this response
+            contains a list of dictionaries with the data associated with each
+            object of this type stored on the server.
         """
         return self.client.get(self.endpoint, **kwargs)
 
@@ -123,8 +126,8 @@ class QCSObject(object):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
 
-        Returns a requests.models.Response. The json of this response contains
-        the data associated with this object's `self._id`.
+        :returns: requests.models.Response. The json of this response contains
+            the data associated with this object's `self._id`.
         """
         return self.client.get(self.path(), **kwargs)
 
@@ -138,8 +141,8 @@ class QCSObject(object):
         updating the object on the server with the same `id` as this object
         with the fields contained in `self.update_payload()`.
 
-        Returns a requests.models.Response. The json of this response contains
-        the data associated with this object's `self._id`.
+        :returns: requests.models.Response. The json of this response contains
+            the data associated with this object's `self._id`.
         """
         return self.client.put(self.path(), self.update_payload(), **kwargs)
 
@@ -149,8 +152,8 @@ class QCSObject(object):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
 
-        Returns a requests.models.Response. A successful delete has the return
-        code `204`.
+        :returns: requests.models.Response. A successful delete has the return
+            code `204`.
         """
         return self.client.delete(self.path(), **kwargs)
 
@@ -367,11 +370,13 @@ class Source(QCSObject):
 class Scan(QCSObject):
     """A class to aid in CRUD test cases for scan jobs.
 
-    Scan jobs can be created on the quipucords server by instantiating a Scan
-    object and then calling its create() method.
+    Scans are named objects on the server that can then be used to generate any
+    number of scan jobs. The Scan object determines the sources, max
+    concurrency settings, and (not yet implemented) the products to search
+    for/not search for.
 
-    The id of an existing Source is necessary to create a scan
-    job.
+    The id of an existing Source is necessary to create a Scan.
+    An existing Scan is necessary to create a ScanJob.
 
     Example::
         >>> cred = Credential(cred_type='network', password='foo')
@@ -384,8 +389,10 @@ class Scan(QCSObject):
         >>> src.create()
         >>> scan = Scan(source_ids=[src._id])
         >>> scan.create()
-        >>> scan.pause()
-        >>> assert scan.status() == 'paused'
+        >>> scanjob = ScanJob(scan._id)
+        >>> scanjob.create()
+        >>> scanjob.pause()
+        >>> assert scanjob.status() == 'paused'
     """
 
     def __init__(
@@ -410,7 +417,7 @@ class Scan(QCSObject):
         self.endpoint = QCS_SCAN_PATH
         self.name = uuid4() if name is None else name
 
-        # valid scan types are 'host' and 'discovery'
+        # valid scan types are 'connect' and 'inspect'
         self.scan_type = scan_type
         self.options = {'max_concurrency': max_concurrency}
 
@@ -420,10 +427,112 @@ class Scan(QCSObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
 
-        Returns a requests.models.Response. A successful delete has the return
-        code `204`.
+        :returns: requests.models.Response. A successful delete has the return
+            code `204`.
         """
         return self.client.delete(self.path(), **kwargs)
+
+    def joblist(self, **kwargs):
+        """Ask the server to list the ScanJobs associated with this scan.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+
+        :returns: requests.models.Response. A successful delete has the return
+            code `204`.
+        """
+        path = urljoin(self.path(), 'jobs/')
+        return self.client.get(path, **kwargs)
+
+    def equivalent(self, other):
+        """Return true if both objects are equivalent.
+
+        :param other: This can be either another Scan or a dictionary
+            or json object returned from the QCS server (or crafted by hand.)
+            If `other` is a Scan instance, the two object's fields()
+            will be compared.
+
+            For a dictionary, we expect the format returned by the server with
+            self.read(), in which case we must extract the source id from a
+            dictionary.
+        """
+        if isinstance(other, Scan):
+            return self.fields() == other.fields()
+
+        if not isinstance(other, dict):
+            raise TypeError(
+                'Objects of type Scan can only be compared to'
+                'Scan objects or dictionaries.'
+            )
+
+        local_items = self.fields()
+        local_keys = local_items.keys()
+        other_keys = other.keys()
+        all_keys = set(local_keys).union(other_keys)
+        for key in all_keys:
+            if key == 'status':
+                continue
+            if key == 'sources':
+                other_sources = [src['id'] for src in other[key]]
+                if sorted(local_items[key]) != sorted(other_sources):
+                    return False
+            if key not in ['status', 'sources', 'options']:
+                if not other[key] == local_items[key]:
+                    return False
+        return True
+
+
+class ScanJob(QCSObject):
+    """A class to aid in the creation and control of Scan Jobs in tests."""
+
+    def __init__(
+            self,
+            client=None,
+            scan_id=None,
+            _id=None
+    ):
+        """Initialize a ScanJob object for a given scan."""
+        super().__init__(client=client, _id=_id)
+
+        self.scan_id = scan_id
+        self.endpoint = QCS_SCANJOB_PATH
+
+    def create(self, **kwargs):
+        """Send POST request to the scan's job endpoint.
+
+        Overrides parent class's create method because ScanJobs act
+        differently than everything else.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            ``request.request()`` method.
+
+        Before returning the requests.models.Response to the caller, the
+        ``_id`` of this object is set using the data from the response.
+
+        :returns: requests.models.Response. The json of this response contains
+            the data associated with this object's ``self._id``.
+        """
+        path = urljoin(QCS_SCAN_PATH, '{}/jobs/'.format(self.scan_id))
+        response = self.client.post(path, payload=self.payload(), **kwargs)
+        if response.status_code in range(200, 203):
+            self._id = response.json().get('id')
+        return response
+
+    def list(self, **kwargs):
+        """Send GET request to read all scanjobs associated with the same scan.
+
+        Overrides parent class's create method because ScanJobs act
+        differently than everything else.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+
+        :returns: requests.models.Response. The json of this response
+            contains a list of dictionaries with the data associated with each
+            object of this type stored on the server.
+        """
+        path = urljoin(QCS_SCAN_PATH, '{}/jobs/'.format(self.scan_id))
+        return self.client.get(path, **kwargs)
 
     def pause(self, **kwargs):
         """Send PUT request to self.endpoint/{id}/pause/ to pause a scan.
@@ -471,37 +580,10 @@ class Scan(QCSObject):
         return self.read().json().get('status')
 
     def equivalent(self, other):
-        """Return true if both objects are equivalent.
+        """Alert the user that this method is not implemented.
 
-        :param other: This can be either another Scan or a dictionary
-            or json object returned from the QCS server (or crafted by hand.)
-            If `other` is a Scan instance, the two object's fields()
-            will be compared.
-
-            For a dictionary, we expect the format returned by the server with
-            self.read(), in which case we must extract the source id from a
-            dictionary.
+        :raises: NotImplementedError
         """
-        if isinstance(other, Scan):
-            return self.fields() == other.fields()
-
-        if not isinstance(other, dict):
-            raise TypeError(
-                'Objects of type Scan can only be compared to'
-                'Scan objects or dictionaries.'
-            )
-
-        local_items = self.fields()
-        local_keys = local_items.keys()
-        other_keys = other.keys()
-        all_keys = set(local_keys).union(other_keys)
-        for key in all_keys:
-            if key == 'status':
-                continue
-            if key == 'sources':
-                if sorted(local_items[key]) != sorted(other[key]):
-                    return False
-            if key not in ['status', 'sources']:
-                if not other[key] == local_items[key]:
-                    return False
-        return True
+        raise NotImplementedError(
+            'ScanJobs do not have an equivalent() method.'
+        )

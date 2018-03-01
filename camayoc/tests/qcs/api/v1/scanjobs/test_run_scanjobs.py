@@ -20,7 +20,8 @@ from camayoc import utils
 from camayoc.qcs_models import (
     Credential,
     Source,
-    Scan
+    Scan,
+    ScanJob,
 )
 from camayoc.config import get_config
 from camayoc.constants import (
@@ -32,7 +33,7 @@ from camayoc.exceptions import (
     ConfigFileNotFoundError,
     WaitTimeError,
 )
-from camayoc.tests.remote.utils import wait_until_live
+from camayoc.tests.utils import wait_until_live
 from camayoc.tests.qcs.api.v1.utils import wait_until_state
 
 
@@ -40,18 +41,7 @@ SCAN_DATA = {}
 """Cache to associate the named scans with their results."""
 
 
-@pytest.fixture(scope='module')
-def cleanup():
-    """Fixture that cleans up any created host credentials."""
-    trash = []
-
-    yield trash
-
-    for obj in trash:
-        obj.delete()
-
-
-def create_cred(cred_info, cleanup):
+def create_cred(cred_info, module_cleanup):
     """Given info about cred from config file, create it and return id."""
     c = Credential(
         cred_type=cred_info['type'],
@@ -62,11 +52,11 @@ def create_cred(cred_info, cleanup):
     else:
         c.password = cred_info['password']
     c.create()
-    cleanup.append(c)
+    module_cleanup.append(c)
     return c._id
 
 
-def create_source(source_info, cred_name_to_id_dict, cleanup):
+def create_source(source_info, cred_name_to_id_dict, module_cleanup):
     """Given info about source from config file, create it and return id."""
     cred_ids = [value for key, value in cred_name_to_id_dict.items(
     ) if key in source_info['credentials']]
@@ -79,19 +69,20 @@ def create_source(source_info, cred_name_to_id_dict, cleanup):
         options=source_info.get('options')
     )
     src.create()
-    cleanup.append(src)
+    module_cleanup.append(src)
     return src._id
 
 
-def run_scan(src_ids, scan_name, scan_type='inspect'):
+def run_scan(src_ids, scan_name, cleanup, scan_type='inspect'):
     """Scan a machine and cache any available results.
 
     If errors are encountered, save those and they can be included
     in test results.
     """
     SCAN_DATA[scan_name] = {
-        'id': None,            # scan id
-        'final_status': None,  # Did the scan contain any failed tasks?
+        'scan_id': None,       # scan id
+        'scan_job_id': None,   # scan job id
+        'final_status': None,  # Did the scan job contain any failed tasks?
         'scan_results': None,  # Number of systems reached, etc
         'report_id': None,     # so we can retrieve report
         'connection_results': None,  # details about connection scan
@@ -102,21 +93,25 @@ def run_scan(src_ids, scan_name, scan_type='inspect'):
         scan = Scan(source_ids=src_ids, scan_type=scan_type)
         TIMEOUT = 500 * len(src_ids)
         scan.create()
-        SCAN_DATA[scan_name]['id'] = scan._id
-        wait_until_state(scan, timeout=TIMEOUT, state='stopped')
-        SCAN_DATA[scan_name]['final_status'] = scan.status()
-        SCAN_DATA[scan_name]['scan_results'] = scan.read().json()
-        SCAN_DATA[scan_name]['report_id'] = scan.read().json().get('report_id')
-        SCAN_DATA[scan_name]['connection_results'] = scan.results(
+        cleanup.append(scan)
+        scanjob = ScanJob(scan_id=scan._id)
+        scanjob.create()
+        SCAN_DATA[scan_name]['scan_id'] = scan._id
+        wait_until_state(scanjob, timeout=TIMEOUT, state='stopped')
+        SCAN_DATA[scan_name]['final_status'] = scanjob.status()
+        SCAN_DATA[scan_name]['scan_results'] = scanjob.read().json()
+        SCAN_DATA[scan_name]['report_id'] = scanjob.read(
+        ).json().get('report_id')
+        SCAN_DATA[scan_name]['connection_results'] = scanjob.results(
         ).json().get('connection_results')
-        SCAN_DATA[scan_name]['inspection_results'] = scan.results(
+        SCAN_DATA[scan_name]['inspection_results'] = scanjob.results(
         ).json().get('inspection_results')
     except (requests.HTTPError, WaitTimeError) as e:
         SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
 
 
 @pytest.fixture(scope='module', autouse=True)
-def run_all_scans(vcenter_client, cleanup):
+def run_all_scans(vcenter_client, module_cleanup):
     """Run all configured scans caching the report id associated with each.
 
     Run each scan defined in the ``qcs`` section of the configuration file.
@@ -205,11 +200,11 @@ def run_all_scans(vcenter_client, cleanup):
     for cred in creds:
         # create creds on server
         # create dict that associates the name of the cred to the cred id
-        cred_ids[cred['name']] = create_cred(cred, cleanup)
+        cred_ids[cred['name']] = create_cred(cred, module_cleanup)
     for hostname, source in inventory.items():
         # create sources on server, and keep track of source ids for each scan
         # name of cred to cred id on server
-        source_ids[hostname] = create_source(source, cred_ids, cleanup)
+        source_ids[hostname] = create_source(source, cred_ids, module_cleanup)
         for scan in scans:
             for source in scan['sources']:
                 if hostname == source:
@@ -231,11 +226,11 @@ def run_all_scans(vcenter_client, cleanup):
             if vm.runtime.powerState == 'poweredOff':
                 vm.PowerOnVM_Task()
                 machines_to_wait.append(inventory[vm.name])
-        wait_until_live(machines_to_wait)
+        wait_until_live(machines_to_wait, timeout=120)
         # now all host should be live and we can run the scan
         # all results will be saved in global cache
         # if errors occur, they will be saved but scanning will go on
-        run_scan(scan['source_ids'], scan['name'])
+        run_scan(scan['source_ids'], scan['name'], cleanup=module_cleanup)
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()
@@ -321,10 +316,10 @@ def test_scan_connection_results(scan_info):
 
     # assert arithmetic around number of systems scanned adds up
     # this has been broken in the past
-    num_scanned = result['scan_results']['systems_count']
+    sys_count = result['scan_results']['systems_count']
     num_failed = result['scan_results']['systems_failed']
     num_scanned = result['scan_results']['systems_scanned']
-    assert num_scanned == num_scanned + num_failed
+    assert num_scanned == sys_count - num_failed
 
 
 @pytest.mark.parametrize(

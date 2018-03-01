@@ -2,8 +2,10 @@
 """Unit tests for :mod:`camayoc.api`."""
 import json
 import unittest
+from urllib.parse import urljoin
 from unittest import mock
 from unittest.mock import MagicMock
+
 
 import requests
 import yaml
@@ -14,6 +16,7 @@ from camayoc.qcs_models import (
     Credential,
     Source,
     Scan,
+    ScanJob,
 )
 
 
@@ -73,7 +76,7 @@ MOCK_SCAN = {
     'name': 'testscan',
     'options': {'max_concurrency': 50},
     'scan_type': 'connect',
-    'sources': [153],
+    'sources': [{'id': 153, 'name': 'mock_source'}],
     'status': 'created'
 }
 
@@ -137,6 +140,23 @@ class APIClientTestCase(unittest.TestCase):
             cl.token = uuid4()
             assert cl.default_headers() != {}
 
+    def test_get_user(self):
+        """Test that when a client is created, it logs in just once."""
+        with mock.patch.object(config, '_CONFIG', self.config):
+            self.assertEqual(config.get_config(), self.config)
+            client = api.Client
+            client.login = MagicMock()
+            response = MagicMock(
+                json=MagicMock(
+                    return_value={
+                        'username': 'admin'}))
+            client.request = MagicMock(return_value=response)
+            cl = client()
+            u = cl.get_user().json()['username']
+            assert u == config.get_config()['qcs']['username']
+            client.request.assert_called_once_with(
+                'GET', urljoin(cl.url, 'users/current/'))
+
     def test_logout(self):
         """Test that when we log out, all credentials are cleared."""
         with mock.patch.object(config, '_CONFIG', self.config):
@@ -147,7 +167,9 @@ class APIClientTestCase(unittest.TestCase):
             assert client.login.call_count == 1
             cl.token = uuid4()
             assert cl.default_headers() is not {}
+            client.request = MagicMock()
             cl.logout()
+            assert client.request.call_count == 1
             assert cl.token is None
             assert cl.default_headers() == {}
 
@@ -279,7 +301,6 @@ class ScanTestCase(unittest.TestCase):
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
         cls.config = yaml.load(CAMAYOC_CONFIG)
-        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG)
 
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
@@ -294,3 +315,22 @@ class ScanTestCase(unittest.TestCase):
             self.assertTrue(scn.equivalent(scn))
             with self.assertRaises(TypeError):
                 scn.equivalent([])
+
+
+class ScanJobTestCase(unittest.TestCase):
+    """Test :mod:camayoc.api."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Create a parsed configuraton dictionary."""
+        cls.config = yaml.load(CAMAYOC_CONFIG)
+
+    def test_create(self):
+        """If a hostname is specified in the config file, we use it."""
+        with mock.patch.object(config, '_CONFIG', self.config):
+            job = ScanJob(scan_id=1)
+            job._id = 1
+            correct_payload = {'scan_id': 1}
+            self.assertEqual(job.payload(), correct_payload)
+            with self.assertRaises(NotImplementedError):
+                job.equivalent({})

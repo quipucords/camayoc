@@ -21,8 +21,8 @@ from camayoc.qcs_models import (
 )
 
 
-def wait_until_state(scan, timeout=120, state='completed'):
-    """Wait until the scan has failed or reached desired state.
+def wait_until_state(scanjob, timeout=120, state='completed'):
+    """Wait until the scanjob has failed or reached desired state.
 
     The default state is 'completed'.
 
@@ -32,11 +32,11 @@ def wait_until_state(scan, timeout=120, state='completed'):
     If 'stopped' is selected, then any state other than 'running' will
     cause `wait_until_state` to return.
 
-    This method should not be called on scan jobs that have not yet been
+    This method should not be called on scanjob jobs that have not yet been
     created, are paused, or are canceled.
 
     The default timeout is set to 120 seconds, but can be overridden if it is
-    anticipated that a scan may take longer to complete.
+    anticipated that a scanjob may take longer to complete.
     """
     valid_states = QCS_SCAN_STATES + ('stopped',)
     if state not in valid_states:
@@ -48,41 +48,52 @@ def wait_until_state(scan, timeout=120, state='completed'):
             )
         )
 
-    while (
-            not scan.status() or not scan.status() == state) and timeout > 0:
-        if state == 'stopped' and scan.status() in QCS_SCAN_TERMINAL_STATES:
-            # scan is no longer running, so we will return
+    while (not scanjob.status() or not scanjob.status()
+            == state) and timeout > 0:
+        if state == 'stopped' and scanjob.status() in QCS_SCAN_TERMINAL_STATES:
+            # scanjob is no longer running, so we will return
             return
         time.sleep(5)
         timeout -= 5
         if timeout <= 0:
             raise WaitTimeError(
-                'You have called wait_until_state() on a scan with ID={} and\n'
-                'the scan timed out while waiting to achieve the state="{}"\n'
-                'When the scan timed out, it had the state="{}".\n'
-                'The full details of the scan were \n{}\n'
-                'The "results" available from the scan were \n{}\n'
-                .format(
-                    scan._id,
-                    state,
-                    scan.status(),
-                    pprint.pformat(scan.read().json()),
-                    pprint.pformat(scan.results().json()),
-                )
-            )
-        if state not in ['stopped', 'failed'] and scan.status() == 'failed':
+                'You have called wait_until_state() on a scanjob with\n'
+                'ID={scanjob_id} and the scanjob timed out while waiting\n'
+                'to achieve the state="{expected_state}"\n'
+                'When the scanjob timed out, it had the'
+                ' state="{scanjob_state}".\n'
+                'The scanjob was started for the scan with id {scan_id}'
+                'The full details of the scanjob were \n{scanjob_details}\n'
+                'The "results" available from the scanjob were'
+                '\n{scanjob_results}\n'.format(
+                    scanjob_id=scanjob._id,
+                    scan_id=scanjob.scan_id,
+                    expected_state=state,
+                    scanjob_state=scanjob.status(),
+                    scanjob_details=pprint.pformat(
+                        scanjob.read().json()),
+                    scanjob_results=pprint.pformat(
+                        scanjob.results().json()),
+                ))
+        if state not in ['stopped', 'failed'] and scanjob.status() == 'failed':
             raise FailedScanException(
-                'You have called wait_until_state() on a scan with ID={} and\n'
-                'the scan failed instead of acheiving state={}.\n'
-                'When it failed, the details about the scan were \n{}\n'
-                'The "results" available from the scan were \n{}\n'
-                .format(
-                    scan._id,
-                    state,
-                    pprint.pformat(scan.read().json()),
-                    pprint.pformat(scan.results().json()),
-                )
-            )
+                'You have called wait_until_state() on a scanjob with\n'
+                'ID={scanjob_id} and the scanjob failed instead of reaching\n'
+                'the state="{expected_state}"\n'
+                'When the scanjob failed, it had the state="{scanjob_state}".'
+                '\nThe scanjob was started for the scan with id {scan_id}'
+                'The full details of the scanjob were \n{scanjob_details}\n'
+                'The "results" available from the scanjob were \n'
+                '{scanjob_results}\n' .format(
+                    scanjob_id=scanjob._id,
+                    scan_id=scanjob.scan_id,
+                    expected_state=state,
+                    scanjob_state=scanjob.status(),
+                    scanjob_details=pprint.pformat(
+                        scanjob.read().json()),
+                    scanjob_results=pprint.pformat(
+                        scanjob.results().json()),
+                ))
 
 
 def all_sources():

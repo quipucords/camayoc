@@ -21,4 +21,5 @@ Submodules
 .. toctree::
 
    camayoc.tests.conftest
+   camayoc.tests.utils
 
