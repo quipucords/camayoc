@@ -11,6 +11,7 @@
 """
 import copy
 import random
+import re
 
 import pytest
 
@@ -266,19 +267,39 @@ def test_read_all(src_type, cleanup, shared_client):
         3) Confirm that all sources are in the list.
     :expectedresults: All sources are present in data returned by API.
     """
+    created_src_ids = set()
+    # having a list of the sources locally will be helpful
+    # for understanding failures as pytest will display the
+    # data
     created_srcs = []
     for _ in range(random.randint(2, 10)):
         # gen_valid_srcs will take care of cleanup
-        created_srcs.append(gen_valid_source(cleanup, src_type, 'localhost'))
-    server_srcs = Source().list().json()['results']
-    num_srcs = len(created_srcs)
-    for server_source in server_srcs:
-        for created_source in created_srcs:
-            if server_source['id'] == created_source.fields()['id']:
-                assert_matches_server(created_source)
-                num_srcs -= 1
+        src = gen_valid_source(cleanup, src_type, 'localhost')
+        created_srcs.append(src)
+        created_src_ids.add(src._id)
+    this_page = Source().list().json()
+    while this_page:
+        for source in this_page['results']:
+            if source['id'] in created_src_ids:
+                created_src_ids.remove(source['id'])
+        next_page = this_page.get('next')
+        if next_page:
+            # must strip url of host information
+            next_page = re.sub(r'.*/api', '/api', next_page)
+            this_page = shared_client.get(next_page).json()
+        else:
+            break
+
     # if we found everything we created, then the list should be empty
-    assert num_srcs == 0
+    if created_src_ids:
+        raise AssertionError(
+                'Expected to find all sources with correct data on server,\n'
+                'but the following sources did not match expected or were'
+                'missing from the server: \n'
+                '{}'.format(
+                    ' '.join(created_src_ids)
+                    )
+                )
 
 
 @pytest.mark.parametrize('src_type', QCS_SOURCE_TYPES)

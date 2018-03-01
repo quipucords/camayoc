@@ -2,6 +2,11 @@
 import pytest
 
 from camayoc import api
+from camayoc.qcs_models import (
+    Credential,
+    Scan,
+    Source,
+)
 
 
 @pytest.fixture
@@ -11,8 +16,26 @@ def cleanup():
 
     yield trash
 
+    creds = []
+    sources = []
+    scans = []
+
+    # first sort into types because we have to delete scans before sources
+    # and sources before scans
     for obj in trash:
-        obj.delete()
+        if isinstance(obj, Credential):
+            creds.append(obj)
+            continue
+        if isinstance(obj, Source):
+            sources.append(obj)
+            continue
+        if isinstance(obj, Scan):
+            scans.append(obj)
+            continue
+
+    for collection in [scans, sources, creds]:
+        for obj in collection:
+            obj.delete()
 
 
 @pytest.fixture(scope='module')
