@@ -53,6 +53,7 @@ setup(
         'pexpect',
         'plumbum',
         'pytest',
+        'pytest-selenium',
         'pyvmomi',
         'pyxdg',
         'pyyaml',
