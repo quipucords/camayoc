@@ -21,7 +21,10 @@ from camayoc.constants import (
     MASKED_PASSWORD_OUTPUT,
     BECOME_PASSWORD_INPUT,
 )
-from camayoc.tests.qcs.cli.utils import cred_add, cred_show
+from camayoc.tests.qcs.cli.utils import (
+        cred_add,
+        cred_show,
+)
 
 
 def generate_show_output(data):
@@ -661,13 +664,12 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
             'sshkeyfile': str(sshkeyfile.resolve()),
         })
 
-    qpc_cred_clear = pexpect.spawn(
+    clear = pexpect.spawn(
         'qpc cred clear --all'
     )
-    assert qpc_cred_clear.expect('All credentials were removed') == 0
-    assert qpc_cred_clear.expect(pexpect.EOF) == 0
-    qpc_cred_clear.close()
-    assert qpc_cred_clear.exitstatus == 0
+    assert clear.expect('All credentials were removed.') == 0
+    assert clear.expect(pexpect.EOF) == 0
+    clear.close()
 
     qpc_cred_list = pexpect.spawn('qpc cred list')
     assert qpc_cred_list.expect('No credentials exist yet.') == 0

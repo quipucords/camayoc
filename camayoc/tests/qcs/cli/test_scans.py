@@ -9,6 +9,7 @@
 :testtype: functional
 :upstream: yes
 """
+import json
 import re
 import time
 from pprint import pformat
@@ -16,14 +17,16 @@ from pprint import pformat
 import pexpect
 import pytest
 
-from camayoc.utils import name_getter
+from camayoc.utils import name_getter, uuid4
 from .conftest import qpc_server_config
 from .utils import (
     cred_add,
     source_add,
+    scan_add,
     scan_cancel,
     scan_pause,
     scan_restart,
+    scan_detail_report,
     scan_show,
     scan_start,
 )
@@ -108,20 +111,20 @@ def setup_sources():
         source_add(source)
 
 
-def wait_for_scan(scan_id, status='completed', timeout=900):
+def wait_for_scan(scan_job_id, status='completed', timeout=900):
     """Wait for a scan to reach some ``status`` up to ``timeout`` seconds.
 
-    :param scan_id: Scan ID to wait for.
+    :param scan_job_id: Scan ID to wait for.
     :param status: Scan status which will wait for. Default is completed.
     :param timeout: wait up to this amount of seconds. Default is 900.
     """
     while timeout > 0:
-        result = scan_show({'id': scan_id})
+        result = scan_show({'id': scan_job_id})
         if status != 'failed' and result['status'] == 'failed':
             raise FailedScanException(
                 'The scan with ID "{}" has failed unexpectedly.\n\n'
                 'The information about the scan is:\n{}\n'
-                .format(scan_id, pformat(result))
+                .format(scan_job_id, pformat(result))
             )
         if result['status'] == status:
             return
@@ -130,10 +133,11 @@ def wait_for_scan(scan_id, status='completed', timeout=900):
     raise WaitTimeError(
         'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
         'The information about the scan is:\n{}\n'
-        .format(scan_id, status, pformat(result))
+        .format(scan_job_id, status, pformat(result))
     )
 
 
+@pytest.mark.troubleshoot
 def test_scan(isolated_filesystem, qpc_server_config, source):
     """Scan a single source type.
 
@@ -143,19 +147,35 @@ def test_scan(isolated_filesystem, qpc_server_config, source):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
+    scan_name = uuid4()
+    result = scan_add({
+        'name': scan_name,
+        'sources': config_sources()[0]['name'],
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
     result = scan_start({
-        'source': source['name'],
+        'name': scan_name,
     })
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
-    scan_id = match.group(1)
-    wait_for_scan(scan_id)
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id)
     result = scan_show({
-        'id': scan_id,
-        'result': None,
+        'id': scan_job_id,
     })
-    assert 'connection_results' in result
-    assert 'inspection_results' in result
+    assert result['status'] == 'completed'
+    report_id = result['report_id']
+    assert report_id is not None
+    output_file = 'out.json'
+    report = scan_detail_report({
+        'json': None,
+        'output-file': output_file,
+        'report': report_id,
+    })
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        assert report.get('sources', []) != []
 
 
 def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
@@ -167,19 +187,35 @@ def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
+    scan_name = uuid4()
+    result = scan_add({
+        'name': scan_name,
+        'sources': ' '.join([source['name'] for source in config_sources()]),
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
     result = scan_start({
-        'source': ' '.join([source['name'] for source in config_sources()]),
+        'name': scan_name,
     })
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
-    scan_id = match.group(1)
-    wait_for_scan(scan_id, timeout=1200)
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, timeout=1200)
     result = scan_show({
-        'id': scan_id,
-        'result': None,
+        'id': scan_job_id,
     })
-    assert 'connection_results' in result
-    assert 'inspection_results' in result
+    assert result['status'] == 'completed'
+    report_id = result['report_id']
+    assert report_id is not None
+    output_file = 'out.json'
+    report = scan_detail_report({
+        'json': None,
+        'output-file': output_file,
+        'report': report_id,
+    })
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        assert report.get('sources', []) != []
 
 
 def test_scan_with_disabled_products(isolated_filesystem, qpc_server_config):
@@ -208,23 +244,39 @@ def test_scan_restart(isolated_filesystem, qpc_server_config):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
+    scan_name = uuid4()
+    result = scan_add({
+        'name': scan_name,
+        'sources': config_sources()[0]['name'],
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
     result = scan_start({
-        'source': config_sources()[0]['name'],
+        'name': scan_name,
     })
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
-    scan_id = match.group(1)
-    wait_for_scan(scan_id, status='running')
-    scan_pause({'id': scan_id})
-    wait_for_scan(scan_id, status='paused')
-    scan_restart({'id': scan_id})
-    wait_for_scan(scan_id)
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, status='running')
+    scan_pause({'id': scan_job_id})
+    wait_for_scan(scan_job_id, status='paused')
+    scan_restart({'id': scan_job_id})
+    wait_for_scan(scan_job_id)
     result = scan_show({
-        'id': scan_id,
-        'result': None,
+        'id': scan_job_id,
     })
-    assert 'connection_results' in result
-    assert 'inspection_results' in result
+    assert result['status'] == 'completed'
+    report_id = result['report_id']
+    assert report_id is not None
+    output_file = 'out.json'
+    report = scan_detail_report({
+        'json': None,
+        'output-file': output_file,
+        'report': report_id,
+    })
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        assert report.get('sources', []) != []
 
 
 def test_scan_cancel(isolated_filesystem, qpc_server_config):
@@ -239,16 +291,23 @@ def test_scan_cancel(isolated_filesystem, qpc_server_config):
         3) Try to restart the scan by running ``qpc scan restart --id <id>``
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
+    scan_name = uuid4()
+    result = scan_add({
+        'name': scan_name,
+        'sources': config_sources()[0]['name'],
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
     result = scan_start({
-        'source': config_sources()[0]['name'],
+        'name': scan_name,
     })
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
-    scan_id = match.group(1)
-    wait_for_scan(scan_id, status='running')
-    scan_cancel({'id': scan_id})
-    wait_for_scan(scan_id, status='canceled')
-    result = scan_restart({'id': scan_id}, exitstatus=1)
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, status='running')
+    scan_cancel({'id': scan_job_id})
+    wait_for_scan(scan_job_id, status='canceled')
+    result = scan_restart({'id': scan_job_id}, exitstatus=1)
     assert result.startswith(
         'Error: Scan cannot be restarted. The scan must be paused for it to '
         'be restarted.'
@@ -268,18 +327,25 @@ def test_scan_cancel_paused(isolated_filesystem, qpc_server_config):
         4) Try to restart the scan by running ``qpc scan restart --id <id>``
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
+    scan_name = uuid4()
+    result = scan_add({
+        'name': scan_name,
+        'sources': config_sources()[0]['name'],
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
     result = scan_start({
-        'source': config_sources()[0]['name'],
+        'name': scan_name,
     })
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
-    scan_id = match.group(1)
-    wait_for_scan(scan_id, status='running')
-    scan_pause({'id': scan_id})
-    wait_for_scan(scan_id, status='paused')
-    scan_cancel({'id': scan_id})
-    wait_for_scan(scan_id, status='canceled')
-    result = scan_restart({'id': scan_id}, exitstatus=1)
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, status='running')
+    scan_pause({'id': scan_job_id})
+    wait_for_scan(scan_job_id, status='paused')
+    scan_cancel({'id': scan_job_id})
+    wait_for_scan(scan_job_id, status='canceled')
+    result = scan_restart({'id': scan_job_id}, exitstatus=1)
     assert result.startswith(
         'Error: Scan cannot be restarted. The scan must be paused for it to '
         'be restarted.'

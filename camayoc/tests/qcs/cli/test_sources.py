@@ -67,11 +67,9 @@ def generate_show_output(data):
     source_type = data['source_type']
     if source_type == 'satellite':
         output += (
-            '    "options": {{\r\n'
-            '        "satellite_version": "{}",\r\n'
+            '    "options": {\r\n'
             '        "ssl_cert_verify": true\r\n'
-            '    }},\r\n'
-            .format(data.get('satellite_version', '6.2'))
+            '    },\r\n'
         )
     if source_type == 'vcenter':
         output += (
@@ -844,7 +842,6 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
         }
         if source_type == 'satellite':
             source['options'] = {
-                'satellite_version': '6.2',
                 'ssl_cert_verify': True,
             }
         if source_type == 'vcenter':
