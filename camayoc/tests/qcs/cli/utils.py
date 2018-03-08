@@ -160,10 +160,18 @@ scan_pause = functools.partial(cli_command, 'qpc scan pause')
 scan_restart = functools.partial(cli_command, 'qpc scan restart')
 """Run ``qpc scan restart`` command with ``options`` returning its output."""
 
+scan_add = functools.partial(cli_command, 'qpc scan add')
+"""Run ``qpc scan add`` command with ``options`` returning its output."""
+
 scan_start = functools.partial(cli_command, 'qpc scan start')
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
 
+def scan_detail_report(options=None, exitstatus=0):
+    """Run ``qpc report detail`` with ``options`` and return output."""
+    return cli_command('qpc report detail', options, exitstatus)
+
+
 def scan_show(options=None, exitstatus=0):
-    """Run ``qpc scan show`` command with ``options`` returning its output."""
-    return json.loads(cli_command('qpc scan show', options, exitstatus))
+    """Run ``qpc scan job`` command with ``options`` returning its output."""
+    return json.loads(cli_command('qpc scan job', options, exitstatus))
