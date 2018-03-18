@@ -21,14 +21,14 @@ from camayoc.utils import name_getter, uuid4
 from .conftest import qpc_server_config
 from .utils import (
     cred_add,
-    source_add,
+    report_detail,
     scan_add,
     scan_cancel,
+    scan_job,
     scan_pause,
     scan_restart,
-    scan_detail_report,
-    scan_show,
     scan_start,
+    source_add,
 )
 from camayoc.config import get_config
 from camayoc.constants import BECOME_PASSWORD_INPUT, CONNECTION_PASSWORD_INPUT
@@ -119,7 +119,7 @@ def wait_for_scan(scan_job_id, status='completed', timeout=900):
     :param timeout: wait up to this amount of seconds. Default is 900.
     """
     while timeout > 0:
-        result = scan_show({'id': scan_job_id})
+        result = scan_job({'id': scan_job_id})
         if status != 'failed' and result['status'] == 'failed':
             raise FailedScanException(
                 'The scan with ID "{}" has failed unexpectedly.\n\n'
@@ -161,14 +161,14 @@ def test_scan(isolated_filesystem, qpc_server_config, source):
     assert match is not None
     scan_job_id = match.group(1)
     wait_for_scan(scan_job_id)
-    result = scan_show({
+    result = scan_job({
         'id': scan_job_id,
     })
     assert result['status'] == 'completed'
     report_id = result['report_id']
     assert report_id is not None
     output_file = 'out.json'
-    report = scan_detail_report({
+    report = report_detail({
         'json': None,
         'output-file': output_file,
         'report': report_id,
@@ -201,14 +201,14 @@ def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
     assert match is not None
     scan_job_id = match.group(1)
     wait_for_scan(scan_job_id, timeout=1200)
-    result = scan_show({
+    result = scan_job({
         'id': scan_job_id,
     })
     assert result['status'] == 'completed'
     report_id = result['report_id']
     assert report_id is not None
     output_file = 'out.json'
-    report = scan_detail_report({
+    report = report_detail({
         'json': None,
         'output-file': output_file,
         'report': report_id,
@@ -262,14 +262,14 @@ def test_scan_restart(isolated_filesystem, qpc_server_config):
     wait_for_scan(scan_job_id, status='paused')
     scan_restart({'id': scan_job_id})
     wait_for_scan(scan_job_id)
-    result = scan_show({
+    result = scan_job({
         'id': scan_job_id,
     })
     assert result['status'] == 'completed'
     report_id = result['report_id']
     assert report_id is not None
     output_file = 'out.json'
-    report = scan_detail_report({
+    report = report_detail({
         'json': None,
         'output-file': output_file,
         'report': report_id,

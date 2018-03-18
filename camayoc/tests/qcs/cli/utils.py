@@ -93,6 +93,10 @@ def cred_show(options, output, exitstatus=0):
     assert qpc_cred_show.exitstatus == exitstatus
 
 
+report_detail = functools.partial(cli_command, 'qpc report detail')
+"""Run ``qpc report detail`` with ``options`` and return output."""
+
+
 def source_add(options, inputs=None, exitstatus=0):
     """Add a new source entry.
 
@@ -167,11 +171,6 @@ scan_start = functools.partial(cli_command, 'qpc scan start')
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
 
-def scan_detail_report(options=None, exitstatus=0):
-    """Run ``qpc report detail`` with ``options`` and return output."""
-    return cli_command('qpc report detail', options, exitstatus)
-
-
-def scan_show(options=None, exitstatus=0):
+def scan_job(options=None, exitstatus=0):
     """Run ``qpc scan job`` command with ``options`` returning its output."""
     return json.loads(cli_command('qpc scan job', options, exitstatus))

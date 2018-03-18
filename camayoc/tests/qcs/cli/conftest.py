@@ -69,12 +69,7 @@ def cleanup_server():
     We must delete all objects on the server in the correct order, first scans,
     then sources, then credentials.
     """
-    clear_scans = pexpect.spawn('qpc scan clear --all')
-    assert clear_scans.expect(pexpect.EOF) == 0
-    clear_scans.close()
-    clear_sources = pexpect.spawn('qpc source clear --all')
-    assert clear_sources.expect(pexpect.EOF) == 0
-    clear_sources.close()
-    clear_creds = pexpect.spawn('qpc cred clear --all')
-    assert clear_creds.expect(pexpect.EOF) == 0
-    clear_creds.close()
+    for command in ('scan', 'source', 'cred'):
+        clear = pexpect.spawn('qpc {} clear --all'.format(command))
+        assert clear.expect(pexpect.EOF) == 0
+        clear.close()
