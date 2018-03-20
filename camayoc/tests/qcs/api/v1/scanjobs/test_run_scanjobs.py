@@ -145,7 +145,6 @@ def run_all_scans(vcenter_client, module_cleanup):
             type: 'vcenter'
             options:
                 ssl_cert_verify: false
-                satellite_version: '6.2'
             credentials:
                 - sat6_admin
           - hostname: sample-vcenter
