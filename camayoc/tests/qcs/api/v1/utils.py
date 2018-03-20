@@ -73,8 +73,7 @@ def wait_until_state(scanjob, timeout=120, state='completed'):
                     scanjob_details=pprint.pformat(
                         scanjob.read().json()),
                     scanjob_results=pprint.pformat(
-                        scanjob.results().json()),
-                ))
+                        scanjob.read().json().get('tasks'))))
         if state not in ['stopped', 'failed'] and scanjob.status() == 'failed':
             raise FailedScanException(
                 'You have called wait_until_state() on a scanjob with\n'
@@ -92,8 +91,7 @@ def wait_until_state(scanjob, timeout=120, state='completed'):
                     scanjob_details=pprint.pformat(
                         scanjob.read().json()),
                     scanjob_results=pprint.pformat(
-                        scanjob.results().json()),
-                ))
+                        scanjob.read().json().get('tasks'))))
 
 
 def all_sources():
