@@ -341,13 +341,6 @@ class Source(QCSObject):
                         ssl_verify = True
                     if other.get(key, {}).get('ssl_cert_verify') != ssl_verify:
                         return False
-                if self.source_type == 'satellite':
-                    if hasattr(self, 'options'):
-                        sat_ver = self.options.get('satellite_version', '6.2')
-                    else:
-                        sat_ver = '6.2'
-                    if other.get(key, {}).get('satellite_version') != sat_ver:
-                        return False
 
             if key == 'credentials':
                 other_creds = other.get('credentials')
