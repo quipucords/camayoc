@@ -102,10 +102,8 @@ def run_scan(src_ids, scan_name, cleanup, scan_type='inspect'):
         SCAN_DATA[scan_name]['scan_results'] = scanjob.read().json()
         SCAN_DATA[scan_name]['report_id'] = scanjob.read(
         ).json().get('report_id')
-        SCAN_DATA[scan_name]['connection_results'] = scanjob.results(
-        ).json().get('connection_results')
-        SCAN_DATA[scan_name]['inspection_results'] = scanjob.results(
-        ).json().get('inspection_results')
+        SCAN_DATA[scan_name]['task_results'] = scanjob.read(
+        ).json().get('tasks')
     except (requests.HTTPError, WaitTimeError) as e:
         SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
 
@@ -285,68 +283,24 @@ def test_scan_complete(scan_info):
 
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
-def test_scan_connection_results(scan_info):
-    """Test the connection results of each scan.
+def test_scan_task_results(scan_info):
+    """Test the scan task results of each scan.
 
     :id: 8087fdc9-6626-476a-a11a-4783cbf501a0
     :description: Test the connection results of the scan
     :steps:
         1) Iterate over sources that we have connection results for.
         2) Inspect server arithmetic regarding number of systems scanned
-    :expectedresults: There are connection results for each source we scanned
+    :expectedresults: There are task results for each source we scanned
        and we get an accurate count of how many were reached and how many
-       failed.
+       failed for all tasks.
     """
     result = get_scan_result(scan_info['name'])
-    connection_results = result['connection_results']
-    if connection_results is None:
-        raise AssertionError(
-            'Scan did not have connection results. Its final status was \n'
-            '{status}. It encountered the following errors: {errors}\n'.format(
-                status=result['final_status'],
-                errors=' '.join(result['errors']),
-            )
-        )
-    scanned_sources = []
-    for task in connection_results['task_results']:
-        scanned_sources.append(task['source'])
-
-    # assert we have connection info for each source
-    assert len(scanned_sources) == len(scan_info['sources'])
-
-    # assert arithmetic around number of systems scanned adds up
-    # this has been broken in the past
-    sys_count = result['scan_results']['systems_count']
-    num_failed = result['scan_results']['systems_failed']
-    num_scanned = result['scan_results']['systems_scanned']
-    assert num_scanned == sys_count - num_failed
-
-
-@pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
-def test_scan_inspection_results(scan_info):
-    """Test the inspection results of each scan.
-
-    :id: d29d9fd6-ac85-4110-9b1c-ac7c26205d16
-    :description: Test the inspection results of the scan
-    :steps:
-        1) Iterate over sources that we have connection results for.
-    :expectedresults: There are inspection results for each source we scanned.
-    """
-    result = get_scan_result(scan_info['name'])
-    inspection_results = result['inspection_results']
-    if inspection_results is None:
-        raise AssertionError(
-            'Scan did not have connection results. Its final status was \n'
-            '{status}. It encountered the following errors: {errors}\n'.format(
-                status=result['final_status'],
-                errors=' '.join(result['errors']),
-            )
-
-        )
-    scanned_sources = []
-    for task in inspection_results['task_results']:
-        scanned_sources.append(task['source'])
-
-    # assert we have connection info for each source
-    assert len(scanned_sources) == len(scan_info['sources'])
+    task_results = result['task_results']
+    for task in task_results:
+        # assert arithmetic around number of systems scanned adds up
+        # this has been broken in the past
+        sys_count = task['systems_count']
+        num_failed = task['systems_failed']
+        num_scanned = task['systems_scanned']
+        assert num_scanned == sys_count - num_failed

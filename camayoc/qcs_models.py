@@ -561,13 +561,22 @@ class ScanJob(QCSObject):
         path = urljoin(self.path(), 'restart/')
         return self.client.put(path, {}, **kwargs)
 
-    def results(self, **kwargs):
-        """Send a GET self.endpoint/{id}/results/ to read scan details.
+    def connection_results(self, **kwargs):
+        """Send a GET self.endpoint/{id}/connection/ to read scan details.
 
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.path(), 'results/')
+        path = urljoin(self.path(), 'connection/')
+        return self.client.get(path, **kwargs)
+
+    def inspection_results(self, **kwargs):
+        """Send a GET self.endpoint/{id}/inspection/ to read scan details.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.path(), 'inspection/')
         return self.client.get(path, **kwargs)
 
     def status(self):
