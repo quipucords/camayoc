@@ -13,6 +13,7 @@ import pytest
 import random
 from itertools import combinations
 
+from camayoc import api
 from camayoc.constants import (
     QCS_SOURCE_TYPES,
     QCS_OPTIONAL_PRODUCTS,
@@ -105,9 +106,7 @@ def test_scan_with_optional_products(scan_type, shared_client, cleanup):
         2) Create network source using the network credential.
         3) Create a scan using the network source. When creating the scan
            disable the optional products.
-    :expectedresults: The scan completes and the results do not include any
-        fact information for the disabled optional products.
-    :caseautomation: notautomated
+    :expectedresults: The scan is created.
     """
     num_products = random.randint(0, len(QCS_OPTIONAL_PRODUCTS))
     product_combinations = combinations(QCS_OPTIONAL_PRODUCTS, num_products)
@@ -127,3 +126,47 @@ def test_scan_with_optional_products(scan_type, shared_client, cleanup):
         scan.create()
         cleanup.append(scan)
         assert scan.equivalent(scan.read().json())
+
+
+@pytest.mark.parametrize('scan_type', ['connect', 'inspect'])
+def test_negative_disable_optional_products(scan_type, shared_client, cleanup):
+    """Attempt to disable optional products with non-acceptable booleans.
+
+    :id: 2adb483c-578d-4131-b426-9f772c1803de
+    :description: Create a scan with bad input for optional products
+    :steps:
+        1) Create a network credential
+        2) Create network source using the network credential.
+        3) Create a scan using the network source. When creating the scan
+           disable the optional products with bad values.
+    :expectedresults: The scan is not created.
+    """
+    num_products = random.randint(1, len(QCS_OPTIONAL_PRODUCTS))
+    product_combinations = combinations(QCS_OPTIONAL_PRODUCTS, num_products)
+    for combo in product_combinations:
+        source_ids = []
+        for _ in range(random.randint(1, 10)):
+            src_type = random.choice(QCS_SOURCE_TYPES)
+            src = gen_valid_source(cleanup, src_type, 'localhost')
+            source_ids.append(src._id)
+        scan = Scan(
+            source_ids=source_ids,
+            scan_type=scan_type,
+            client=shared_client)
+        products = {p: True for p in QCS_OPTIONAL_PRODUCTS if p not in combo}
+        bad_choice = random.choice(['hamburger', '87', 42, '*'])
+        products.update({p: bad_choice for p in combo})
+        scan.options.update({OPTIONAL_PROD: products})
+        echo_client = api.Client(response_handler=api.echo_handler)
+        scan.client = echo_client
+        create_response = scan.create()
+        if create_response.status_code == 201:
+            cleanup.append(scan)
+            raise AssertionError(
+                'Optional products should be disabled and\n'
+                'enabled with booleans. If invalid input is given, the user\n'
+                'should be alerted.'
+                'The following data was provided: {}'.format(products))
+        assert create_response.status_code == 400
+        message = create_response.json().get('options', {})
+        assert message.get(OPTIONAL_PROD) is not None
