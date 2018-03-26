@@ -12,7 +12,7 @@
 import random
 from io import BytesIO
 from pathlib import Path
-
+import json
 import pexpect
 
 from camayoc import utils
@@ -24,6 +24,7 @@ from camayoc.constants import (
 from camayoc.tests.qcs.cli.utils import (
         cred_add,
         cred_show,
+        source_show_output
 )
 
 
@@ -606,6 +607,107 @@ def test_clear(isolated_filesystem, qpc_server_config):
     )
     assert qpc_cred_show.expect(
         'Credential "{}" does not exist'.format(name)
+    ) == 0
+    assert qpc_cred_show.expect(pexpect.EOF) == 0
+    qpc_cred_show.close()
+
+
+def test_clear_with_source(isolated_filesystem, qpc_server_config):
+    """Try clearing an auth associated with a source.
+
+    :id: 550acd7f-0e2a-419c-a996-818b8475532f
+    :description: Create an auth entry & source entry. Try to delete
+        the auth entry without removing dependent source. Remove the
+        source and successfully remove the auth.
+    :steps: Run ``qpc cred add --name <name>, --type <type> etc.``
+            Run ``qpc source add --name <name> --cred <cred> etc.``
+            Run ``qpc cred clear --name <name>``
+            Run ``qpc source clear --name <name>``
+            Run ``qpc cred clear --name <name>``
+    :expectedresults: The auth entry is removed after source is removed.
+    """
+    cred_name = utils.uuid4()
+    cred_type = 'network'
+    source_name = utils.uuid4()
+    source_type = 'network'
+    hosts = '127.0.0.1'
+    username = utils.uuid4()
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
+    cred_add({
+        'name': cred_name,
+        'type': cred_type,
+        'username': username,
+        'sshkeyfile': str(sshkeyfile.resolve()),
+    })
+
+    cred_show(
+        {'name': cred_name},
+        generate_show_output({
+            'name': cred_name,
+            'ssh_keyfile': sshkeyfile.resolve(),
+            'username': username,
+        })
+    )
+    # create dependent source
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --type {}'
+        .format(source_name, cred_name, hosts, source_type)
+    )
+    assert qpc_source_add.expect(
+        'Source "{}" was added'.format(source_name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+    output = source_show_output({
+        'name': source_name
+    })
+    output = json.loads(output)
+    # try to delete credential
+    qpc_cred_clear = pexpect.spawn(
+        'qpc cred clear --name={}'.format(cred_name)
+    )
+    qpc_cred_clear.logfile = BytesIO()
+    assert qpc_cred_clear.expect(pexpect.EOF) == 0
+    assert (
+            qpc_cred_clear.logfile.getvalue().strip().decode('utf-8') ==
+            'Error: Credential cannot be deleted because it is used by 1'
+            ' or more sources.\r\n'
+            "sources: {'id': '%s', 'name': '%s'}\r\n"
+            'Failed to remove credential "%s". '
+            'For more information, see the server log file.' % (output['id'],
+                                                                source_name,
+                                                                cred_name)
+    )
+    qpc_cred_clear.logfile.close()
+    qpc_cred_clear.close()
+    assert qpc_cred_clear.exitstatus == 1
+    qpc_cred_clear.close()
+    # delete the source using credential
+    qpc_source_clear = pexpect.spawn(
+        'qpc source clear --name={}'.format(source_name)
+    )
+    assert qpc_source_clear.expect(
+        'Source "{}" was removed'.format(source_name)
+    ) == 0
+    assert qpc_source_clear.expect(pexpect.EOF) == 0
+    qpc_source_clear.close()
+    assert qpc_source_clear.exitstatus == 0
+    # successfully remove credential
+    qpc_cred_clear = pexpect.spawn(
+        'qpc cred clear --name={}'.format(cred_name)
+    )
+    assert qpc_cred_clear.expect(
+        'Credential "{}" was removed'.format(cred_name)) == 0
+    assert qpc_cred_clear.expect(pexpect.EOF) == 0
+    qpc_cred_clear.close()
+    assert qpc_cred_clear.exitstatus == 0
+    # try showing cred
+    qpc_cred_show = pexpect.spawn(
+        'qpc cred show --name={}'.format(cred_name)
+    )
+    assert qpc_cred_show.expect(
+        'Credential "{}" does not exist'.format(cred_name)
     ) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
