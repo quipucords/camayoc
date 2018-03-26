@@ -614,13 +614,14 @@ def test_clear(isolated_filesystem, qpc_server_config):
 
 
 def test_clear_with_source(isolated_filesystem, qpc_server_config):
-    """Clear a credential which is being used in a source.
+    """Attempt to clear a credential being used by a source.
 
     :id: 66d84e9c-3124-11e8-b467-0ed5f89f718b
-    :description: Create a credential and source that utilizes the credential.
-        Attempt to delete the credential and fail.
-        Delete the source utilizing the credential.
-        Successfully delete the credential.
+    :description: Create a credential and a source that utilizes the
+        credential. Try to clear the credential entry by entering the --name
+        of the credential which is associated with the source entry. After that
+        remove the associated source entry and try to remove the credential
+        again, it should now be removed.
     :steps:
         1) Run ``qpc cred add --name <name> --type <type> --username <username>
         --sshkeyfile <sshkeyfile>``
