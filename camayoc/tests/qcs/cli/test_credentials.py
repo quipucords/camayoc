@@ -622,7 +622,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         Delete the source utilizing the credential.
         Successfully delete the credential.
     :steps: 1) Run ``qpc cred add --name <name> --type <type>
-        --username <username --sshkeyfile <sshkeyfile>``
+        --username <username> --sshkeyfile <sshkeyfile>``
             2) Run ``qpc source add --name <name> --type <type>
         --cred <cred> --hosts <hosts>``
             3) Run ``qpc cred clear --name <name>`` (fails due to source)
