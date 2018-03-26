@@ -10,6 +10,7 @@
 :upstream: yes
 """
 import json
+import re
 import operator
 import random
 from io import BytesIO
@@ -19,7 +20,10 @@ import pytest
 
 from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT, QCS_HOST_MANAGER_TYPES
-from camayoc.tests.qcs.cli.utils import cred_add, source_show
+from camayoc.tests.qcs.cli.utils import (cred_add,
+                                         source_show,
+                                         scan_add,
+                                         scan_show)
 
 
 ISSUE_449_MARK = pytest.mark.xfail(
@@ -750,6 +754,117 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_clear = pexpect.spawn(
         'qpc source clear --name={}'.format(name)
     )
+    assert qpc_source_clear.expect(
+        'Source "{}" was removed'.format(name)
+    ) == 0
+    assert qpc_source_clear.expect(pexpect.EOF) == 0
+    qpc_source_clear.close()
+    assert qpc_source_clear.exitstatus == 0
+
+    qpc_source_clear = pexpect.spawn(
+        'qpc source clear --name={}'.format(name)
+    )
+    assert qpc_source_clear.expect(
+        'Source "{}" was not found.'.format(name)
+    ) == 0
+    assert qpc_source_clear.expect(pexpect.EOF) == 0
+    qpc_source_clear.close()
+    assert qpc_source_clear.exitstatus == 1
+
+    qpc_source_show = pexpect.spawn(
+        'qpc source show --name={}'.format(name)
+    )
+    assert qpc_source_show.expect(
+        'Source "{}" does not exist.'.format(name)
+    ) == 0
+    assert qpc_source_show.expect(pexpect.EOF) == 0
+    qpc_source_show.close()
+
+
+def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
+    """Clear a source which is used in scans.
+
+    :id: b10435c0-db94-4431-a580-575dd7db4ced
+    :description: Clear a source entry by entering the ``--name`` of an
+        already created entry.
+    :steps: Run ``qpc source clear --name <name>``
+    :expectedresults: The source entry is removed.
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    hosts = '127.0.0.1'
+    port = default_port_for_source(source_type)
+    cred_add(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --type {}'
+        .format(name, cred_name, hosts, source_type)
+    )
+    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+
+    source_show(
+        {'name': name},
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
+    )
+
+    scan_name = utils.uuid4()
+    result = scan_add({
+        'name': scan_name,
+        'sources': name,
+    })
+
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    scan_show_result = scan_show({
+        'name': scan_name
+    })
+    scan_show_result = json.loads(scan_show_result)
+
+    qpc_source_clear = pexpect.spawn(
+        'qpc source clear --name={}'.format(name)
+    )
+
+    qpc_source_clear.logfile = BytesIO()
+    assert qpc_source_clear.expect(pexpect.EOF) == 0
+    assert (
+        qpc_source_clear.logfile.getvalue().strip() ==
+        ('Error: Source cannot be deleted because '
+         'it is used by 1 or more scans.\r\n'
+         "scans: {'id': '%s', 'name': '%s'}\r\n"
+         'Failed to remove source "%s".' % (
+             scan_show_result['id'], scan_name, name)).encode('utf-8')
+    )
+
+    qpc_scan_clear = pexpect.spawn(
+        'qpc scan clear --name={}'.format(scan_name)
+    )
+
+    assert qpc_scan_clear.expect(
+        'Scan "{}" was removed'.format(scan_name)
+    ) == 0
+
+    qpc_source_clear = pexpect.spawn(
+        'qpc source clear --name={}'.format(name)
+    )
+
     assert qpc_source_clear.expect(
         'Source "{}" was removed'.format(name)
     ) == 0
