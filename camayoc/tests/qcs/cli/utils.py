@@ -167,6 +167,9 @@ scan_restart = functools.partial(cli_command, 'qpc scan restart')
 scan_add = functools.partial(cli_command, 'qpc scan add')
 """Run ``qpc scan add`` command with ``options`` returning its output."""
 
+scan_show = functools.partial(cli_command, 'qpc scan show')
+"""Run ``qpc scan show`` command with ``options`` returning its output."""
+
 scan_start = functools.partial(cli_command, 'qpc scan start')
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
