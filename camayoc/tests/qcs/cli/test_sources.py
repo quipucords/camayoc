@@ -786,9 +786,10 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
 
     :id: b10435c0-db94-4431-a580-575dd7db4ced
     :description: Clear a source entry by entering the ``--name`` of an
-        already created entry.
+        already created entry that is used in a scan.
     :steps: Run ``qpc source clear --name <name>``
-    :expectedresults: The source entry is removed.
+    :expectedresults: The source entry is removed only after it is
+    not used in scans.
     """
     cred_name = utils.uuid4()
     name = utils.uuid4()
