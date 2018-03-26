@@ -24,6 +24,7 @@ from camayoc.constants import (
 from camayoc.tests.qcs.cli.utils import (
         cred_add,
         cred_show,
+        source_add,
         source_show_output
 )
 
@@ -613,18 +614,26 @@ def test_clear(isolated_filesystem, qpc_server_config):
 
 
 def test_clear_with_source(isolated_filesystem, qpc_server_config):
-    """Clear an auth which is used in a source.
+    """Clear a credential which is being used in a source.
 
     :id: 66d84e9c-3124-11e8-b467-0ed5f89f718b
-    :description: Clear one auth entry by entering the ``--name`` of an already
-        created entry.
-    :steps: Run ``qpc cred clear --name <name>``
-    :expectedresults: The auth entry is removed.
+    :description: Create a credential and source that utilizes the credential.
+        Attempt to delete the credential and fail.
+        Delete the source utilizing the credential.
+        Successfully delete the credential.
+    :steps: 1) Run ``qpc cred add --name <name> --type <type>
+        --username <username --sshkeyfile <sshkeyfile>``
+            2) Run ``qpc source add --name <name> --type <type>
+        --cred <cred> --hosts <hosts>``
+            3) Run ``qpc cred clear --name <name>`` (fails due to source)
+            4) Run ``qpc source clear --name <name>``
+            5) Run ``qpc cred clear --name <name>``
+    :expectedresults: The credential is only removed after the source that is
+        using it has been deleted.
     """
     cred_name = utils.uuid4()
     cred_type = 'network'
     source_name = utils.uuid4()
-    source_type = 'network'
     hosts = '127.0.0.1'
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
@@ -645,15 +654,11 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         })
     )
     # create dependent source
-    qpc_source_add = pexpect.spawn(
-        'qpc source add --name {} --cred {} --hosts {} --type {}'
-        .format(source_name, cred_name, hosts, source_type)
-    )
-    assert qpc_source_add.expect(
-        'Source "{}" was added'.format(source_name)) == 0
-    assert qpc_source_add.expect(pexpect.EOF) == 0
-    qpc_source_add.close()
-    assert qpc_source_add.exitstatus == 0
+    source_add({
+        'name': source_name,
+        'cred': cred_name,
+        'hosts': hosts,
+    })
     output = source_show_output({
         'name': source_name
     })
