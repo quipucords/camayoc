@@ -613,18 +613,13 @@ def test_clear(isolated_filesystem, qpc_server_config):
 
 
 def test_clear_with_source(isolated_filesystem, qpc_server_config):
-    """Try clearing an auth associated with a source.
+    """Clear an auth which is used in a source.
 
-    :id: 550acd7f-0e2a-419c-a996-818b8475532f
-    :description: Create an auth entry & source entry. Try to delete
-        the auth entry without removing dependent source. Remove the
-        source and successfully remove the auth.
-    :steps: Run ``qpc cred add --name <name>, --type <type> etc.``
-            Run ``qpc source add --name <name> --cred <cred> etc.``
-            Run ``qpc cred clear --name <name>``
-            Run ``qpc source clear --name <name>``
-            Run ``qpc cred clear --name <name>``
-    :expectedresults: The auth entry is removed after source is removed.
+    :id: 66d84e9c-3124-11e8-b467-0ed5f89f718b
+    :description: Clear one auth entry by entering the ``--name`` of an already
+        created entry.
+    :steps: Run ``qpc cred clear --name <name>``
+    :expectedresults: The auth entry is removed.
     """
     cred_name = utils.uuid4()
     cred_type = 'network'
