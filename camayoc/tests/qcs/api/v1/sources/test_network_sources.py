@@ -67,7 +67,6 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     assert_matches_server(src)
 
 
-
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
 def test_create_multiple_creds(shared_client, cleanup, scan_host):
     """Create a Network Source using multiple credentials.
@@ -154,7 +153,6 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host):
     if isinstance(scan_host, list):
         src.hosts = RESULTING_HOST_FORMAT_DATA
     assert_matches_server(src)
-
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
