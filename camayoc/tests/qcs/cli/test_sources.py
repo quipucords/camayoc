@@ -784,7 +784,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
 def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     """Clear a source which is used in scans.
 
-    :id: 45ec3f8a-b554-4578-886c-f1cb5ab42ffa
+    :id: b10435c0-db94-4431-a580-575dd7db4ced
     :description: Clear a source entry by entering the ``--name`` of an
         already created entry.
     :steps: Run ``qpc source clear --name <name>``
