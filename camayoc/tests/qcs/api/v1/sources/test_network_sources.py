@@ -40,12 +40,11 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     :id: 248f701c-b4d4-408a-80b0-c4863a8007e1
     :description: Create a network source with multiple hosts
     :steps:
-        1) Create host credential
-        2) Send POST with data to create network source using the host
+        1) Create credential
+        2) Send POST with data to create network source using the
            credential to the source endpoint with multiple hosts,
            (list, IPv4 range, CIDR notation, or other ansible pattern)
     :expectedresults: The source is created.
-    :caseautomation: notautomated
     """
     cred = Credential(
         cred_type=NETWORK_TYPE,
@@ -60,11 +59,13 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
         credential_ids=[cred._id],
     )
     src.create()
-    src.hosts = RESULTING_HOST_FORMAT_DATA
-    assert_matches_server(src)
 
     # add the ids to the lists to destroy after the test is done
     cleanup.extend([cred, src])
+
+    src.hosts = RESULTING_HOST_FORMAT_DATA
+    assert_matches_server(src)
+
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
@@ -74,10 +75,9 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host):
     :id: dcf6ea99-c6b1-493d-9db8-3ec0ea09b5e0
     :description: Create a network source with multiple credentials
     :steps:
-        1) Create multiple host credentials using both sshkey and passwords
+        1) Create multiple credentials using both sshkey and passwords
         2) Send POST with data to create network source using the credentials
     :expectedresults: The source is created.
-    :caseautomation: notautomated
     """
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
@@ -115,12 +115,11 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host):
     :id: 07f49731-0162-4eb1-b89a-3c95fddad428
     :description: Create a network source with multiple credentials
     :steps:
-        1) Create multiple host credentials using both sshkey and passwords
+        1) Create multiple credentials using both sshkey and passwords
         2) Send POST with data to create network source using the credentials
            using a list of sources using multiple formats (alphabetical name,
            CIDR, individual IPv4 address, etc.)
     :expectedresults: The source is created.
-    :caseautomation: notautomated
     """
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
@@ -148,12 +147,14 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host):
         credential_ids=[ssh_key_cred._id, pwd_cred._id],
     )
     src.create()
+
+    # add the ids to the lists to destroy after the test is done
+    cleanup.extend([ssh_key_cred, pwd_cred, src])
+
     if isinstance(scan_host, list):
         src.hosts = RESULTING_HOST_FORMAT_DATA
     assert_matches_server(src)
 
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([ssh_key_cred, pwd_cred, src])
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
@@ -167,7 +168,6 @@ def test_negative_update_invalid(shared_client, cleanup, scan_host):
         1) Create a valid network credential and source
         2) Attempt to update with multiple invalid {hosts, credentials}
     :expectedresults: An error is thrown and no new host is created.
-    :caseautomation: notautomated
     """
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
@@ -192,6 +192,10 @@ def test_negative_update_invalid(shared_client, cleanup, scan_host):
         credential_ids=[net_cred._id],
     )
     src.create()
+
+    # add the ids to the lists to destroy after the test is done
+    cleanup.extend([net_cred, sat_cred, src])
+
     original_data = copy.deepcopy(src.fields())
     src.client = api.Client(api.echo_handler)
 
@@ -200,6 +204,3 @@ def test_negative_update_invalid(shared_client, cleanup, scan_host):
     assert_source_update_fails(original_data, src)
     src.hosts = ['1**2@33^']
     assert_source_update_fails(original_data, src)
-
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([net_cred, sat_cred, src])
