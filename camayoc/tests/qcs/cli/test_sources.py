@@ -788,9 +788,11 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     :description: Clear a source entry by entering the ``--name`` of an
         already created entry that is used in a scan.
     :steps:
-        1) Run ``qpc source clear --name <name>`` on a source that has a scan associated with it.
+        1) Run ``qpc source clear --name <name>`` on a source that has a
+        scan associated with it.
         2) Run ``qpc scan clear --name <scan_name>`` on the associated scan.
-        3) Run ``qpc source clear --name <name>`` again and now it should clear the source.
+        3) Run ``qpc source clear --name <name>`` again and now it should
+        clear the source.
     :expectedresults: The source entry is removed only after it is
         not used in scans.
     """
