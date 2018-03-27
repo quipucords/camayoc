@@ -13,6 +13,7 @@ import random
 import json
 from io import BytesIO
 from pathlib import Path
+
 import pexpect
 
 from camayoc import utils
