@@ -10,9 +10,9 @@
 :upstream: yes
 """
 import random
+import json
 from io import BytesIO
 from pathlib import Path
-import json
 import pexpect
 
 from camayoc import utils
@@ -636,7 +636,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     cred_name = utils.uuid4()
     cred_type = 'network'
     source_name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = ['127.0.0.1']
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
@@ -658,7 +658,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     # create dependent source
     source_add({
         'name': source_name,
-        'cred': cred_name,
+        'cred': [cred_name],
         'hosts': hosts,
     })
     output = source_show_output({

@@ -109,9 +109,9 @@ def source_add(options, inputs=None, exitstatus=0):
     :param exitstatus: Expected exit status code.
     """
     if 'cred' in options:
-        options['cred'] = ''.join(string for string in options['cred'])
+        options['cred'] = ' '.join(options['cred'])
     if 'hosts' in options:
-        options['hosts'] = ''.join(string for string in options['hosts'])
+        options['hosts'] = ' '.join(options['hosts'])
     if 'type' not in options:
         options['type'] = 'network'
     command = 'qpc source add'
