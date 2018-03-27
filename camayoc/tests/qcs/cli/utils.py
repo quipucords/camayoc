@@ -173,6 +173,9 @@ scan_show = functools.partial(cli_command, 'qpc scan show')
 scan_start = functools.partial(cli_command, 'qpc scan start')
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
+source_show_output = functools.partial(cli_command, 'qpc source show')
+"""Run ``qpc source show`` command with ``options`` returning its output."""
+
 
 def scan_job(options=None, exitstatus=0):
     """Run ``qpc scan job`` command with ``options`` returning its output."""
