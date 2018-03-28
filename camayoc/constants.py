@@ -366,6 +366,37 @@ QCS_OPTIONAL_PRODUCTS = (
 )
 """Optional products that can be enabled or disabled for a scan."""
 
+QCS_FUSE_RAW_FACTS = ('karaf_locate_karaf_jar', 'karaf_homes',
+                      'karaf_home_bin_fuse', 'karaf_home_system_org_jboss',
+                      'fuse_activemq_version', 'karaf_running_processes',
+                      'jboss_fuse_systemctl_unit_files',
+                      'jboss_fuse_chkconfig', 'fuse_camel_version',
+                      'fuse_cxf_version')
+"""List of facts collected by JBoss FUSE role."""
+
+QCS_BRMS_RAW_FACTS = ('internal_jboss_brms_business_central_candidates',
+                      'jboss_brms_business_central_candidates',
+                      'jboss_brms_kie_server_candidates',
+                      'business_central_candidates_eap',
+                      'kie_server_candidates_eap',
+                      'jboss_brms_locate_kie_api',
+                      'internal_jboss_brms_locate_kie_api',
+                      'jboss_brms_kie_in_business_central',
+                      'jboss_brms_manifest_mf',
+                      'business_central_candidates')
+"""List of facts collected by JBoss BRMS role."""
+
+QCS_EAP_RAW_FACTS = ('jboss_eap_running_paths',
+                     'jboss_eap_locate_jbos_modules_jar',
+                     'eap_home_candidates', 'eap_home_ls',
+                     'eap_home_version_txt', 'eap_home_readme_txt',
+                     'eap_home_jboss_modules_manifest',
+                     'eap_home_jboss_modules_version',
+                     'eap_home_bin', 'eap_home_layers',
+                     'eap_home_layers_conf', 'jboss_eap_common_files',
+                     'jboss_eap_processes', 'jboss_eap_packages')
+"""List of facts collected by JBoss EAP role."""
+
 VCENTER_SCAN_TIMEOUT = 540
 """Maximum amount of time to let vcenter scan run before timing out."""
 

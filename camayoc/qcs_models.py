@@ -393,6 +393,7 @@ class Scan(QCSObject):
             client=None,
             source_ids=None,
             max_concurrency=50,
+            disabled_optional_products=None,
             scan_type='inspect',
             name=None,
             _id=None):
@@ -413,6 +414,9 @@ class Scan(QCSObject):
         # valid scan types are 'connect' and 'inspect'
         self.scan_type = scan_type
         self.options = {'max_concurrency': max_concurrency}
+        if disabled_optional_products:
+            self.options['disabled_optional_products'] = \
+                disabled_optional_products
 
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.

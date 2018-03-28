@@ -25,6 +25,9 @@ from camayoc.qcs_models import (
 )
 from camayoc.config import get_config
 from camayoc.constants import (
+    QCS_FUSE_RAW_FACTS,
+    QCS_BRMS_RAW_FACTS,
+    QCS_EAP_RAW_FACTS,
     VCENTER_CLUSTER,
     VCENTER_DATA_CENTER,
     VCENTER_HOST,
@@ -73,7 +76,8 @@ def create_source(source_info, cred_name_to_id_dict, module_cleanup):
     return src._id
 
 
-def run_scan(src_ids, scan_name, cleanup, scan_type='inspect'):
+def run_scan(src_ids, scan_name, disabled_optional_products, cleanup,
+             scan_type='inspect'):
     """Scan a machine and cache any available results.
 
     If errors are encountered, save those and they can be included
@@ -90,7 +94,8 @@ def run_scan(src_ids, scan_name, cleanup, scan_type='inspect'):
         'errors': [],
     }
     try:
-        scan = Scan(source_ids=src_ids, scan_type=scan_type)
+        scan = Scan(source_ids=src_ids, scan_type=scan_type,
+                    disabled_optional_products=disabled_optional_products)
         TIMEOUT = 500 * len(src_ids)
         scan.create()
         cleanup.append(scan)
@@ -104,6 +109,8 @@ def run_scan(src_ids, scan_name, cleanup, scan_type='inspect'):
         ).json().get('report_id')
         SCAN_DATA[scan_name]['task_results'] = scanjob.read(
         ).json().get('tasks')
+        SCAN_DATA[scan_name]['inspection_results'] = \
+            scanjob.inspection_results().json().get('results')
     except (requests.HTTPError, WaitTimeError) as e:
         SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
 
@@ -129,6 +136,7 @@ def run_all_scans(vcenter_client, module_cleanup):
                       - sample-none-rhel-5-vc
                       - sample-sat-6
                       - sample-vcenter
+                  disabled_optional_products: {'jboss_fuse': True}
         inventory:
           - hostname: sample-none-rhel-5-vc
             ipv4: 10.10.10.1
@@ -209,6 +217,8 @@ def run_all_scans(vcenter_client, module_cleanup):
                         'source_ids', []).append(
                         source_ids[hostname])
     for scan in scans:
+        # grab the disabled products if they exist, otherwise {}
+        disabled_optional_products = scan.get('disabled_optional_products', {})
         # update the sources dict of each item in the scans list with the
         # source id if hosts are marked as being hosted on vcenter, turn them
         # on. then wait until they are live
@@ -227,7 +237,8 @@ def run_all_scans(vcenter_client, module_cleanup):
         # now all host should be live and we can run the scan
         # all results will be saved in global cache
         # if errors occur, they will be saved but scanning will go on
-        run_scan(scan['source_ids'], scan['name'], cleanup=module_cleanup)
+        run_scan(scan['source_ids'], scan['name'], disabled_optional_products,
+                 cleanup=module_cleanup)
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()
@@ -303,3 +314,92 @@ def test_scan_task_results(scan_info):
         num_failed = task['systems_failed']
         num_scanned = task['systems_scanned']
         assert num_scanned == sys_count - num_failed
+
+
+@pytest.mark.parametrize(
+    'scan_info', scan_info(), ids=utils.name_getter)
+def test_disabled_optional_products_facts(scan_info):
+    """Test scan jobs from scans with disabled optional products.
+
+    :id: 6f91ea5c-32b9-11e8-b467-0ed5f89f718b
+    :description: Test that scan jobs of scans with disabled products
+        are not gathering the raw_facts defined in the roles of the
+        disabled products.
+    :steps:
+        1) Iterate over the scans and gather the disabled_optional_products
+        2) For any scan that was defined with disabled_optional_products:
+            a) Create a facts_to_ignore list composed of raw_facts for each
+                disabled role
+            b) Iterate through the inspection results fact dictionaries
+            c) Assert that no facts that should be ignored are in the
+                dictionaries
+    :expectedresults: No facts are collected for disabled products
+    """
+    errors_found = []
+    scan = get_scan_result(scan_info['name'])
+    facts_to_ignore = []
+    disabled_optional_products = scan_info.get('disabled_optional_products')
+    if disabled_optional_products:
+        # Build the list of facts that should not be in inspection results
+        for product in disabled_optional_products.keys():
+            if product == 'jboss_eap':
+                facts_to_ignore += QCS_EAP_RAW_FACTS
+            elif product == 'jboss_fuse':
+                facts_to_ignore += QCS_FUSE_RAW_FACTS
+            elif product == 'jboss_brms':
+                facts_to_ignore += QCS_BRMS_RAW_FACTS
+        # grab the inspection results of the scan
+        inspection_results = \
+            scan.get('inspection_results')
+        for system in inspection_results:
+            fact_dicts = system.get('facts')
+            # grab the facts for each system
+            for dictionary in fact_dicts:
+                for fact in facts_to_ignore:
+                    if fact in dictionary.values():
+                        errors_found.append(
+                            'Found fact {fact_name} that should have been '
+                            'DISABLED on scan named {scan_name}'.format(
+                                fact_name=fact,
+                                scan_name=scan.get('name')))
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+
+
+@pytest.mark.parametrize(
+    'scan_info', scan_info(), ids=utils.name_getter)
+def test_disabled_optional_products(scan_info):
+    """Test scan jobs from scans with disabled_optional_products.
+
+    :id: 77aa1f0c-32be-11e8-b467-0ed5f89f718b
+    :description: Test that scans created with disabled products
+        retain the same disabled products when results are obtained
+        from the api
+    :steps: 1) Iterate over scans and gather disabled products
+            2) If the scans have disabled products, grab the
+                disabled_products that were returned in the scan results
+            3) Check that each specified product has the same value
+                after being returned from the api
+    :expectedresults: The values for disabled products specified in the
+        config file are the same as those returned from the api
+    """
+    scan = get_scan_result(scan_info['name'])
+    errors_found = []
+    # grab disabled products from config file
+    specified_optional_products = scan_info.get('disabled_optional_products')
+    if specified_optional_products:
+        # grab disabled products from results
+        returned_optional_products = \
+           scan.get('scan_results').get('options').get(
+               'disabled_optional_products')
+        for product in specified_optional_products:
+            if specified_optional_products[product] != \
+                    returned_optional_products[product]:
+                errors_found.append(
+                    'The product {product_name} should have been set to '
+                    '{product_status} but was returned with a value of '
+                    '{returned_status} on scan named {scan_name}'.format(
+                        product_name=product,
+                        product_status=specified_optional_products[product],
+                        returned_status=returned_optional_products[product],
+                        scan_name=scan.get('name')))
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
