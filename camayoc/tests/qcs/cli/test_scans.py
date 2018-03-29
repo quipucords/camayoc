@@ -350,3 +350,31 @@ def test_scan_cancel_paused(isolated_filesystem, qpc_server_config):
         'Error: Scan cannot be restarted. The scan must be paused for it to '
         'be restarted.'
     )
+
+
+@pytest.mark.parametrize(
+    'scan_action', ('start', 'pause', 'restart', 'cancel'))
+def test_negative_scan_actions(scan_action):
+    """Ensure any of the scan actions can't be perfomed on a invalid scan.
+
+    :id: b51a9c15-8782-4645-b887-894bc80b393d
+    :description: Try to perform a scan action (start, pause, restart, cancel)
+        on a non-existent scan.
+    :steps: Run ``qpc scan <action> --id|--name <id>|<name>``.
+    :expectedresults: The scan action command must fail telling that the scan
+        was not found.
+    """
+    if scan_action == 'start':
+        options = {'name': uuid4()}
+        expected_output = 'Scan "{}" does not exist.'.format(options['name'])
+    else:
+        options = {'id': id(scan_action)}
+        expected_output = 'Error: Not found.'
+    scan_action = {
+        'cancel': scan_cancel,
+        'pause': scan_pause,
+        'restart': scan_restart,
+        'start': scan_start,
+    }[scan_action]
+    output = scan_action(options, exitstatus=1)
+    assert output.strip() == expected_output
