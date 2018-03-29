@@ -1,0 +1,127 @@
+---
+credentials:
+      # these credentials can be associated
+      # with sources by name in the inventory section
+    - name: root
+      type: 'network'
+      # NOTE: When running quipucords in a container, this path
+      # must be the path that exists in the container.
+      sshkeyfile: ~/.ssh/id_rsa
+      username: root
+    - name: 'vcenter'
+      type: 'vcenter'
+      password: 'example1'
+      username: 'username1'
+      rho: false
+    - name: 'sat6'
+      type: 'satellite'
+      password: 'CHANGEME'
+      username: 'CHANGEUSERNAME'
+      # When sharing a config file for quipucords and rho
+      # Mark credentials that you do not want to use in the rho
+      # tests with this flag
+      # All non-network sources must have this flag because
+      # rho does not know what to do with non-network credentials
+      rho: false
+
+qcs:
+    # this is how you would configure quipucords if running
+    # the development server
+    # if running in a container, set the port to 443
+    # and https to true. Keep ssl-verify false unless you've
+    # set up the certificates
+    hostname: '127.0.0.1'
+    https: false
+    port: 8000
+    ssl-verify: false
+    # credentials for logging into the server
+    username: 'admin'
+    password: 'pass'
+        sources:
+        - hosts:
+              - 'myfavnetwork.com'
+          credentials:
+              - root
+          name: 'myfav'
+          type: 'network'
+        - hosts:
+              - 'my_vcenter.com'
+          credentials:
+              - 'vcenter'
+          name: 'vcenter'
+          type: 'vcenter'
+          options:
+              ssl_cert_verify: false
+        - hosts:
+              - 'sat6.com'
+          credentials:
+              - 'sat6'
+          name: 'sat6'
+          type: 'satellite'
+          options:
+              ssl_cert_verify: false
+    scans:
+        - name: ExampleSat6
+          sources:
+              # these refer to the hostnames in the inventory section
+              - 'mysat6.com'
+        - name: ExampleWithProducts
+          sources:
+              - 'jbossamq-rhel-5-vc'
+              - 'jbossamq-rhel-6-vc'
+
+
+# we host most of our test machines on a vcenter instance
+# and this section contains its URL and the credentials
+# needed to log in to it
+vcenter:
+    hostname: OURTEAMVCENTER.com
+    password: "CHANGETHISPASSWORD"
+    username: CHANGETHISUSERNAME
+
+inventory:
+    - hostname: 'myvcenter.com'
+      type: 'vcenter'
+      credentials:
+          - vcenter
+      options:
+          ssl_cert_verify: false
+    - hostname: 'mysat6.com'
+      credentials:
+          - 'sat6'
+      type: 'satellite'
+      options:
+          ssl_cert_verify: false
+
+    - hostname: jbossamq-rhel-5-vc
+      credentials:
+          - root
+      ipv4: 10.10.181.14
+      hypervisor: vcenter
+      distribution:
+          name: 'Red Hat Enterprise Linux'
+          version: '5.9'
+      products:
+          jbossamq:
+              install-process: zip
+              version: '6.2.0'
+          openjdk:
+              version: '1.7'
+    - hostname: jbossamq-rhel-6-vc
+      credentials:
+          - root
+      ipv4: 10.10.181.132
+      hypervisor: vcenter
+      distribution:
+          # Name of OS should be substring of name found
+          # with quipucords
+          name: 'Red Hat Enterprise Linux'
+          # version should be substring of version found
+          # in /etc/redhat-release
+          version: '6.9'
+      products:
+          jbossamq:
+              install-process: zip
+              version: '7.0.2'
+          openjdk:
+              version: '1.8'
