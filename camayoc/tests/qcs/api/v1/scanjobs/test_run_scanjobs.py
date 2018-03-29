@@ -13,16 +13,10 @@ These tests are parametrized on the inventory listed in the config file.
 """
 from pprint import pformat
 
-import requests
 import pytest
+import requests
 
-from camayoc import utils
-from camayoc.qcs_models import (
-    Credential,
-    Source,
-    Scan,
-    ScanJob,
-)
+from camayoc import api, utils
 from camayoc.config import get_config
 from camayoc.constants import (
     QCS_FUSE_RAW_FACTS,
@@ -30,15 +24,20 @@ from camayoc.constants import (
     QCS_EAP_RAW_FACTS,
     VCENTER_CLUSTER,
     VCENTER_DATA_CENTER,
-    VCENTER_HOST,
+    VCENTER_HOST
 )
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
     WaitTimeError,
 )
-from camayoc.tests.utils import wait_until_live
+from camayoc.qcs_models import (
+    Credential,
+    Scan,
+    ScanJob,
+    Source,
+)
 from camayoc.tests.qcs.api.v1.utils import wait_until_state
-
+from camayoc.tests.utils import wait_until_live
 
 SCAN_DATA = {}
 """Cache to associate the named scans with their results."""
@@ -60,7 +59,11 @@ def create_cred(cred_info, module_cleanup):
 
 
 def create_source(source_info, cred_name_to_id_dict, module_cleanup):
-    """Given info about source from config file, create it and return id."""
+    """Given info about source from config file, create it.
+
+    :returns: A tuple containing the The id of the created source and a
+        dictionary of the expected products from the config file.
+    """
     cred_ids = [value for key, value in cred_name_to_id_dict.items(
     ) if key in source_info['credentials']]
     host = source_info.get('ipv4') if source_info.get(
@@ -71,9 +74,10 @@ def create_source(source_info, cred_name_to_id_dict, module_cleanup):
         credential_ids=cred_ids,
         options=source_info.get('options')
     )
+    expected_products = source_info.get('products', {})
     src.create()
     module_cleanup.append(src)
-    return src._id
+    return src._id, expected_products
 
 
 def run_scan(src_ids, scan_name, disabled_optional_products, cleanup,
@@ -83,6 +87,8 @@ def run_scan(src_ids, scan_name, disabled_optional_products, cleanup,
     If errors are encountered, save those and they can be included
     in test results.
     """
+    src_ids = scan['source_ids']
+    scan_name = scan['name']
     SCAN_DATA[scan_name] = {
         'scan_id': None,       # scan id
         'scan_job_id': None,   # scan job id
@@ -92,6 +98,8 @@ def run_scan(src_ids, scan_name, disabled_optional_products, cleanup,
         'connection_results': None,  # details about connection scan
         'inspection_results': None,  # details about inspection scan
         'errors': [],
+        'expected_products': scan['expected_products'],
+        'source_id_to_hostname': scan['source_id_to_hostname'],
     }
     try:
         scan = Scan(source_ids=src_ids, scan_type=scan_type,
@@ -209,13 +217,24 @@ def run_all_scans(vcenter_client, module_cleanup):
     for hostname, source in inventory.items():
         # create sources on server, and keep track of source ids for each scan
         # name of cred to cred id on server
-        source_ids[hostname] = create_source(source, cred_ids, module_cleanup)
+        source_ids[hostname], expected_products = create_source(
+            source,
+            cred_ids,
+            module_cleanup
+        )
         for scan in scans:
+            scan.setdefault('source_ids', [])
+            scan.setdefault('expected_products', [])
+            scan.setdefault('source_id_to_hostname', {})
             for source in scan['sources']:
                 if hostname == source:
-                    scan.setdefault(
-                        'source_ids', []).append(
-                        source_ids[hostname])
+                    scan['source_ids'].append(source_ids[hostname])
+                    scan['expected_products'].append(
+                        {source_ids[hostname]: expected_products}
+                    )
+                    scan['source_id_to_hostname'].update(
+                                    {source_ids[hostname]: hostname}
+                                    )
     for scan in scans:
         # grab the disabled products if they exist, otherwise {}
         disabled_optional_products = scan.get('disabled_optional_products', {})
@@ -403,3 +422,73 @@ def test_disabled_optional_products(scan_info):
                         returned_status=returned_optional_products[product],
                         scan_name=scan.get('name')))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+
+
+@pytest.mark.parametrize(
+    'scan_info', scan_info(), ids=utils.name_getter)
+def test_products_found_deployment_report(scan_info):
+    """Test that products reported as present are correct for the source.
+
+    :id: d5d424bb-8183-4b60-b21a-1b4ed1d879c0
+    :description: Test that products indicated as present are correctly
+        identified.
+    :steps:
+        1) Request the json report for the scan.
+        2) Assert that any products marked as present are expected to be found
+           as is listed in the configuration file for the source.
+    :expectedresults: There are inspection results for each source we scanned
+        and any products found are correctly identified.
+    """
+    result = get_scan_result(scan_info['name'])
+    report_id = result['report_id']
+    report = api.Client().get(
+        'reports/{}/deployments'.format(report_id)).json().get('report')
+    errors_found = []
+    for entity in report:
+        all_found_products = []
+        present_products = []
+        for product in entity.get('products'):
+            name = ''.join(product['name'].lower().split())
+            if product['presence'] == 'present':
+                present_products.append(name)
+            if product['presence'] in ['present', 'potential']:
+                all_found_products.append(name)
+        for source_to_product_map in result['expected_products']:
+            src_id = list(source_to_product_map.keys())[0]
+            hostname = result['source_id_to_hostname'][src_id]
+            ex_products = source_to_product_map[src_id]
+            expected_product_names = list(ex_products.keys())
+            if src_id in [s['id'] for s in entity['sources']]:
+                # We assert that products marked as present are expected
+                # We do not assert that products marked as potential must
+                # actually be on server
+                unexpected_products = []
+                for prod_name in present_products:
+                    # Assert that products marked "present"
+                    # Are actually expected on machine
+                    if prod_name not in expected_product_names:
+                        unexpected_products.append(prod_name)
+                # after inpsecting all found products,
+                # raise assertion error for all unexpected products
+                if len(unexpected_products) > 0:
+                    errors_found.append(
+                        'Found {found_products} but only expected to find\n'
+                        '{expected_products} on {host_found_on}.\n'
+                        'All information about the entity was as follows\n'
+                        '{entity_info}'
+                        .format(
+                            found_products=unexpected_products,
+                            expected_products=expected_product_names,
+                            host_found_on=hostname,
+                            entity_info=pformat(entity)
+                            )
+                        )
+    assert errors_found is [], (
+        'Found {num} unexpected products!\n'
+        'Errors are listed below: {errors}'.format(
+            num=len(errors_found),
+            errors='\n\n======================================\n\n'.join(
+                errors_found
+                ),
+            )
+        )
