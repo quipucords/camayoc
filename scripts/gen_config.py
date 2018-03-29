@@ -27,9 +27,9 @@ Example:
 import argparse
 import csv
 import os
-import yaml
 import uuid
 
+import yaml
 
 from camayoc import config
 from camayoc.exceptions import ConfigFileNotFoundError

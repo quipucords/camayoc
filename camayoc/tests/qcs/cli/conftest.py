@@ -2,6 +2,7 @@
 from io import BytesIO
 
 import pexpect
+
 import pytest
 
 from camayoc.config import get_config

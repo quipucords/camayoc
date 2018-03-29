@@ -1,6 +1,8 @@
 """Quipucords views."""
 from smartloc import Locator
+
 from widgetastic.widget import TextInput, View
+
 from widgetastic_patternfly import Button, NavDropdown
 
 

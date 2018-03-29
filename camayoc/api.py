@@ -8,11 +8,10 @@ on the context.
 """
 from json import JSONDecodeError
 from pprint import pformat
+from urllib.parse import urljoin, urlunparse
 
 import requests
 from requests.exceptions import HTTPError
-
-from urllib.parse import urljoin, urlunparse
 
 from camayoc import config
 from camayoc import exceptions

@@ -9,13 +9,13 @@
 :testtype: functional
 :upstream: yes
 """
-import requests
-
 import pytest
 
+import requests
+
 from camayoc.constants import (
-    QCS_HOST_MANAGER_TYPES,
     QCS_BECOME_METHODS,
+    QCS_HOST_MANAGER_TYPES,
 )
 from camayoc.qcs_models import Credential
 from camayoc.utils import uuid4

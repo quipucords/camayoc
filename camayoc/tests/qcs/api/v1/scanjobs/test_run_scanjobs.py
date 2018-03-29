@@ -14,14 +14,15 @@ These tests are parametrized on the inventory listed in the config file.
 from pprint import pformat
 
 import pytest
+
 import requests
 
 from camayoc import api, utils
 from camayoc.config import get_config
 from camayoc.constants import (
-    QCS_FUSE_RAW_FACTS,
     QCS_BRMS_RAW_FACTS,
     QCS_EAP_RAW_FACTS,
+    QCS_FUSE_RAW_FACTS,
     VCENTER_CLUSTER,
     VCENTER_DATA_CENTER,
     VCENTER_HOST,
@@ -38,6 +39,7 @@ from camayoc.qcs_models import (
 )
 from camayoc.tests.qcs.api.v1.utils import wait_until_state
 from camayoc.tests.utils import wait_until_live
+
 
 SCAN_DATA = {}
 """Cache to associate the named scans with their results."""

@@ -9,8 +9,8 @@
 :testtype: functional
 :upstream: yes
 """
-import random
 import json
+import random
 from io import BytesIO
 from pathlib import Path
 
@@ -18,9 +18,9 @@ import pexpect
 
 from camayoc import utils
 from camayoc.constants import (
+    BECOME_PASSWORD_INPUT,
     CONNECTION_PASSWORD_INPUT,
     MASKED_PASSWORD_OUTPUT,
-    BECOME_PASSWORD_INPUT,
 )
 from camayoc.tests.qcs.cli.utils import (
         cred_add,

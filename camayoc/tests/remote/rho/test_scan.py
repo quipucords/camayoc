@@ -19,6 +19,7 @@ import os
 from io import BytesIO
 
 import pexpect
+
 import pytest
 
 from camayoc import utils

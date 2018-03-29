@@ -17,8 +17,8 @@ import pytest
 from camayoc import api
 from camayoc.constants import QCS_SOURCE_TYPES
 from camayoc.qcs_models import Credential, Source
-from camayoc.utils import uuid4
 from camayoc.tests.qcs.utils import assert_matches_server
+from camayoc.utils import uuid4
 
 
 @pytest.mark.parametrize('cred_type', QCS_SOURCE_TYPES)

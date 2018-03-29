@@ -15,16 +15,15 @@ from pathlib import Path
 import pytest
 
 from camayoc import api
-from camayoc.utils import uuid4
 from camayoc.qcs_models import (
     Credential,
     Source,
 )
-
 from camayoc.tests.qcs.utils import (
     assert_matches_server,
     assert_source_update_fails,
 )
+from camayoc.utils import uuid4
 
 NETWORK_TYPE = 'network'
 CREATE_DATA = ['localhost', '127.0.0.1', 'example.com']

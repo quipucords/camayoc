@@ -2,22 +2,22 @@
 """Unit tests for :mod:`camayoc.api`."""
 import json
 import unittest
-from urllib.parse import urljoin
 from unittest import mock
 from unittest.mock import MagicMock
-
+from urllib.parse import urljoin
 
 import requests
+
 import yaml
 
-from camayoc import config, exceptions, api
-from camayoc.utils import uuid4
+from camayoc import api, config, exceptions
 from camayoc.qcs_models import (
     Credential,
-    Source,
     Scan,
     ScanJob,
+    Source,
 )
+from camayoc.utils import uuid4
 
 
 CAMAYOC_CONFIG = """
