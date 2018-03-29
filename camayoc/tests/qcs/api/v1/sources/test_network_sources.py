@@ -68,7 +68,11 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
-def test_create_multiple_creds(shared_client, cleanup, scan_host):
+def test_create_multiple_creds(
+        shared_client,
+        cleanup,
+        scan_host,
+        isolated_filesystem):
     """Create a Network Source using multiple credentials.
 
     :id: dcf6ea99-c6b1-493d-9db8-3ec0ea09b5e0
@@ -108,7 +112,11 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host):
 
 
 @pytest.mark.parametrize('scan_host', MIXED_DATA)
-def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host):
+def test_create_multiple_creds_and_sources(
+        shared_client,
+        cleanup,
+        scan_host,
+        isolated_filesystem):
     """Create a Network Source using multiple credentials.
 
     :id: 07f49731-0162-4eb1-b89a-3c95fddad428
@@ -156,7 +164,11 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host):
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
-def test_negative_update_invalid(shared_client, cleanup, scan_host):
+def test_negative_update_invalid(
+        shared_client,
+        cleanup,
+        isolated_filesystem,
+        scan_host):
     """Create a network source and then update it with invalid data.
 
     :id: e0d72f2b-2490-445e-b646-f06ceb4ad23f
