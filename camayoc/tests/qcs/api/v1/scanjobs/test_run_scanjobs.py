@@ -24,7 +24,7 @@ from camayoc.constants import (
     QCS_EAP_RAW_FACTS,
     VCENTER_CLUSTER,
     VCENTER_DATA_CENTER,
-    VCENTER_HOST
+    VCENTER_HOST,
 )
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
@@ -75,12 +75,14 @@ def create_source(source_info, cred_name_to_id_dict, module_cleanup):
         options=source_info.get('options')
     )
     expected_products = source_info.get('products', {})
+    expected_products.update(
+        {'distribution': source_info.get('distribution', {})})
     src.create()
     module_cleanup.append(src)
     return src._id, expected_products
 
 
-def run_scan(src_ids, scan_name, disabled_optional_products, cleanup,
+def run_scan(scan, disabled_optional_products, cleanup,
              scan_type='inspect'):
     """Scan a machine and cache any available results.
 
@@ -233,8 +235,8 @@ def run_all_scans(vcenter_client, module_cleanup):
                         {source_ids[hostname]: expected_products}
                     )
                     scan['source_id_to_hostname'].update(
-                                    {source_ids[hostname]: hostname}
-                                    )
+                        {source_ids[hostname]: hostname}
+                    )
     for scan in scans:
         # grab the disabled products if they exist, otherwise {}
         disabled_optional_products = scan.get('disabled_optional_products', {})
@@ -256,8 +258,7 @@ def run_all_scans(vcenter_client, module_cleanup):
         # now all host should be live and we can run the scan
         # all results will be saved in global cache
         # if errors occur, they will be saved but scanning will go on
-        run_scan(scan['source_ids'], scan['name'], disabled_optional_products,
-                 cleanup=module_cleanup)
+        run_scan(scan, disabled_optional_products, cleanup=module_cleanup)
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()
@@ -408,8 +409,8 @@ def test_disabled_optional_products(scan_info):
     if specified_optional_products:
         # grab disabled products from results
         returned_optional_products = \
-           scan.get('scan_results').get('options').get(
-               'disabled_optional_products')
+            scan.get('scan_results').get('options').get(
+                'disabled_optional_products')
         for product in specified_optional_products:
             if specified_optional_products[product] != \
                     returned_optional_products[product]:
@@ -457,7 +458,8 @@ def test_products_found_deployment_report(scan_info):
             src_id = list(source_to_product_map.keys())[0]
             hostname = result['source_id_to_hostname'][src_id]
             ex_products = source_to_product_map[src_id]
-            expected_product_names = list(ex_products.keys())
+            expected_product_names = [
+                prod for prod in ex_products.keys() if prod != 'distribution']
             if src_id in [s['id'] for s in entity['sources']]:
                 # We assert that products marked as present are expected
                 # We do not assert that products marked as potential must
@@ -481,14 +483,82 @@ def test_products_found_deployment_report(scan_info):
                             expected_products=expected_product_names,
                             host_found_on=hostname,
                             entity_info=pformat(entity)
-                            )
                         )
-    assert errors_found is [], (
+                    )
+    assert len(errors_found) == 0, (
         'Found {num} unexpected products!\n'
         'Errors are listed below: {errors}'.format(
             num=len(errors_found),
             errors='\n\n======================================\n\n'.join(
                 errors_found
-                ),
-            )
+            ),
         )
+    )
+
+
+@pytest.mark.parametrize(
+    'scan_info', scan_info(), ids=utils.name_getter)
+def test_OS_found_deployment_report(scan_info):
+    """Test that OS identified are correct for the source.
+
+    :id: 0b16331c-2431-498a-9e84-65b3d66e4001
+    :description: Test that OS type and version are correctly
+        identified.
+    :steps:
+        1) Request the json report for the scan.
+        2) Assert that the OS identified is expected to be found
+           as is listed in the configuration file for the source.
+    :expectedresults: There are inspection results for each source we scanned
+        and the operating system is correctly identified.
+    """
+    result = get_scan_result(scan_info['name'])
+    report_id = result['report_id']
+    report = api.Client().get(
+        'reports/{}/deployments'.format(report_id)).json().get('report')
+    errors_found = []
+    for entity in report:
+        for source_to_product_map in result['expected_products']:
+            src_id = list(source_to_product_map.keys())[0]
+            hostname = result['source_id_to_hostname'][src_id]
+            ex_products = source_to_product_map[src_id]
+            expected_distro = ex_products['distribution'].get('name', '')
+            expected_version = ex_products['distribution'].get('version', '')
+            found_distro = entity.get('os_name')
+            found_version = entity.get('os_version')
+            if src_id in [s['id'] for s in entity['sources']]:
+                # We assert that the expected distro's name is at least
+                # contained in the found name.
+                # For example, if "Red Hat" is listed in config file,
+                # It will pass if "Red Hat Enterprise Linux Server" is found
+                if expected_distro not in found_distro:
+                    errors_found.append(
+                        'Expected OS named {0} for source {1} but'
+                        'found OS named {2}'.format(
+                            expected_distro,
+                            hostname,
+                            found_distro,
+                        )
+                    )
+                # We assert that the expected distro's version is at least
+                # contained in the found version.
+                # For example, if "6.9" is listed in config file,
+                # It will pass if "6.9 (Santiago)" is found
+                if expected_version not in found_version:
+                    errors_found.append(
+                        'Expected OS version {0} for source {1} but'
+                        'found OS version {2}'.format(
+                            expected_version,
+                            hostname,
+                            found_version,
+                        )
+                    )
+
+    assert len(errors_found) == 0, (
+        'Found {num} unexpected OS names and/or versions!\n'
+        'Errors are listed below: {errors}'.format(
+            num=len(errors_found),
+            errors='\n\n======================================\n\n'.join(
+                errors_found
+            ),
+        )
+    )
