@@ -10,14 +10,14 @@
 :upstream: yes
 """
 import pytest
+
 import requests
 
-from camayoc import api
-from camayoc import config
+from camayoc import api, config
 from camayoc.constants import (
-    QCS_SOURCE_PATH,
     QCS_CREDENTIALS_PATH,
     QCS_SCAN_PATH,
+    QCS_SOURCE_PATH,
 )
 
 

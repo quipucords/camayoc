@@ -9,17 +9,17 @@
 :testtype: functional
 :upstream: yes
 """
-import requests
-
 from pathlib import Path
 
 import pytest
 
+import requests
+
 from camayoc import api
 from camayoc.constants import QCS_BECOME_METHODS
 from camayoc.qcs_models import Credential
-from camayoc.utils import uuid4
 from camayoc.tests.qcs.utils import assert_matches_server
+from camayoc.utils import uuid4
 
 
 def test_update_password_to_sshkeyfile(

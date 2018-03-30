@@ -15,9 +15,18 @@ import time
 from pprint import pformat
 
 import pexpect
+
 import pytest
 
+from camayoc.config import get_config
+from camayoc.constants import BECOME_PASSWORD_INPUT, CONNECTION_PASSWORD_INPUT
+from camayoc.exceptions import (
+    ConfigFileNotFoundError,
+    FailedScanException,
+    WaitTimeError,
+)
 from camayoc.utils import name_getter, uuid4
+
 from .conftest import qpc_server_config
 from .utils import (
     cred_add,
@@ -29,13 +38,6 @@ from .utils import (
     scan_restart,
     scan_start,
     source_add,
-)
-from camayoc.config import get_config
-from camayoc.constants import BECOME_PASSWORD_INPUT, CONNECTION_PASSWORD_INPUT
-from camayoc.exceptions import (
-    ConfigFileNotFoundError,
-    FailedScanException,
-    WaitTimeError,
 )
 
 

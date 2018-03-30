@@ -9,18 +9,19 @@
 :testtype: functional
 :upstream: yes
 """
-import pytest
 import random
 from itertools import combinations
 
+import pytest
+
 from camayoc import api
 from camayoc.constants import (
-    QCS_SOURCE_TYPES,
     QCS_OPTIONAL_PRODUCTS,
+    QCS_SOURCE_TYPES,
 )
-from camayoc.utils import uuid4
 from camayoc.qcs_models import Scan
 from camayoc.tests.qcs.utils import gen_valid_source
+from camayoc.utils import uuid4
 
 OPTIONAL_PROD = 'disabled_optional_products'
 """The key in the json request to enable/disable optional products."""

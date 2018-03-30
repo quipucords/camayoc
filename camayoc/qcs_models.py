@@ -2,20 +2,19 @@
 """Models for use with the Quipucords API."""
 
 import re
-
 from pprint import pformat
 from urllib.parse import urljoin
 
 from camayoc import api
-from camayoc.utils import uuid4
-from camayoc.constants import MASKED_PASSWORD_OUTPUT
 from camayoc.constants import (
+    MASKED_PASSWORD_OUTPUT,
     QCS_CREDENTIALS_PATH,
     QCS_HOST_MANAGER_TYPES,
-    QCS_SCAN_PATH,
     QCS_SCANJOB_PATH,
+    QCS_SCAN_PATH,
     QCS_SOURCE_PATH,
 )
+from camayoc.utils import uuid4
 
 OPTIONAL_PROD_KEY = 'disabled_optional_products'
 

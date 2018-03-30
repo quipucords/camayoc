@@ -2,6 +2,7 @@
 # coding=utf-8
 """A setuptools-based script for installing camayoc."""
 import os
+
 from setuptools import find_packages, setup
 
 _project_root = os.path.abspath(os.path.dirname(__file__))
@@ -38,6 +39,7 @@ setup(
             # For `make lint`
             'flake8',
             'flake8-docstrings',
+            'flake8-import-order',
             'flake8-quotes',
             # For `make package`
             'wheel',

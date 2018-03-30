@@ -1,10 +1,11 @@
 # coding=utf-8
 """Pytest customizations and fixtures for the quipucords tests."""
-import ssl
 import os
+import ssl
+
+from pyVim.connect import Disconnect, SmartConnect
 
 import pytest
-from pyVim.connect import SmartConnect, Disconnect
 
 from camayoc import utils
 from camayoc.config import get_config

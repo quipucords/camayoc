@@ -9,7 +9,7 @@
 :testtype: functional
 :upstream: yes
 """
-from .views import LoginView, DashboardView
+from .views import DashboardView, LoginView
 
 
 def test_login_logout(browser):

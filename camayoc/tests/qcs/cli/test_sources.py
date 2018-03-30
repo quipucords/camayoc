@@ -10,20 +10,23 @@
 :upstream: yes
 """
 import json
-import re
 import operator
 import random
+import re
 from io import BytesIO
 
 import pexpect
+
 import pytest
 
 from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT, QCS_HOST_MANAGER_TYPES
-from camayoc.tests.qcs.cli.utils import (cred_add,
-                                         source_show,
-                                         scan_add,
-                                         scan_show)
+from camayoc.tests.qcs.cli.utils import (
+    cred_add,
+    scan_add,
+    scan_show,
+    source_show,
+)
 
 
 ISSUE_449_MARK = pytest.mark.xfail(

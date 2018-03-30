@@ -15,6 +15,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pexpect
+
 import pytest
 
 from camayoc import utils

@@ -5,6 +5,7 @@ import unittest
 from unittest import mock
 
 import xdg
+
 import yaml
 
 from camayoc import config, exceptions, utils

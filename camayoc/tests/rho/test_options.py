@@ -11,6 +11,7 @@
 import io
 
 import pexpect
+
 import pytest
 
 

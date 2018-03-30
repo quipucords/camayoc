@@ -17,18 +17,17 @@ import pytest
 
 from camayoc import api
 from camayoc.constants import QCS_SOURCE_TYPES
-from camayoc.utils import uuid4
 from camayoc.qcs_models import (
     Credential,
     Scan,
     Source,
 )
-
 from camayoc.tests.qcs.utils import (
     assert_matches_server,
     assert_source_update_fails,
     gen_valid_source,
 )
+from camayoc.utils import uuid4
 
 CREATE_DATA = ['localhost', '127.0.0.1', 'example.com']
 DEFAULT_PORT = {'network': 22, 'vcenter': 443, 'satellite': 443}

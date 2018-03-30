@@ -1,8 +1,7 @@
 """Utility functions for quipucords server tests."""
-
 from camayoc import api
-from camayoc.utils import uuid4
 from camayoc.qcs_models import Credential, Source
+from camayoc.utils import uuid4
 
 
 def assert_matches_server(qcsobject):

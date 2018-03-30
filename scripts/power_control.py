@@ -14,19 +14,21 @@ Example of a valid 'vcenter' section of a camayoc config file:
 """
 
 import argparse
-import ssl
 import re
+import ssl
+
+from pyVim.connect import Disconnect, SmartConnect
+
 import yaml
 
-from pyVim.connect import SmartConnect, Disconnect
-
 from camayoc import config
-from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.constants import (
-    VCENTER_DATA_CENTER,
     VCENTER_CLUSTER,
+    VCENTER_DATA_CENTER,
     VCENTER_HOST as VCENTER_HOST_INDX,
 )
+from camayoc.exceptions import ConfigFileNotFoundError
+
 
 BASE_CONFIG = """
 vcenter:

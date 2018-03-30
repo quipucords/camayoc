@@ -5,19 +5,19 @@ import pprint
 import time
 
 from camayoc import config
-from camayoc.exceptions import (
-    WaitTimeError,
-    FailedScanException,
-    ConfigFileNotFoundError,
-)
 from camayoc.constants import (
     QCS_SCAN_STATES,
     QCS_SCAN_TERMINAL_STATES,
 )
+from camayoc.exceptions import (
+    ConfigFileNotFoundError,
+    FailedScanException,
+    WaitTimeError,
+)
 from camayoc.qcs_models import (
     Credential,
+    Scan,
     Source,
-    Scan
 )
 
 
