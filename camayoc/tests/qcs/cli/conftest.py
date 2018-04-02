@@ -65,7 +65,7 @@ def source_type(request):
 
 @pytest.fixture(params=QCS_SCAN_TYPES)
 def scan_type(request):
-    """Fixture that returns the quipucords source types."""
+    """Fixture that returns the quipucords scan types."""
     return request.param
 
 
