@@ -21,12 +21,15 @@ reference for developers, not a gospel.
     api/camayoc.tests.qcs.api.v1
     api/camayoc.tests.qcs.api.v1.authentication
     api/camayoc.tests.qcs.api.v1.authentication.test_login
+    api/camayoc.tests.qcs.api.v1.conftest
     api/camayoc.tests.qcs.api.v1.credentials
     api/camayoc.tests.qcs.api.v1.credentials.test_creds_common
     api/camayoc.tests.qcs.api.v1.credentials.test_manager_creds
     api/camayoc.tests.qcs.api.v1.credentials.test_network_creds
     api/camayoc.tests.qcs.api.v1.reports
     api/camayoc.tests.qcs.api.v1.reports.test_reports
+    api/camayoc.tests.qcs.api.v1.scanjobs
+    api/camayoc.tests.qcs.api.v1.scanjobs.test_run_scanjobs
     api/camayoc.tests.qcs.api.v1.scans
     api/camayoc.tests.qcs.api.v1.scans.test_scans_common
     api/camayoc.tests.qcs.api.v1.sources

@@ -42,9 +42,9 @@ def cleanup():
     sort_and_delete(trash)
 
 
-@pytest.fixture(scope='module')
-def module_cleanup():
-    """Fixture that cleans up any created quipucords objects after a module."""
+@pytest.fixture(scope='session')
+def session_cleanup():
+    """Fixture that cleans up created quipucords objects after a session."""
     trash = []
 
     yield trash
