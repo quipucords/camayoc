@@ -11,7 +11,7 @@ from camayoc import utils
 from camayoc.config import get_config
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def vcenter_client():
     """Create a vCenter client.
 
