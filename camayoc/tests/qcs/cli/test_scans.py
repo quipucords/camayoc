@@ -212,7 +212,7 @@ def test_edit_scan_with_options(isolated_filesystem,
     :id: 29e36e96-3682-11e8-b467-0ed5f89f718b
     :description: Perform a scan and disable an optional product.
     :steps:
-        1) Run ``qpc scan start --sources <source> --disable-optional-products
+        1) Run ``qpc scan add --sources <source> --disable-optional-products
         <optional-product>``
         2) Run ``qpc scan edit --name <name>``
     :expectedresults: The edited scan matches default.
