@@ -6,7 +6,7 @@ import pexpect
 import pytest
 
 from camayoc.config import get_config
-from camayoc.constants import QCS_SOURCE_TYPES
+from camayoc.constants import QCS_SCAN_TYPES, QCS_SOURCE_TYPES
 
 
 @pytest.fixture()
@@ -60,6 +60,12 @@ def qpc_server_config():
 @pytest.fixture(params=QCS_SOURCE_TYPES)
 def source_type(request):
     """Fixture that returns the quipucords source types."""
+    return request.param
+
+
+@pytest.fixture(params=QCS_SCAN_TYPES)
+def scan_type(request):
+    """Fixture that returns the quipucords scan types."""
     return request.param
 
 

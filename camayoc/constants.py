@@ -344,6 +344,9 @@ QCS_TOKEN_PATH = 'token/'
 QCS_SOURCE_TYPES = ('vcenter', 'network', 'satellite')
 """Types of sources that the quipucords server supports."""
 
+QCS_SCAN_TYPES = ('inspect', 'connect')
+"""Types of scans that the quipucords server supports."""
+
 QCS_HOST_MANAGER_TYPES = ('vcenter', 'satellite')
 """Types of host managers that the quipucords server supports."""
 
