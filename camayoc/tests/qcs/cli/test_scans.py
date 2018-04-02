@@ -188,6 +188,7 @@ def test_create_scan_with_options(isolated_filesystem,
     assert expected_result == scan_show_result
 
 
+@pytest.mark.skip
 def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     """Edit a single source scan.
 
@@ -198,10 +199,12 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan edit --name <name> --disable-optional-products <optional-product>`` # noqa
     :expectedresults: The edited scan matches specified options for options.
+    :caseautomation: notautomated
     """
     pass
 
 
+@pytest.mark.skip
 def test_edit_scan_with_options(isolated_filesystem,
                                 qpc_server_config, source):
     """Perform a scan and disable an optional product.
@@ -213,10 +216,12 @@ def test_edit_scan_with_options(isolated_filesystem,
         <optional-product>``
         2) Run ``qpc scan edit --name <name>``
     :expectedresults: The edited scan matches default.
+    :caseautomation: notautomated
     """
     pass
 
 
+@pytest.mark.skip
 def test_edit_scan_negative(isolated_filesystem,
                             qpc_server_config, source):
     """Create a single source  scan.
@@ -228,10 +233,12 @@ def test_edit_scan_negative(isolated_filesystem,
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan edit --name``
     :expectedresults: Scan edit fails due to invalid options.
+    :caseautomation: notautomated
     """
     pass
 
 
+@pytest.mark.skip
 def test_clear(isolated_filesystem, qpc_server_config, source):
     """Create a single source  scan.
 
@@ -242,10 +249,12 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan clear --name <name>``
     :expectedresults: Scan is deleted.
+    :caseautomation: notautomated
     """
     pass
 
 
+@pytest.mark.skip
 def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     """Clear all sources.
 
@@ -256,5 +265,6 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
         2) Run ``qpc scan add --sources <source>``
         3) Run ``qpc source clear --all``
     :expectedresults: All scans entries are removed.
+    :caseautomation: notautomated
     """
     pass
