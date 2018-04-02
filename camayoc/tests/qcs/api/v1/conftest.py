@@ -6,15 +6,12 @@ import pytest
 import requests
 
 from camayoc.config import get_config
-
-from camayoc.exceptions import (
-    WaitTimeError,
-)
 from camayoc.constants import (
     VCENTER_CLUSTER,
     VCENTER_DATA_CENTER,
     VCENTER_HOST,
 )
+from camayoc.exceptions import WaitTimeError
 from camayoc.qcs_models import (
     Credential,
     Scan,
