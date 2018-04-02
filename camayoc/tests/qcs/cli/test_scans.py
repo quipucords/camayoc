@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for ``qpc scan`` commands.
+"""Tests for ``qpc scan`` configuration commands.
 
 :caseautomation: automated
 :casecomponent: cli
@@ -11,8 +11,6 @@
 """
 import json
 import re
-import time
-from pprint import pformat
 
 import pexpect
 
@@ -20,24 +18,16 @@ import pytest
 
 from camayoc.config import get_config
 from camayoc.constants import BECOME_PASSWORD_INPUT, CONNECTION_PASSWORD_INPUT
-from camayoc.exceptions import (
-    ConfigFileNotFoundError,
-    FailedScanException,
-    WaitTimeError,
-)
+from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.utils import name_getter, uuid4
 
 from .conftest import qpc_server_config
 from .utils import (
     cred_add,
-    report_detail,
     scan_add,
-    scan_cancel,
-    scan_job,
-    scan_pause,
-    scan_restart,
-    scan_start,
+    scan_show,
     source_add,
+    source_show_output
 )
 
 
@@ -70,16 +60,30 @@ def source(request):
 
 
 @pytest.fixture(autouse=True, scope='module')
-def setup_credentials():
-    """Create all credentials on the server."""
+def setup():
+    """Create all credentials and sources on the server."""
     qpc_server_config()
 
-    qpc_cred_clear = pexpect.spawn(
+    # Delete artifacts in reverse order to avoid 400 errors
+    qpc_clear = pexpect.spawn(
+        'qpc scan clear --all'
+    )
+    assert qpc_clear.expect(pexpect.EOF) == 0
+    qpc_clear.close()
+
+    qpc_clear = pexpect.spawn(
+        'qpc source clear --all'
+    )
+    assert qpc_clear.expect(pexpect.EOF) == 0
+    qpc_clear.close()
+
+    qpc_clear = pexpect.spawn(
         'qpc cred clear --all'
     )
-    assert qpc_cred_clear.expect(pexpect.EOF) == 0
-    qpc_cred_clear.close()
+    assert qpc_clear.expect(pexpect.EOF) == 0
+    qpc_clear.close()
 
+    # Create new creds
     credentials = get_config().get('credentials', [])
     for credential in credentials:
         inputs = []
@@ -92,18 +96,7 @@ def setup_credentials():
             credential['become-password'] = None
         cred_add(credential, inputs)
 
-
-@pytest.fixture(autouse=True, scope='module')
-def setup_sources():
-    """Create all sources on the server."""
-    qpc_server_config()
-
-    qpc_cred_clear = pexpect.spawn(
-        'qpc source clear --all'
-    )
-    assert qpc_cred_clear.expect(pexpect.EOF) == 0
-    qpc_cred_clear.close()
-
+    # create sources
     sources = get_config().get('qcs', {}).get('sources', [])
     for source in sources:
         source['cred'] = source.pop('credentials')
@@ -113,270 +106,165 @@ def setup_sources():
         source_add(source)
 
 
-def wait_for_scan(scan_job_id, status='completed', timeout=900):
-    """Wait for a scan to reach some ``status`` up to ``timeout`` seconds.
-
-    :param scan_job_id: Scan ID to wait for.
-    :param status: Scan status which will wait for. Default is completed.
-    :param timeout: wait up to this amount of seconds. Default is 900.
-    """
-    while timeout > 0:
-        result = scan_job({'id': scan_job_id})
-        if status != 'failed' and result['status'] == 'failed':
-            raise FailedScanException(
-                'The scan with ID "{}" has failed unexpectedly.\n\n'
-                'The information about the scan is:\n{}\n'
-                .format(scan_job_id, pformat(result))
-            )
-        if result['status'] == status:
-            return
-        time.sleep(5)
-        timeout -= 5
-    raise WaitTimeError(
-        'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
-        'The information about the scan is:\n{}\n'
-        .format(scan_job_id, status, pformat(result))
-    )
-
-
 @pytest.mark.troubleshoot
-def test_scan(isolated_filesystem, qpc_server_config, source):
-    """Scan a single source type.
+def test_create_scan(isolated_filesystem, qpc_server_config, source):
+    """Create a single source scan.
 
-    :id: 49ae6fef-ea41-4b91-b310-6054678bfbb4
-    :description: Perform a scan on a single source type.
-    :steps: Run ``qpc scan start --sources <source>``
-    :expectedresults: The scan must completed without any error and a report
-        should be available.
+    :id: 95d108dc-6a92-4723-aec2-10bc73a0e3fa
+    :description: Create a single source scan with default options.
+    :steps: Run ``qpc scan add --sources <source>``
+    :expectedresults: The created scan matches default for options.
     """
     scan_name = uuid4()
+    source_name = config_sources()[0]['name']
     result = scan_add({
         'name': scan_name,
-        'sources': config_sources()[0]['name'],
+        'sources': source_name
     })
     match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
     assert match is not None
-    result = scan_start({
-        'name': scan_name,
-    })
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id)
-    result = scan_job({
-        'id': scan_job_id,
-    })
-    assert result['status'] == 'completed'
-    report_id = result['report_id']
-    assert report_id is not None
-    output_file = 'out.json'
-    report = report_detail({
-        'json': None,
-        'output-file': output_file,
-        'report': report_id,
-    })
-    with open(output_file) as report_data:
-        report = json.load(report_data)
-        assert report.get('sources', []) != []
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'max_concurrency': 50},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
 
 
-def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
-    """Scan multiple source types.
-
-    :id: 58fde39c-52d8-42ee-af4c-1d75a6dc80b0
-    :description: Perform a scan on multiple source types.
-    :steps: Run ``qpc scan start --sources <source1> <source2> ...``
-    :expectedresults: The scan must completed without any error and a report
-        should be available.
-    """
-    scan_name = uuid4()
-    result = scan_add({
-        'name': scan_name,
-        'sources': ' '.join([source['name'] for source in config_sources()]),
-    })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
-    result = scan_start({
-        'name': scan_name,
-    })
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
-    result = scan_job({
-        'id': scan_job_id,
-    })
-    assert result['status'] == 'completed'
-    report_id = result['report_id']
-    assert report_id is not None
-    output_file = 'out.json'
-    report = report_detail({
-        'json': None,
-        'output-file': output_file,
-        'report': report_id,
-    })
-    with open(output_file) as report_data:
-        report = json.load(report_data)
-        assert report.get('sources', []) != []
-
-
-def test_scan_with_disabled_products(isolated_filesystem, qpc_server_config):
+def test_create_scan_with_options(isolated_filesystem,
+                                  qpc_server_config, source):
     """Perform a scan and disable an optional product.
 
-    :id: b1cd9901-44eb-4e71-846c-34e1b19751d0
+    :id: 79fadb3a-9e3c-4e84-890a-d2bd954c2869
     :description: Perform a scan and disable an optional product.
-    :steps: Run ``qpc scan start --sources <source> --disable-optional-products
+    :steps: Run ``qpc scan add --sources <source> --disable-optional-products
         <optional-product>``
-    :expectedresults: The scan must completed without any error and a report
-        should be available. The disabled products should not have results in
-        the report.
+    :expectedresults: The created scan matches specified options for options.
+    """
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    result = scan_add({
+        'name': scan_name,
+        'sources': source_name,
+        'max-concurrency': 25,
+        'disabled-optional-products': 'jboss_eap',
+        'enabled-ext-product-search': 'jboss_fuse'
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'disabled_optional_products': {
+                               'jboss_brms': False,
+                               'jboss_eap': True,
+                               'jboss_fuse': False},
+                           'enabled_extended_product_search': {
+                               'jboss_brms': False,
+                               'jboss_eap': False,
+                               'jboss_fuse': True},
+                           'max_concurrency': 25},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
+
+
+@pytest.mark.skip
+def test_edit_scan(isolated_filesystem, qpc_server_config, source):
+    """Edit a single source scan.
+
+    :id: 5ad22515-2276-48b5-a896-f26f039134fa
+    :description: Create a single source scan with default options
+        then edit to use non-default options.
+    :steps:
+        1) Run ``qpc scan add --sources <source>``
+        2) Run ``qpc scan edit --name <name> --disable-optional-products <optional-product>`` # noqa
+    :expectedresults: The edited scan matches specified options for options.
     :caseautomation: notautomated
     """
+    pass
 
 
-def test_scan_restart(isolated_filesystem, qpc_server_config):
-    """Perform a scan and ensure it can be paused and restarted.
+@pytest.mark.skip
+def test_edit_scan_with_options(isolated_filesystem,
+                                qpc_server_config, source):
+    """Perform a scan and disable an optional product.
 
-    :id: 7eb79aa8-fe3d-4fcd-9f1a-5e2d4df2f3b6
-    :description: Start a scan, then pause it and finally restart it.
+    :id: 29e36e96-3682-11e8-b467-0ed5f89f718b
+    :description: Perform a scan and disable an optional product.
     :steps:
-        1) Run ``qpc scan start --sources <source>`` and store its ID.
-        2) Stop the scan by running ``qpc scan stop --id <id>``
-        3) Restart the scan by running ``qpc scan restart --id <id>``
-    :expectedresults: The scan must completed without any error and a report
-        should be available.
+        1) Run ``qpc scan add --sources <source> --disable-optional-products
+        <optional-product>``
+        2) Run ``qpc scan edit --name <name>``
+    :expectedresults: The edited scan matches default.
+    :caseautomation: notautomated
     """
-    scan_name = uuid4()
-    result = scan_add({
-        'name': scan_name,
-        'sources': config_sources()[0]['name'],
-    })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
-    result = scan_start({
-        'name': scan_name,
-    })
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status='running')
-    scan_pause({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='paused')
-    scan_restart({'id': scan_job_id})
-    wait_for_scan(scan_job_id)
-    result = scan_job({
-        'id': scan_job_id,
-    })
-    assert result['status'] == 'completed'
-    report_id = result['report_id']
-    assert report_id is not None
-    output_file = 'out.json'
-    report = report_detail({
-        'json': None,
-        'output-file': output_file,
-        'report': report_id,
-    })
-    with open(output_file) as report_data:
-        report = json.load(report_data)
-        assert report.get('sources', []) != []
+    pass
 
 
-def test_scan_cancel(isolated_filesystem, qpc_server_config):
-    """Perform a scan and ensure it can be canceled.
+@pytest.mark.skip
+def test_edit_scan_negative(isolated_filesystem,
+                            qpc_server_config, source):
+    """Create a single source  scan.
 
-    :id: b5c11b82-e86e-478b-b885-89a577f81b13
-    :description: Start a scan, then cancel it and finally check it can't be
-        restarted.
+    :id: 29e37242-3682-11e8-b467-0ed5f89f718b
+    :description: Attempt to rename scan to match another existing
+        scan name.
     :steps:
-        1) Run ``qpc scan start --sources <source>`` and store its ID.
-        2) Cancel the scan by running ``qpc scan cancel --id <id>``
-        3) Try to restart the scan by running ``qpc scan restart --id <id>``
-    :expectedresults: The scan must be canceled and can't not be restarted.
+        1) Run ``qpc scan add --sources <source>``
+        2) Run ``qpc scan edit --name``
+    :expectedresults: Scan edit fails due to invalid options.
+    :caseautomation: notautomated
     """
-    scan_name = uuid4()
-    result = scan_add({
-        'name': scan_name,
-        'sources': config_sources()[0]['name'],
-    })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
-    result = scan_start({
-        'name': scan_name,
-    })
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status='running')
-    scan_cancel({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='canceled')
-    result = scan_restart({'id': scan_job_id}, exitstatus=1)
-    assert result.startswith(
-        'Error: Scan cannot be restarted. The scan must be paused for it to '
-        'be restarted.'
-    )
+    pass
 
 
-def test_scan_cancel_paused(isolated_filesystem, qpc_server_config):
-    """Perform a scan and ensure it can be canceled even when paused.
+@pytest.mark.skip
+def test_clear(isolated_filesystem, qpc_server_config, source):
+    """Create a single source  scan.
 
-    :id: 62943ef9-8989-4998-8456-8073f8fd9ce4
-    :description: Start a scan, next stop it, then cancel it and finally check
-        it can't be restarted.
+    :id: 29e3744a-3682-11e8-b467-0ed5f89f718b
+    :description: Create a single source scan with default options
+         and delete it.
     :steps:
-        1) Run ``qpc scan start --sources <source>`` and store its ID.
-        2) Pause the scan by running ``qpc scan pause --id <id>``
-        3) Cancel the scan by running ``qpc scan cancel --id <id>``
-        4) Try to restart the scan by running ``qpc scan restart --id <id>``
-    :expectedresults: The scan must be canceled and can't not be restarted.
+        1) Run ``qpc scan add --sources <source>``
+        2) Run ``qpc scan clear --name <name>``
+    :expectedresults: Scan is deleted.
+    :caseautomation: notautomated
     """
-    scan_name = uuid4()
-    result = scan_add({
-        'name': scan_name,
-        'sources': config_sources()[0]['name'],
-    })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
-    result = scan_start({
-        'name': scan_name,
-    })
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status='running')
-    scan_pause({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='paused')
-    scan_cancel({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='canceled')
-    result = scan_restart({'id': scan_job_id}, exitstatus=1)
-    assert result.startswith(
-        'Error: Scan cannot be restarted. The scan must be paused for it to '
-        'be restarted.'
-    )
+    pass
 
 
-@pytest.mark.parametrize(
-    'scan_action', ('start', 'pause', 'restart', 'cancel'))
-def test_negative_scan_actions(scan_action):
-    """Ensure any of the scan actions can't be perfomed on a invalid scan.
+@pytest.mark.skip
+def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
+    """Clear all sources.
 
-    :id: b51a9c15-8782-4645-b887-894bc80b393d
-    :description: Try to perform a scan action (start, pause, restart, cancel)
-        on a non-existent scan.
-    :steps: Run ``qpc scan <action> --id|--name <id>|<name>``.
-    :expectedresults: The scan action command must fail telling that the scan
-        was not found.
+    :id: 29e37620-3682-11e8-b467-0ed5f89f718b
+    :description: Clear multiple scan entries using the ``--all`` option.
+    :steps:
+        1) Run ``qpc scan add --sources <source>``
+        2) Run ``qpc scan add --sources <source>``
+        3) Run ``qpc source clear --all``
+    :expectedresults: All scans entries are removed.
+    :caseautomation: notautomated
     """
-    if scan_action == 'start':
-        options = {'name': uuid4()}
-        expected_output = 'Scan "{}" does not exist.'.format(options['name'])
-    else:
-        options = {'id': id(scan_action)}
-        expected_output = 'Error: Not found.'
-    scan_action = {
-        'cancel': scan_cancel,
-        'pause': scan_pause,
-        'restart': scan_restart,
-        'start': scan_start,
-    }[scan_action]
-    output = scan_action(options, exitstatus=1)
-    assert output.strip() == expected_output
+    pass
