@@ -25,6 +25,8 @@ from .conftest import qpc_server_config
 from .utils import (
     cred_add,
     scan_add,
+    scan_clear,
+    scan_edit,
     scan_show,
     source_add,
     source_show_output
@@ -188,7 +190,6 @@ def test_create_scan_with_options(isolated_filesystem,
     assert expected_result == scan_show_result
 
 
-@pytest.mark.skip
 def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     """Edit a single source scan.
 
@@ -199,12 +200,64 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan edit --name <name> --disable-optional-products <optional-product>`` # noqa
     :expectedresults: The edited scan matches specified options for options.
-    :caseautomation: notautomated
     """
-    pass
+    # Create scan
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    result = scan_add({
+        'name': scan_name,
+        'sources': source_name
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'max_concurrency': 50},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
+
+    # Edit scan options
+    result = scan_edit({
+        'name': scan_name,
+        'max-concurrency': 25,
+        'disabled-optional-products': 'jboss_eap',
+        'enabled-ext-product-search': 'jboss_fuse'
+    })
+    match = re.match(r'Scan "{}" was updated.'.format(scan_name), result)
+    assert match is not None
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'disabled_optional_products': {
+                               'jboss_brms': False,
+                               'jboss_eap': True,
+                               'jboss_fuse': False},
+                           'enabled_extended_product_search': {
+                               'jboss_brms': False,
+                               'jboss_eap': False,
+                               'jboss_fuse': True},
+                           'max_concurrency': 25},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+    assert expected_result == scan_show_result
 
 
-@pytest.mark.skip
 def test_edit_scan_with_options(isolated_filesystem,
                                 qpc_server_config, source):
     """Perform a scan and disable an optional product.
@@ -216,12 +269,76 @@ def test_edit_scan_with_options(isolated_filesystem,
         <optional-product>``
         2) Run ``qpc scan edit --name <name>``
     :expectedresults: The edited scan matches default.
-    :caseautomation: notautomated
     """
-    pass
+    # Create scan
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    result = scan_add({
+        'name': scan_name,
+        'sources': source_name,
+        'max-concurrency': 25,
+        'disabled-optional-products': 'jboss_eap',
+        'enabled-ext-product-search': 'jboss_fuse'
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'disabled_optional_products': {
+                               'jboss_brms': False,
+                               'jboss_eap': True,
+                               'jboss_fuse': False},
+                           'enabled_extended_product_search': {
+                               'jboss_brms': False,
+                               'jboss_eap': False,
+                               'jboss_fuse': True},
+                           'max_concurrency': 25},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
+
+    # Edit scan options
+    result = scan_edit({
+        'name': scan_name,
+        'max-concurrency': 50,
+        'disabled-optional-products': '',
+        'enabled-ext-product-search': ''
+    })
+    match = re.match(r'Scan "{}" was updated.'.format(scan_name), result)
+    assert match is not None
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'disabled_optional_products': {
+                               'jboss_brms': False,
+                               'jboss_eap': False,
+                               'jboss_fuse': False},
+                           'enabled_extended_product_search': {
+                               'jboss_brms': False,
+                               'jboss_eap': False,
+                               'jboss_fuse': False},
+                           'max_concurrency': 50},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
 
 
-@pytest.mark.skip
 def test_edit_scan_negative(isolated_filesystem,
                             qpc_server_config, source):
     """Create a single source  scan.
@@ -233,12 +350,72 @@ def test_edit_scan_negative(isolated_filesystem,
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan edit --name``
     :expectedresults: Scan edit fails due to invalid options.
-    :caseautomation: notautomated
     """
-    pass
+    # Create scan
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    result = scan_add({
+        'name': scan_name,
+        'sources': source_name
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'max_concurrency': 50},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
+
+    # Edit scan options
+    result = scan_edit({
+        'name': scan_name,
+        'sources': ''
+    }, exitstatus=2)
+    match = re.match(r'usage: qpc scan edit(.|[\r\n])*', result)
+    assert match is not None
+
+    # Edit scan options
+    result = scan_edit({
+        'name': scan_name,
+        'sources': 'fake_source'
+    }, exitstatus=1)
+    print(result)
+    match = re.match(
+        r'Source "{}" does not exist.'.format('fake_source'),
+        result)
+    assert match is not None
+
+    # Edit scan options
+    result = scan_edit({
+        'name': scan_name,
+        'sources': source_name,
+        'max-concurrency': 'abc'
+    }, exitstatus=2)
+    match = re.match(r'usage: qpc scan edit(.|[\r\n])*', result)
+    assert match is not None
+
+    # Edit scan options
+    result = scan_edit({
+        'name': scan_name,
+        'sources': '',
+        'disabled-optional-products': 'not_a_real_product',
+
+    }, exitstatus=2)
+    match = re.match(r'usage: qpc scan edit(.|[\r\n])*', result)
+    assert match is not None
 
 
-@pytest.mark.skip
 def test_clear(isolated_filesystem, qpc_server_config, source):
     """Create a single source  scan.
 
@@ -249,12 +426,41 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan clear --name <name>``
     :expectedresults: Scan is deleted.
-    :caseautomation: notautomated
     """
-    pass
+    # Create scan
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    result = scan_add({
+        'name': scan_name,
+        'sources': source_name
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'max_concurrency': 50},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
+
+    # Create scan
+    result = scan_clear({
+        'name': scan_name
+    })
+    match = re.match(r'Scan "{}" was removed.'.format(scan_name), result)
+    assert match is not None
 
 
-@pytest.mark.skip
 def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     """Clear all sources.
 
@@ -265,6 +471,36 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
         2) Run ``qpc scan add --sources <source>``
         3) Run ``qpc source clear --all``
     :expectedresults: All scans entries are removed.
-    :caseautomation: notautomated
     """
-    pass
+    # Create scan
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    result = scan_add({
+        'name': scan_name,
+        'sources': source_name
+    })
+    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
+    assert match is not None
+
+    source_output = source_show_output({'name': source_name})
+    source_output = json.loads(source_output)
+
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    expected_result = {'id': scan_show_result['id'],
+                       'name': scan_name,
+                       'options': {
+                           'max_concurrency': 50},
+                       'scan_type': 'inspect',
+                       'sources': [{'id': source_output['id'],
+                                    'name': source_name,
+                                    'source_type': 'network'}]}
+
+    assert expected_result == scan_show_result
+
+    # Create scan
+    result = scan_clear({
+        'all': None
+    })
+    match = re.match(r'All scans were removed.', result)
+    assert match is not None
