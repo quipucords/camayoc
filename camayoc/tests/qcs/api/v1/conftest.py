@@ -1,4 +1,5 @@
 """Pytest customizations and fixtures for the quipucords tests."""
+import os
 from pprint import pformat
 
 import pytest
@@ -24,6 +25,15 @@ from camayoc.tests.utils import wait_until_live
 
 SCAN_DATA = {}
 """Cache to associate the named scans with their results."""
+
+
+def run_scans():
+    """Check for run scans environment variable."""
+    result = True
+    run_scans = os.environ.get('RUN_SCANS', 'true')
+    if run_scans.lower() == 'false':
+        result = False
+    return result
 
 
 def create_cred(cred_info, session_cleanup):
@@ -108,7 +118,7 @@ def run_scan(scan, disabled_optional_products, cleanup,
         SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='session', autouse=run_scans())
 def run_all_scans(vcenter_client, session_cleanup):
     """Run all configured scans caching the report id associated with each.
 
