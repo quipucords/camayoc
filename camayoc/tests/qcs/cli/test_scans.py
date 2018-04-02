@@ -119,19 +119,15 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
     """
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'max_concurrency': 50},
@@ -140,7 +136,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
 
 def test_create_scan_with_options(isolated_filesystem,
@@ -155,22 +151,18 @@ def test_create_scan_with_options(isolated_filesystem,
     """
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name,
         'max-concurrency': 25,
         'disabled-optional-products': 'jboss_eap',
         'enabled-ext-product-search': 'jboss_fuse'
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'disabled_optional_products': {
@@ -187,7 +179,7 @@ def test_create_scan_with_options(isolated_filesystem,
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
 
 def test_edit_scan(isolated_filesystem, qpc_server_config, source):
@@ -204,19 +196,15 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'max_concurrency': 50},
@@ -224,22 +212,17 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
     # Edit scan options
-    result = scan_edit({
+    scan_edit({
         'name': scan_name,
         'max-concurrency': 25,
         'disabled-optional-products': 'jboss_eap',
         'enabled-ext-product-search': 'jboss_fuse'
-    })
-    match = re.match(r'Scan "{}" was updated.'.format(scan_name), result)
-    assert match is not None
+    }, r'Scan "{}" was updated.'.format(scan_name))
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'disabled_optional_products': {
@@ -255,7 +238,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
 
 def test_edit_scan_with_options(isolated_filesystem,
@@ -273,22 +256,18 @@ def test_edit_scan_with_options(isolated_filesystem,
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name,
         'max-concurrency': 25,
         'disabled-optional-products': 'jboss_eap',
         'enabled-ext-product-search': 'jboss_fuse'
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'disabled_optional_products': {
@@ -305,21 +284,17 @@ def test_edit_scan_with_options(isolated_filesystem,
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
     # Edit scan options
-    result = scan_edit({
+    scan_edit({
         'name': scan_name,
         'max-concurrency': 50,
         'disabled-optional-products': '',
         'enabled-ext-product-search': ''
-    })
-    match = re.match(r'Scan "{}" was updated.'.format(scan_name), result)
-    assert match is not None
+    }, r'Scan "{}" was updated.'.format(scan_name))
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'disabled_optional_products': {
@@ -335,8 +310,7 @@ def test_edit_scan_with_options(isolated_filesystem,
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
 
 def test_edit_scan_negative(isolated_filesystem,
@@ -354,19 +328,15 @@ def test_edit_scan_negative(isolated_filesystem,
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'max_concurrency': 50},
@@ -375,45 +345,35 @@ def test_edit_scan_negative(isolated_filesystem,
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
     # Edit scan options
-    result = scan_edit({
+    scan_edit({
         'name': scan_name,
         'sources': ''
-    }, exitstatus=2)
-    match = re.match(r'usage: qpc scan edit(.|[\r\n])*', result)
-    assert match is not None
+    }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
     # Edit scan options
-    result = scan_edit({
+    scan_edit({
         'name': scan_name,
         'sources': 'fake_source'
-    }, exitstatus=1)
-    print(result)
-    match = re.match(
-        r'Source "{}" does not exist.'.format('fake_source'),
-        result)
-    assert match is not None
+    }, r'Source "{}" does not exist.'.format('fake_source'),
+        exitstatus=1)
 
     # Edit scan options
-    result = scan_edit({
+    scan_edit({
         'name': scan_name,
         'sources': source_name,
         'max-concurrency': 'abc'
-    }, exitstatus=2)
-    match = re.match(r'usage: qpc scan edit(.|[\r\n])*', result)
-    assert match is not None
+    }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
     # Edit scan options
-    result = scan_edit({
+    scan_edit({
         'name': scan_name,
         'sources': '',
         'disabled-optional-products': 'not_a_real_product',
 
-    }, exitstatus=2)
-    match = re.match(r'usage: qpc scan edit(.|[\r\n])*', result)
-    assert match is not None
+    }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
 
 def test_clear(isolated_filesystem, qpc_server_config, source):
@@ -430,19 +390,15 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'max_concurrency': 50},
@@ -451,9 +407,9 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    assert expected_result == scan_show_result
+    scan_show(scan_name, expected_result)
 
-    # Create scan
+    # Remove scan
     result = scan_clear({
         'name': scan_name
     })
@@ -475,19 +431,15 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    result = scan_add({
+    scan_add({
         'name': scan_name,
         'sources': source_name
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     source_output = source_show_output({'name': source_name})
     source_output = json.loads(source_output)
 
-    scan_show_result = scan_show({'name': scan_name})
-    scan_show_result = json.loads(scan_show_result)
-    expected_result = {'id': scan_show_result['id'],
+    expected_result = {'id': 'TO_BE_REPLACED',
                        'name': scan_name,
                        'options': {
                            'max_concurrency': 50},
@@ -495,10 +447,9 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
+    scan_show(scan_name, expected_result)
 
-    assert expected_result == scan_show_result
-
-    # Create scan
+    # Remove scan
     result = scan_clear({
         'all': None
     })
