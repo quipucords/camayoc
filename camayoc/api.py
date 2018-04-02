@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Client for working with QCS's API.
+"""Client for working with QPC's API.
 
 This module provides a flexible API client for talking with the quipucords
 server, allowing the user to customize how return codes are handled depending
@@ -16,8 +16,8 @@ from requests.exceptions import HTTPError
 from camayoc import config
 from camayoc import exceptions
 from camayoc.constants import (
-    QCS_API_VERSION,
-    QCS_TOKEN_PATH,
+    QPC_API_VERSION,
+    QPC_TOKEN_PATH,
 )
 
 
@@ -97,7 +97,7 @@ class Client(object):
     `Requests`_ functions lies in its configurable request and response
     handling mechanisms.
 
-    All requests made via this client use the base URL of the qcs server
+    All requests made via this client use the base URL of the qpc server
     provided in your ``$XDG_CONFIG_HOME/camayoc/config.yaml``.
 
     You can override this base url by assigning a new value to the url
@@ -106,7 +106,7 @@ class Client(object):
     Example::
         >>> from camayoc import api
         >>> client = api.Client()
-        >>> # I can now make requests to the QCS server
+        >>> # I can now make requests to the QPC server
         >>> # using relative paths, because the base url is
         >>> # was set using my config file.
         >>>
@@ -131,7 +131,7 @@ class Client(object):
         configure the default URL by including the following on your Camayoc
         configuration file::
 
-            qcs:
+            qpc:
                 hostname: <machine_hostname_or_ip_address>
                 port: <port>  # if not defined will take the default port
                               # depending on the https config: 80 if https is
@@ -141,15 +141,15 @@ class Client(object):
         """
         self.url = url
         self.token = None
-        cfg = config.get_config().get('qcs', {})
+        cfg = config.get_config().get('qpc', {})
         self.verify = cfg.get('ssl-verify', False)
 
         if not self.url:
             hostname = cfg.get('hostname')
 
             if not hostname:
-                raise exceptions.QCSBaseUrlNotFound(
-                    "\n'qcs' section specified in camayoc config file, but"
+                raise exceptions.QPCBaseUrlNotFound(
+                    "\n'qpc' section specified in camayoc config file, but"
                     "no 'hostname' key found."
                 )
 
@@ -157,10 +157,10 @@ class Client(object):
             port = str(cfg.get('port', ''))
             netloc = hostname + ':{}'.format(port) if port else hostname
             self.url = urlunparse(
-                (scheme, netloc, QCS_API_VERSION, '', '', ''))
+                (scheme, netloc, QPC_API_VERSION, '', '', ''))
 
         if not self.url:
-            raise exceptions.QCSBaseUrlNotFound(
+            raise exceptions.QPCBaseUrlNotFound(
                 'No base url was specified to the client either with the '
                 'url="host" option or with the camayoc config file.')
 
@@ -174,12 +174,12 @@ class Client(object):
 
     def login(self):
         """Login to the server to receive an authorization token."""
-        cfg = config.get_config().get('qcs', {})
+        cfg = config.get_config().get('qpc', {})
         server_username = cfg.get('username', 'admin')
         server_password = cfg.get('password', 'pass')
         login_request = self.request(
             'POST',
-            urljoin(self.url, QCS_TOKEN_PATH),
+            urljoin(self.url, QPC_TOKEN_PATH),
             json={
                 'username': server_username,
                 'password': server_password

@@ -35,7 +35,7 @@ rho:
         - localhost
 vcenter:
     hostname: example1.com
-qcs:
+qpc:
     hostname: example2.com
     port: 8000
     https: false

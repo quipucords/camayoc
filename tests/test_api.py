@@ -11,7 +11,7 @@ import requests
 import yaml
 
 from camayoc import api, config, exceptions
-from camayoc.qcs_models import (
+from camayoc.qpc_models import (
     Credential,
     Scan,
     ScanJob,
@@ -21,7 +21,7 @@ from camayoc.utils import uuid4
 
 
 CAMAYOC_CONFIG = """
-qcs:
+qpc:
     hostname: example.com
     https: false
     username: admin
@@ -29,7 +29,7 @@ qcs:
 """
 
 INVALID_HOST_CONFIG = """
-qcs:
+qpc:
     port: 8000
     https: true
 """
@@ -111,7 +111,7 @@ class APIClientTestCase(unittest.TestCase):
         with mock.patch.object(config, '_CONFIG', self.config):
             other_host = 'http://hostname.com'
             client = api.Client(url=other_host, authenticate=False)
-            cfg_host = self.config['qcs']['hostname']
+            cfg_host = self.config['qpc']['hostname']
             self.assertNotEqual(cfg_host, client.url)
             self.assertEqual(other_host, client.url)
 
@@ -119,14 +119,14 @@ class APIClientTestCase(unittest.TestCase):
         """Raise an error if no config entry is found and no url specified."""
         with mock.patch.object(config, '_CONFIG', {}):
             self.assertEqual(config.get_config(), {})
-            with self.assertRaises(exceptions.QCSBaseUrlNotFound):
+            with self.assertRaises(exceptions.QPCBaseUrlNotFound):
                 api.Client(authenticate=False)
 
     def test_invalid_hostname(self):
         """Raise an error if no config entry is found and no url specified."""
         with mock.patch.object(config, '_CONFIG', self.invalid_config):
             self.assertEqual(config.get_config(), self.invalid_config)
-            with self.assertRaises(exceptions.QCSBaseUrlNotFound):
+            with self.assertRaises(exceptions.QPCBaseUrlNotFound):
                 api.Client(authenticate=False)
 
     def test_login(self):
@@ -153,7 +153,7 @@ class APIClientTestCase(unittest.TestCase):
             client.request = MagicMock(return_value=response)
             cl = client()
             u = cl.get_user().json()['username']
-            assert u == config.get_config()['qcs']['username']
+            assert u == config.get_config()['qpc']['username']
             client.request.assert_called_once_with(
                 'GET', urljoin(cl.url, 'users/current/'))
 
