@@ -26,6 +26,7 @@ from camayoc.exceptions import (
     ConfigFileNotFoundError,
 )
 from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
+from camayoc.tests.qpc.utils import mark_runs_scans
 
 
 def scan_info():
@@ -52,6 +53,7 @@ def get_scan_result(scan_name):
     return result
 
 
+@mark_runs_scans
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
 def test_scan_complete(scan_info):
@@ -75,6 +77,7 @@ def test_scan_complete(scan_info):
         )
 
 
+@mark_runs_scans
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
 def test_scan_task_results(scan_info):
@@ -100,6 +103,7 @@ def test_scan_task_results(scan_info):
         assert num_scanned == sys_count - num_failed
 
 
+@mark_runs_scans
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
 def test_disabled_optional_products_facts(scan_info):
@@ -149,6 +153,7 @@ def test_disabled_optional_products_facts(scan_info):
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
+@mark_runs_scans
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
 def test_disabled_optional_products(scan_info):
@@ -189,6 +194,7 @@ def test_disabled_optional_products(scan_info):
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
+@mark_runs_scans
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
 def test_products_found_deployment_report(scan_info):
@@ -260,6 +266,7 @@ def test_products_found_deployment_report(scan_info):
     )
 
 
+@mark_runs_scans
 @pytest.mark.parametrize(
     'scan_info', scan_info(), ids=utils.name_getter)
 def test_OS_found_deployment_report(scan_info):
