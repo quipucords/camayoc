@@ -13,6 +13,7 @@ from camayoc.constants import (
     QCS_SCANJOB_PATH,
     QCS_SCAN_PATH,
     QCS_SOURCE_PATH,
+    QCS_REPORTS_PATH,
 )
 from camayoc.utils import uuid4
 
@@ -592,3 +593,75 @@ class ScanJob(QCSObject):
         raise NotImplementedError(
             'ScanJobs do not have an equivalent() method.'
         )
+
+
+class Report(QCSObject):
+    """A class to aid in the creation and control of Reports."""
+
+    def __init__(
+            self,
+            client=None,
+            _id=None
+    ):
+        """Initialize a Report Object."""
+        super().__init__(client=client, _id=_id)
+
+        self.endpoint = QCS_REPORTS_PATH
+        self._id = _id
+
+    def merge(self, ids, **kwargs):
+        """Send PUT request to /jobs/merge/ to merge the results of multiple scanjobs.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(QCS_SCANJOB_PATH, 'merge/')
+        payload = {'jobs': ids}
+        response = self.client.put(path, payload, **kwargs)
+        if response.status_code in range(200, 203):
+            self._id = response.json().get('id')
+        return response
+
+    def details(self, **kwargs):
+        """Send GET request to self.endpoint/{id}/details/ to view the report details.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.endpoint, '{}/details/'.format(self._id))
+        response = self.client.get(path, **kwargs)
+        return response
+
+    def summary(self, **kwargs):
+        """Send GET request to self.endpoint/{id}/deployments/ to view report summary.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.endpoint, '{}/deployments/'.format(self._id))
+        response = self.client.get(path, **kwargs)
+        return response
+
+    def assert_merge_fails(self, ids, errors_found):
+        """Assert that the merge method on the given report fails.
+
+        :param ids: The scan job identifiers to pass through to
+        the merge function.
+        :param errors_found: A list of any errors encountered
+        """
+        # replace whatever client the report had with one that won't raise
+        # exceptions
+        orig_client = self.client
+        self.client = api.Client(response_handler=api.echo_handler)
+        merge_response = self.merge(ids)
+        if merge_response.status_code != 400:
+            errors_found.append(
+                'Merging scan job identifiers {ids} resulted in a response'
+                'status code of {response_status} when it should have resulted'
+                'in a status code of 400.'.format(
+                    ids=ids,
+                    response_status=merge_response.status_code)
+            )
+        # give the report its original client back
+        self.client = orig_client
+        return errors_found

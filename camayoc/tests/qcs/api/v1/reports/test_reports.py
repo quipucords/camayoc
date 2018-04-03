@@ -12,6 +12,9 @@
 
 import pytest
 
+from camayoc.qcs_models import Report
+from camayoc.tests.qcs.api.v1.conftest import SCAN_DATA
+
 
 @pytest.mark.skip
 def test_network(shared_client, cleanup, source):
@@ -233,3 +236,87 @@ def test_time_series(shared_client, cleanup, source):
     :expectedresults: Users can generate a time series report.
     :caseautomation: notautomated
     """
+
+
+def test_merge_reports_from_scanjob():
+    """Confirm that a report is created from valid scan job identifiers.
+
+    :id: 10c6b86a-4271-4b00-b9bb-4ff4a37bb02c
+    :description: If two valid scan job identifiers are provided,
+        a valid report identifier should be returned.
+    :steps:
+        1) Grab the scan info for the scans to merge from SCAN_DATA
+        2) Check if the scan info is None for either scan and return if so
+        3) Grab the scan job identifier from the scan info of each scan
+        4) Create a report object & merge the scan job identifiers
+        5) Access the deployments & details endpoint of the report
+        6) Assert that all response codes were successful
+    :expectedresults: Scan job results are merged into a report.
+    """
+    errors_found = []
+    scan1 = SCAN_DATA.get('non-rhel')
+    scan2 = SCAN_DATA.get('rhel-7')
+    # if either scan is None, they were not in the config file or the
+    # tests have been ran with RUN_SCANS=False and there are no scan results
+    if scan1 is None or scan2 is None:
+        return
+    id1 = scan1.get('scan_job_id')
+    id2 = scan2.get('scan_job_id')
+    report = Report()
+    response = report.merge([id1, id2])
+    summary = report.summary()
+    details = report.details()
+    status_codes = [response.status_code, summary.status_code,
+                    details.status_code]
+    error = False
+    for code in status_codes:
+        if code not in range(200, 203):
+            error = True
+    if error:
+        errors_found.append(
+            'Merging scan jobs with identifiers: {scan1_id}, {scan2_id}'
+            'resulted in a failed merge report. The report returned a status '
+            'code of {report_status}. The summary endpoint returned a status '
+            'code of {summary_status}. The details endpoint returned a status '
+            'code of {details_status}.'.format(
+                scan1_id=id1, scan2_id=id2,
+                report_status=response.status_code,
+                summary_status=summary.status_code,
+                details_status=details.status_code)
+        )
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+
+
+def test_merge_reports_negative():
+    """Confirm that merging invalid scan job ids does not result in a report.
+
+    :id: 552e5de4-3697-11e8-b467-0ed5f89f718b
+    :description: If a merge is attempted with invalid scan job identifiers,
+        then report is not created.
+    :steps:
+        1) Create a list of invalid identifiers for merge requests
+        2) Grab the connection scan from the SCAN_DATA
+        3) Grab the unreachable scan from the SCAN_DATA
+        4) Check that both the connection & unreachable scan exist
+        5) If they do, grab the scan job identifiers and add them to the list
+            of invalid identifiers
+        6) Loop through the invalid ids and assert that each merge fails
+    :expectedresults: A report is not created from invalid ids.
+    """
+    errors_found = []
+    # create a list of invalid options for merging scan job identifiers
+    invalid_ids = [[1], [1, 1], ['one', 'one'], []]
+    # attempt to grab the connection_scan & unreachable scan from data
+    connection_scan = SCAN_DATA.get('Connection')
+    unreachable_scan = SCAN_DATA.get('Unreachable')
+    if connection_scan and unreachable_scan:
+        # if the info was found, grab the ids from the data and add them
+        # to the list of invalid identifiers
+        connection_id = connection_scan.get('scan_job_id')
+        unreachable_id = unreachable_scan.get('scan_job_id')
+        invalid_ids.append([connection_id, unreachable_id])
+    report = Report()
+    # Loop through the invalid ids and assert that the merge fails
+    for ids in invalid_ids:
+        errors_found = report.assert_merge_fails(ids, errors_found)
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
