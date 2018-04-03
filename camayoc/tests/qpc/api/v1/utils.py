@@ -23,10 +23,15 @@ from camayoc.qpc_models import (
 def get_source(source_type, cleanup):
     """Retrieve a single network source if available from config file.
 
-    Retreive one network source from the config file.
-    Sources listed under the following section are assumed to be available
-    on demand and do not require their power state to be managed.
+    :param source_type: The type of source to be created. This function
+        retreives one source of matching type from the config file.
 
+    :param cleanup: The "cleanup" list that tests use to destroy objects after
+        a test has run. The "cleanup" list is provided by the py.test fixture
+        of the same name defined in camayoc/tests/qpc/conftest.py.
+
+    Sources are retreived from the following section and are assumed to be
+    available on demand and do not require their power state to be managed.
     The expected configuration in the Camayoc's configuration file is as
     follows::
 
@@ -47,8 +52,10 @@ def get_source(source_type, cleanup):
     results of the scan, for example tests that assert we can pause and restart
     a scan.
 
-    :returns: camayoc.qpc_models.Source that has been created on server and has
-        all credentials listed in config file created and associtated with it.
+    :returns: camayoc.qpc_models.Source of the same type that was requested
+        with the 'source_type' parameter. The returned source has been created
+        on server and has all credentials listed in config file created and
+        associtated with it.
     """
     cfg = config.get_config()
     cred_list = cfg.get('credentials', [])
@@ -88,16 +95,20 @@ def get_source(source_type, cleanup):
 
         server_src.create()
         cleanup.append(server_src)
-    return server_src
+        return server_src
 
 
-def get_scan(source_type, cleanup):
+def prepare_scan(source_type, cleanup):
     """Prepare a scan from the 'sources' section of config file.
 
     :param source_type: The scan will be configured to use one source, of the
-        type specified with this parameter.
+        type specified with this parameter. Uses ``get_network_source`` to
+        retreive a source of this type from the config file.
 
-    Uses ``get_network_source`` to retreive a network source from config file.
+    :param cleanup: The "cleanup" list that tests use to destroy objects after
+        a test has run. The "cleanup" list is provided by the py.test fixture
+        of the same name defined in camayoc/tests/qpc/conftest.py.
+
     This scan is not meant for testing the results of the scan, rather for
     functional tests that test the ability to effect the state of the scan,
     for example if you can restart a paused scan.

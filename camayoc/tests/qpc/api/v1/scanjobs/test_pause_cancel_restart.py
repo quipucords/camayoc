@@ -1,7 +1,8 @@
 # coding=utf-8
 """Tests for  quipucords scans and reports.
 
-These tests are parametrized on the inventory listed in the config file.
+These tests are parametrized on QCS_SOURCE_TYPES. If no source is availble of a
+type in the config file, the test will skip.
 
 :caseautomation: automated
 :casecomponent: api
@@ -34,7 +35,7 @@ def test_pause_cancel(shared_client, cleanup, source_type):
         5) Assert that the scan can be canceled
     :expectedresults: A scan can be paused and canceled
     """
-    scn = util.get_scan(source_type, cleanup)
+    scn = util.prepare_scan(source_type, cleanup)
     if not scn:
         pytest.skip(
             'No {0} type source was found in the config file.'
@@ -65,7 +66,7 @@ def test_restart(shared_client, cleanup, source_type):
         6) Assert that the scan completes
     :expectedresults: A restarted scan completes
     """
-    scn = util.get_scan(source_type, cleanup)
+    scn = util.prepare_scan(source_type, cleanup)
     if not scn:
         pytest.skip(
             'No {0} type source was found in the config file.'
