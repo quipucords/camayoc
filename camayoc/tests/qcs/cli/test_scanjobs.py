@@ -31,7 +31,7 @@ from .conftest import qpc_server_config
 from .utils import (
     cred_add,
     report_detail,
-    scan_add,
+    scan_add_and_check,
     scan_cancel,
     scan_job,
     scan_pause,
@@ -150,12 +150,11 @@ def test_scan(isolated_filesystem, qpc_server_config, source):
         should be available.
     """
     scan_name = uuid4()
-    result = scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': config_sources()[0]['name'],
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
+
     result = scan_start({
         'name': scan_name,
     })
@@ -190,12 +189,10 @@ def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
         should be available.
     """
     scan_name = uuid4()
-    result = scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': ' '.join([source['name'] for source in config_sources()]),
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
     result = scan_start({
         'name': scan_name,
     })
@@ -220,6 +217,7 @@ def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
         assert report.get('sources', []) != []
 
 
+@pytest.mark.skip
 def test_scan_with_disabled_products(isolated_filesystem, qpc_server_config):
     """Perform a scan and disable an optional product.
 
@@ -232,6 +230,7 @@ def test_scan_with_disabled_products(isolated_filesystem, qpc_server_config):
         the report.
     :caseautomation: notautomated
     """
+    pass
 
 
 def test_scan_restart(isolated_filesystem, qpc_server_config):
@@ -247,12 +246,10 @@ def test_scan_restart(isolated_filesystem, qpc_server_config):
         should be available.
     """
     scan_name = uuid4()
-    result = scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': config_sources()[0]['name'],
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
     result = scan_start({
         'name': scan_name,
     })
@@ -294,12 +291,10 @@ def test_scan_cancel(isolated_filesystem, qpc_server_config):
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
     scan_name = uuid4()
-    result = scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': config_sources()[0]['name'],
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
     result = scan_start({
         'name': scan_name,
     })
@@ -330,12 +325,10 @@ def test_scan_cancel_paused(isolated_filesystem, qpc_server_config):
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
     scan_name = uuid4()
-    result = scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': config_sources()[0]['name'],
     })
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
     result = scan_start({
         'name': scan_name,
     })

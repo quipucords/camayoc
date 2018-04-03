@@ -156,7 +156,7 @@ def source_show(options, output, exitstatus=0):
     assert qpc_source_show.exitstatus == exitstatus
 
 
-def scan_add(options):
+def scan_add_and_check(options):
     """Run ``qpc scan add`` command with ``options`` returning its output.
 
     :param options: A dictionary mapping the option names and their values.
@@ -164,25 +164,27 @@ def scan_add(options):
     assert options is not {}
     assert options.get('name') is not None
 
-    result = scan_add_output(options)
+    result = scan_add(options)
     match = re.match(r'Scan "{}" was added.'.format(options['name']), result)
     assert match is not None
 
 
-def scan_edit(options, status_message_regex, exitstatus=0):
-    """Run ``qpc scan add`` command with ``options`` returning its output.
+def scan_edit_and_check(options, status_message_regex, exitstatus=0):
+    """Run ``qpc scan edit`` command with ``options`` returning its output.
 
     :param options: A dictionary mapping the option names and their values.
+    :param status_message_regex: Regex to match against output message.
+    :param exitstatus: Expected exit status for runnign command.
     """
     assert options is not {}
     assert options.get('name') is not None
 
-    result = scan_edit_output(options, exitstatus)
+    result = scan_edit(options, exitstatus)
     match = re.match(status_message_regex, result)
     assert match is not None
 
 
-def scan_show(scan_name, expected_result=None):
+def scan_show_and_check(scan_name, expected_result=None):
     """Run ``qpc scan show`` command with ``options`` returning its output.
 
     :param options: A dictionary mapping the option names and their values.
@@ -191,7 +193,7 @@ def scan_show(scan_name, expected_result=None):
         output. Make sure to escape any regular expression especial character.
     :param exitstatus: Expected exit status code.
     """
-    scan_show_result = scan_show_output({'name': scan_name})
+    scan_show_result = scan_show({'name': scan_name})
     scan_show_result = json.loads(scan_show_result)
     if expected_result is not None:
         expected_result['id'] = scan_show_result['id']
@@ -207,16 +209,16 @@ scan_pause = functools.partial(cli_command, 'qpc scan pause')
 scan_restart = functools.partial(cli_command, 'qpc scan restart')
 """Run ``qpc scan restart`` command with ``options`` returning its output."""
 
-scan_add_output = functools.partial(cli_command, 'qpc scan add')
+scan_add = functools.partial(cli_command, 'qpc scan add')
 """Run ``qpc scan add`` command with ``options`` returning its output."""
 
 scan_clear = functools.partial(cli_command, 'qpc scan clear')
 """Run ``qpc scan clear`` returning its output."""
 
-scan_edit_output = functools.partial(cli_command, 'qpc scan edit')
+scan_edit = functools.partial(cli_command, 'qpc scan edit')
 """Run ``qpc scan edit`` command with ``options`` returning its output."""
 
-scan_show_output = functools.partial(cli_command, 'qpc scan show')
+scan_show = functools.partial(cli_command, 'qpc scan show')
 """Run ``qpc scan show`` command with ``options`` returning its output."""
 
 scan_start = functools.partial(cli_command, 'qpc scan start')

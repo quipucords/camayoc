@@ -24,10 +24,10 @@ from camayoc.utils import name_getter, uuid4
 from .conftest import qpc_server_config
 from .utils import (
     cred_add,
-    scan_add,
+    scan_add_and_check,
     scan_clear,
-    scan_edit,
-    scan_show,
+    scan_edit_and_check,
+    scan_show_and_check,
     source_add,
     source_show_output
 )
@@ -119,7 +119,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
     """
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name
     })
@@ -136,7 +136,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
 
 def test_create_scan_with_options(isolated_filesystem,
@@ -151,7 +151,7 @@ def test_create_scan_with_options(isolated_filesystem,
     """
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name,
         'max-concurrency': 25,
@@ -179,7 +179,7 @@ def test_create_scan_with_options(isolated_filesystem,
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
 
 def test_edit_scan(isolated_filesystem, qpc_server_config, source):
@@ -196,7 +196,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name
     })
@@ -212,10 +212,10 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
     # Edit scan options
-    scan_edit({
+    scan_edit_and_check({
         'name': scan_name,
         'max-concurrency': 25,
         'disabled-optional-products': 'jboss_eap',
@@ -238,7 +238,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
 
 def test_edit_scan_with_options(isolated_filesystem,
@@ -256,7 +256,7 @@ def test_edit_scan_with_options(isolated_filesystem,
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name,
         'max-concurrency': 25,
@@ -284,10 +284,10 @@ def test_edit_scan_with_options(isolated_filesystem,
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
     # Edit scan options
-    scan_edit({
+    scan_edit_and_check({
         'name': scan_name,
         'max-concurrency': 50,
         'disabled-optional-products': '',
@@ -310,7 +310,7 @@ def test_edit_scan_with_options(isolated_filesystem,
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
 
 def test_edit_scan_negative(isolated_filesystem,
@@ -328,7 +328,7 @@ def test_edit_scan_negative(isolated_filesystem,
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name
     })
@@ -345,30 +345,30 @@ def test_edit_scan_negative(isolated_filesystem,
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
     # Edit scan options
-    scan_edit({
+    scan_edit_and_check({
         'name': scan_name,
         'sources': ''
     }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
     # Edit scan options
-    scan_edit({
+    scan_edit_and_check({
         'name': scan_name,
         'sources': 'fake_source'
     }, r'Source "{}" does not exist.'.format('fake_source'),
         exitstatus=1)
 
     # Edit scan options
-    scan_edit({
+    scan_edit_and_check({
         'name': scan_name,
         'sources': source_name,
         'max-concurrency': 'abc'
     }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
     # Edit scan options
-    scan_edit({
+    scan_edit_and_check({
         'name': scan_name,
         'sources': '',
         'disabled-optional-products': 'not_a_real_product',
@@ -390,7 +390,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name
     })
@@ -407,7 +407,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
                                     'name': source_name,
                                     'source_type': 'network'}]}
 
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
     # Remove scan
     result = scan_clear({
@@ -431,7 +431,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     # Create scan
     scan_name = uuid4()
     source_name = config_sources()[0]['name']
-    scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': source_name
     })
@@ -447,7 +447,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
                        'sources': [{'id': source_output['id'],
                                     'name': source_name,
                                     'source_type': 'network'}]}
-    scan_show(scan_name, expected_result)
+    scan_show_and_check(scan_name, expected_result)
 
     # Remove scan
     result = scan_clear({

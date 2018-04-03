@@ -23,8 +23,8 @@ from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT, QCS_HOST_MANAGER_TYPES
 from camayoc.tests.qcs.cli.utils import (
     cred_add,
-    scan_add,
-    scan_show,
+    scan_add_and_check,
+    scan_show_and_check,
     source_show,
 )
 
@@ -834,7 +834,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     )
 
     scan_name = utils.uuid4()
-    result = scan_add({
+    result = scan_add_and_check({
         'name': scan_name,
         'sources': name,
     })
@@ -842,7 +842,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
     assert match is not None
 
-    scan_show_result = scan_show({
+    scan_show_result = scan_show_and_check({
         'name': scan_name
     })
     scan_show_result = json.loads(scan_show_result)
