@@ -12,7 +12,6 @@
 import json
 import operator
 import random
-import re
 from io import BytesIO
 
 import pexpect
@@ -22,10 +21,10 @@ import pytest
 from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT, QPC_HOST_MANAGER_TYPES
 from camayoc.tests.qpc.cli.utils import (
-    cred_add,
-    scan_add,
+    cred_add_and_check,
+    scan_add_and_check,
     scan_show,
-    source_show,
+    source_show_and_check,
 )
 
 
@@ -106,7 +105,7 @@ def test_add_with_cred_hosts(
     cred_name = utils.uuid4()
     name = utils.uuid4()
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -131,7 +130,7 @@ def test_add_with_cred_hosts(
         hosts = hosts.replace('[1:100]', '\[1:100\]')
     elif ' ' in hosts:
         hosts = '",\r\n        "'.join(hosts.split(' '))
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -160,7 +159,7 @@ def test_add_with_cred_hosts_file(
     cred_name = utils.uuid4()
     name = utils.uuid4()
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -188,7 +187,7 @@ def test_add_with_cred_hosts_file(
         hosts = hosts.replace('[1:100]', '\[1:100\]')
     elif ' ' in hosts:
         hosts = '",\r\n        "'.join(hosts.split(' '))
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -215,7 +214,7 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     hosts = '127.0.0.1'
     port = random.randint(0, 65535)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -235,7 +234,7 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -263,7 +262,7 @@ def test_add_with_port_negative(
     name = utils.uuid4()
     hosts = '127.0.0.1'
     port = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -301,7 +300,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
     new_cred_name = utils.uuid4()
     port = default_port_for_source(source_type)
     for cred_name in (cred_name, new_cred_name):
-        cred_add(
+        cred_add_and_check(
             {
                 'name': cred_name,
                 'username': utils.uuid4(),
@@ -320,7 +319,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -341,7 +340,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': new_cred_name,
@@ -366,7 +365,7 @@ def test_edit_cred_negative(
     name = utils.uuid4()
     hosts = '127.0.0.1'
     invalid_name = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -411,7 +410,7 @@ def test_edit_hosts(
     name = utils.uuid4()
     hosts = '127.0.0.1'
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -430,7 +429,7 @@ def test_edit_hosts(
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -457,7 +456,7 @@ def test_edit_hosts(
         new_hosts = new_hosts.replace('[1:100]', '\[1:100\]')
     elif ' ' in new_hosts:
         new_hosts = '",\r\n        "'.join(new_hosts.split(' '))
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -483,7 +482,7 @@ def test_edit_hosts_file(
     name = utils.uuid4()
     hosts = '127.0.0.1'
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -503,7 +502,7 @@ def test_edit_hosts_file(
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -534,7 +533,7 @@ def test_edit_hosts_file(
         new_hosts = new_hosts.replace('[1:100]', '\[1:100\]')
     elif ' ' in new_hosts:
         new_hosts = '",\r\n        "'.join(new_hosts.split(' '))
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -566,7 +565,7 @@ def test_edit_hosts_negative(
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = '127.0.0.1'
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -611,7 +610,7 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     port = new_port = random.randint(0, 65535)
     while port == new_port:
         new_port = random.randint(0, 65535)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -630,7 +629,7 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -651,7 +650,7 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -680,7 +679,7 @@ def test_edit_port_negative(
     while port == new_port:
         new_port = random.randint(0, 65535)
     invalid_name = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -724,7 +723,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     hosts = '127.0.0.1'
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -743,7 +742,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -803,7 +802,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     hosts = '127.0.0.1'
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),
@@ -822,7 +821,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    source_show(
+    source_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_name': cred_name,
@@ -834,13 +833,10 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     )
 
     scan_name = utils.uuid4()
-    result = scan_add({
+    scan_add_and_check({
         'name': scan_name,
         'sources': name,
     })
-
-    match = re.match(r'Scan "{}" was added.'.format(scan_name), result)
-    assert match is not None
 
     scan_show_result = scan_show({
         'name': scan_name
@@ -936,7 +932,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
     """
     cred_name = utils.uuid4()
     port = default_port_for_source(source_type)
-    cred_add(
+    cred_add_and_check(
         {
             'name': cred_name,
             'username': utils.uuid4(),

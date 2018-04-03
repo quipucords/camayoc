@@ -23,10 +23,10 @@ from camayoc.constants import (
     MASKED_PASSWORD_OUTPUT,
 )
 from camayoc.tests.qpc.cli.utils import (
-        cred_add,
-        cred_show,
-        source_add,
-        source_show_output
+        cred_add_and_check,
+        cred_show_and_check,
+        source_add_and_check,
+        source_show
 )
 
 
@@ -67,7 +67,7 @@ def test_add_with_username_password(
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': name,
             'username': username,
@@ -79,7 +79,7 @@ def test_add_with_username_password(
         ],
     )
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_type': source_type,
@@ -104,7 +104,7 @@ def test_add_with_username_password_become_password(
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': name,
             'username': username,
@@ -117,7 +117,7 @@ def test_add_with_username_password_become_password(
         ],
     )
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'become_password': MASKED_PASSWORD_OUTPUT,
@@ -143,13 +143,13 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'name': name,
@@ -175,7 +175,7 @@ def test_add_with_username_sshkeyfile_become_password(
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add(
+    cred_add_and_check(
         {
             'name': name,
             'username': username,
@@ -187,7 +187,7 @@ def test_add_with_username_sshkeyfile_become_password(
         ]
     )
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'become_password': MASKED_PASSWORD_OUTPUT,
@@ -210,7 +210,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     username = utils.uuid4()
     new_username = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': name,
             'password': None,
@@ -222,7 +222,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
         ],
     )
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_type': source_type,
@@ -242,7 +242,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_type': source_type,
@@ -265,7 +265,7 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
@@ -296,7 +296,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     username = utils.uuid4()
     password = utils.uuid4()
     new_password = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': name,
             'username': username,
@@ -308,7 +308,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
         ],
     )
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_type': source_type,
@@ -329,7 +329,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'cred_type': source_type,
@@ -353,7 +353,7 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
@@ -384,13 +384,13 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     sshkeyfile.touch()
     new_sshkeyfile = Path(utils.uuid4())
     new_sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'name': name,
@@ -410,7 +410,7 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'name': name,
@@ -433,7 +433,7 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
@@ -468,7 +468,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     sshkeyfile.touch()
     become_password = utils.uuid4()
     new_become_password = utils.uuid4()
-    cred_add(
+    cred_add_and_check(
         {
             'name': name,
             'username': username,
@@ -480,7 +480,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
         ],
     )
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'become_password': MASKED_PASSWORD_OUTPUT,
@@ -502,7 +502,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'become_password': MASKED_PASSWORD_OUTPUT,
@@ -525,7 +525,7 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
@@ -580,13 +580,13 @@ def test_clear(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': name,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
-    cred_show(
+    cred_show_and_check(
         {'name': name},
         generate_show_output({
             'name': name,
@@ -641,14 +641,14 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add({
+    cred_add_and_check({
         'name': cred_name,
         'type': cred_type,
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
     })
 
-    cred_show(
+    cred_show_and_check(
         {'name': cred_name},
         generate_show_output({
             'name': cred_name,
@@ -657,12 +657,12 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         })
     )
     # create dependent source
-    source_add({
+    source_add_and_check({
         'name': source_name,
         'cred': [cred_name],
         'hosts': hosts,
     })
-    output = source_show_output({
+    output = source_show({
         'name': source_name
     })
     output = json.loads(output)
@@ -763,7 +763,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
             'username': username,
         }
         auths.append(auth)
-        cred_add({
+        cred_add_and_check({
             'name': name,
             'username': username,
             'sshkeyfile': str(sshkeyfile.resolve()),
