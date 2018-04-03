@@ -10,10 +10,10 @@ from camayoc.constants import (
     MASKED_PASSWORD_OUTPUT,
     QPC_CREDENTIALS_PATH,
     QPC_HOST_MANAGER_TYPES,
+    QPC_REPORTS_PATH,
     QPC_SCANJOB_PATH,
     QPC_SCAN_PATH,
     QPC_SOURCE_PATH,
-    QPC_REPORTS_PATH
 )
 from camayoc.utils import uuid4
 
