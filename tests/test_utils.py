@@ -1,10 +1,25 @@
 # coding=utf-8
 """Unit tests for :mod:`camayoc.utils`."""
+import os
 from unittest import mock
 
 import pytest
 
 from camayoc import exceptions, utils
+
+
+def test_run_scans():
+    """Test the RUN_SCANS variable is correctly detected.
+
+    This environment variable allows users to disable tests that run
+    scans temporarily.
+    """
+    os.environ['RUN_SCANS'] = 'FALSE'
+    assert utils.run_scans() is False
+    os.environ.pop('RUN_SCANS')
+    assert utils.run_scans() is True
+    os.environ['RUN_SCANS'] = 'True'
+    assert utils.run_scans() is True
 
 
 def test_get_qpc_url():

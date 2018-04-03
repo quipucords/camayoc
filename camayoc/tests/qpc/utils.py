@@ -7,7 +7,7 @@ from camayoc.utils import run_scans, uuid4
 
 mark_runs_scans = pytest.mark.skipif(run_scans() is False,
                                      reason='RUN_SCANS set to False')
-"""Tests with this decorator applied will skip when RUN_SCANS is False."""
+"""Decorator that skips tests if RUN_SCANS environment variable is 'False'."""
 
 
 def assert_matches_server(qpcobject):
@@ -77,10 +77,10 @@ def gen_valid_source(cleanup, src_type, host, create=True):
     cred.create()
     cleanup.append(cred)
     source = Source(
-            source_type=src_type,
-            hosts=[host],
-            credential_ids=[cred._id],
-                    )
+        source_type=src_type,
+        hosts=[host],
+        credential_ids=[cred._id],
+    )
     if create:
         source.create()
         cleanup.append(source)
