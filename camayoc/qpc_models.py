@@ -602,7 +602,7 @@ class Report(QPCObject):
     scan jobs. There are two types of reports that can be generated,
     a detail report and a summary report.
 
-    The ids of existing Scan Jobs are necessary to create report from
+    The ids of existing Scan Jobs are necessary to create a report from
     merging.
 
     Example::
