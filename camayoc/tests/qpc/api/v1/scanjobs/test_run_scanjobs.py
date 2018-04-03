@@ -49,9 +49,8 @@ def get_scan_result(scan_name):
     result = SCAN_DATA.get(scan_name)
     if result is None:
         raise RuntimeError(
-            'Absolutely no results available for scan named {scan_name},\n'
-            'because no scan was even attempted.\n'.format(
-                scan_name=scan_info['name'])
+            'Absolutely no results available for scan named {0},\n'
+            'because no scan was even attempted.\n'.format(scan_name)
         )
     return result
 

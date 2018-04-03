@@ -1,5 +1,4 @@
 """Pytest customizations and fixtures for the quipucords tests."""
-import os
 from pprint import pformat
 
 import pytest
@@ -21,19 +20,11 @@ from camayoc.qpc_models import (
 )
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
 from camayoc.tests.utils import wait_until_live
+from camayoc.utils import run_scans
 
 
 SCAN_DATA = {}
 """Cache to associate the named scans with their results."""
-
-
-def run_scans():
-    """Check for run scans environment variable."""
-    result = True
-    run_scans = os.environ.get('RUN_SCANS', 'true')
-    if run_scans.lower() == 'false':
-        result = False
-    return result
 
 
 def create_cred(cred_info, session_cleanup):

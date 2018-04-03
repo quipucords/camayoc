@@ -11,5 +11,6 @@ Submodules
 
 .. toctree::
 
+   camayoc.tests.qpc.api.v1.scanjobs.test_pause_cancel_restart
    camayoc.tests.qpc.api.v1.scanjobs.test_run_scanjobs
 

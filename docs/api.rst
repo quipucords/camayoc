@@ -29,6 +29,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.api.v1.reports
     api/camayoc.tests.qpc.api.v1.reports.test_reports
     api/camayoc.tests.qpc.api.v1.scanjobs
+    api/camayoc.tests.qpc.api.v1.scanjobs.test_pause_cancel_restart
     api/camayoc.tests.qpc.api.v1.scanjobs.test_run_scanjobs
     api/camayoc.tests.qpc.api.v1.scans
     api/camayoc.tests.qpc.api.v1.scans.test_scans_common

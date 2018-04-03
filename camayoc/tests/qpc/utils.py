@@ -3,11 +3,11 @@ import pytest
 
 from camayoc import api
 from camayoc.qpc_models import Credential, Source
-from camayoc.tests.qpc.api.v1.conftest import run_scans
-from camayoc.utils import uuid4
+from camayoc.utils import run_scans, uuid4
 
 mark_runs_scans = pytest.mark.skipif(run_scans() is False,
                                      reason='RUN_SCANS set to False')
+"""Tests with this decorator applied will skip when RUN_SCANS is False."""
 
 
 def assert_matches_server(qpcobject):
