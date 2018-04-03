@@ -3,6 +3,7 @@
 import functools
 import io
 import json
+import re
 
 import pexpect
 
@@ -34,7 +35,7 @@ def cli_command(command, options=None, exitstatus=0):
     return output
 
 
-def cred_add(options, inputs=None, exitstatus=0):
+def cred_add_and_check(options, inputs=None, exitstatus=0):
     """Add a new credential entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -68,7 +69,7 @@ def cred_add(options, inputs=None, exitstatus=0):
     assert qpc_cred_add.exitstatus == exitstatus
 
 
-def cred_show(options, output, exitstatus=0):
+def cred_show_and_check(options, output, exitstatus=0):
     r"""Show a credential entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -97,7 +98,7 @@ report_detail = functools.partial(cli_command, 'qpc report detail')
 """Run ``qpc report detail`` with ``options`` and return output."""
 
 
-def source_add(options, inputs=None, exitstatus=0):
+def source_add_and_check(options, inputs=None, exitstatus=0):
     """Add a new source entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -133,7 +134,7 @@ def source_add(options, inputs=None, exitstatus=0):
     assert qpc_source_add.exitstatus == exitstatus
 
 
-def source_show(options, output, exitstatus=0):
+def source_show_and_check(options, output, exitstatus=0):
     """Show a source entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -155,6 +156,50 @@ def source_show(options, output, exitstatus=0):
     assert qpc_source_show.exitstatus == exitstatus
 
 
+def scan_add_and_check(options):
+    """Run ``qpc scan add`` command with ``options`` returning its output.
+
+    :param options: A dictionary mapping the option names and their values.
+    """
+    assert options is not {}
+    assert options.get('name') is not None
+
+    result = scan_add(options)
+    match = re.match(r'Scan "{}" was added.'.format(options['name']), result)
+    assert match is not None
+
+
+def scan_edit_and_check(options, status_message_regex, exitstatus=0):
+    """Run ``qpc scan edit`` command with ``options`` returning its output.
+
+    :param options: A dictionary mapping the option names and their values.
+    :param status_message_regex: Regex to match against output message.
+    :param exitstatus: Expected exit status for runnign command.
+    """
+    assert options is not {}
+    assert options.get('name') is not None
+
+    result = scan_edit(options, exitstatus)
+    match = re.match(status_message_regex, result)
+    assert match is not None
+
+
+def scan_show_and_check(scan_name, expected_result=None):
+    """Run ``qpc scan show`` command with ``options`` returning its output.
+
+    :param options: A dictionary mapping the option names and their values.
+        Pass ``None`` for flag options.
+    :param output: A regular expression pattern that matches the expected
+        output. Make sure to escape any regular expression especial character.
+    :param exitstatus: Expected exit status code.
+    """
+    scan_show_result = scan_show({'name': scan_name})
+    scan_show_result = json.loads(scan_show_result)
+    if expected_result is not None:
+        expected_result['id'] = scan_show_result['id']
+        assert expected_result == scan_show_result
+
+
 scan_cancel = functools.partial(cli_command, 'qpc scan cancel')
 """Run ``qpc scan cancel`` command with ``options`` returning its output."""
 
@@ -167,13 +212,19 @@ scan_restart = functools.partial(cli_command, 'qpc scan restart')
 scan_add = functools.partial(cli_command, 'qpc scan add')
 """Run ``qpc scan add`` command with ``options`` returning its output."""
 
+scan_clear = functools.partial(cli_command, 'qpc scan clear')
+"""Run ``qpc scan clear`` returning its output."""
+
+scan_edit = functools.partial(cli_command, 'qpc scan edit')
+"""Run ``qpc scan edit`` command with ``options`` returning its output."""
+
 scan_show = functools.partial(cli_command, 'qpc scan show')
 """Run ``qpc scan show`` command with ``options`` returning its output."""
 
 scan_start = functools.partial(cli_command, 'qpc scan start')
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
-source_show_output = functools.partial(cli_command, 'qpc source show')
+source_show = functools.partial(cli_command, 'qpc source show')
 """Run ``qpc source show`` command with ``options`` returning its output."""
 
 
