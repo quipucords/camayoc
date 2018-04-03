@@ -23,13 +23,13 @@ from camayoc.utils import name_getter, uuid4
 
 from .conftest import qpc_server_config
 from .utils import (
-    cred_add,
+    cred_add_and_check,
     scan_add_and_check,
     scan_clear,
     scan_edit_and_check,
     scan_show_and_check,
-    source_add,
-    source_show_output
+    source_add_and_check,
+    source_show
 )
 
 
@@ -96,7 +96,7 @@ def setup():
             inputs.append(
                 (BECOME_PASSWORD_INPUT, credential['become-password']))
             credential['become-password'] = None
-        cred_add(credential, inputs)
+        cred_add_and_check(credential, inputs)
 
     # create sources
     sources = get_config().get('qpc', {}).get('sources', [])
@@ -105,7 +105,7 @@ def setup():
         options = source.pop('options', {})
         for k, v in options.items():
             source[k.replace('_', '-')] = v
-        source_add(source)
+        source_add_and_check(source)
 
 
 @pytest.mark.troubleshoot
@@ -124,7 +124,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
         'sources': source_name
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -159,7 +159,7 @@ def test_create_scan_with_options(isolated_filesystem,
         'enabled-ext-product-search': 'jboss_fuse'
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -201,7 +201,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
         'sources': source_name
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -264,7 +264,7 @@ def test_edit_scan_with_options(isolated_filesystem,
         'enabled-ext-product-search': 'jboss_fuse'
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -333,7 +333,7 @@ def test_edit_scan_negative(isolated_filesystem,
         'sources': source_name
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -395,7 +395,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
         'sources': source_name
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -436,7 +436,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
         'sources': source_name
     })
 
-    source_output = source_show_output({'name': source_name})
+    source_output = source_show({'name': source_name})
     source_output = json.loads(source_output)
 
     expected_result = {'id': 'TO_BE_REPLACED',

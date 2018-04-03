@@ -35,7 +35,7 @@ def cli_command(command, options=None, exitstatus=0):
     return output
 
 
-def cred_add(options, inputs=None, exitstatus=0):
+def cred_add_and_check(options, inputs=None, exitstatus=0):
     """Add a new credential entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -69,7 +69,7 @@ def cred_add(options, inputs=None, exitstatus=0):
     assert qpc_cred_add.exitstatus == exitstatus
 
 
-def cred_show(options, output, exitstatus=0):
+def cred_show_and_check(options, output, exitstatus=0):
     r"""Show a credential entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -98,7 +98,7 @@ report_detail = functools.partial(cli_command, 'qpc report detail')
 """Run ``qpc report detail`` with ``options`` and return output."""
 
 
-def source_add(options, inputs=None, exitstatus=0):
+def source_add_and_check(options, inputs=None, exitstatus=0):
     """Add a new source entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -134,7 +134,7 @@ def source_add(options, inputs=None, exitstatus=0):
     assert qpc_source_add.exitstatus == exitstatus
 
 
-def source_show(options, output, exitstatus=0):
+def source_show_and_check(options, output, exitstatus=0):
     """Show a source entry.
 
     :param options: A dictionary mapping the option names and their values.
@@ -224,7 +224,7 @@ scan_show = functools.partial(cli_command, 'qpc scan show')
 scan_start = functools.partial(cli_command, 'qpc scan start')
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
-source_show_output = functools.partial(cli_command, 'qpc source show')
+source_show = functools.partial(cli_command, 'qpc source show')
 """Run ``qpc source show`` command with ``options`` returning its output."""
 
 

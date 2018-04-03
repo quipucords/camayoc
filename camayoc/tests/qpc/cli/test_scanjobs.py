@@ -29,7 +29,7 @@ from camayoc.utils import name_getter, uuid4
 
 from .conftest import qpc_server_config
 from .utils import (
-    cred_add,
+    cred_add_and_check,
     report_detail,
     scan_add_and_check,
     scan_cancel,
@@ -37,7 +37,7 @@ from .utils import (
     scan_pause,
     scan_restart,
     scan_start,
-    source_add,
+    source_add_and_check,
 )
 
 
@@ -90,7 +90,7 @@ def setup_credentials():
             inputs.append(
                 (BECOME_PASSWORD_INPUT, credential['become-password']))
             credential['become-password'] = None
-        cred_add(credential, inputs)
+        cred_add_and_check(credential, inputs)
 
 
 @pytest.fixture(autouse=True, scope='module')
@@ -110,7 +110,7 @@ def setup_sources():
         options = source.pop('options', {})
         for k, v in options.items():
             source[k.replace('_', '-')] = v
-        source_add(source)
+        source_add_and_check(source)
 
 
 def wait_for_scan(scan_job_id, status='completed', timeout=900):
@@ -140,7 +140,7 @@ def wait_for_scan(scan_job_id, status='completed', timeout=900):
 
 
 @pytest.mark.troubleshoot
-def test_scan(isolated_filesystem, qpc_server_config, source):
+def test_scanjob(isolated_filesystem, qpc_server_config, source):
     """Scan a single source type.
 
     :id: 49ae6fef-ea41-4b91-b310-6054678bfbb4
@@ -179,7 +179,7 @@ def test_scan(isolated_filesystem, qpc_server_config, source):
         assert report.get('sources', []) != []
 
 
-def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
+def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
     """Scan multiple source types.
 
     :id: 58fde39c-52d8-42ee-af4c-1d75a6dc80b0
@@ -218,7 +218,8 @@ def test_scan_with_multiple_sources(isolated_filesystem, qpc_server_config):
 
 
 @pytest.mark.skip
-def test_scan_with_disabled_products(isolated_filesystem, qpc_server_config):
+def test_scanjob_with_disabled_products(isolated_filesystem,
+                                        qpc_server_config):
     """Perform a scan and disable an optional product.
 
     :id: b1cd9901-44eb-4e71-846c-34e1b19751d0
@@ -233,7 +234,7 @@ def test_scan_with_disabled_products(isolated_filesystem, qpc_server_config):
     pass
 
 
-def test_scan_restart(isolated_filesystem, qpc_server_config):
+def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be paused and restarted.
 
     :id: 7eb79aa8-fe3d-4fcd-9f1a-5e2d4df2f3b6
@@ -278,7 +279,7 @@ def test_scan_restart(isolated_filesystem, qpc_server_config):
         assert report.get('sources', []) != []
 
 
-def test_scan_cancel(isolated_filesystem, qpc_server_config):
+def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled.
 
     :id: b5c11b82-e86e-478b-b885-89a577f81b13
@@ -311,7 +312,7 @@ def test_scan_cancel(isolated_filesystem, qpc_server_config):
     )
 
 
-def test_scan_cancel_paused(isolated_filesystem, qpc_server_config):
+def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled even when paused.
 
     :id: 62943ef9-8989-4998-8456-8073f8fd9ce4
