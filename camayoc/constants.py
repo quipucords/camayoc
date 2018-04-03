@@ -317,43 +317,43 @@ VCENTER_CLUSTER = 1
 VCENTER_HOST = 0
 """The index of the host in the cluster in the VCenter MOB"""
 
-QCS_API_VERSION = 'api/v1/'
-"""The root path to access the QCS server API."""
+QPC_API_VERSION = 'api/v1/'
+"""The root path to access the QPC server API."""
 
-QCS_CREDENTIALS_PATH = 'credentials/'
+QPC_CREDENTIALS_PATH = 'credentials/'
 """The path to the credentials endpoint for CRUD tasks."""
 
-QCS_SOURCE_PATH = 'sources/'
+QPC_SOURCE_PATH = 'sources/'
 """The path to the profiles endpoint for CRUD tasks."""
 
-QCS_SCAN_PATH = 'scans/'
+QPC_SCAN_PATH = 'scans/'
 """The path to the scans endpoint for CRUD tasks."""
 
-QCS_SCANJOB_PATH = 'jobs/'
+QPC_SCANJOB_PATH = 'jobs/'
 """The path to the scanjob endpoint for CRUD tasks."""
 
-QCS_REPORTS_PATH = 'reports/'
+QPC_REPORTS_PATH = 'reports/'
 """The path to the endpoint used for obtaining reports."""
 
-QCS_SCAN_TERMINAL_STATES = ('completed', 'failed', 'paused', 'canceled')
+QPC_SCAN_TERMINAL_STATES = ('completed', 'failed', 'paused', 'canceled')
 """Scans to not change from these states without intervention."""
 
-QCS_SCAN_STATES = QCS_SCAN_TERMINAL_STATES + ('running',)
+QPC_SCAN_STATES = QPC_SCAN_TERMINAL_STATES + ('running',)
 """All the states that a quipucords scan can take."""
 
-QCS_TOKEN_PATH = 'token/'
+QPC_TOKEN_PATH = 'token/'
 """The path to the endpoint used for obtaining an authentication token."""
 
-QCS_SOURCE_TYPES = ('vcenter', 'network', 'satellite')
+QPC_SOURCE_TYPES = ('vcenter', 'network', 'satellite')
 """Types of sources that the quipucords server supports."""
 
-QCS_SCAN_TYPES = ('inspect', 'connect')
+QPC_SCAN_TYPES = ('inspect', 'connect')
 """Types of scans that the quipucords server supports."""
 
-QCS_HOST_MANAGER_TYPES = ('vcenter', 'satellite')
+QPC_HOST_MANAGER_TYPES = ('vcenter', 'satellite')
 """Types of host managers that the quipucords server supports."""
 
-QCS_BECOME_METHODS = (
+QPC_BECOME_METHODS = (
     'doas',
     'dzdo',
     'ksu',
@@ -365,14 +365,14 @@ QCS_BECOME_METHODS = (
 )
 """Supported become methods for quipucords server."""
 
-QCS_OPTIONAL_PRODUCTS = (
+QPC_OPTIONAL_PRODUCTS = (
     'jboss_brms',
     'jboss_eap',
     'jboss_fuse',
 )
 """Optional products that can be enabled or disabled for a scan."""
 
-QCS_FUSE_RAW_FACTS = ('karaf_locate_karaf_jar', 'karaf_homes',
+QPC_FUSE_RAW_FACTS = ('karaf_locate_karaf_jar', 'karaf_homes',
                       'karaf_home_bin_fuse', 'karaf_home_system_org_jboss',
                       'fuse_activemq_version', 'karaf_running_processes',
                       'jboss_fuse_systemctl_unit_files',
@@ -380,7 +380,7 @@ QCS_FUSE_RAW_FACTS = ('karaf_locate_karaf_jar', 'karaf_homes',
                       'fuse_cxf_version')
 """List of facts collected by JBoss FUSE role."""
 
-QCS_BRMS_RAW_FACTS = ('internal_jboss_brms_business_central_candidates',
+QPC_BRMS_RAW_FACTS = ('internal_jboss_brms_business_central_candidates',
                       'jboss_brms_business_central_candidates',
                       'jboss_brms_kie_server_candidates',
                       'business_central_candidates_eap',
@@ -392,7 +392,7 @@ QCS_BRMS_RAW_FACTS = ('internal_jboss_brms_business_central_candidates',
                       'business_central_candidates')
 """List of facts collected by JBoss BRMS role."""
 
-QCS_EAP_RAW_FACTS = ('jboss_eap_running_paths',
+QPC_EAP_RAW_FACTS = ('jboss_eap_running_paths',
                      'jboss_eap_locate_jbos_modules_jar',
                      'eap_home_candidates', 'eap_home_ls',
                      'eap_home_version_txt', 'eap_home_readme_txt',
