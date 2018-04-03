@@ -12,8 +12,8 @@
 
 import pytest
 
-from camayoc.qcs_models import Report
-from camayoc.tests.qcs.api.v1.conftest import SCAN_DATA
+from camayoc.qpc_models import Report
+from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
 
 
 @pytest.mark.skip
