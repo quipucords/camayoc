@@ -12,8 +12,10 @@
 
 import pytest
 
+from camayoc import api
 from camayoc.qpc_models import Report
-from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
+from camayoc.tests.qpc.api.v1.conftest import (run_scans,
+                                               SCAN_DATA)
 
 
 @pytest.mark.skip
@@ -238,6 +240,34 @@ def test_time_series(shared_client, cleanup, source):
     """
 
 
+def assert_merge_fails(ids, errors_found, report):
+    """Assert that the merge method on the given report fails.
+
+    :param ids: The scan job identifiers to pass through to
+        the merge function.
+    :param report: The report object
+    :param errors_found: A list of any errors encountered
+    """
+    # replace whatever client the report had with one that won't raise
+    # exceptions
+    orig_client = report.client
+    report.client = api.Client(response_handler=api.echo_handler)
+    merge_response = report.create_from_merge(ids)
+    if merge_response.status_code != 400:
+        errors_found.append(
+            'Merging scan job identifiers {ids} resulted in a response'
+            'status code of {response_status} when it should have resulted'
+            'in a status code of 400.'.format(
+                ids=ids,
+                response_status=merge_response.status_code)
+        )
+    # give the report its original client back
+    report.client = orig_client
+    return errors_found
+
+
+@pytest.mark.skipif(run_scans() is False,
+                    reason='RUN_SCANS set to False')
 def test_merge_reports_from_scanjob():
     """Confirm that a report is created from valid scan job identifiers.
 
@@ -259,11 +289,12 @@ def test_merge_reports_from_scanjob():
     # if either scan is None, they were not in the config file or the
     # tests have been ran with RUN_SCANS=False and there are no scan results
     if scan1 is None or scan2 is None:
-        return
+        pytest.xfail(reason='Config file does not have dependent scans '
+                            '"non-rhel" or "rhel-7".')
     id1 = scan1.get('scan_job_id')
     id2 = scan2.get('scan_job_id')
     report = Report()
-    response = report.merge([id1, id2])
+    response = report.create_from_merge([id1, id2])
     summary = report.summary()
     details = report.details()
     status_codes = [response.status_code, summary.status_code,
@@ -287,6 +318,8 @@ def test_merge_reports_from_scanjob():
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
+@pytest.mark.skipif(run_scans() is False,
+                    reason='RUN_SCANS set to False')
 def test_merge_reports_negative():
     """Confirm that merging invalid scan job ids does not result in a report.
 
@@ -318,5 +351,5 @@ def test_merge_reports_negative():
     report = Report()
     # Loop through the invalid ids and assert that the merge fails
     for ids in invalid_ids:
-        errors_found = report.assert_merge_fails(ids, errors_found)
+        errors_found = assert_merge_fails(ids, errors_found, report)
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
