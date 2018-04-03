@@ -24,7 +24,7 @@ credentials:
       # rho does not know what to do with non-network credentials
       rho: false
 
-qcs:
+qpc:
     # this is how you would configure quipucords if running
     # the development server
     # if running in a container, set the port to 443
