@@ -18,6 +18,9 @@ import pytest
 from camayoc import api, utils
 from camayoc.config import get_config
 from camayoc.constants import (
+    QPC_BRMS_EXTENDED_FACTS,
+    QPC_EAP_EXTENDED_FACTS,
+    QPC_FUSE_EXTENDED_FACTS,
     QPC_BRMS_RAW_FACTS,
     QPC_EAP_RAW_FACTS,
     QPC_FUSE_RAW_FACTS,
@@ -25,7 +28,8 @@ from camayoc.constants import (
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
 )
-from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
+from camayoc.tests.qpc.api.v1.conftest import (run_scans,
+                                               SCAN_DATA)
 
 
 def scan_info():
@@ -185,6 +189,104 @@ def test_disabled_optional_products(scan_info):
                         product_name=product,
                         product_status=specified_optional_products[product],
                         returned_status=returned_optional_products[product],
+                        scan_name=scan.get('name')))
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+
+
+@pytest.mark.skipif(run_scans() is False,
+                    reason='RUN_SCANS set to False')
+@pytest.mark.parametrize(
+    'scan_info', scan_info(), ids=utils.name_getter)
+def test_enabled_extended_product_search_facts(scan_info):
+    """Test scan jobs from scans with enabled extended products search.
+
+    :id: 2815ca08-376f-11e8-b467-0ed5f89f718b
+    :description: Test that scan jobs of scans with enabled extended
+        products are gathering the raw_facts defined in the roles of the
+        extended products.
+    :steps:
+        1) Iterate over the scans and gather the enabled products
+        2) For any scan that was defined with enabled products:
+            a) Create a facts_to_include list composed of raw_facts for
+                each enabled task
+            b) Iterate through the inspection results fact dictionaries
+            c) Assert that facts that should be gathered are included in
+                the inspection results
+    :expectedresults: Facts are collected for enabled extended products
+    """
+    errors_found = []
+    scan = get_scan_result(scan_info['name'])
+    facts_to_include = []
+    enabled_extended_products = scan_info.get(
+        'enabled_extended_product_search')
+    if enabled_extended_products:
+        # Build the list of facts that should not be in inspection results
+        for product in enabled_extended_products.keys():
+            if product == 'jboss_eap':
+                facts_to_include += QPC_EAP_EXTENDED_FACTS
+            elif product == 'jboss_fuse':
+                facts_to_include += QPC_FUSE_EXTENDED_FACTS
+            elif product == 'jboss_brms':
+                facts_to_include += QPC_BRMS_EXTENDED_FACTS
+        # grab the inspection results of the scan
+        inspection_results = \
+            scan.get('inspection_results')
+        for system in inspection_results:
+            facts_found = 0
+            fact_dicts = system.get('facts')
+            # grab the facts for each system
+            for dictionary in fact_dicts:
+                for fact in facts_to_include:
+                    if fact in dictionary.values():
+                        facts_found += 1
+            if facts_found != len(facts_to_include):
+                errors_found.append(
+                    'Did not find fact {fact_name} that should have been '
+                    'ENABLED on scan named {scan_name}'.format(
+                        fact_name='fact',
+                        scan_name=scan.get('name')))
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+
+
+@pytest.mark.skipif(run_scans() is False,
+                    reason='RUN_SCANS set to False')
+@pytest.mark.parametrize(
+    'scan_info', scan_info(), ids=utils.name_getter)
+def test_enabled_extended_product_search(scan_info):
+    """Test scan jobs from scans with enabled extended product search.
+
+    :id: 597235de-376d-11e8-b467-0ed5f89f718b
+    :description: Test that scans created with enabled extended product
+        search retain the same enabled products when results are obtained
+        from the api
+    :steps: 1) Iterate over scans and gather enabled products
+            2) If the scans have enabled products, grab the
+                enabled_products that were returned in the scan results
+            3) Check that each specified product has the same value
+                after being returned from the api
+    :expectedresults: The values for extended products specified in the
+        config file are the same as those returned from the api
+    """
+    scan = get_scan_result(scan_info['name'])
+    errors_found = []
+    # grab extended products from config file
+    specified_extended_products = scan_info.get(
+        'enabled_extended_product_search')
+    if specified_extended_products:
+        # grab extended products from results
+        returned_extended_products = \
+            scan.get('scan_results').get('options').get(
+                'enabled_extended_product_search')
+        for product in specified_extended_products:
+            if specified_extended_products[product] != \
+                    returned_extended_products[product]:
+                errors_found.append(
+                    'The product {product_name} should have been set to '
+                    '{product_status} but was returned with a value of '
+                    '{returned_status} on scan named {scan_name}'.format(
+                        product_name=product,
+                        product_status=specified_extended_products[product],
+                        returned_status=returned_extended_products[product],
                         scan_name=scan.get('name')))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 

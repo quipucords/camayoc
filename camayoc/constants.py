@@ -400,6 +400,22 @@ QPC_EAP_RAW_FACTS = ('jboss_eap_running_paths',
                      'jboss_eap_processes', 'jboss_eap_packages')
 """List of facts collected by JBoss EAP role."""
 
+QPC_FUSE_EXTENDED_FACTS = ('jboss_activemq_ver',
+                           'jboss_camel_ver',
+                           'jboss_cxf_ver',
+                           'karaf_find_karaf_jar')
+"""List of facts collected by JBoss FUSE Extended tasks."""
+
+QPC_BRMS_EXTENDED_FACTS = ('jboss_brms_kie_api_ver',
+                           'jboss_brms_drools_core_ver',
+                           'jboss_brms_kie_war_ver')
+"""List of facts collected by JBoss BRMS Extended tasks."""
+
+QPC_EAP_EXTENDED_FACTS = ('jboss_eap_find_jboss_modules_jar',
+                          'jboss_eap_jar_ver',
+                          'jboss_eap_run_jar_ver')
+"""List of facts collected by JBoss EAP Extended tasks."""
+
 VCENTER_SCAN_TIMEOUT = 540
 """Maximum amount of time to let vcenter scan run before timing out."""
 

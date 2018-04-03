@@ -75,8 +75,8 @@ def create_source(source_info, cred_name_to_id_dict, session_cleanup):
     return src._id, expected_products
 
 
-def run_scan(scan, disabled_optional_products, cleanup,
-             scan_type='inspect'):
+def run_scan(scan, disabled_optional_products, enabled_extended_product_search,
+             cleanup, scan_type='inspect'):
     """Scan a machine and cache any available results.
 
     If errors are encountered, save those and they can be included
@@ -97,8 +97,10 @@ def run_scan(scan, disabled_optional_products, cleanup,
         'source_id_to_hostname': scan['source_id_to_hostname'],
     }
     try:
-        scan = Scan(source_ids=src_ids, scan_type=scan_type,
-                    disabled_optional_products=disabled_optional_products)
+        scan = Scan(
+            source_ids=src_ids, scan_type=scan_type,
+            disabled_optional_products=disabled_optional_products,
+            enabled_extended_product_search=enabled_extended_product_search)
         TIMEOUT = 500 * len(src_ids)
         scan.create()
         cleanup.append(scan)
@@ -233,6 +235,9 @@ def run_all_scans(vcenter_client, session_cleanup):
     for scan in scans:
         # grab the disabled products if they exist, otherwise {}
         disabled_optional_products = scan.get('disabled_optional_products', {})
+        enabled_extended_product_search = scan.get(
+            'enabled_extended_product_search',
+            {})
         # update the sources dict of each item in the scans list with the
         # source id if hosts are marked as being hosted on vcenter, turn them
         # on. then wait until they are live
@@ -251,7 +256,9 @@ def run_all_scans(vcenter_client, session_cleanup):
         # now all host should be live and we can run the scan
         # all results will be saved in global cache
         # if errors occur, they will be saved but scanning will go on
-        run_scan(scan, disabled_optional_products, cleanup=session_cleanup)
+        run_scan(scan, disabled_optional_products,
+                 enabled_extended_product_search,
+                 cleanup=session_cleanup)
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()
