@@ -646,7 +646,7 @@ class Report(QCSObject):
         """Assert that the merge method on the given report fails.
 
         :param ids: The scan job identifiers to pass through to
-        the merge function.
+            the merge function.
         :param errors_found: A list of any errors encountered
         """
         # replace whatever client the report had with one that won't raise
