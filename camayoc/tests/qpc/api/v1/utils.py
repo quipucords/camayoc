@@ -4,6 +4,7 @@
 import pprint
 import time
 
+from camayoc import config
 from camayoc.constants import (
     QPC_SCAN_STATES,
     QPC_SCAN_TERMINAL_STATES,
@@ -12,6 +13,108 @@ from camayoc.exceptions import (
     FailedScanException,
     WaitTimeError,
 )
+from camayoc.qpc_models import (
+    Credential,
+    Scan,
+    Source
+)
+
+
+def get_source(source_type, cleanup):
+    """Retrieve a single network source if available from config file.
+
+    Retreive one network source from the config file.
+    Sources listed under the following section are assumed to be available
+    on demand and do not require their power state to be managed.
+
+    The expected configuration in the Camayoc's configuration file is as
+    follows::
+
+        qpc:
+        # other needed qpc config data
+            sources:
+                 - hosts:
+                       - '127.0.0.1'
+                   name: local
+                   type: network
+                   credentials:
+                       - root
+
+    The credential listed is assumed to be in the top level 'credentials'
+    section.
+
+    This source is meant to be used for tests where we do not care about the
+    results of the scan, for example tests that assert we can pause and restart
+    a scan.
+
+    :returns: camayoc.qpc_models.Source that has been created on server and has
+        all credentials listed in config file created and associtated with it.
+    """
+    cfg = config.get_config()
+    cred_list = cfg.get('credentials', [])
+    src_list = cfg.get('qpc', {}).get('sources', [])
+    config_src = {}
+    if not (src_list and cred_list):
+        return
+    for src in src_list:
+        if src.get('type') == source_type:
+            config_src = src
+    if config_src:
+        config_src.setdefault('credential_ids', [])
+        src_creds = config_src.get('credentials')
+        for cred in src_creds:
+            for config_cred in cred_list:
+                if cred == config_cred['name']:
+                    server_cred = Credential(
+                        cred_type=source_type,
+                        username=config_cred['username'],
+                    )
+                    if config_cred.get('password'):
+                        server_cred.password = config_cred['password']
+                    else:
+                        server_cred.ssh_keyfile = config_cred['sshkeyfile']
+
+                    server_cred.create()
+                    cleanup.append(server_cred)
+                    config_src['credential_ids'].append(server_cred._id)
+        server_src = Source(
+            hosts=config_src['hosts'],
+            credential_ids=config_src['credential_ids'],
+            source_type=source_type,
+        )
+
+        if config_src.get('options'):
+            server_src.options = config_src.get('options')
+
+        server_src.create()
+        cleanup.append(server_src)
+    return server_src
+
+
+def get_scan(source_type, cleanup):
+    """Prepare a scan from the 'sources' section of config file.
+
+    :param source_type: The scan will be configured to use one source, of the
+        type specified with this parameter.
+
+    Uses ``get_network_source`` to retreive a network source from config file.
+    This scan is not meant for testing the results of the scan, rather for
+    functional tests that test the ability to effect the state of the scan,
+    for example if you can restart a paused scan.
+
+    :returns: camayoc.qpc_models.Scan configured for the network source found
+       in the config file.
+    """
+    src = get_source(source_type, cleanup)
+    if not src:
+        return
+    scn = Scan(
+        scan_type='inspect',
+        source_ids=[src._id],
+    )
+    scn.create()
+    cleanup.append(scn)
+    return scn
 
 
 def wait_until_state(scanjob, timeout=120, state='completed'):

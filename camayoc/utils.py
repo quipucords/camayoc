@@ -20,6 +20,15 @@ name_getter = operator.itemgetter('name')
 """Generate test IDs by fetching the ``name`` item."""
 
 
+def run_scans():
+    """Check for run scans environment variable."""
+    result = True
+    run_scans = os.environ.get('RUN_SCANS', 'true')
+    if run_scans.lower() == 'false':
+        result = False
+    return result
+
+
 def get_qpc_url():
     """Return the base url for the qpc server."""
     cfg = get_config().get('qpc', {})
