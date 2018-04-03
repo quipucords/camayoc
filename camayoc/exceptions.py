@@ -25,7 +25,7 @@ class ConfigFileNotFoundError(Exception):
     """
 
 
-class QCSBaseUrlNotFound(Exception):
+class QPCBaseUrlNotFound(Exception):
     """Was not able to build a base URL with the config file information.
 
     Check the expected configuration file format on the API Client
