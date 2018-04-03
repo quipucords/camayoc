@@ -20,14 +20,14 @@ name_getter = operator.itemgetter('name')
 """Generate test IDs by fetching the ``name`` item."""
 
 
-def get_qcs_url():
-    """Return the base url for the qcs server."""
-    cfg = get_config().get('qcs', {})
+def get_qpc_url():
+    """Return the base url for the qpc server."""
+    cfg = get_config().get('qpc', {})
     hostname = cfg.get('hostname')
 
     if not hostname:
-        raise exceptions.QCSBaseUrlNotFound(
-            'Make sure you have a "qcs" section and `hostname`is specified in '
+        raise exceptions.QPCBaseUrlNotFound(
+            'Make sure you have a "qpc" section and `hostname`is specified in '
             'the camayoc config file'
         )
 

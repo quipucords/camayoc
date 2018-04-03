@@ -7,31 +7,31 @@ import pytest
 from camayoc import exceptions, utils
 
 
-def test_get_qcs_url():
-    """Test ``camayoc.utils.get_qcs_url``."""
+def test_get_qpc_url():
+    """Test ``camayoc.utils.get_qpc_url``."""
     with mock.patch('camayoc.utils.get_config') as get_config:
         get_config.return_value = {
-            'qcs': {
+            'qpc': {
                 'hostname': 'server.example.com',
                 'https': True,
                 'port': 443,
             }
         }
-        assert utils.get_qcs_url() == 'https://server.example.com:443'
+        assert utils.get_qpc_url() == 'https://server.example.com:443'
 
 
-def test_get_qcs_url_no_hostname():
-    """Test ``camayoc.utils.get_qcs_url`` when no hostname is present."""
+def test_get_qpc_url_no_hostname():
+    """Test ``camayoc.utils.get_qpc_url`` when no hostname is present."""
     with mock.patch('camayoc.utils.get_config') as get_config:
         get_config.return_value = {
-            'qcs': {
+            'qpc': {
                 'https': True,
                 'port': 443,
             }
         }
-        with pytest.raises(exceptions.QCSBaseUrlNotFound) as err:
-            utils.get_qcs_url()
+        with pytest.raises(exceptions.QPCBaseUrlNotFound) as err:
+            utils.get_qpc_url()
         assert (
-            'Make sure you have a "qcs" section and `hostname`is specified in '
+            'Make sure you have a "qpc" section and `hostname`is specified in '
             'the camayoc config file'
         ) in str(err)
