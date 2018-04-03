@@ -1,7 +1,13 @@
 """Utility functions for quipucords server tests."""
+import pytest
+
 from camayoc import api
 from camayoc.qpc_models import Credential, Source
+from camayoc.tests.qpc.api.v1.conftest import run_scans
 from camayoc.utils import uuid4
+
+mark_runs_scans = pytest.mark.skipif(run_scans() is False,
+                                     reason='RUN_SCANS set to False')
 
 
 def assert_matches_server(qpcobject):
