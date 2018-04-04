@@ -107,15 +107,17 @@ def run_scan(scan, disabled_optional_products, enabled_extended_product_search,
         scanjob = ScanJob(scan_id=scan._id)
         scanjob.create()
         SCAN_DATA[scan_name]['scan_id'] = scan._id
+        SCAN_DATA[scan_name]['scan_job_id'] = scanjob._id
         wait_until_state(scanjob, timeout=TIMEOUT, state='stopped')
         SCAN_DATA[scan_name]['final_status'] = scanjob.status()
         SCAN_DATA[scan_name]['scan_results'] = scanjob.read().json()
         SCAN_DATA[scan_name]['report_id'] = scanjob.read(
         ).json().get('report_id')
-        SCAN_DATA[scan_name]['task_results'] = scanjob.read(
-        ).json().get('tasks')
-        SCAN_DATA[scan_name]['inspection_results'] = \
-            scanjob.inspection_results().json().get('results')
+        if scan_type == 'inspect':
+            SCAN_DATA[scan_name]['task_results'] = \
+                scanjob.read().json().get('tasks')
+            SCAN_DATA[scan_name]['inspection_results'] = \
+                scanjob.inspection_results().json().get('results')
     except (requests.HTTPError, WaitTimeError) as e:
         SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
 
@@ -142,6 +144,8 @@ def run_all_scans(vcenter_client, session_cleanup):
                       - sample-sat-6
                       - sample-vcenter
                   disabled_optional_products: {'jboss_fuse': True}
+                  type: 'connect'
+                  enabled_extended_product_search: {'jboss_eap': True}
         inventory:
           - hostname: sample-none-rhel-5-vc
             ipv4: 10.10.10.1
@@ -238,6 +242,7 @@ def run_all_scans(vcenter_client, session_cleanup):
         enabled_extended_product_search = scan.get(
             'enabled_extended_product_search',
             {})
+        scan_type = scan.get('type', 'inspect')
         # update the sources dict of each item in the scans list with the
         # source id if hosts are marked as being hosted on vcenter, turn them
         # on. then wait until they are live

@@ -332,6 +332,9 @@ QPC_SCAN_PATH = 'scans/'
 QPC_SCANJOB_PATH = 'jobs/'
 """The path to the scanjob endpoint for CRUD tasks."""
 
+QPC_REPORTS_PATH = 'reports/'
+"""The path to the endpoint used for obtaining reports."""
+
 QPC_SCAN_TERMINAL_STATES = ('completed', 'failed', 'paused', 'canceled')
 """Scans to not change from these states without intervention."""
 
