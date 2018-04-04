@@ -14,8 +14,8 @@ import pytest
 
 from camayoc import api
 from camayoc.qpc_models import Report
-from camayoc.tests.qpc.api.v1.conftest import (SCAN_DATA,
-                                               run_scans)
+from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
+from camayoc.tests.qpc.utils import mark_runs_scans
 
 
 @pytest.mark.skip
@@ -266,8 +266,7 @@ def assert_merge_fails(ids, errors_found, report):
     return errors_found
 
 
-@pytest.mark.skipif(run_scans() is False,
-                    reason='RUN_SCANS set to False')
+@mark_runs_scans
 def test_merge_reports_from_scanjob():
     """Confirm that a report is created from valid scan job identifiers.
 
@@ -318,8 +317,7 @@ def test_merge_reports_from_scanjob():
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
-@pytest.mark.skipif(run_scans() is False,
-                    reason='RUN_SCANS set to False')
+@mark_runs_scans
 def test_merge_reports_negative():
     """Confirm that merging invalid scan job ids does not result in a report.
 
