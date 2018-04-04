@@ -9,6 +9,8 @@
 :testtype: functional
 :upstream: yes
 """
+import csv
+import json
 
 import pytest
 
@@ -238,6 +240,70 @@ def test_time_series(shared_client, cleanup, source):
     :expectedresults: Users can generate a time series report.
     :caseautomation: notautomated
     """
+
+
+def validate_csv_response(response):
+    """Validate that the response provided is csv."""
+    msg = 'Report is not expected content-type "csv".'
+    try:
+        csv_text = response.text
+        csv.reader(csv_text, delimiter=',')
+        summary_csv = 'Report\r\n' in csv_text
+        details_csv = 'Report,Number Sources\r\n' in csv_text
+        assert summary_csv or details_csv, msg + ' Incorrect data format.'
+    except csv.Error:
+        assert False, msg
+
+
+def validate_json_response(response):
+    """Validate that the response provided is json."""
+    try:
+        response.json()
+    except json.JSONDecodeError:
+        assert False, 'Report is not expected content-type "json".'
+
+
+@mark_runs_scans
+def test_report_content_consistency():
+    """Confirm that a report is created with the correct content type.
+
+    :id: 9724fb9a-c151-4288-a8d0-7238472731a8
+    :description: If a scan job identifier is provided,
+        a valid report of the given content type should be returned.
+    :steps:
+        1) Grab the scan info for a scan from SCAN_DATA
+        2) Check if the scan info is None return if so
+        3) Grab the scan job identifier from the scan info a scan
+        4) Access the deployments & details endpoint of the report as JSON
+        5) Access the deployments & details endpoint of the report as CSV
+        6) Access the deployments & details endpoint of the report as JSON
+        7) Access the deployments & details endpoint of the report as CSV
+        8) Assert that all response codes were successful
+    :expectedresults: Reports return the appropriate content type.
+    """
+    scan = SCAN_DATA.get('rhel-7')
+    # if either scan is None, they were not in the config file or the
+    # tests have been ran with RUN_SCANS=False and there are no scan results
+    if scan is None:
+        pytest.xfail(reason='Config file does not have '
+                     'dependent scan "rhel-7".')
+    scan_job_id = scan.get('scan_job_id')
+    report = Report()
+    response = report.retrieve_from_scan_job(scan_job_id)
+    if response.json().get('report_id') is None:
+        pytest.xfail(reason='Scan Job does not have "report_id".')
+    accept_json = {'Accept': 'application/json'}
+    accept_csv = {'Accept': 'text/csv'}
+
+    validate_csv_response(report.details(headers=accept_csv))
+    validate_json_response(report.details(headers=accept_json))
+    validate_csv_response(report.details(headers=accept_csv))
+    validate_json_response(report.details(headers=accept_json))
+
+    validate_csv_response(report.summary(headers=accept_csv))
+    validate_json_response(report.summary(headers=accept_json))
+    validate_csv_response(report.summary(headers=accept_csv))
+    validate_json_response(report.summary(headers=accept_json))
 
 
 def assert_merge_fails(ids, errors_found, report):
