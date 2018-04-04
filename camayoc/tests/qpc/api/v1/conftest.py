@@ -105,15 +105,17 @@ def run_scan(scan, disabled_optional_products, cleanup,
         scanjob = ScanJob(scan_id=scan._id)
         scanjob.create()
         SCAN_DATA[scan_name]['scan_id'] = scan._id
+        SCAN_DATA[scan_name]['scan_job_id'] = scanjob._id
         wait_until_state(scanjob, timeout=TIMEOUT, state='stopped')
         SCAN_DATA[scan_name]['final_status'] = scanjob.status()
         SCAN_DATA[scan_name]['scan_results'] = scanjob.read().json()
         SCAN_DATA[scan_name]['report_id'] = scanjob.read(
         ).json().get('report_id')
-        SCAN_DATA[scan_name]['task_results'] = scanjob.read(
-        ).json().get('tasks')
-        SCAN_DATA[scan_name]['inspection_results'] = \
-            scanjob.inspection_results().json().get('results')
+        if scan_type == 'inspect':
+            SCAN_DATA[scan_name]['task_results'] = \
+                scanjob.read().json().get('tasks')
+            SCAN_DATA[scan_name]['inspection_results'] = \
+                scanjob.inspection_results().json().get('results')
     except (requests.HTTPError, WaitTimeError) as e:
         SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
 
@@ -233,6 +235,7 @@ def run_all_scans(vcenter_client, session_cleanup):
     for scan in scans:
         # grab the disabled products if they exist, otherwise {}
         disabled_optional_products = scan.get('disabled_optional_products', {})
+        scan_type = scan.get('type', 'inspect')
         # update the sources dict of each item in the scans list with the
         # source id if hosts are marked as being hosted on vcenter, turn them
         # on. then wait until they are live
@@ -251,7 +254,8 @@ def run_all_scans(vcenter_client, session_cleanup):
         # now all host should be live and we can run the scan
         # all results will be saved in global cache
         # if errors occur, they will be saved but scanning will go on
-        run_scan(scan, disabled_optional_products, cleanup=session_cleanup)
+        run_scan(scan, disabled_optional_products, cleanup=session_cleanup,
+                 scan_type=scan_type)
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()
