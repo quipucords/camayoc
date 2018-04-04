@@ -145,7 +145,8 @@ def run_all_scans(vcenter_client, session_cleanup):
                       - sample-vcenter
                   disabled_optional_products: {'jboss_fuse': True}
                   type: 'connect'
-                  enabled_extended_product_search: {'jboss_eap': True}
+                  enabled_extended_product_search: {'jboss_eap': True,
+                     'search_directories': ['/foo/bar'}
         inventory:
           - hostname: sample-none-rhel-5-vc
             ipv4: 10.10.10.1
@@ -263,7 +264,7 @@ def run_all_scans(vcenter_client, session_cleanup):
         # if errors occur, they will be saved but scanning will go on
         run_scan(scan, disabled_optional_products,
                  enabled_extended_product_search,
-                 cleanup=session_cleanup)
+                 cleanup=session_cleanup, scan_type=scan_type)
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()

@@ -142,6 +142,10 @@ def test_disabled_optional_products_facts(scan_info):
         # grab the inspection results of the scan
         inspection_results = \
             scan.get('inspection_results')
+        if not inspection_results:
+            pytest.xfail(reason='No inspection results were returned '
+                                'from scan named {scan_name}'.format(
+                                        scan_name=scan_info['name']))
         for system in inspection_results:
             fact_dicts = system.get('facts')
             # grab the facts for each system
@@ -152,7 +156,7 @@ def test_disabled_optional_products_facts(scan_info):
                             'Found fact {fact_name} that should have been '
                             'DISABLED on scan named {scan_name}'.format(
                                 fact_name=fact,
-                                scan_name=scan.get('name')))
+                                scan_name=scan_info['name']))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
@@ -193,7 +197,7 @@ def test_disabled_optional_products(scan_info):
                         product_name=product,
                         product_status=specified_optional_products[product],
                         returned_status=returned_optional_products[product],
-                        scan_name=scan.get('name')))
+                        scan_name=scan_info['name']))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
@@ -212,8 +216,9 @@ def test_enabled_extended_product_search_facts(scan_info):
         2) For any scan that was defined with enabled products:
             a) Create a facts_to_include list composed of raw_facts for
                 each enabled task
-            b) Iterate through the inspection results fact dictionaries
-            c) Assert that facts that should be gathered are included in
+            b) Grab the inspection results if they exist, xfail if not
+            c) Iterate through the inspection results fact dictionaries
+            d) Assert that facts that should be gathered are included in
                 the inspection results
     :expectedresults: Facts are collected for enabled extended products
     """
@@ -223,7 +228,7 @@ def test_enabled_extended_product_search_facts(scan_info):
     enabled_extended_products = scan_info.get(
         'enabled_extended_product_search')
     if enabled_extended_products:
-        # Build the list of facts that should not be in inspection results
+        # Build the list of extended facts that should be collected
         for product in enabled_extended_products.keys():
             if product == 'jboss_eap':
                 facts_to_include += QPC_EAP_EXTENDED_FACTS
@@ -234,10 +239,14 @@ def test_enabled_extended_product_search_facts(scan_info):
         # grab the inspection results of the scan
         inspection_results = \
             scan.get('inspection_results')
+        if not inspection_results:
+            pytest.xfail(reason='No inspection results were returned from '
+                                'scan named {scan_name}'.format(
+                                        scan_name=scan_info['name']))
         for system in inspection_results:
             facts_not_found = []
-            fact_dicts = system.get('facts')
             # grab the facts for each system
+            fact_dicts = system.get('facts')
             for fact in facts_to_include:
                 fact_found = False
                 for dictionary in fact_dicts:
@@ -247,10 +256,12 @@ def test_enabled_extended_product_search_facts(scan_info):
                     facts_not_found.append(fact)
             if len(facts_not_found) != 0:
                 errors_found.append(
-                    'Did not find facts {fact_name} that should have been '
-                    'ENABLED on scan named {scan_name}'.format(
-                        fact_name=facts_not_found,
-                        scan_name=scan.get('name')))
+                    'The facts {facts} should have been ENABLED on '
+                    'the scan named {scan_name} but were not found: '
+                    'on the system {system_name}.'.format(
+                        facts=facts_not_found,
+                        scan_name=scan_info['name'],
+                        system_name=system.get('name')))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
@@ -292,7 +303,7 @@ def test_enabled_extended_product_search(scan_info):
                         product_name=product,
                         product_status=specified_extended_products[product],
                         returned_status=returned_extended_products[product],
-                        scan_name=scan.get('name')))
+                        scan_name=scan_info['name']))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
