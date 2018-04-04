@@ -19,10 +19,10 @@ from camayoc import api, utils
 from camayoc.config import get_config
 from camayoc.constants import (
     QPC_BRMS_EXTENDED_FACTS,
-    QPC_EAP_EXTENDED_FACTS,
-    QPC_FUSE_EXTENDED_FACTS,
     QPC_BRMS_RAW_FACTS,
+    QPC_EAP_EXTENDED_FACTS,
     QPC_EAP_RAW_FACTS,
+    QPC_FUSE_EXTENDED_FACTS,
     QPC_FUSE_RAW_FACTS,
 )
 from camayoc.exceptions import (
