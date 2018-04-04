@@ -232,18 +232,21 @@ def test_enabled_extended_product_search_facts(scan_info):
         inspection_results = \
             scan.get('inspection_results')
         for system in inspection_results:
-            facts_found = 0
+            facts_not_found = []
             fact_dicts = system.get('facts')
             # grab the facts for each system
-            for dictionary in fact_dicts:
-                for fact in facts_to_include:
+            for fact in facts_to_include:
+                fact_found = False
+                for dictionary in fact_dicts:
                     if fact in dictionary.values():
-                        facts_found += 1
-            if facts_found != len(facts_to_include):
+                        fact_found = True
+                if not fact_found:
+                    facts_not_found.append(fact)
+            if len(facts_not_found) != 0:
                 errors_found.append(
-                    'Did not find fact {fact_name} that should have been '
+                    'Did not find facts {fact_name} that should have been '
                     'ENABLED on scan named {scan_name}'.format(
-                        fact_name='fact',
+                        fact_name=facts_not_found,
                         scan_name=scan.get('name')))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
