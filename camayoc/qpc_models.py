@@ -394,6 +394,7 @@ class Scan(QPCObject):
             source_ids=None,
             max_concurrency=50,
             disabled_optional_products=None,
+            enabled_extended_product_search=None,
             scan_type='inspect',
             name=None,
             _id=None):
@@ -417,6 +418,9 @@ class Scan(QPCObject):
         if disabled_optional_products:
             self.options['disabled_optional_products'] = \
                 disabled_optional_products
+        if enabled_extended_product_search:
+            self.options['enabled_extended_product_search'] = \
+                enabled_extended_product_search
 
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.
