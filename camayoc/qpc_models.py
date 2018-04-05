@@ -641,9 +641,23 @@ class Report(QPCObject):
         self.endpoint = QPC_REPORTS_PATH
         self._id = _id
 
+    def retrieve_from_scan_job(self, scan_job_id, **kwargs):
+        """Send GET request to /jobs/<scan_job_id>/ to get a scanjob.
+
+        :param ``scan_job_id``: A scan job identifier
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(QPC_SCANJOB_PATH, str(scan_job_id), '/')
+        response = self.client.get(path, **kwargs)
+        if response.status_code in range(200, 203):
+            self._id = response.json().get('report_id')
+        return response
+
     def create_from_merge(self, ids, **kwargs):
         """Send PUT request to /jobs/merge/ to merge the results of multiple scanjobs.
 
+        :param ``ids``: Scan job identifiers
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
