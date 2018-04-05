@@ -325,6 +325,10 @@ def test_products_found_deployment_report(scan_info):
     """
     result = get_scan_result(scan_info['name'])
     report_id = result['report_id']
+    if not report_id:
+        pytest.xfail(
+            reason='No report id was returned from scan '
+                   'named {scan_name}'.format(scan_name=scan_info['name']))
     report = api.Client().get(
         'reports/{}/deployments'.format(report_id)).json().get('report')
     errors_found = []
@@ -397,6 +401,10 @@ def test_OS_found_deployment_report(scan_info):
     """
     result = get_scan_result(scan_info['name'])
     report_id = result['report_id']
+    if not report_id:
+        pytest.xfail(
+            reason='No report id was returned from scan '
+                   'named {scan_name}'.format(scan_name=scan_info['name']))
     report = api.Client().get(
         'reports/{}/deployments'.format(report_id)).json().get('report')
     errors_found = []
