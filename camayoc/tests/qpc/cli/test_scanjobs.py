@@ -290,15 +290,14 @@ def test_scanjob_with_disabled_products(isolated_filesystem,
 
 def test_scanjob_with_enabled_extended_products(isolated_filesystem,
                                                 qpc_server_config):
-    """Perform a scan with an optional products disabled.
+    """Perform a scan with extended products enabled.
 
     :id: 2294649e-3833-11e8-b467-0ed5f89f718b
-    :description: Perform a a scan with optional products disabled and assert
-        that the product facts are not collected in the report.
+    :description: Perform a a scan with extended products enabled and
+        assert that the extended facts are collected in the report.
     :steps:
-        1) Run ``qpc scan add --sources <source>
-           --enabled-ext-product-search <optional-products>``
-        2) Run ``qpc scan start --name scan``
+        1) Add a scan using the scan_add_and_check function
+        2) Start the scan and check that it has started
         3) When the scan job completes, access the Report
         4) Check that the extended facts are present in the facts
            section of the report

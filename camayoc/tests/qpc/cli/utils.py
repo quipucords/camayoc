@@ -160,8 +160,7 @@ def scan_add_and_check(options, status_message_regex=None, exitstatus=0):
     """Run ``qpc scan add`` command with ``options`` returning its output.
 
     :param options: A dictionary mapping the option names and their values.
-    :param status_message_regex: Rege
-    x to match against output message.
+    :param status_message_regex: Regex to match against output message.
     :param exitstatus: Expected exit status for running command.
     """
     assert options is not {}
