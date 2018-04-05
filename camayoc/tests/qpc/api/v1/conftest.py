@@ -146,7 +146,7 @@ def run_all_scans(vcenter_client, session_cleanup):
                   disabled_optional_products: {'jboss_fuse': True}
                   type: 'connect'
                   enabled_extended_product_search: {'jboss_eap': True,
-                     'search_directories': ['/foo/bar'}
+                     'search_directories': ['/foo/bar']}
         inventory:
           - hostname: sample-none-rhel-5-vc
             ipv4: 10.10.10.1
