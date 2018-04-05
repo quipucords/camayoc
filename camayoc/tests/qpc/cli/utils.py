@@ -156,16 +156,20 @@ def source_show_and_check(options, output, exitstatus=0):
     assert qpc_source_show.exitstatus == exitstatus
 
 
-def scan_add_and_check(options):
+def scan_add_and_check(options, status_message_regex=None, exitstatus=0):
     """Run ``qpc scan add`` command with ``options`` returning its output.
 
     :param options: A dictionary mapping the option names and their values.
+    :param status_message_regex: Rege
+    x to match against output message.
+    :param exitstatus: Expected exit status for running command.
     """
     assert options is not {}
     assert options.get('name') is not None
-
-    result = scan_add(options)
-    match = re.match(r'Scan "{}" was added.'.format(options['name']), result)
+    if not status_message_regex:
+        status_message_regex = r'Scan "{}" was added.'.format(options['name'])
+    result = scan_add(options, exitstatus)
+    match = re.match(status_message_regex, result)
     assert match is not None
 
 

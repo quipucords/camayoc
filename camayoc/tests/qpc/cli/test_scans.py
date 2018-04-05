@@ -182,6 +182,77 @@ def test_create_scan_with_options(isolated_filesystem,
     scan_show_and_check(scan_name, expected_result)
 
 
+def test_create_scan_with_disabled_products_negative(isolated_filesystem,
+                                                     qpc_server_config,
+                                                     source):
+    """Attempt to create a scan with invalid values for disabled products.
+
+    :id: 4acaaeb4-3833-11e8-b467-0ed5f89f718b
+    :description: Create a scan with invalid values for disabled products.
+    :steps:
+        1) Call scan_add_and_check which runs the command
+           ``qpc scan add --sources <source> --disabled-optional-products
+           <optional-product>`` and asserts that it fails
+    :expectedresults: The scan is not created
+    """
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    scan_add_and_check({
+        'name': scan_name,
+        'sources': source_name,
+        'disabled-optional-products': 'redhat_packages',
+    }, r'usage: qpc scan add(.|[\r\n])*', exitstatus=2)
+
+
+def test_create_scan_with_extended_products_negative(isolated_filesystem,
+                                                     qpc_server_config,
+                                                     source):
+    """Attempt to create a scan with invalid values for extended products.
+
+    :id: 190711ac-cde6-4a9f-bfbd-887c41094ed1
+    :description: Create a scan with invalid values for extended products.
+    :steps:
+        1) Call scan_add_and_check which runs the command
+           ``qpc scan add --sources <source> --enabled-ext-product-search
+           <product>`` and asserts that it fails
+    :expectedresults: The scan is not created
+    """
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    scan_add_and_check({
+        'name': scan_name,
+        'sources': source_name,
+        'enabled-ext-product-search': 'redhat_packages',
+    }, r'usage: qpc scan add(.|[\r\n])*', exitstatus=2)
+
+
+def test_create_scan_with_extended_product_directories_negative(
+        isolated_filesystem,
+        qpc_server_config,
+        source):
+    """Attempt to create a scan with invalid extended products directories.
+
+    :id: 8461a2f5-f576-40fb-88b3-82109849e36c
+    :description: Create a scan with invalid values for extended products.
+    :steps:
+        1) Call scan_add_and_check which runs the command
+           ``qpc scan add --sources <source> --enabled-ext-product-search
+           <product> --ext-product-search-dirs <directories>`` and asserts
+           that it fails
+    :expectedresults: The scan is not created
+    """
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    scan_add_and_check({
+        'name': scan_name,
+        'sources': source_name,
+        'enabled-ext-product-search': 'jboss_fuse',
+        'ext-product-search-dirs': 'not-a-dir'},
+        r"Error: {'enabled_extended_product_search': "
+        r"{'search_directories'(.|[\r\n])*",
+        exitstatus=1)
+
+
 def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     """Edit a single source scan.
 
@@ -219,7 +290,8 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
         'name': scan_name,
         'max-concurrency': 25,
         'disabled-optional-products': 'jboss_eap',
-        'enabled-ext-product-search': 'jboss_fuse'
+        'enabled-ext-product-search': 'jboss_fuse',
+        'ext-product-search-dirs': '/foo/bar/'
     }, r'Scan "{}" was updated.'.format(scan_name))
 
     expected_result = {'id': 'TO_BE_REPLACED',
@@ -232,7 +304,8 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
                            'enabled_extended_product_search': {
                                'jboss_brms': False,
                                'jboss_eap': False,
-                               'jboss_fuse': True},
+                               'jboss_fuse': True,
+                               'search_directories': ['/foo/bar/']},
                            'max_concurrency': 25},
                        'scan_type': 'inspect',
                        'sources': [{'id': source_output['id'],
@@ -372,7 +445,20 @@ def test_edit_scan_negative(isolated_filesystem,
         'name': scan_name,
         'sources': '',
         'disabled-optional-products': 'not_a_real_product',
+    }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
+    # Edit enabled-extended-product-search
+    scan_edit_and_check({
+        'name': scan_name,
+        'sources': '',
+        'enabled-ext-product-search': 'not_a_real_product',
+    }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
+
+    # Edit ext-product-search-dirs
+    scan_edit_and_check({
+        'name': scan_name,
+        'sources': '',
+        'ext-product-search-dirs': 'not-a-dir'
     }, r'usage: qpc scan edit(.|[\r\n])*', exitstatus=2)
 
 
