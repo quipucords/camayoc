@@ -226,7 +226,7 @@ def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
 
 def test_scanjob_with_disabled_products(isolated_filesystem,
                                         qpc_server_config):
-    """Perform a scan with an optional products disabled.
+    """Perform a scan with optional products disabled.
 
     :id: 3e01ea6c-3833-11e8-b467-0ed5f89f718b
     :description: Perform a a scan with optional products disabled and assert
