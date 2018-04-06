@@ -9,12 +9,23 @@
 :testtype: functional
 :upstream: yes
 """
+import copy
 import pytest
 
+from camayoc import api
 from camayoc.constants import QPC_HOST_MANAGER_TYPES
+from camayoc.qpc_models import (
+    Credential,
+    Source,
+)
+from camayoc.tests.qpc.utils import (assert_source_create_fails,
+                                     assert_source_update_fails)
+from camayoc.utils import uuid4
 
+INVALID_HOST_DATA = [['192.0.2.[0:255]', '192.0.3.0/24']]
+VALID_HOST_DATA = [['192.0.2.1'], ['192.0.2.10']]
 
-@pytest.mark.skip
+@pytest.mark.parametrize('scan_host', INVALID_HOST_DATA)
 @pytest.mark.parametrize('src_type', QPC_HOST_MANAGER_TYPES)
 def test_negative_create_multiple(src_type, shared_client, cleanup, scan_host):
     """Attempt to create a host manager Source using excess data.
@@ -30,10 +41,46 @@ def test_negative_create_multiple(src_type, shared_client, cleanup, scan_host):
     :expectedresults: An error is thrown and no new host is created.
     :caseautomation: notautomated
     """
-    pass
+    cred = Credential(
+        cred_type=src_type,
+        client=shared_client,
+        password=uuid4()
+    )
+    cred2 = Credential(
+        cred_type=src_type,
+        client=shared_client,
+        password=uuid4()
+    )
+    cred.create()
+    cred2.create()
+    src = Source(
+        source_type=src_type,
+        client=shared_client,
+        hosts=scan_host,
+        credential_ids=[cred._id],
+    )
+    # assert create fails for multiple hosts
+    assert_source_create_fails(src)
+    src = Source(
+        source_type=src_type,
+        client=shared_client,
+        hosts=VALID_HOST_DATA[0],
+        credential_ids=[cred._id, cred2._id],
+    )
+    # assert create fails for multiple creds
+    assert_source_create_fails(src)
+    src = Source(
+        source_type=src_type,
+        client=shared_client,
+        hosts=scan_host,
+        credential_ids=[cred._id, cred2._id],
+    )
+    # assert create fails for multiple hosts & multiple creds
+    assert_source_create_fails(src)
+    cleanup.extend([cred])
 
 
-@pytest.mark.skip
+@pytest.mark.parametrize('scan_host', VALID_HOST_DATA)
 @pytest.mark.parametrize('src_type', QPC_HOST_MANAGER_TYPES)
 def test_negative_update_invalid(src_type, shared_client, cleanup, scan_host):
     """Create a host manager source and then update it with invalid data.
@@ -47,4 +94,34 @@ def test_negative_update_invalid(src_type, shared_client, cleanup, scan_host):
     :expectedresults: An error is thrown and no new host is created.
     :caseautomation: notautomated
     """
-    pass
+    # Create original credential & source
+    pwd_cred = Credential(
+        cred_type=src_type,
+        client=shared_client,
+        password=uuid4()
+    )
+    pwd_cred.create()
+    src = Source(
+        source_type=src_type,
+        client=shared_client,
+        hosts=scan_host,
+        credential_ids=[pwd_cred._id],
+    )
+    # Create extra credential for update
+    cred2 = Credential(
+        cred_type=src_type,
+        client=shared_client,
+        password=uuid4()
+    )
+    cred2 .create()
+
+    cleanup.extend([pwd_cred, src, cred2])
+    # original_data = copy.deepcopy(src.fields())
+    # src.client = api.Client(api.echo_handler)
+    #
+    # # Try to update with multiple credentials
+    # src.credential_ids = [pwd_cred._id, cred2._id]
+    # assert_source_update_fails(original_data, src)
+    # # Try to update with multiple hosts
+    # src.hosts = INVALID_HOST_DATA[0]
+    # assert_source_update_fails(original_data, src)

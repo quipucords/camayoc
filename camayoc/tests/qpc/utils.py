@@ -45,6 +45,31 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
+def assert_source_create_fails(source):
+    """Assert that the create method of this source fails.
+
+    :param source: The source object.
+    """
+    # replace whatever client the source had with one that won't raise
+    # exceptions
+    orig_client = source.client
+    source.client = api.Client(response_handler=api.echo_handler)
+    create_response = source.create()
+    assert create_response.status_code == 400
+    expected_errors = [
+        {'hosts': ['Source of type vcenter must have a single hosts.']},
+        {'credentials':
+             ['Source of type vcenter must have a single credential.']},
+        {'hosts':
+             ['Source of type satellite must have a single hosts.']},
+        {'credentials':
+             ['Source of type satellite must have a single credential.']}]
+    response = create_response.json()
+    assert response in expected_errors
+    # give the source its original client back
+    source.client = orig_client
+
+
 def gen_valid_source(cleanup, src_type, host, create=True):
     """Create valid source."""
     cred = Credential(cred_type=src_type, password=uuid4())
