@@ -19,12 +19,20 @@ import pexpect
 import pytest
 
 from camayoc.config import get_config
-from camayoc.constants import BECOME_PASSWORD_INPUT, CONNECTION_PASSWORD_INPUT
+from camayoc.constants import (BECOME_PASSWORD_INPUT,
+                               CONNECTION_PASSWORD_INPUT,
+                               QPC_BRMS_EXTENDED_FACTS,
+                               QPC_BRMS_RAW_FACTS,
+                               QPC_EAP_EXTENDED_FACTS,
+                               QPC_EAP_RAW_FACTS,
+                               QPC_FUSE_EXTENDED_FACTS,
+                               QPC_FUSE_RAW_FACTS)
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
     FailedScanException,
     WaitTimeError,
 )
+from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import name_getter, uuid4
 
 from .conftest import qpc_server_config
@@ -139,6 +147,7 @@ def wait_for_scan(scan_job_id, status='completed', timeout=900):
     )
 
 
+@mark_runs_scans
 @pytest.mark.troubleshoot
 def test_scanjob(isolated_filesystem, qpc_server_config, source):
     """Scan a single source type.
@@ -179,6 +188,7 @@ def test_scanjob(isolated_filesystem, qpc_server_config, source):
         assert report.get('sources', []) != []
 
 
+@mark_runs_scans
 def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
     """Scan multiple source types.
 
@@ -217,23 +227,140 @@ def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
         assert report.get('sources', []) != []
 
 
-@pytest.mark.skip
+@mark_runs_scans
 def test_scanjob_with_disabled_products(isolated_filesystem,
                                         qpc_server_config):
-    """Perform a scan and disable an optional product.
+    """Perform a scan with optional products disabled.
 
-    :id: b1cd9901-44eb-4e71-846c-34e1b19751d0
-    :description: Perform a scan and disable an optional product.
-    :steps: Run ``qpc scan start --sources <source> --disable-optional-products
-        <optional-product>``
+    :id: 3e01ea6c-3833-11e8-b467-0ed5f89f718b
+    :description: Perform a a scan with optional products disabled and assert
+        that the product facts are not collected in the report.
+    :steps:
+        1) Add a scan using the
+           camayoc.tests.qpc.cli.utils.scan_add_and_check function
+        2) Start the scan and check that it has started
+        3) When the scan job completes, access the Report
+        4) Check that the disabled facts are not present in the facts
+           section of the report
     :expectedresults: The scan must completed without any error and a report
         should be available. The disabled products should not have results in
         the report.
-    :caseautomation: notautomated
     """
-    pass
+    errors_found = []
+    disabled_facts = \
+        QPC_EAP_RAW_FACTS + QPC_BRMS_RAW_FACTS + QPC_FUSE_RAW_FACTS
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    scan_add_and_check({
+        'name': scan_name,
+        'sources': source_name,
+        'disabled-optional-products': 'jboss_fuse jboss_brms jboss_eap',
+    })
+    result = scan_start({
+        'name': scan_name,
+    })
+    match = re.match(r'Scan "(\d+)" started.', result)
+    assert match is not None
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, timeout=1200)
+    result = scan_job({
+        'id': scan_job_id,
+    })
+    assert result['status'] == 'completed'
+    report_id = result['report_id']
+    assert report_id is not None
+    output_file = 'out.json'
+    report = report_detail({
+        'json': None,
+        'output-file': output_file,
+        'report': report_id,
+    })
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        sources = report.get('sources')
+        if sources:
+            for source in sources:
+                facts = source.get('facts')
+                for fact in disabled_facts:
+                    for dictionary in facts:
+                        if fact in dictionary.keys():
+                            errors_found.append(
+                                'The fact {fact} should have '
+                                'been DISABLED but was found '
+                                'in report.'.format(
+                                    fact=fact))
+
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
+@mark_runs_scans
+def test_scanjob_with_enabled_extended_products(isolated_filesystem,
+                                                qpc_server_config):
+    """Perform a scan with extended products enabled.
+
+    :id: 2294649e-3833-11e8-b467-0ed5f89f718b
+    :description: Perform a a scan with extended products enabled and
+        assert that the extended facts are collected in the report.
+    :steps:
+        1) Add a scan using the
+           camayoc.tests.qpc.cli.utils.scan_add_and_check function
+        2) Start the scan and check that it has started
+        3) When the scan job completes, access the Report
+        4) Check that the extended facts are present in the facts
+           section of the report
+    :expectedresults: The scan must completed without any error and a report
+        should be available. The extended products should have results in
+        the report.
+    """
+    errors_found = []
+    extended_facts = \
+        QPC_EAP_EXTENDED_FACTS + \
+        QPC_BRMS_EXTENDED_FACTS + QPC_FUSE_EXTENDED_FACTS
+    scan_name = uuid4()
+    source_name = config_sources()[0]['name']
+    scan_add_and_check({
+        'name': scan_name,
+        'sources': source_name,
+        'enabled-ext-product-search': 'jboss_fuse jboss_brms jboss_eap',
+    })
+    result = scan_start({
+        'name': scan_name,
+    })
+    match = re.match(r'Scan "(\d+)" started.', result)
+    assert match is not None
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, timeout=1200)
+    result = scan_job({
+        'id': scan_job_id,
+    })
+    assert result['status'] == 'completed'
+    report_id = result['report_id']
+    assert report_id is not None
+    output_file = 'out.json'
+    report = report_detail({
+        'json': None,
+        'output-file': output_file,
+        'report': report_id,
+    })
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        sources = report.get('sources')
+        if sources:
+            for source in sources:
+                facts = source.get('facts')
+                for fact in extended_facts:
+                    for dictionary in facts:
+                        if fact not in dictionary.keys():
+                            errors_found.append(
+                                'The fact {fact} should have '
+                                'been ENABLED but was not found '
+                                'in report.'.format(
+                                    fact=fact))
+
+    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+
+
+@mark_runs_scans
 def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be paused and restarted.
 
@@ -279,6 +406,7 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
         assert report.get('sources', []) != []
 
 
+@mark_runs_scans
 def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled.
 
@@ -312,6 +440,7 @@ def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     )
 
 
+@mark_runs_scans
 def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled even when paused.
 
