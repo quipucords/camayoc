@@ -41,7 +41,6 @@ def test_negative_create_multiple(src_type, shared_client, cleanup, scan_host):
             multiple credentials or multiple hosts (could be list, IPv4 range,
             or ansible pattern like example[1-10].com)
     :expectedresults: An error is thrown and no new host is created.
-    :caseautomation: notautomated
     """
     # initialize & create multiple credentials
     cred = Credential(
@@ -84,7 +83,7 @@ def test_negative_create_multiple(src_type, shared_client, cleanup, scan_host):
     )
     assert_source_create_fails(src)
 
-    cleanup.extend([cred])
+    cleanup.extend([cred, cred2])
 
 
 @pytest.mark.parametrize('invalid_host', INVALID_HOST_DATA)
@@ -101,7 +100,6 @@ def test_negative_update_invalid(src_type, shared_client, cleanup, scan_host,
         1) Create a valid host manager credential and source
         2) Attempt to update with multiple {hosts, credentials}
     :expectedresults: An error is thrown and no new host is created.
-    :caseautomation: notautomated
     """
     # initialize & create original credential & source
     pwd_cred = Credential(
