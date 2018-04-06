@@ -57,13 +57,14 @@ def assert_source_create_fails(source):
     create_response = source.create()
     assert create_response.status_code == 400
     expected_errors = [
-        {'hosts': ['Source of type vcenter must have a single hosts.']},
-        {'credentials':
-             ['Source of type vcenter must have a single credential.']},
         {'hosts':
-             ['Source of type satellite must have a single hosts.']},
+            ['Source of type vcenter must have a single hosts.']},
         {'credentials':
-             ['Source of type satellite must have a single credential.']}]
+            ['Source of type vcenter must have a single credential.']},
+        {'hosts':
+            ['Source of type satellite must have a single hosts.']},
+        {'credentials':
+            ['Source of type satellite must have a single credential.']}]
     response = create_response.json()
     assert response in expected_errors
     # give the source its original client back
