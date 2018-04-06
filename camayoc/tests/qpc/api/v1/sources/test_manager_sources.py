@@ -10,6 +10,7 @@
 :upstream: yes
 """
 import copy
+
 import pytest
 
 from camayoc import api
