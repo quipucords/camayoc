@@ -31,6 +31,8 @@ from .utils import (
     source_add_and_check,
     source_show
 )
+NEGATIVE_CASES = [1, -100, 'redhat_packages', 'ifconfig', {}, [],
+                  ['/foo/bar/']]
 
 
 def config_credentials():
@@ -182,9 +184,11 @@ def test_create_scan_with_options(isolated_filesystem,
     scan_show_and_check(scan_name, expected_result)
 
 
+@pytest.mark.parametrize('fail_cases', NEGATIVE_CASES)
 def test_create_scan_with_disabled_products_negative(isolated_filesystem,
                                                      qpc_server_config,
-                                                     source):
+                                                     source,
+                                                     fail_cases):
     """Attempt to create a scan with invalid values for disabled products.
 
     :id: 4acaaeb4-3833-11e8-b467-0ed5f89f718b
@@ -200,13 +204,15 @@ def test_create_scan_with_disabled_products_negative(isolated_filesystem,
     scan_add_and_check({
         'name': scan_name,
         'sources': source_name,
-        'disabled-optional-products': 'redhat_packages',
+        'disabled-optional-products': fail_cases,
     }, r'usage: qpc scan add(.|[\r\n])*', exitstatus=2)
 
 
+@pytest.mark.parametrize('fail_cases', NEGATIVE_CASES)
 def test_create_scan_with_extended_products_negative(isolated_filesystem,
                                                      qpc_server_config,
-                                                     source):
+                                                     source,
+                                                     fail_cases):
     """Attempt to create a scan with invalid values for extended products.
 
     :id: 190711ac-cde6-4a9f-bfbd-887c41094ed1
@@ -222,14 +228,15 @@ def test_create_scan_with_extended_products_negative(isolated_filesystem,
     scan_add_and_check({
         'name': scan_name,
         'sources': source_name,
-        'enabled-ext-product-search': 'redhat_packages',
+        'enabled-ext-product-search': fail_cases,
     }, r'usage: qpc scan add(.|[\r\n])*', exitstatus=2)
 
 
+@pytest.mark.parametrize('fail_cases', NEGATIVE_CASES)
 def test_create_scan_with_extended_product_directories_negative(
         isolated_filesystem,
         qpc_server_config,
-        source):
+        source, fail_cases):
     """Attempt to create a scan with invalid extended products directories.
 
     :id: 8461a2f5-f576-40fb-88b3-82109849e36c
@@ -247,7 +254,7 @@ def test_create_scan_with_extended_product_directories_negative(
         'name': scan_name,
         'sources': source_name,
         'enabled-ext-product-search': 'jboss_fuse',
-        'ext-product-search-dirs': 'not-a-dir'},
+        'ext-product-search-dirs': fail_cases},
         r"Error: {'enabled_extended_product_search': "
         r"{'search_directories'(.|[\r\n])*",
         exitstatus=1)

@@ -32,6 +32,7 @@ from camayoc.exceptions import (
     FailedScanException,
     WaitTimeError,
 )
+from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import name_getter, uuid4
 
 from .conftest import qpc_server_config
@@ -146,6 +147,7 @@ def wait_for_scan(scan_job_id, status='completed', timeout=900):
     )
 
 
+@mark_runs_scans
 @pytest.mark.troubleshoot
 def test_scanjob(isolated_filesystem, qpc_server_config, source):
     """Scan a single source type.
@@ -186,6 +188,7 @@ def test_scanjob(isolated_filesystem, qpc_server_config, source):
         assert report.get('sources', []) != []
 
 
+@mark_runs_scans
 def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
     """Scan multiple source types.
 
@@ -224,6 +227,7 @@ def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
         assert report.get('sources', []) != []
 
 
+@mark_runs_scans
 def test_scanjob_with_disabled_products(isolated_filesystem,
                                         qpc_server_config):
     """Perform a scan with optional products disabled.
@@ -232,7 +236,8 @@ def test_scanjob_with_disabled_products(isolated_filesystem,
     :description: Perform a a scan with optional products disabled and assert
         that the product facts are not collected in the report.
     :steps:
-        1) Add a scan using the scan_add_and_check function
+        1) Add a scan using the
+           camayoc.tests.qpc.cli.utils.scan_add_and_check function
         2) Start the scan and check that it has started
         3) When the scan job completes, access the Report
         4) Check that the disabled facts are not present in the facts
@@ -288,6 +293,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem,
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
+@mark_runs_scans
 def test_scanjob_with_enabled_extended_products(isolated_filesystem,
                                                 qpc_server_config):
     """Perform a scan with extended products enabled.
@@ -296,7 +302,8 @@ def test_scanjob_with_enabled_extended_products(isolated_filesystem,
     :description: Perform a a scan with extended products enabled and
         assert that the extended facts are collected in the report.
     :steps:
-        1) Add a scan using the scan_add_and_check function
+        1) Add a scan using the
+           camayoc.tests.qpc.cli.utils.scan_add_and_check function
         2) Start the scan and check that it has started
         3) When the scan job completes, access the Report
         4) Check that the extended facts are present in the facts
@@ -353,6 +360,7 @@ def test_scanjob_with_enabled_extended_products(isolated_filesystem,
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
+@mark_runs_scans
 def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be paused and restarted.
 
@@ -398,6 +406,7 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
         assert report.get('sources', []) != []
 
 
+@mark_runs_scans
 def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled.
 
@@ -431,6 +440,7 @@ def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     )
 
 
+@mark_runs_scans
 def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled even when paused.
 
