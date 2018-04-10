@@ -37,8 +37,8 @@ This is a suggested install method:
 
 2. Create and activate a Python 3.6 virtual environment::
 
-   python3.6 -m venv ~/envs/camayoc
-   source ~/envs/camayoc/bin/activate
+    python3.6 -m venv ~/envs/camayoc
+    source ~/envs/camayoc/bin/activate
 
 3. Install using make targets::
 
@@ -57,13 +57,13 @@ Camayoc requires a configuration file to be installed to
 
 The config file tells Camayoc about the hosts you would like to run tests
 against and the credentials to use with these hosts. It also tells Camayoc
-where the quipucords_ server you want to test if you are running
-quipucords_ tests.
+where the quipucords_ server you want to test is running so the tests can
+execute against the server.
 
 Camayoc contains test suites for both quipucords/rho and quipucords/quipucords
-projects. All portions of the test suite expect the config file format.  Any
-changes to the test suite that require changes to the config file format should
-be made with this in mind.
+projects. All portions of the test suite expect the same config file format. 
+Any changes to the test suite that require changes to the config file format
+should be made with this in mind.
 
 There is an example annotated config file in ``example_config.yaml`` in
 the root directory of the Camayoc repository.
@@ -125,9 +125,9 @@ install the qpc_ executable in such a way that it is available in your
     There are extra considerations you must take if you are running the
     quipucords server in a container.  First, your config file must use
     paths for sshkeys that exist on the server.
-    Additionally you must map your ``/tmp`` directory to the server's ``tmp``
-    directory  because some tests create temporary files that must be accessed
-    by the server.
+    Additionally you must map your ``/tmp`` directory to the server's ``/tmp``
+    directory  because some tests create temporary files in ``/tmp`` that
+    must be accessed by the server.
 
 To only test the API, CLI, or UI, you can take advantage of the
 following make targets::
