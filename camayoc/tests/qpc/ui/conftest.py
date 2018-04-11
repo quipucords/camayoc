@@ -20,7 +20,6 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(skip_ui)
 
 
-@pytest.mark.ui
 @pytest.fixture
 def browser(selenium):
     """Widgetastic browser fixture."""

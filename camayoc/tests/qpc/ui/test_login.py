@@ -9,12 +9,9 @@
 :testtype: functional
 :upstream: yes
 """
-import pytest
-
 from .views import DashboardView, LoginView
 
 
-@pytest.mark.ui
 def test_login_logout(browser):
     """Login and logout using the default user.
 
