@@ -420,8 +420,8 @@ def test_OS_found_deployment_report(scan_info):
             ex_products = source_to_product_map[src_id]
             expected_distro = ex_products['distribution'].get('name', '')
             expected_version = ex_products['distribution'].get('version', '')
-            found_distro = entity.get('os_name')
-            found_version = entity.get('os_version')
+            found_distro = entity.get('os_name', '')
+            found_version = entity.get('os_version', '')
             if src_id in [s['id'] for s in entity['sources']]:
                 # We assert that the expected distro's name is at least
                 # contained in the found name.
