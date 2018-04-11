@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for  quipucords scans and reports.
+"""Tests for quipucords scanjobs.
 
 These tests are parametrized on the inventory listed in the config file.
 
@@ -11,12 +11,9 @@ These tests are parametrized on the inventory listed in the config file.
 :testtype: functional
 :upstream: yes
 """
-from pprint import pformat
-
 import pytest
 
-from camayoc import api, utils
-from camayoc.config import get_config
+from camayoc import utils
 from camayoc.constants import (
     QPC_BRMS_EXTENDED_FACTS,
     QPC_BRMS_RAW_FACTS,
@@ -25,39 +22,16 @@ from camayoc.constants import (
     QPC_FUSE_EXTENDED_FACTS,
     QPC_FUSE_RAW_FACTS,
 )
-from camayoc.exceptions import (
-    ConfigFileNotFoundError,
+from camayoc.tests.qpc.api.v1.conftest import (
+    get_scan_result,
+    scan_list,
 )
-from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
 from camayoc.tests.qpc.utils import mark_runs_scans
-
-
-def scan_info():
-    """Generate list of scan dict objects found in config file."""
-    try:
-        return get_config().get('qpc', {}).get('scans', [])
-    except (ConfigFileNotFoundError, KeyError):
-        return []
-
-
-def get_scan_result(scan_name):
-    """Collect scan results from global cache.
-
-    Raise an error if no results are available, because this means the scan
-    was not even attempted.
-    """
-    result = SCAN_DATA.get(scan_name)
-    if result is None:
-        raise RuntimeError(
-            'Absolutely no results available for scan named {0},\n'
-            'because no scan was even attempted.\n'.format(scan_name)
-        )
-    return result
 
 
 @mark_runs_scans
 @pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
+    'scan_info', scan_list(), ids=utils.name_getter)
 def test_scan_complete(scan_info):
     """Test that each scan completed without failures.
 
@@ -81,7 +55,7 @@ def test_scan_complete(scan_info):
 
 @mark_runs_scans
 @pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
+    'scan_info', scan_list(), ids=utils.name_getter)
 def test_scan_task_results(scan_info):
     """Test the scan task results of each scan.
 
@@ -113,7 +87,7 @@ def test_scan_task_results(scan_info):
 
 @mark_runs_scans
 @pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
+    'scan_info', scan_list(), ids=utils.name_getter)
 def test_disabled_optional_products_facts(scan_info):
     """Test scan jobs from scans with disabled optional products.
 
@@ -150,7 +124,7 @@ def test_disabled_optional_products_facts(scan_info):
         if not inspection_results:
             pytest.xfail(reason='No inspection results were returned '
                                 'from scan named {scan_name}'.format(
-                                        scan_name=scan_info['name']))
+                                    scan_name=scan_info['name']))
         for system in inspection_results:
             fact_dicts = system.get('facts')
             # grab the facts for each system
@@ -167,7 +141,7 @@ def test_disabled_optional_products_facts(scan_info):
 
 @mark_runs_scans
 @pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
+    'scan_info', scan_list(), ids=utils.name_getter)
 def test_disabled_optional_products(scan_info):
     """Test scan jobs from scans with disabled_optional_products.
 
@@ -208,7 +182,7 @@ def test_disabled_optional_products(scan_info):
 
 @mark_runs_scans
 @pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
+    'scan_info', scan_list(), ids=utils.name_getter)
 def test_enabled_extended_product_search_facts(scan_info):
     """Test scan jobs from scans with enabled extended products search.
 
@@ -247,7 +221,7 @@ def test_enabled_extended_product_search_facts(scan_info):
         if not inspection_results:
             pytest.xfail(reason='No inspection results were returned from '
                                 'scan named {scan_name}'.format(
-                                        scan_name=scan_info['name']))
+                                    scan_name=scan_info['name']))
         for system in inspection_results:
             facts_not_found = []
             # grab the facts for each system
@@ -272,7 +246,7 @@ def test_enabled_extended_product_search_facts(scan_info):
 
 @mark_runs_scans
 @pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
+    'scan_info', scan_list(), ids=utils.name_getter)
 def test_enabled_extended_product_search(scan_info):
     """Test scan jobs from scans with enabled extended product search.
 
@@ -310,152 +284,3 @@ def test_enabled_extended_product_search(scan_info):
                         returned_status=returned_extended_products[product],
                         scan_name=scan_info['name']))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
-
-
-@mark_runs_scans
-@pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
-def test_products_found_deployment_report(scan_info):
-    """Test that products reported as present are correct for the source.
-
-    :id: d5d424bb-8183-4b60-b21a-1b4ed1d879c0
-    :description: Test that products indicated as present are correctly
-        identified.
-    :steps:
-        1) Request the json report for the scan.
-        2) Assert that any products marked as present are expected to be found
-           as is listed in the configuration file for the source.
-    :expectedresults: There are inspection results for each source we scanned
-        and any products found are correctly identified.
-    """
-    result = get_scan_result(scan_info['name'])
-    report_id = result['report_id']
-    if not report_id:
-        pytest.xfail(
-            reason='No report id was returned from scan '
-                   'named {scan_name}'.format(scan_name=scan_info['name']))
-    report = api.Client().get(
-        'reports/{}/deployments'.format(report_id)).json().get('report')
-    errors_found = []
-    for entity in report:
-        all_found_products = []
-        present_products = []
-        for product in entity.get('products'):
-            name = ''.join(product['name'].lower().split())
-            if product['presence'] == 'present':
-                present_products.append(name)
-            if product['presence'] in ['present', 'potential']:
-                all_found_products.append(name)
-        for source_to_product_map in result['expected_products']:
-            src_id = list(source_to_product_map.keys())[0]
-            hostname = result['source_id_to_hostname'][src_id]
-            ex_products = source_to_product_map[src_id]
-            expected_product_names = [
-                prod for prod in ex_products.keys() if prod != 'distribution']
-            if src_id in [s['id'] for s in entity['sources']]:
-                # We assert that products marked as present are expected
-                # We do not assert that products marked as potential must
-                # actually be on server
-                unexpected_products = []
-                for prod_name in present_products:
-                    # Assert that products marked "present"
-                    # Are actually expected on machine
-                    if prod_name not in expected_product_names:
-                        unexpected_products.append(prod_name)
-                # after inpsecting all found products,
-                # raise assertion error for all unexpected products
-                if len(unexpected_products) > 0:
-                    errors_found.append(
-                        'Found {found_products} but only expected to find\n'
-                        '{expected_products} on {host_found_on}.\n'
-                        'All information about the entity was as follows\n'
-                        '{entity_info}'
-                        .format(
-                            found_products=unexpected_products,
-                            expected_products=expected_product_names,
-                            host_found_on=hostname,
-                            entity_info=pformat(entity)
-                        )
-                    )
-    assert len(errors_found) == 0, (
-        'Found {num} unexpected products!\n'
-        'Errors are listed below: {errors}'.format(
-            num=len(errors_found),
-            errors='\n\n======================================\n\n'.join(
-                errors_found
-            ),
-        )
-    )
-
-
-@mark_runs_scans
-@pytest.mark.parametrize(
-    'scan_info', scan_info(), ids=utils.name_getter)
-def test_OS_found_deployment_report(scan_info):
-    """Test that OS identified are correct for the source.
-
-    :id: 0b16331c-2431-498a-9e84-65b3d66e4001
-    :description: Test that OS type and version are correctly
-        identified.
-    :steps:
-        1) Request the json report for the scan.
-        2) Assert that the OS identified is expected to be found
-           as is listed in the configuration file for the source.
-    :expectedresults: There are inspection results for each source we scanned
-        and the operating system is correctly identified.
-    """
-    result = get_scan_result(scan_info['name'])
-    report_id = result['report_id']
-    if not report_id:
-        pytest.xfail(
-            reason='No report id was returned from scan '
-                   'named {scan_name}'.format(scan_name=scan_info['name']))
-    report = api.Client().get(
-        'reports/{}/deployments'.format(report_id)).json().get('report')
-    errors_found = []
-    for entity in report:
-        for source_to_product_map in result['expected_products']:
-            src_id = list(source_to_product_map.keys())[0]
-            hostname = result['source_id_to_hostname'][src_id]
-            ex_products = source_to_product_map[src_id]
-            expected_distro = ex_products['distribution'].get('name', '')
-            expected_version = ex_products['distribution'].get('version', '')
-            found_distro = entity.get('os_name', '')
-            found_version = entity.get('os_version', '')
-            if src_id in [s['id'] for s in entity['sources']]:
-                # We assert that the expected distro's name is at least
-                # contained in the found name.
-                # For example, if "Red Hat" is listed in config file,
-                # It will pass if "Red Hat Enterprise Linux Server" is found
-                if expected_distro not in found_distro:
-                    errors_found.append(
-                        'Expected OS named {0} for source {1} but'
-                        'found OS named {2}'.format(
-                            expected_distro,
-                            hostname,
-                            found_distro,
-                        )
-                    )
-                # We assert that the expected distro's version is at least
-                # contained in the found version.
-                # For example, if "6.9" is listed in config file,
-                # It will pass if "6.9 (Santiago)" is found
-                if expected_version not in found_version:
-                    errors_found.append(
-                        'Expected OS version {0} for source {1} but'
-                        'found OS version {2}'.format(
-                            expected_version,
-                            hostname,
-                            found_version,
-                        )
-                    )
-
-    assert len(errors_found) == 0, (
-        'Found {num} unexpected OS names and/or versions!\n'
-        'Errors are listed below: {errors}'.format(
-            num=len(errors_found),
-            errors='\n\n======================================\n\n'.join(
-                errors_found
-            ),
-        )
-    )
