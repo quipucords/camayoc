@@ -10,7 +10,7 @@ from camayoc.constants import (
     QPC_SCAN_TERMINAL_STATES,
 )
 from camayoc.exceptions import (
-    FailedScanException,
+    StoppedScanException,
     WaitTimeError,
 )
 from camayoc.qpc_models import (
@@ -128,7 +128,7 @@ def prepare_scan(source_type, cleanup):
     return scn
 
 
-def wait_until_state(scanjob, timeout=120, state='completed'):
+def wait_until_state(scanjob, timeout=3600, state='completed'):
     """Wait until the scanjob has failed or reached desired state.
 
     The default state is 'completed'.
@@ -142,10 +142,14 @@ def wait_until_state(scanjob, timeout=120, state='completed'):
     This method should not be called on scanjob jobs that have not yet been
     created, are paused, or are canceled.
 
-    The default timeout is set to 120 seconds, but can be overridden if it is
-    anticipated that a scanjob may take longer to complete.
+    The default timeout is set to 3600 seconds (an hour), but can be
+    overridden. An hour is an extremely long time. We use this because
+    it is been proven that in general the server is accurate when
+    reporting that a task really is still running. All other terminal
+    states will cause this function to return.
     """
     valid_states = QPC_SCAN_STATES + ('stopped',)
+    stopped_states = QPC_SCAN_TERMINAL_STATES + ('stopped',)
     if state not in valid_states:
         raise ValueError(
             'You have called `wait_until_state` and specified an invalid\n'
@@ -157,11 +161,13 @@ def wait_until_state(scanjob, timeout=120, state='completed'):
 
     while (not scanjob.status() or not scanjob.status()
             == state) and timeout > 0:
-        if state == 'stopped' and scanjob.status() in QPC_SCAN_TERMINAL_STATES:
+        if state in stopped_states and scanjob.status() in stopped_states:
             # scanjob is no longer running, so we will return
             return
         time.sleep(5)
         timeout -= 5
+        if scanjob.status() == state:
+            return
         if timeout <= 0:
             raise WaitTimeError(
                 'You have called wait_until_state() on a scanjob with\n'
@@ -181,12 +187,13 @@ def wait_until_state(scanjob, timeout=120, state='completed'):
                         scanjob.read().json()),
                     scanjob_results=pprint.pformat(
                         scanjob.read().json().get('tasks'))))
-        if state not in ['stopped', 'failed'] and scanjob.status() == 'failed':
-            raise FailedScanException(
+        if state not in stopped_states and scanjob.status(
+        ) in QPC_SCAN_TERMINAL_STATES:
+            raise StoppedScanException(
                 'You have called wait_until_state() on a scanjob with\n'
-                'ID={scanjob_id} and the scanjob failed instead of reaching\n'
+                'ID={scanjob_id} has stopped running instead of reaching \n'
                 'the state="{expected_state}"\n'
-                'When the scanjob failed, it had the state="{scanjob_state}".'
+                'When the scanjob stopped, it had the state="{scanjob_state}".'
                 '\nThe scanjob was started for the scan with id {scan_id}'
                 'The full details of the scanjob were \n{scanjob_details}\n'
                 'The "results" available from the scanjob were \n'

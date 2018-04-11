@@ -95,14 +95,13 @@ def run_scan(scan, disabled_optional_products, enabled_extended_product_search,
             source_ids=src_ids, scan_type=scan_type,
             disabled_optional_products=disabled_optional_products,
             enabled_extended_product_search=enabled_extended_product_search)
-        TIMEOUT = 500 * len(src_ids)
         scan.create()
         cleanup.append(scan)
         scanjob = ScanJob(scan_id=scan._id)
         scanjob.create()
         SCAN_DATA[scan_name]['scan_id'] = scan._id
         SCAN_DATA[scan_name]['scan_job_id'] = scanjob._id
-        wait_until_state(scanjob, timeout=TIMEOUT, state='stopped')
+        wait_until_state(scanjob, state='stopped')
         SCAN_DATA[scan_name]['final_status'] = scanjob.status()
         SCAN_DATA[scan_name]['scan_results'] = scanjob.read().json()
         SCAN_DATA[scan_name]['report_id'] = scanjob.read(

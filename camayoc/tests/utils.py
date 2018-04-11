@@ -16,7 +16,7 @@ def is_live(client, server, num_pings=10):
     return ping.returncode == 0
 
 
-def wait_until_live(servers, timeout=60):
+def wait_until_live(servers, timeout=360):
     """Wait for servers to be live.
 
     For each server in the "servers" list, verify if it is reachable.

@@ -418,9 +418,3 @@ QPC_EAP_EXTENDED_FACTS = ('jboss_eap_find_jboss_modules_jar',
                           'jboss_eap_jar_ver',
                           'jboss_eap_run_jar_ver')
 """List of facts collected by JBoss EAP Extended tasks."""
-
-VCENTER_SCAN_TIMEOUT = 540
-"""Maximum amount of time to let vcenter scan run before timing out."""
-
-SATELLITE_SCAN_TIMEOUT = 360
-"""Maximum amount of time to let satellite scan run before timing out."""

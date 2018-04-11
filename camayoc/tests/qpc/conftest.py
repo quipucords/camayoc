@@ -29,6 +29,9 @@ def sort_and_delete(trash):
 
     for collection in [scans, sources, creds]:
         for obj in collection:
+            # It may have been a while since this object was created, so we
+            # will log its client back in to the server and get a fresh token
+            obj.client.login()
             obj.delete()
 
 
@@ -52,9 +55,9 @@ def session_cleanup():
     sort_and_delete(trash)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def shared_client():
-    """Yeild a single instance of api.Client() to many tests as fixture.
+    """Yeild a single instance of api.Client() to a test.
 
     yeilds an api.Client() instance with the standard return code handler.
 
