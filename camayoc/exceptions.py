@@ -48,3 +48,12 @@ class FailedScanException(Exception):
     While waiting for the scan to acheive some other state, the scan failed.
     The test expected the scan to succeed, so this exception has been raised.
     """
+
+
+class StoppedScanException(Exception):
+    """A test has raised this exception because a scan unexpectly stopped.
+
+    While waiting for the scan to achieve some other state, the scan reached
+    a terminal state from which it could not progress, so this exception has
+    been raised instead of continuing to wait.
+    """
