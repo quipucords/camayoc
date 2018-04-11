@@ -14,7 +14,7 @@ import pytest
 from .views import DashboardView, LoginView
 
 
-@pytest.mark.driver
+@pytest.mark.ui
 def test_login_logout(browser):
     """Login and logout using the default user.
 
