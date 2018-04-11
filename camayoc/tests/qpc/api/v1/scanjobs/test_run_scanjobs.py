@@ -95,7 +95,13 @@ def test_scan_task_results(scan_info):
        failed for all tasks.
     """
     result = get_scan_result(scan_info['name'])
-    task_results = result['task_results']
+    task_results = result.get('task_results')
+
+    if not task_results:
+        pytest.xfail(reason='No task results were returned '
+                            'from scan named {scan_name}'.format(
+                                scan_name=scan_info['name']))
+
     for task in task_results:
         # assert arithmetic around number of systems scanned adds up
         # this has been broken in the past
