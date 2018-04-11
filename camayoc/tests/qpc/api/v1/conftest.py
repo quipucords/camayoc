@@ -11,7 +11,10 @@ from camayoc.constants import (
     VCENTER_DATA_CENTER,
     VCENTER_HOST,
 )
-from camayoc.exceptions import WaitTimeError
+from camayoc.exceptions import (
+    ConfigFileNotFoundError,
+    WaitTimeError,
+)
 from camayoc.qpc_models import (
     Credential,
     Scan,
@@ -259,3 +262,26 @@ def run_all_scans(vcenter_client, session_cleanup):
         for vm in vcenter_vms:
             if vm.runtime.powerState == 'poweredOn':
                 vm.PowerOffVM_Task()
+
+
+def scan_list():
+    """Generate list of scan dict objects found in config file."""
+    try:
+        return get_config().get('qpc', {}).get('scans', [])
+    except (ConfigFileNotFoundError, KeyError):
+        return []
+
+
+def get_scan_result(scan_name):
+    """Collect scan results from global cache.
+
+    Raise an error if no results are available, because this means the scan
+    was not even attempted.
+    """
+    result = SCAN_DATA.get(scan_name)
+    if result is None:
+        raise RuntimeError(
+            'Absolutely no results available for scan named {0},\n'
+            'because no scan was even attempted.\n'.format(scan_name)
+        )
+    return result
