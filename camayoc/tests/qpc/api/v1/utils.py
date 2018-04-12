@@ -161,12 +161,9 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
 
     while (not scanjob.status() or not scanjob.status()
             == state) and timeout > 0:
-        if state in stopped_states and scanjob.status() in stopped_states:
+        current_status = scanjob.status()
+        if state in stopped_states and current_status in stopped_states:
             # scanjob is no longer running, so we will return
-            return
-        time.sleep(5)
-        timeout -= 5
-        if scanjob.status() == state:
             return
         if timeout <= 0:
             raise WaitTimeError(
@@ -182,13 +179,13 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
                     scanjob_id=scanjob._id,
                     scan_id=scanjob.scan_id,
                     expected_state=state,
-                    scanjob_state=scanjob.status(),
+                    scanjob_state=current_status,
                     scanjob_details=pprint.pformat(
                         scanjob.read().json()),
                     scanjob_results=pprint.pformat(
                         scanjob.read().json().get('tasks'))))
-        if state not in stopped_states and scanjob.status(
-        ) in QPC_SCAN_TERMINAL_STATES:
+        if state not in stopped_states and \
+                current_status in QPC_SCAN_TERMINAL_STATES:
             raise StoppedScanException(
                 'You have called wait_until_state() on a scanjob with\n'
                 'ID={scanjob_id} has stopped running instead of reaching \n'
@@ -201,8 +198,10 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
                     scanjob_id=scanjob._id,
                     scan_id=scanjob.scan_id,
                     expected_state=state,
-                    scanjob_state=scanjob.status(),
+                    scanjob_state=current_status,
                     scanjob_details=pprint.pformat(
                         scanjob.read().json()),
                     scanjob_results=pprint.pformat(
                         scanjob.read().json().get('tasks'))))
+        time.sleep(5)
+        timeout -= 5
