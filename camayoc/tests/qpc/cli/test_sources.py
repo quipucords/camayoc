@@ -31,6 +31,9 @@ from camayoc.tests.qpc.cli.utils import (
 ISSUE_449_MARK = pytest.mark.xfail(
     reason='https://github.com/quipucords/quipucords/issues/449', strict=True)
 
+QPC_BOOLEAN_VALUES = ('True', 'False', 'true', 'false')
+QPC_SSL_PROTOCOL_VALUES = ('SSLv23', 'TLSv1', 'TLSv1_1', 'TLSv1_2')
+
 VALID_SOURCE_TYPE_HOSTS = (
     ('network', '192.168.0.42'),
     ('network', '192.168.0.1 192.168.0.2'),
@@ -71,18 +74,16 @@ def generate_show_output(data):
     output += '    "id": \\d+,\r\n'
     output += '    "name": "{}",\r\n'.format(data['name'])
     source_type = data['source_type']
-    if source_type == 'satellite':
-        output += (
-            '    "options": {\r\n'
-            '        "ssl_cert_verify": true\r\n'
-            '    },\r\n'
-        )
-    if source_type == 'vcenter':
-        output += (
-            '    "options": {\r\n'
-            '        "ssl_cert_verify": true\r\n'
-            '    },\r\n'
-        )
+    if source_type in QPC_HOST_MANAGER_TYPES:
+        data.setdefault('options', {}).setdefault('ssl_cert_verify', 'true')
+    if data.get('options'):
+        output += '    "options": {\r\n'
+        output += ',\r\n'.join([
+            '        "{}": ["]?{}["]?'.format(key, value)
+            for key, value in sorted(
+                    data['options'].items(), key=operator.itemgetter(0))
+        ])
+        output += '\r\n    },\r\n'
     output += '    "port": {},\r\n'.format(data['port'])
     output += '    "source_type": "{}"\r\n'.format(source_type)
     output += '}\r\n'
@@ -284,6 +285,325 @@ def test_add_with_port_negative(
     assert qpc_source_add.expect(pexpect.EOF) == 0
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 2
+
+
+@pytest.mark.parametrize('source_type', QPC_HOST_MANAGER_TYPES)
+@pytest.mark.parametrize('ssl_cert_verify', QPC_BOOLEAN_VALUES)
+def test_add_with_ssl_cert_verify(
+        isolated_filesystem, qpc_server_config, source_type, ssl_cert_verify):
+    """Add a source with cred, hosts and ssl_cert_verify.
+
+    :id: c750a82b-3693-4e08-8753-973164c5d68d
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts`` and ``--ssl-cert-verify`` options.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --port <port> --ssl-cert-verify <ssl-cert-verify> --type <type>``
+    :expectedresults: A new source entry is created with the data provided as
+        input.
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    hosts = '127.0.0.1'
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --ssl-cert-verify {} '
+        '--type {}'
+        .format(name, cred_name, hosts, ssl_cert_verify, source_type)
+    )
+    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+
+    source_show_and_check(
+        {'name': name},
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'options': {
+                'ssl_cert_verify': ssl_cert_verify.lower(),
+            },
+            'port': default_port_for_source(source_type),
+            'source_type': source_type,
+        })
+    )
+
+
+def test_add_with_ssl_cert_verify_negative(
+        isolated_filesystem, qpc_server_config, source_type):
+    """Try to add source with cred, hosts and an invalid ssl_cert_verify.
+
+    :id: ee108827-9695-4b6f-8c2b-bafb09f9ff85
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts`` and ``--ssl-cert-verify`` options. The value for the
+        ``--ssl-cert-verify`` should be an invalid value, for example a
+        different value from ``true`` or ``false`` for host manager types and
+        the option should not be valid for network type.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --port <port> --ssl-cert-verify <invalid-ssl-cert-verify --type
+        <type>``
+    :expectedresults: An error message is printed and a non-zero status code
+        should be returned. Also no source entry is created.
+    """
+    cred_name = utils.uuid4()
+    hosts = '127.0.0.1'
+    name = utils.uuid4()
+    port = default_port_for_source(source_type)
+    if source_type == 'network':
+        ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
+        expected_error = (
+            'Error: Invalid SSL options for network source: ssl_cert_verify')
+        exitstatus = 1
+    else:
+        ssl_cert_verify = utils.uuid4()
+        expected_error = (
+            'qpc source add: error: argument --ssl-cert-verify: invalid '
+            'choice: \'{}\' \\(choose from \'True\', \'False\', \'true\', '
+            '\'false\'\\)'
+            .format(ssl_cert_verify)
+        )
+        exitstatus = 2
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --port {} '
+        '--ssl-cert-verify {} --type {}'
+        .format(name, cred_name, hosts, port, ssl_cert_verify, source_type)
+    )
+    assert qpc_source_add.expect(expected_error) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == exitstatus
+
+
+@pytest.mark.parametrize('source_type', QPC_HOST_MANAGER_TYPES)
+@pytest.mark.parametrize('ssl_protocol', QPC_SSL_PROTOCOL_VALUES)
+def test_add_with_ssl_protocol(
+        isolated_filesystem, qpc_server_config, source_type, ssl_protocol):
+    """Add a source with cred, hosts and ssl_protocol.
+
+    :id: ea06d16d-cbd3-4b4b-9b12-e29739af998a
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts`` and ``--ssl-protocol`` options.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --port <port> --ssl-protocol <ssl-protocol> --type <type>``
+    :expectedresults: A new source entry is created with the data provided as
+        input.
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    hosts = '127.0.0.1'
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --ssl-protocol {} '
+        '--type {}'
+        .format(name, cred_name, hosts, ssl_protocol, source_type)
+    )
+    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+
+    source_show_and_check(
+        {'name': name},
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'options': {
+                'ssl_protocol': ssl_protocol,
+            },
+            'port': default_port_for_source(source_type),
+            'source_type': source_type,
+        })
+    )
+
+
+def test_add_with_ssl_protocol_negative(
+        isolated_filesystem, qpc_server_config, source_type):
+    """Try to add source with cred, hosts and an invalid ssl_protocol.
+
+    :id: 2ccad703-a9b5-46d0-a717-03aa4df23246
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts`` and ``--ssl-protocol`` options. The value for the
+        ``--ssl-protocol`` should be an invalid value, for example a
+        different value from ``true`` or ``false`` for host manager types and
+        the option should not be valid for network type.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --port <port> --type <type>``
+    :expectedresults: An error message is printed and a non-zero status code
+        should be returned. Also no source entry is created.
+    """
+    cred_name = utils.uuid4()
+    hosts = '127.0.0.1'
+    name = utils.uuid4()
+    port = default_port_for_source(source_type)
+    if source_type == 'network':
+        ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
+        expected_error = (
+            'Error: Invalid SSL options for network source: ssl_protocol')
+        exitstatus = 1
+    else:
+        ssl_protocol = utils.uuid4()
+        expected_error = (
+            'qpc source add: error: argument --ssl-protocol: invalid choice: '
+            '\'{}\' \\(choose from \'SSLv23\', \'TLSv1\', \'TLSv1_1\', '
+            '\'TLSv1_2\'\\)'
+            .format(ssl_protocol)
+        )
+        exitstatus = 2
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --port {} '
+        '--ssl-protocol {} --type {}'
+        .format(name, cred_name, hosts, port, ssl_protocol, source_type)
+    )
+    assert qpc_source_add.expect(expected_error) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == exitstatus
+
+
+@pytest.mark.parametrize('source_type', QPC_HOST_MANAGER_TYPES)
+@pytest.mark.parametrize('disable_ssl', QPC_BOOLEAN_VALUES)
+def test_add_with_disable_ssl(
+        isolated_filesystem, qpc_server_config, source_type, disable_ssl):
+    """Add a source with cred, hosts and disable_ssl.
+
+    :id: da0c0b52-840d-423b-b3a8-0c5c6ae5c6a5
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts`` and ``--disable-ssl`` options.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --port <port> --disable-ssl <disable-ssl> --type <type>``
+    :expectedresults: A new source entry is created with the data provided as
+        input.
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    hosts = '127.0.0.1'
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --disable-ssl {} '
+        '--type {}'
+        .format(name, cred_name, hosts, disable_ssl, source_type)
+    )
+    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+
+    source_show_and_check(
+        {'name': name},
+        generate_show_output({
+            'cred_name': cred_name,
+            'hosts': hosts,
+            'name': name,
+            'options': {
+                'disable_ssl': disable_ssl.lower(),
+            },
+            'port': default_port_for_source(source_type),
+            'source_type': source_type,
+        })
+    )
+
+
+def test_add_with_disable_ssl_negative(
+        isolated_filesystem, qpc_server_config, source_type):
+    """Try to add source with cred, hosts and an invalid disable_ssl.
+
+    :id: 466f7736-759d-4b8f-8e49-3520ae645957
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts`` and ``--disable-ssl`` options. The value for the
+        ``--disable-ssl`` should be an invalid value, for example a
+        different value from ``true`` or ``false`` for host manager types and
+        the option should not be valid for network type.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --port <port> --type <type>``
+    :expectedresults: An error message is printed and a non-zero status code
+        should be returned. Also no source entry is created.
+    """
+    cred_name = utils.uuid4()
+    hosts = '127.0.0.1'
+    name = utils.uuid4()
+    port = default_port_for_source(source_type)
+    if source_type == 'network':
+        disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
+        expected_error = (
+            'Error: Invalid SSL options for network source: disable_ssl')
+        exitstatus = 1
+    else:
+        disable_ssl = utils.uuid4()
+        expected_error = (
+            'qpc source add: error: argument --disable-ssl: invalid '
+            'choice: \'{}\' \\(choose from \'True\', \'False\', \'true\', '
+            '\'false\'\\)'
+            .format(disable_ssl)
+        )
+        exitstatus = 2
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        'qpc source add --name {} --cred {} --hosts {} --port {} '
+        '--disable-ssl {} --type {}'
+        .format(name, cred_name, hosts, port, disable_ssl, source_type)
+    )
+    assert qpc_source_add.expect(expected_error) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == exitstatus
 
 
 def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
