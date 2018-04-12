@@ -308,10 +308,21 @@ def test_OS_found_deployment_report(scan_info):
             src_id = list(source_to_product_map.keys())[0]
             hostname = result['source_id_to_hostname'][src_id]
             ex_products = source_to_product_map[src_id]
-            expected_distro = ex_products['distribution'].get('name', '')
-            expected_version = ex_products['distribution'].get('version', '')
-            found_distro = entity.get('os_name', '')
-            found_version = entity.get('os_version', '')
+            expected_distro = ex_products['distribution'].get(
+                'name', '').lower()
+            expected_version = ex_products['distribution'].get(
+                'version', '').lower()
+            # The key may exist but the value be None
+            if entity.get('os_name') is None:
+                found_distro = ''
+            else:
+                found_distro = entity.get('os_name').lower()
+
+            if entity.get('os_version') is None:
+                found_version = ''
+            else:
+                found_version = entity.get('os_version').lower()
+
             if src_id in [s['id'] for s in entity['sources']]:
                 # We assert that the expected distro's name is at least
                 # contained in the found name.

@@ -79,10 +79,11 @@ def test_scan_task_results(scan_info):
     for task in task_results:
         # assert arithmetic around number of systems scanned adds up
         # this has been broken in the past
-        sys_count = task['systems_count']
-        num_failed = task['systems_failed']
-        num_scanned = task['systems_scanned']
-        assert num_scanned == sys_count - num_failed
+        sys_count = task.get('systems_count', 0)
+        num_failed = task.get('systems_failed', 0)
+        num_scanned = task.get('systems_scanned', 0)
+        num_unreachable = task.get('systems_unreachable', 0)
+        assert num_scanned == (sys_count - num_failed - num_unreachable)
 
 
 @mark_runs_scans
