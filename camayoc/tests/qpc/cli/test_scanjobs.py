@@ -384,9 +384,9 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status='running')
+    wait_for_scan(scan_job_id, status='running', timeout=60)
     scan_pause({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='paused')
+    wait_for_scan(scan_job_id, status='paused', timeout=60)
     scan_restart({'id': scan_job_id})
     wait_for_scan(scan_job_id)
     result = scan_job({
@@ -430,9 +430,9 @@ def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status='running')
+    wait_for_scan(scan_job_id, status='running', timeout=60)
     scan_cancel({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='canceled')
+    wait_for_scan(scan_job_id, status='canceled', timeout=60)
     result = scan_restart({'id': scan_job_id}, exitstatus=1)
     assert result.startswith(
         'Error: Scan cannot be restarted. The scan must be paused for it to '
@@ -465,11 +465,11 @@ def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status='running')
+    wait_for_scan(scan_job_id, status='running', timeout=60)
     scan_pause({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='paused')
+    wait_for_scan(scan_job_id, status='paused', timeout=60)
     scan_cancel({'id': scan_job_id})
-    wait_for_scan(scan_job_id, status='canceled')
+    wait_for_scan(scan_job_id, status='canceled', timeout=60)
     result = scan_restart({'id': scan_job_id}, exitstatus=1)
     assert result.startswith(
         'Error: Scan cannot be restarted. The scan must be paused for it to '
