@@ -43,11 +43,11 @@ def test_pause_cancel(shared_client, cleanup, source_type):
         )
     job = ScanJob(scan_id=scn._id)
     job.create()
-    util.wait_until_state(job, state='running')
+    util.wait_until_state(job, state='running', TIMEOUT=60)
     job.pause()
-    util.wait_until_state(job, state='paused')
+    util.wait_until_state(job, state='running', TIMEOUT=60)
     job.cancel()
-    util.wait_until_state(job, state='canceled')
+    util.wait_until_state(job, state='canceled', TIMEOUT=60)
 
 
 @mark_runs_scans
@@ -74,8 +74,8 @@ def test_restart(shared_client, cleanup, source_type):
         )
     job = ScanJob(scan_id=scn._id)
     job.create()
-    util.wait_until_state(job, state='running')
+    util.wait_until_state(job, state='running', TIMEOUT=60)
     job.pause()
-    util.wait_until_state(job, state='paused')
+    util.wait_until_state(job, state='running', TIMEOUT=60)
     job.restart()
     util.wait_until_state(job, state='completed')
