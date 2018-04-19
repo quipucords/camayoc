@@ -11,6 +11,8 @@ These tests are parametrized on the inventory listed in the config file.
 :testtype: functional
 :upstream: yes
 """
+from pprint import pformat
+
 import pytest
 
 from camayoc import utils
@@ -44,13 +46,18 @@ def test_scan_complete(scan_info):
     if result['final_status'] != 'completed':
         raise AssertionError(
             'Scan did not complete. Its final status was {status}.\n'
-            ' A scan will be reported as failed if there were unreachable\n'
-            ' hosts. Any additional errors encountered are listed here: \n'
-            '{errors}\n'.format(
-                status=result['final_status'],
-                errors='\n'.join(result['errors']),
-            )
-        )
+            ' NOTE: A scan will be reported as failed if there were\n'
+            ' unreachable hosts.\n'
+            ' ============================================================\n'
+            ' Any additional HTTP errors encountered while attempting\n'
+            ' to run the scan are listed here: \n'
+            '{errors}\n'
+            ' ============================================================\n'
+            ' Details from the scan including scan_id, scan_job_id, and the\n'
+            'inspeciton results:\n'
+            '{results}\n'.format(
+                status=result['final_status'], errors='\n'.join(
+                    result['errors']), results=pformat(result), ))
 
 
 @mark_runs_scans
@@ -69,7 +76,20 @@ def test_scan_task_results(scan_info):
        failed for all tasks.
     """
     result = get_scan_result(scan_info['name'])
+    assertion_error_message = 'Details of failed scan : {0}'.format(
+        pformat(result))
     task_results = result.get('task_results')
+    scan = result.get('scan_results')
+
+    # assert count is correct for entire scan
+    sys_count = scan.get('systems_count', 0)
+    num_failed = scan.get('systems_failed', 0)
+    num_scanned = scan.get('systems_scanned', 0)
+    num_unreachable = scan.get('systems_unreachable', 0)
+    assert num_scanned == (sys_count
+                           - num_failed
+                           - num_unreachable
+                           ), assertion_error_message
 
     if not task_results:
         pytest.xfail(reason='No task results were returned '
@@ -77,13 +97,15 @@ def test_scan_task_results(scan_info):
                                 scan_name=scan_info['name']))
 
     for task in task_results:
-        # assert arithmetic around number of systems scanned adds up
-        # this has been broken in the past
+        # assert count is correct for each connect and inspect task
         sys_count = task.get('systems_count', 0)
         num_failed = task.get('systems_failed', 0)
         num_scanned = task.get('systems_scanned', 0)
         num_unreachable = task.get('systems_unreachable', 0)
-        assert num_scanned == (sys_count - num_failed - num_unreachable)
+        assert num_scanned == (sys_count
+                               - num_failed
+                               - num_unreachable
+                               ), assertion_error_message
 
 
 @mark_runs_scans
