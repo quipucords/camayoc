@@ -769,15 +769,12 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
             'sshkeyfile': str(sshkeyfile.resolve()),
         })
 
-    clear = pexpect.spawn(
-        'qpc cred clear --all'
-    )
-    assert clear.expect('All credentials were removed.') == 0
-    assert clear.expect(pexpect.EOF) == 0
-    clear.close()
+    output, exitstatus = pexpect.run(
+        'qpc cred clear --all', encoding='utf-8', withexitstatus=True)
+    assert 'All credentials were removed.' in output
+    assert exitstatus == 0
 
-    qpc_cred_list = pexpect.spawn('qpc cred list')
-    assert qpc_cred_list.expect('No credentials exist yet.') == 0
-    assert qpc_cred_list.expect(pexpect.EOF) == 0
-    qpc_cred_list.close()
-    assert qpc_cred_list.exitstatus == 0
+    output, exitstatus = pexpect.run(
+        'qpc cred list', encoding='utf8', withexitstatus=True)
+    assert 'No credentials exist yet.' in output
+    assert exitstatus == 0
