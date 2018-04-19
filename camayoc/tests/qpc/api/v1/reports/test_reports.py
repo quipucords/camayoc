@@ -154,15 +154,20 @@ def test_merge_reports_from_scanjob():
     if error:
         errors_found.append(
             'Merging scan jobs with identifiers: {scan1_id}, {scan2_id}'
-            'resulted in a failed merge report. The report returned a status '
-            'code of {report_status}. The summary endpoint returned a status '
-            'code of {summary_status}. The details endpoint returned a status '
-            'code of {details_status}.'.format(
-                scan1_id=id1, scan2_id=id2,
+            'resulted in a failed merge report. The report returned a status\n'
+            'code of {report_status}. The summary endpoint returned a status\n'
+            'code of {summary_status}. The details endpoint returned a '
+            'status code of {details_status}.\n'
+            'The full results from the first scan were: {s1}\n'
+            'The full results from the second scan were: {s2}\n'.format(
+                scan1_id=id1,
+                scan2_id=id2,
                 report_status=response.status_code,
                 summary_status=summary.status_code,
-                details_status=details.status_code)
-        )
+                details_status=details.status_code,
+                s1=pformat(scan1),
+                s2=pformat(scan2),
+            ))
     assert len(errors_found) == 0, '\n================\n'.join(errors_found)
 
 
@@ -269,11 +274,13 @@ def test_products_found_deployment_report(scan_info):
                     )
     assert len(errors_found) == 0, (
         'Found {num} unexpected products!\n'
-        'Errors are listed below: {errors}'.format(
+        'Errors are listed below: \n {errors}.\n'
+        'Full results for this scan were: {scan_results}'.format(
             num=len(errors_found),
             errors='\n\n======================================\n\n'.join(
                 errors_found
             ),
+            scan_results=pformat(result),
         )
     )
 
@@ -353,10 +360,12 @@ def test_OS_found_deployment_report(scan_info):
 
     assert len(errors_found) == 0, (
         'Found {num} unexpected OS names and/or versions!\n'
-        'Errors are listed below: {errors}'.format(
+        'Errors are listed below: \n {errors}.\n'
+        'Full results for this scan were: {scan_results}'.format(
             num=len(errors_found),
             errors='\n\n======================================\n\n'.join(
                 errors_found
             ),
+            scan_results=pformat(result),
         )
     )
