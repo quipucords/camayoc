@@ -32,7 +32,11 @@ def sort_and_delete(trash):
             # It may have been a while since this object was created, so we
             # will log its client back in to the server and get a fresh token
             obj.client.login()
-            obj.delete()
+            # Only assert that we do not hit an internal server error, in case
+            # for some reason the object was allready cleaned up by the test
+            obj.client.response_handler = api.echo_handler
+            response = obj.delete()
+            assert response.status_code < 500
 
 
 @pytest.fixture(scope='function')
