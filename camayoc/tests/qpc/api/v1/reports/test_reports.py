@@ -25,6 +25,22 @@ from camayoc.tests.qpc.api.v1.conftest import (
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 
+def get_report_entity_src_ids(entity):
+    """Given an entity from a deployment report, find the source ids."""
+    entity_src_ids = []
+    client = api.Client()
+    for s in entity['sources']:
+        s_info = client.get('sources/?name={}'.format(s['source_name']))
+        # the source is returned in a list, but there should only be one item
+        # because names should be unique
+        s_info = s_info.json().get('results', {})
+        assert len(s_info) == 1
+        s_info = s_info[0]
+        if s_info.get('id'):
+            entity_src_ids.append(s_info.get('id'))
+    return entity_src_ids
+
+
 def validate_csv_response(response):
     """Validate that the response provided is csv."""
     msg = 'Report is not expected content-type "csv".'
@@ -243,11 +259,12 @@ def test_products_found_deployment_report(scan_info):
                 all_found_products.append(name)
         for source_to_product_map in result['expected_products']:
             src_id = list(source_to_product_map.keys())[0]
+            entity_src_ids = get_report_entity_src_ids(entity)
             hostname = result['source_id_to_hostname'][src_id]
             ex_products = source_to_product_map[src_id]
             expected_product_names = [
                 prod for prod in ex_products.keys() if prod != 'distribution']
-            if src_id in [s['id'] for s in entity['sources']]:
+            if src_id in entity_src_ids:
                 # We assert that products marked as present are expected
                 # We do not assert that products marked as potential must
                 # actually be on server
@@ -313,6 +330,7 @@ def test_OS_found_deployment_report(scan_info):
     for entity in report:
         for source_to_product_map in result['expected_products']:
             src_id = list(source_to_product_map.keys())[0]
+            entity_src_ids = get_report_entity_src_ids(entity)
             hostname = result['source_id_to_hostname'][src_id]
             ex_products = source_to_product_map[src_id]
             expected_distro = ex_products['distribution'].get(
@@ -330,7 +348,7 @@ def test_OS_found_deployment_report(scan_info):
             else:
                 found_version = entity.get('os_version').lower()
 
-            if src_id in [s['id'] for s in entity['sources']]:
+            if src_id in entity_src_ids:
                 # We assert that the expected distro's name is at least
                 # contained in the found name.
                 # For example, if "Red Hat" is listed in config file,
