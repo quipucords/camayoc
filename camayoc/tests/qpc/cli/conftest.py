@@ -1,4 +1,5 @@
 """Test utilities for quipucords' ``qpc`` tests."""
+import re
 from io import BytesIO
 
 import pexpect
@@ -76,7 +77,14 @@ def cleanup_server():
     We must delete all objects on the server in the correct order, first scans,
     then sources, then credentials.
     """
+    error_finder = re.compile('internal server error')
+    errors = []
+    output = []
     for command in ('scan', 'source', 'cred'):
-        clear = pexpect.spawn('qpc {} clear --all'.format(command))
-        assert clear.expect(pexpect.EOF) == 0
-        clear.close()
+        clear_output = pexpect.run(
+                                    'qpc {} clear --all'.format(command),
+                                    encoding='utf8',
+                                    )
+        errors.extend(error_finder.findall(clear_output))
+        output.append(clear_output)
+    assert errors == [], output
