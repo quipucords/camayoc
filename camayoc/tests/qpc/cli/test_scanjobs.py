@@ -14,30 +14,23 @@ import re
 import time
 from pprint import pformat
 
-import pexpect
-
 import pytest
 
-from camayoc.config import get_config
-from camayoc.constants import (BECOME_PASSWORD_INPUT,
-                               CONNECTION_PASSWORD_INPUT,
-                               QPC_BRMS_EXTENDED_FACTS,
+from camayoc.constants import (QPC_BRMS_EXTENDED_FACTS,
                                QPC_BRMS_RAW_FACTS,
                                QPC_EAP_EXTENDED_FACTS,
                                QPC_EAP_RAW_FACTS,
                                QPC_FUSE_EXTENDED_FACTS,
                                QPC_FUSE_RAW_FACTS)
 from camayoc.exceptions import (
-    ConfigFileNotFoundError,
     FailedScanException,
     WaitTimeError,
 )
 from camayoc.tests.qpc.utils import mark_runs_scans
-from camayoc.utils import name_getter, uuid4
+from camayoc.utils import uuid4
 
-from .conftest import qpc_server_config
 from .utils import (
-    cred_add_and_check,
+    config_sources,
     report_detail,
     scan_add_and_check,
     scan_cancel,
@@ -45,80 +38,7 @@ from .utils import (
     scan_pause,
     scan_restart,
     scan_start,
-    source_add_and_check,
 )
-
-
-def config_credentials():
-    """Return all credentials available on configuration file."""
-    try:
-        return get_config().get('credentials', [])
-    except ConfigFileNotFoundError:
-        return []
-
-
-def config_sources():
-    """Return all sources available on configuration file."""
-    try:
-        return get_config().get('qpc', {}).get('sources', [])
-    except ConfigFileNotFoundError:
-        return []
-
-
-@pytest.fixture(params=config_credentials(), ids=name_getter)
-def credentials(request):
-    """Return each credential available on the config file."""
-    return request.param
-
-
-@pytest.fixture(params=config_sources(), ids=name_getter)
-def source(request):
-    """Return each source available on the config file."""
-    return request.param
-
-
-@pytest.fixture(autouse=True, scope='module')
-def setup_credentials():
-    """Create all credentials on the server."""
-    qpc_server_config()
-
-    qpc_cred_clear = pexpect.spawn(
-        'qpc cred clear --all'
-    )
-    assert qpc_cred_clear.expect(pexpect.EOF) == 0
-    qpc_cred_clear.close()
-
-    credentials = get_config().get('credentials', [])
-    for credential in credentials:
-        inputs = []
-        if 'password' in credential:
-            inputs.append((CONNECTION_PASSWORD_INPUT, credential['password']))
-            credential['password'] = None
-        if 'become-password' in credential:
-            inputs.append(
-                (BECOME_PASSWORD_INPUT, credential['become-password']))
-            credential['become-password'] = None
-        cred_add_and_check(credential, inputs)
-
-
-@pytest.fixture(autouse=True, scope='module')
-def setup_sources():
-    """Create all sources on the server."""
-    qpc_server_config()
-
-    qpc_cred_clear = pexpect.spawn(
-        'qpc source clear --all'
-    )
-    assert qpc_cred_clear.expect(pexpect.EOF) == 0
-    qpc_cred_clear.close()
-
-    sources = get_config().get('qpc', {}).get('sources', [])
-    for source in sources:
-        source['cred'] = source.pop('credentials')
-        options = source.pop('options', {})
-        for k, v in options.items():
-            source[k.replace('_', '-')] = v
-        source_add_and_check(source)
 
 
 def wait_for_scan(scan_job_id, status='completed', timeout=900):
@@ -149,7 +69,7 @@ def wait_for_scan(scan_job_id, status='completed', timeout=900):
 
 @mark_runs_scans
 @pytest.mark.troubleshoot
-def test_scanjob(isolated_filesystem, qpc_server_config, source):
+def test_scanjob(isolated_filesystem, qpc_server_config, scan):
     """Scan a single source type.
 
     :id: 49ae6fef-ea41-4b91-b310-6054678bfbb4
@@ -158,14 +78,13 @@ def test_scanjob(isolated_filesystem, qpc_server_config, source):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
-    scan_name = uuid4()
     scan_add_and_check({
-        'name': scan_name,
-        'sources': config_sources()[0]['name'],
+        'name': scan['name'],
+        'sources': ' '.join(scan['sources']),
     })
 
     result = scan_start({
-        'name': scan_name,
+        'name': scan['name'],
     })
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None

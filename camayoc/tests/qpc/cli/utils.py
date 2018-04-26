@@ -2,10 +2,60 @@
 """Utility functions for Quipucords cli tests."""
 import functools
 import io
+import itertools
 import json
 import re
 
 import pexpect
+
+from camayoc.config import get_config
+from camayoc.exceptions import ConfigFileNotFoundError
+
+
+def config_credentials():
+    """Return all credentials available on configuration file for CLI scans."""
+    try:
+        config_credentials = get_config().get('credentials', [])
+    except ConfigFileNotFoundError:
+        config_credentials = []
+
+    if not config_credentials:
+        return []
+
+    scan_credentials = list(itertools.chain(*[
+        source['credentials'] for source in config_sources()
+    ]))
+    return [
+        credential for credential in config_credentials
+        if credential['name'] in scan_credentials
+    ]
+
+
+def config_sources():
+    """Return all sources available on configuration file for CLI scans."""
+    try:
+        config_sources = get_config().get('qpc', {}).get('sources', [])
+    except ConfigFileNotFoundError:
+        config_sources = []
+
+    if not config_sources:
+        return []
+
+    scan_sources = list(itertools.chain(*[
+        scan['sources'] for scan in config_scans()
+    ]))
+    return [
+        source for source in config_sources
+        if source['name'] in scan_sources
+    ]
+
+
+def config_scans():
+    """Return all CLI scans available on the configuration file."""
+    try:
+        return get_config().get('qpc', {}).get('cli-scans', [])
+    except ConfigFileNotFoundError:
+        return []
 
 
 def cli_command(command, options=None, exitstatus=0):

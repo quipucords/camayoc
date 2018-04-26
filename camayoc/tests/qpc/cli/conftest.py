@@ -7,7 +7,56 @@ import pexpect
 import pytest
 
 from camayoc.config import get_config
-from camayoc.constants import QPC_SCAN_TYPES, QPC_SOURCE_TYPES
+from camayoc.constants import (
+    BECOME_PASSWORD_INPUT,
+    CONNECTION_PASSWORD_INPUT,
+    QPC_SCAN_TYPES,
+    QPC_SOURCE_TYPES,
+)
+from camayoc.utils import name_getter
+
+from .utils import (
+    config_credentials,
+    config_scans,
+    config_sources,
+    cred_add_and_check,
+    source_add_and_check,
+)
+
+
+@pytest.fixture(autouse=True, scope='module')
+def setup_scan_prerequisites(request):
+    """Create all credentials and sources on the server."""
+    module_path = request.node.fspath.strpath
+    if not (module_path.endswith('test_scans.py') or
+            module_path.endswith('test_scanjobs.py')):
+        return
+
+    qpc_server_config()
+
+    # Create new creds
+    for credential in config_credentials():
+        inputs = []
+        # Both password and become-password are options to the cred add
+        # command. Update the credentials dictionary to mark them as flag
+        # options and capture their value, if present, to be provided as input
+        # for the prompts.
+        if 'password' in credential:
+            inputs.append((CONNECTION_PASSWORD_INPUT, credential['password']))
+            credential['password'] = None
+        if 'become-password' in credential:
+            inputs.append(
+                (BECOME_PASSWORD_INPUT, credential['become-password']))
+            credential['become-password'] = None
+        cred_add_and_check(credential, inputs)
+
+    # create sources
+    for source in config_sources():
+        source['cred'] = source.pop('credentials')
+        options = source.pop('options', {})
+        for k, v in options.items():
+            source[k.replace('_', '-')] = v
+        source_add_and_check(source)
 
 
 @pytest.fixture()
@@ -88,3 +137,21 @@ def cleanup_server():
         errors.extend(error_finder.findall(clear_output))
         output.append(clear_output)
     assert errors == [], output
+
+
+@pytest.fixture(params=config_credentials(), ids=name_getter)
+def credential(request):
+    """Return each credential available on the config file."""
+    return request.param
+
+
+@pytest.fixture(params=config_sources(), ids=name_getter)
+def source(request):
+    """Return each source available on the config file."""
+    return request.param
+
+
+@pytest.fixture(params=config_scans(), ids=name_getter)
+def scan(request):
+    """Return each scan available on the config file."""
+    return request.param

@@ -12,105 +12,22 @@
 import json
 import re
 
-import pexpect
-
 import pytest
 
-from camayoc.config import get_config
-from camayoc.constants import BECOME_PASSWORD_INPUT, CONNECTION_PASSWORD_INPUT
-from camayoc.exceptions import ConfigFileNotFoundError
-from camayoc.utils import name_getter, uuid4
+from camayoc.utils import uuid4
 
-from .conftest import qpc_server_config
 from .utils import (
-    cred_add_and_check,
+    config_sources,
     scan_add_and_check,
     scan_clear,
     scan_edit_and_check,
     scan_show_and_check,
-    source_add_and_check,
     source_show
 )
 NEGATIVE_CASES = [1, -100, 'redhat_packages', 'ifconfig', {}, [],
                   ['/foo/bar/']]
 
 
-def config_credentials():
-    """Return all credentials available on configuration file."""
-    try:
-        return get_config().get('credentials', [])
-    except ConfigFileNotFoundError:
-        return []
-
-
-def config_sources():
-    """Return all sources available on configuration file."""
-    try:
-        return get_config().get('qpc', {}).get('sources', [])
-    except ConfigFileNotFoundError:
-        return []
-
-
-@pytest.fixture(params=config_credentials(), ids=name_getter)
-def credentials(request):
-    """Return each credential available on the config file."""
-    return request.param
-
-
-@pytest.fixture(params=config_sources(), ids=name_getter)
-def source(request):
-    """Return each source available on the config file."""
-    return request.param
-
-
-@pytest.fixture(autouse=True, scope='module')
-def setup():
-    """Create all credentials and sources on the server."""
-    qpc_server_config()
-
-    # Delete artifacts in reverse order to avoid 400 errors
-    qpc_clear = pexpect.spawn(
-        'qpc scan clear --all'
-    )
-    assert qpc_clear.expect(pexpect.EOF) == 0
-    qpc_clear.close()
-
-    qpc_clear = pexpect.spawn(
-        'qpc source clear --all'
-    )
-    assert qpc_clear.expect(pexpect.EOF) == 0
-    qpc_clear.close()
-
-    qpc_clear = pexpect.spawn(
-        'qpc cred clear --all'
-    )
-    assert qpc_clear.expect(pexpect.EOF) == 0
-    qpc_clear.close()
-
-    # Create new creds
-    credentials = get_config().get('credentials', [])
-    for credential in credentials:
-        inputs = []
-        if 'password' in credential:
-            inputs.append((CONNECTION_PASSWORD_INPUT, credential['password']))
-            credential['password'] = None
-        if 'become-password' in credential:
-            inputs.append(
-                (BECOME_PASSWORD_INPUT, credential['become-password']))
-            credential['become-password'] = None
-        cred_add_and_check(credential, inputs)
-
-    # create sources
-    sources = get_config().get('qpc', {}).get('sources', [])
-    for source in sources:
-        source['cred'] = source.pop('credentials')
-        options = source.pop('options', {})
-        for k, v in options.items():
-            source[k.replace('_', '-')] = v
-        source_add_and_check(source)
-
-
-@pytest.mark.troubleshoot
 def test_create_scan(isolated_filesystem, qpc_server_config, source):
     """Create a single source scan.
 
