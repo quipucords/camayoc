@@ -1,7 +1,6 @@
 # coding=utf-8
 """Utility functions for Quipucords cli tests."""
 import functools
-import io
 import itertools
 import json
 import re
@@ -76,12 +75,9 @@ def cli_command(command, options=None, exitstatus=0):
             command += ' --{}'.format(key)
         else:
             command += ' --{} {}'.format(key, value)
-    child = pexpect.spawn(command)
-    child.logfile = io.BytesIO()
-    assert child.expect(pexpect.EOF) == 0
-    child.close()
-    output = child.logfile.getvalue().decode('utf-8')
-    assert child.exitstatus == exitstatus, output
+    output, command_exitstatus = pexpect.run(
+        command, encoding='utf-8', timeout=60, withexitstatus=True)
+    assert command_exitstatus == exitstatus, output
     return output
 
 
