@@ -3,7 +3,20 @@
 
 import time
 
+from pyVmomi import vim
+
 from camayoc import cli
+
+
+def get_vcenter_vms(vcenter_client):
+    """Return a list of available vCenter vms.
+
+    :param vcenter_client: A connected vCenter client which will be used to
+        retrieve the list of all available vms.
+    """
+    view = vcenter_client.content.viewManager.CreateContainerView(
+        vcenter_client.content.rootFolder, [vim.VirtualMachine], True)
+    return view.view
 
 
 def is_live(client, server, num_pings=10):

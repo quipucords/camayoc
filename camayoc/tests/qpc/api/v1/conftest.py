@@ -6,11 +6,6 @@ import pytest
 import requests
 
 from camayoc.config import get_config
-from camayoc.constants import (
-    VCENTER_CLUSTER,
-    VCENTER_DATA_CENTER,
-    VCENTER_HOST,
-)
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
     WaitTimeError,
@@ -22,7 +17,7 @@ from camayoc.qpc_models import (
     Source,
 )
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
-from camayoc.tests.utils import wait_until_live
+from camayoc.tests.utils import get_vcenter_vms, wait_until_live
 from camayoc.utils import run_scans
 
 
@@ -200,9 +195,6 @@ def run_all_scans(vcenter_client, session_cleanup):
             ' items in the config file'
         )
     vcenter_hostnames = list(vcenter_inventory.keys())
-    host_folder = vcenter_client.content.rootFolder \
-        .childEntity[VCENTER_DATA_CENTER].hostFolder
-    host = host_folder.childEntity[VCENTER_CLUSTER].host[VCENTER_HOST]
     cred_ids = {}
     source_ids = {}
     for cred in creds:
@@ -243,7 +235,7 @@ def run_all_scans(vcenter_client, session_cleanup):
         # then run the scan, caching the report id associated with the scan
         # and finally turn the managed machines off.
         vcenter_vms = [
-            vm for vm in host.vm
+            vm for vm in get_vcenter_vms(vcenter_client)
             if (vm.name in vcenter_hostnames) and (vm.name in scan['sources'])
         ]
         machines_to_wait = []

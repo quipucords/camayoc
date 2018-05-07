@@ -308,15 +308,6 @@ VAULT_PASSWORD = utils.uuid4()
 VAULT_PASSWORD_INPUT = 'Please enter your rho vault password:'
 """Vault password input prompt."""
 
-VCENTER_DATA_CENTER = 0
-"""The index of the VCenter data center in the MOB"""
-
-VCENTER_CLUSTER = 1
-"""The index of the cluster in the data center in the VCenter MOB"""
-
-VCENTER_HOST = 0
-"""The index of the host in the cluster in the VCenter MOB"""
-
 QPC_API_VERSION = 'api/v1/'
 """The root path to access the QPC server API."""
 

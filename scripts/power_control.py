@@ -22,12 +22,8 @@ from pyVim.connect import Disconnect, SmartConnect
 import yaml
 
 from camayoc import config
-from camayoc.constants import (
-    VCENTER_CLUSTER,
-    VCENTER_DATA_CENTER,
-    VCENTER_HOST as VCENTER_HOST_INDX,
-)
 from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.utils import get_vcenter_vms
 
 
 BASE_CONFIG = """
@@ -72,11 +68,8 @@ def power_control(vcenter_host,
             sslContext=ssl._create_unverified_context(),
         )
 
-    dc = c.content.rootFolder.childEntity[VCENTER_DATA_CENTER]
-    vms = dc.hostFolder.childEntity[VCENTER_CLUSTER].host[VCENTER_HOST_INDX].vm
-
     pattern_matcher = re.compile(pattern)
-    for vm in vms:
+    for vm in get_vcenter_vms(c):
         if pattern_matcher.findall(vm.name):
             if vcenter_action == 'ON':
                 if vm.runtime.powerState == 'poweredOff':
