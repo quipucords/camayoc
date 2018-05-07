@@ -655,13 +655,13 @@ class Report(QPCObject):
         return response
 
     def create_from_merge(self, ids, **kwargs):
-        """Send PUT request to /jobs/merge/ to merge the results of multiple scanjobs.
+        """Create a report from a merge of the results of multiple scanjobs.
 
         :param ``ids``: Scan job identifiers
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(QPC_SCANJOB_PATH, 'merge/')
+        path = urljoin(self.endpoint, 'merge/')
         payload = {'jobs': ids}
         response = self.client.put(path, payload, **kwargs)
         if response.status_code in range(200, 203):
