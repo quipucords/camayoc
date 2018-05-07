@@ -20,17 +20,13 @@ from io import BytesIO
 
 import pexpect
 
+from pyVmomi import vim
+
 import pytest
 
 from camayoc import utils
 from camayoc.config import get_config
-from camayoc.constants import (
-    CONNECTION_PASSWORD_INPUT,
-    RHO_ALL_FACTS,
-    VCENTER_CLUSTER,
-    VCENTER_DATA_CENTER,
-    VCENTER_HOST,
-)
+from camayoc.constants import CONNECTION_PASSWORD_INPUT, RHO_ALL_FACTS
 from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.tests.rho.utils import auth_add, input_vault_password
 from camayoc.tests.utils import wait_until_live
@@ -147,13 +143,9 @@ def scan_machines(vcenter_client, isolated_filesystem):
             ' items in the config file'
         )
     hostnames = [machine['hostname'] for machine in inventory.values()]
-    host_folder = vcenter_client.content.rootFolder \
-        .childEntity[VCENTER_DATA_CENTER].hostFolder
-    host = host_folder.childEntity[VCENTER_CLUSTER].host[VCENTER_HOST]
-    vms = [
-        vm for vm in host.vm
-        if vm.name in hostnames
-    ]
+    view = vcenter_client.content.viewManager.CreateContainerView(
+        vcenter_client.content.rootFolder, [vim.VirtualMachine], True)
+    vms = [vm for vm in view.view if vm.name in hostnames]
     for auth in auths:
         if auth.get('sshkeyfile'):
             auth_add({
