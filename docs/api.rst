@@ -41,6 +41,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.cli
     api/camayoc.tests.qpc.cli.conftest
     api/camayoc.tests.qpc.cli.test_credentials
+    api/camayoc.tests.qpc.cli.test_reports
     api/camayoc.tests.qpc.cli.test_scanjobs
     api/camayoc.tests.qpc.cli.test_scans
     api/camayoc.tests.qpc.cli.test_sources

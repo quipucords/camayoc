@@ -28,7 +28,8 @@ from .utils import (
 def setup_scan_prerequisites(request):
     """Create all credentials and sources on the server."""
     module_path = request.node.fspath.strpath
-    if not (module_path.endswith('test_scans.py') or
+    if not (module_path.endswith('test_reports.py') or
+            module_path.endswith('test_scans.py') or
             module_path.endswith('test_scanjobs.py')):
         return
 

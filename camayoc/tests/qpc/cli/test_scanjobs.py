@@ -11,8 +11,6 @@
 """
 import json
 import re
-import time
-from pprint import pformat
 
 import pytest
 
@@ -22,10 +20,6 @@ from camayoc.constants import (QPC_BRMS_EXTENDED_FACTS,
                                QPC_EAP_RAW_FACTS,
                                QPC_FUSE_EXTENDED_FACTS,
                                QPC_FUSE_RAW_FACTS)
-from camayoc.exceptions import (
-    FailedScanException,
-    WaitTimeError,
-)
 from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import uuid4
 
@@ -38,33 +32,8 @@ from .utils import (
     scan_pause,
     scan_restart,
     scan_start,
+    wait_for_scan,
 )
-
-
-def wait_for_scan(scan_job_id, status='completed', timeout=900):
-    """Wait for a scan to reach some ``status`` up to ``timeout`` seconds.
-
-    :param scan_job_id: Scan ID to wait for.
-    :param status: Scan status which will wait for. Default is completed.
-    :param timeout: wait up to this amount of seconds. Default is 900.
-    """
-    while timeout > 0:
-        result = scan_job({'id': scan_job_id})
-        if status != 'failed' and result['status'] == 'failed':
-            raise FailedScanException(
-                'The scan with ID "{}" has failed unexpectedly.\n\n'
-                'The information about the scan is:\n{}\n'
-                .format(scan_job_id, pformat(result))
-            )
-        if result['status'] == status:
-            return
-        time.sleep(5)
-        timeout -= 5
-    raise WaitTimeError(
-        'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
-        'The information about the scan is:\n{}\n'
-        .format(scan_job_id, status, pformat(result))
-    )
 
 
 @mark_runs_scans

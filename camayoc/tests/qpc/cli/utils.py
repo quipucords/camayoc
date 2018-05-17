@@ -4,11 +4,17 @@ import functools
 import itertools
 import json
 import re
+import time
+from pprint import pformat
 
 import pexpect
 
 from camayoc.config import get_config
-from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.exceptions import (
+    ConfigFileNotFoundError,
+    FailedScanException,
+    WaitTimeError,
+)
 
 
 def config_credentials():
@@ -55,6 +61,32 @@ def config_scans():
         return get_config().get('qpc', {}).get('cli-scans', [])
     except ConfigFileNotFoundError:
         return []
+
+
+def wait_for_scan(scan_job_id, status='completed', timeout=900):
+    """Wait for a scan to reach some ``status`` up to ``timeout`` seconds.
+
+    :param scan_job_id: Scan ID to wait for.
+    :param status: Scan status which will wait for. Default is completed.
+    :param timeout: wait up to this amount of seconds. Default is 900.
+    """
+    while timeout > 0:
+        result = scan_job({'id': scan_job_id})
+        if status != 'failed' and result['status'] == 'failed':
+            raise FailedScanException(
+                'The scan with ID "{}" has failed unexpectedly.\n\n'
+                'The information about the scan is:\n{}\n'
+                .format(scan_job_id, pformat(result))
+            )
+        if result['status'] == status:
+            return
+        time.sleep(5)
+        timeout -= 5
+    raise WaitTimeError(
+        'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
+        'The information about the scan is:\n{}\n'
+        .format(scan_job_id, status, pformat(result))
+    )
 
 
 def cli_command(command, options=None, exitstatus=0):
@@ -142,6 +174,12 @@ def cred_show_and_check(options, output, exitstatus=0):
 
 report_detail = functools.partial(cli_command, 'qpc report detail')
 """Run ``qpc report detail`` with ``options`` and return output."""
+
+report_merge = functools.partial(cli_command, 'qpc report merge')
+"""Run ``qpc report merge`` with ``options`` and return output."""
+
+report_summary = functools.partial(cli_command, 'qpc report summary')
+"""Run ``qpc report summary`` with ``options`` and return output."""
 
 
 def source_add_and_check(options, inputs=None, exitstatus=0):
