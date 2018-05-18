@@ -23,7 +23,7 @@ import yaml
 
 from camayoc import config
 from camayoc.exceptions import ConfigFileNotFoundError
-from camayoc.utils import get_vcenter_vms
+from camayoc.tests.utils import get_vcenter_vms
 
 
 BASE_CONFIG = """

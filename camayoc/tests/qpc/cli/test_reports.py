@@ -12,6 +12,7 @@
 import csv
 import json
 import os
+import pprint
 import random
 import re
 
@@ -65,7 +66,7 @@ SUMMARY_REPORT_FIELDS = (
     'vm_host',
     'vm_host_socket_count',
     'vm_state',
-    'vm_uuid'
+    'vm_uuid',
 )
 """Common summary report expected fields."""
 
@@ -106,10 +107,18 @@ FACTS = (
     'cpu_siblings',
     'cpu_socket_count',
     'cpu_vendor_id',
+    'date_anaconda_log',
     'date_date',
+    'date_filesystem_create',
     'date_machine_id',
+    'date_yum_history',
     'decision_central_candidates',
     'decision_central_candidates_eap',
+    'dmi_bios_vendor',
+    'dmi_bios_version',
+    'dmi_processor_family',
+    'dmi_system_manufacturer',
+    'dmi_system_uuid',
     'eap5_home_candidates',
     'eap_home_candidates',
     'etc_issue',
@@ -119,12 +128,21 @@ FACTS = (
     'fuse_activemq_version',
     'fuse_camel_version',
     'fuse_cxf_version',
+    'ifconfig_ip_addresses',
+    'ifconfig_mac_addresses',
     'jboss_brms_business_central_candidates',
     'jboss_brms_decision_central_candidates',
     'jboss_brms_kie_server_candidates',
+    'jboss_brms_manifest_mf',
+    'jboss_eap_chkconfig',
+    'jboss_eap_common_files',
     'jboss_eap_id_jboss',
     'jboss_eap_packages',
     'jboss_eap_processes',
+    'jboss_eap_running_paths',
+    'jboss_eap_systemctl_unit_files',
+    'jboss_fuse_chkconfig',
+    'jboss_fuse_systemctl_unit_files',
     'karaf_homes',
     'kie_search_candidates',
     'kie_server_candidates',
@@ -137,6 +155,12 @@ FACTS = (
     'redhat_release_name',
     'redhat_release_release',
     'redhat_release_version',
+    'subman_consumed',
+    'subman_cpu_core_per_socket',
+    'subman_cpu_cpu',
+    'subman_cpu_cpu_socket',
+    'subman_virt_host_type',
+    'subman_virt_is_guest',
     'uname_all',
     'uname_hardware_platform',
     'uname_hostname',
@@ -146,37 +170,9 @@ FACTS = (
     'user_has_sudo',
     'virt_type',
     'virt_virt',
-)
-"""Common detail report expected facts."""
-
-EXTRA_FACTS = (
-    'date_anaconda_log',
-    'date_yum_history',
-    'dmi_bios_vendor',
-    'dmi_bios_version',
-    'dmi_processor_family',
-    'dmi_system_manufacturer',
-    'dmi_system_uuid',
-    'jboss_brms_manifest_mf',
-    'jboss_eap_chkconfig',
-    'jboss_eap_common_files',
-    'jboss_eap_running_paths',
-    'jboss_eap_systemctl_unit_files',
-    'jboss_fuse_chkconfig',
-    'jboss_fuse_systemctl_unit_files',
-    'subman_consumed',
-    'subman_cpu_core_per_socket',
-    'subman_cpu_cpu',
-    'subman_cpu_cpu_socket',
-    'subman_virt_host_type',
-    'subman_virt_is_guest',
     'yum_enabled_repolist',
 )
-"""Extra detail report facts.
-
-Available when the user running the scan has sudo privileges or is the root
-user.
-"""
+"""Common detail report expected facts."""
 
 _SCANS = []
 """Global list of scans to generate reports from."""
@@ -246,7 +242,7 @@ def test_summary_report(
     """Ensure a summary report can be generated and has expected information.
 
     :id: 0ddfdd85-0836-46b5-9541-cf62b5d9c7bc
-    :description: Ensure CSV and JSON summary reports can be gerenerated and
+    :description: Ensure CSV and JSON summary reports can be generated and
         have expected fields.
     :steps: Run ``qpc report summary (--scan-job <scan-job-id> | --report
         <report-id>) (--json | --csv) --output-file <output-path>``
@@ -295,8 +291,8 @@ def test_detail_report(
     """Ensure a detail report can be generated and has expected information.
 
     :id: 54fcfbb9-2435-4717-8693-8774b5c3643d
-    :description: Ensure CSV and JSON detail reports can be gerenerated and
-        have expected fields.
+    :description: Ensure CSV and JSON detail reports can be generated and have
+        expected fields.
     :steps: Run ``qpc report detail (--scan-job <scan-job-id> | --report
         <report-id>) (--json | --csv) --output-file <output-path>``
     :expectedresults: The generated report must be on the requested format
@@ -313,13 +309,12 @@ def test_detail_report(
     assert output.strip() == 'Report written successfully..'
 
     with open(output_path) as f:
-        print(f.read())
-        f.seek(0)
         if output_format == 'json':
             report = json.load(f)
         else:
             # For CSV we need to massage the data a little bit. First ensure
-            # there is a header with the report id and the report section.
+            # there is a header with the report id, number of sources and
+            # sources' information.
             headers = [f.readline() for _ in range(8)]
             report_id, number_sources = headers[1].strip().split(',')
             server_id, source_name, source_type = headers[6].strip().split(',')
@@ -344,13 +339,14 @@ def test_detail_report(
         assert report_source['source_name'] == scan_source['name']
         assert report_source['source_type'] == scan_source['type']
         for facts in report_source['facts']:
-            print(sorted(facts.keys()))
-            print(sorted(FACTS))
-            assert set(FACTS).issubset(facts.keys())
-            extra_facts = set(facts.keys()).difference(FACTS)
-            if len(extra_facts) > 0:
-                # The user runing scan has sudo priviledge or is root
-                assert sorted(extra_facts) == sorted(EXTRA_FACTS)
+            report_facts = set(facts.keys())
+            expected_facts = set(FACTS)
+            assert report_facts.issubset(expected_facts), (
+                'Extra report facts:\n{}\n\nExtra expected facts:\n{}'.format(
+                    pprint.pformat(report_facts - expected_facts),
+                    pprint.pformat(expected_facts - report_facts),
+                )
+            )
 
 
 @pytest.mark.parametrize('merge_by', REPORT_SOURCE_OPTIONS + ('json-file',))
@@ -360,7 +356,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     :id: c47e37c0-3864-41d4-873d-276affdc6612
     :description: Ensure reports can be merged by report ids, scanjob ids and
         JSON files. Also ensure that the merged reports has the expected number
-        of aggrefated reports and each report has the expected fields.
+        of aggregated reports and each report has the expected fields.
     :steps:
         1) Run ``qpc report merge (--job-ids <scan-job-ids> | --report-ids
            <report-ids> | --json-files <json-files)``. Note the
