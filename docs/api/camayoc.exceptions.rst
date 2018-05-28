@@ -1,5 +1,5 @@
-camayoc\.exceptions module
-==========================
+camayoc.exceptions module
+=========================
 
 .. automodule:: camayoc.exceptions
     :members:

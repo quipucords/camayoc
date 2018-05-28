@@ -1,5 +1,5 @@
-camayoc\.tests package
-======================
+camayoc.tests package
+=====================
 
 .. automodule:: camayoc.tests
     :members:

@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.api\.v1\.authentication package
-====================================================
+camayoc.tests.qpc.api.v1.authentication package
+===============================================
 
 .. automodule:: camayoc.tests.qpc.api.v1.authentication
     :members:

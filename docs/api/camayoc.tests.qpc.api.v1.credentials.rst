@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.api\.v1\.credentials package
-=================================================
+camayoc.tests.qpc.api.v1.credentials package
+============================================
 
 .. automodule:: camayoc.tests.qpc.api.v1.credentials
     :members:

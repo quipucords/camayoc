@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.api\.v1\.sources package
-=============================================
+camayoc.tests.qpc.api.v1.sources package
+========================================
 
 .. automodule:: camayoc.tests.qpc.api.v1.sources
     :members:

@@ -1,5 +1,5 @@
-camayoc\.tests\.rho\.test\_profile module
-=========================================
+camayoc.tests.rho.test\_profile module
+======================================
 
 .. automodule:: camayoc.tests.rho.test_profile
     :members:

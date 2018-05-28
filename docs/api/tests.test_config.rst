@@ -1,5 +1,5 @@
-tests\.test\_config module
-==========================
+tests.test\_config module
+=========================
 
 .. automodule:: tests.test_config
     :members:

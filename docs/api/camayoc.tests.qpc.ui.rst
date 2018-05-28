@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.ui package
-===============================
+camayoc.tests.qpc.ui package
+============================
 
 .. automodule:: camayoc.tests.qpc.ui
     :members:

@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.api package
-================================
+camayoc.tests.qpc.api package
+=============================
 
 .. automodule:: camayoc.tests.qpc.api
     :members:

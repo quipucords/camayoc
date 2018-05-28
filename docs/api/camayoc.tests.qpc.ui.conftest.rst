@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.ui\.conftest module
-========================================
+camayoc.tests.qpc.ui.conftest module
+====================================
 
 .. automodule:: camayoc.tests.qpc.ui.conftest
     :members:

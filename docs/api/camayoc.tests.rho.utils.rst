@@ -1,5 +1,5 @@
-camayoc\.tests\.rho\.utils module
-=================================
+camayoc.tests.rho.utils module
+==============================
 
 .. automodule:: camayoc.tests.rho.utils
     :members:

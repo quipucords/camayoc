@@ -1,5 +1,5 @@
-camayoc\.constants module
-=========================
+camayoc.constants module
+========================
 
 .. automodule:: camayoc.constants
     :members:

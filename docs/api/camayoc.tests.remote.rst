@@ -1,5 +1,5 @@
-camayoc\.tests\.remote package
-==============================
+camayoc.tests.remote package
+============================
 
 .. automodule:: camayoc.tests.remote
     :members:

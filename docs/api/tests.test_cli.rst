@@ -1,5 +1,5 @@
-tests\.test\_cli module
-=======================
+tests.test\_cli module
+======================
 
 .. automodule:: tests.test_cli
     :members:

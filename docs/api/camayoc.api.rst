@@ -1,5 +1,5 @@
-camayoc\.api module
-===================
+camayoc.api module
+==================
 
 .. automodule:: camayoc.api
     :members:

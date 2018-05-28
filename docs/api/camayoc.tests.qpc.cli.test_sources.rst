@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.cli\.test\_sources module
-==============================================
+camayoc.tests.qpc.cli.test\_sources module
+==========================================
 
 .. automodule:: camayoc.tests.qpc.cli.test_sources
     :members:

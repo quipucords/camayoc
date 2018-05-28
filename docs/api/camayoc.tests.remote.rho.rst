@@ -1,5 +1,5 @@
-camayoc\.tests\.remote\.rho package
-===================================
+camayoc.tests.remote.rho package
+================================
 
 .. automodule:: camayoc.tests.remote.rho
     :members:

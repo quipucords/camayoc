@@ -1,5 +1,5 @@
-camayoc\.config module
-======================
+camayoc.config module
+=====================
 
 .. automodule:: camayoc.config
     :members:

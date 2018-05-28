@@ -1,5 +1,5 @@
-camayoc\.cli module
-===================
+camayoc.cli module
+==================
 
 .. automodule:: camayoc.cli
     :members:

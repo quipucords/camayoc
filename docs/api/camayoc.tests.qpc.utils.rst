@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.utils module
-=================================
+camayoc.tests.qpc.utils module
+==============================
 
 .. automodule:: camayoc.tests.qpc.utils
     :members:

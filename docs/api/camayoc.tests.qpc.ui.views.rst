@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.ui\.views module
-=====================================
+camayoc.tests.qpc.ui.views module
+=================================
 
 .. automodule:: camayoc.tests.qpc.ui.views
     :members:

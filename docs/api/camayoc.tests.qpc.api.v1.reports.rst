@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.api\.v1\.reports package
-=============================================
+camayoc.tests.qpc.api.v1.reports package
+========================================
 
 .. automodule:: camayoc.tests.qpc.api.v1.reports
     :members:

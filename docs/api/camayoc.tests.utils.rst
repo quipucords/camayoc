@@ -1,5 +1,5 @@
-camayoc\.tests\.utils module
-============================
+camayoc.tests.utils module
+==========================
 
 .. automodule:: camayoc.tests.utils
     :members:

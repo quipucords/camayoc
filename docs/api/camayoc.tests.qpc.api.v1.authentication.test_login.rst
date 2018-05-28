@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.api\.v1\.authentication\.test\_login module
-================================================================
+camayoc.tests.qpc.api.v1.authentication.test\_login module
+==========================================================
 
 .. automodule:: camayoc.tests.qpc.api.v1.authentication.test_login
     :members:

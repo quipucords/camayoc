@@ -1,5 +1,5 @@
-camayoc\.tests\.rho package
-===========================
+camayoc.tests.rho package
+=========================
 
 .. automodule:: camayoc.tests.rho
     :members:

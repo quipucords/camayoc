@@ -1,5 +1,5 @@
-camayoc\.tests\.rho\.test\_fact module
-======================================
+camayoc.tests.rho.test\_fact module
+===================================
 
 .. automodule:: camayoc.tests.rho.test_fact
     :members:

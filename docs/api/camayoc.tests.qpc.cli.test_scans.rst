@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.cli\.test\_scans module
-============================================
+camayoc.tests.qpc.cli.test\_scans module
+========================================
 
 .. automodule:: camayoc.tests.qpc.cli.test_scans
     :members:

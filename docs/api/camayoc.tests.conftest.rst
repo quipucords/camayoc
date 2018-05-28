@@ -1,5 +1,5 @@
-camayoc\.tests\.conftest module
-===============================
+camayoc.tests.conftest module
+=============================
 
 .. automodule:: camayoc.tests.conftest
     :members:

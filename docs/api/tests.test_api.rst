@@ -1,5 +1,5 @@
-tests\.test\_api module
-=======================
+tests.test\_api module
+======================
 
 .. automodule:: tests.test_api
     :members:

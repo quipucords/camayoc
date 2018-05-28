@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc\.ui\.test\_login module
-===========================================
+camayoc.tests.qpc.ui.test\_login module
+=======================================
 
 .. automodule:: camayoc.tests.qpc.ui.test_login
     :members:

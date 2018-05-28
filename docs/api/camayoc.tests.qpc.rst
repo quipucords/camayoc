@@ -1,5 +1,5 @@
-camayoc\.tests\.qpc package
-===========================
+camayoc.tests.qpc package
+=========================
 
 .. automodule:: camayoc.tests.qpc
     :members:
