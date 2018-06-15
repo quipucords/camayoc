@@ -5,7 +5,8 @@ PYTEST_OPTIONS=--verbose
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
 	@echo "  help              to show this message"
-	@echo "  all               to to execute test-coverage and lint"
+	@echo "  all               to execute test-coverage and lint"
+	@echo "  clean			   to clean all pycache files"
 	@echo "  docs-clean        to remove documentation"
 	@echo "  docs-html         to generate HTML documentation"
 	@echo "  install           to install in editable mode"
@@ -28,6 +29,13 @@ help:
 
 
 all: test-coverage lint validate-docstrings docs-html
+
+clean:
+	{ \
+    ZSH_PYCLEAN_PLACES=$${*:-'.'};\
+    find $${ZSH_PYCLEAN_PLACES} -type f -name "*.py[co]" -delete;\
+    find $${ZSH_PYCLEAN_PLACES} -type d -name "__pycache__" -delete;\
+	}
 
 docs-clean:
 	@cd docs; $(MAKE) clean
@@ -89,7 +97,7 @@ validate-docstrings:
 	@./scripts/validate_docstrings.sh
 	@testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
 
-.PHONY: all docs-clean docs-html install install-dev lint package \
+.PHONY: all clean docs-clean docs-html install install-dev lint package \
 	package-clean package-upload test test-coverage test-qpc \
 	test-qpc-api test-qpc-ui test-qpc-cli test-rho test-rho-remote \
 	test-qpc-no-scans
