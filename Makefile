@@ -32,9 +32,9 @@ all: test-coverage lint validate-docstrings docs-html
 
 clean:
 	{ \
-    ZSH_PYCLEAN_PLACES=$${*:-'.'};\
-    find $${ZSH_PYCLEAN_PLACES} -type f -name "*.py[co]" -delete;\
-    find $${ZSH_PYCLEAN_PLACES} -type d -name "__pycache__" -delete;\
+    pycaches=$${*:-'.'};\
+    find $${pycaches} -type f -name "*.py[co]" -delete;\
+    find $${pycaches} -type d -name "__pycache__" -delete;\
 	}
 
 docs-clean:
