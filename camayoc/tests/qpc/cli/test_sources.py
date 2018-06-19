@@ -694,7 +694,7 @@ def test_add_with_cred_hosts_exclude_file(
         source_type):
     """Add a source with cred and hosts populated on a file.
 
-    :id: 93d10834-9e9a-4713-8786-918d3d87a4b0
+    :id: 5680125c-c6f6-42b7-bed6-46565ea84902
     :description: Add a source entry providing the ``--name``, ``--cred``,
         ``--exclude hosts``, and ``--hosts`` options, the value of the
         ``--exclude-hosts`` option should be a file.
