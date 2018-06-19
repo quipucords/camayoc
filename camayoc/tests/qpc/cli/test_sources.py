@@ -53,6 +53,12 @@ VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS = (
     ('network', 'host.example.com 192.168.30.1', '192.168.30.1'),
 )
 
+# The --exclude-hosts option is only valid for 'network' source types.
+INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS = (
+    ('vcenter', '192.168.0.42', '192.168.0.43'),
+    ('satellite', '192.168.0.42', '192.168.0.43'),
+)
+
 
 def default_port_for_source(source_type):
     """Resolve the default port for a given source type."""
@@ -754,6 +760,44 @@ def test_add_with_cred_hosts_exclude_file(
             'source_type': source_type,
         })
     )
+
+
+@pytest.mark.parametrize('source_type, hosts, exclude_hosts',
+                         INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+def test_add_exclude_hosts_negative(isolated_filesystem, qpc_server_config,
+                                    source_type, hosts, exclude_hosts):
+    """Attempt to add an incompatible source type with ``--exclude-hosts`` flag.
+
+    :id: d0f24930-f05d-46c3-af36-493228e01822
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts``, and ``--exclude-hosts`` options, with ``--type`` values
+        that are not ``network``, like ``vcenter`` or ``satellite``.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts <hosts>
+        --exclude-hosts <excludedhosts> --type <type>``
+    :expectedresults: Adding the source should fail with an error stating that
+        the source type is incompatible with the ``--exclude-hosts`` flag.
+
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        """qpc source add --name {} --cred {} --hosts {} --exclude-hosts {}
+        --type {}"""
+        .format(name, cred_name, hosts, exclude_hosts, source_type)
+    )
+    assert qpc_source_add.expect('exclude_hosts: The exclude_hosts option '
+                                 + 'is not valid for source of type {}.'
+                                 .format(source_type)) == 0
 
 
 def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
