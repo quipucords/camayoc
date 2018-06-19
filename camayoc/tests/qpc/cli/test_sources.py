@@ -44,6 +44,15 @@ VALID_SOURCE_TYPE_HOSTS = (
     ('vcenter', 'vcenter.example.com'),
 )
 
+VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS = (
+    ('network', '192.168.0.42', '192.168.0.43'),
+    ('network', '192.168.0.1 192.168.0.2', '192.168.0.2 192.168.0.45'),
+    ('network', '192.168.0.0/24', '192.168.1.0/28'),
+    ('network', '192.168.0.[1:100]', '192.168.30.[1:100]'),
+    ('network', 'host.example.com', 'excluded.example.com'),
+    ('network', 'host.example.com 192.168.30.1', '192.168.30.1'),
+)
+
 
 def default_port_for_source(source_type):
     """Resolve the default port for a given source type."""
@@ -65,6 +74,13 @@ def generate_show_output(data):
         '    \],\r\n'
         .format(data['cred_name'])
     )
+    if data.get('exclude_hosts'):
+        output += (
+            '    "exclude_hosts": \[\r\n'
+            '        "{}"\r\n'
+            '    \],\r\n'
+            .format(data['exclude_hosts'])
+        )
     output += (
         '    "hosts": \[\r\n'
         '        "{}"\r\n'
@@ -604,6 +620,140 @@ def test_add_with_disable_ssl_negative(
     assert qpc_source_add.expect(pexpect.EOF) == 0
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == exitstatus
+
+
+@pytest.mark.parametrize('source_type, hosts, exclude_hosts',
+                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+def test_add_with_exclude_hosts(
+        isolated_filesystem, qpc_server_config, hosts, exclude_hosts,
+        source_type):
+    """Add a source with cred and hosts and exclude a host.
+
+    :id: a54567f9-c26c-45f6-9054-5bf419a791fd
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--hosts``, and ``--exclude-hosts`` options.
+    :steps: Run ``qpc source add --name <name> --cred <cred>
+        --hosts <hosts> --exclude-hosts <excludedhosts> --type <type>``
+    :expectedresults: A new source entry is created with the data provided as
+        input.
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    port = default_port_for_source(source_type)
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    qpc_source_add = pexpect.spawn(
+        """qpc source add --name {} --cred {} --hosts {} --exclude-hosts {}
+        --type {}"""
+        .format(name, cred_name, hosts, exclude_hosts, source_type)
+    )
+    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+
+    if hosts.endswith('0/24'):
+        hosts = hosts.replace('0/24', '\[0:255\]')
+    elif hosts.endswith('[1:100]'):
+        hosts = hosts.replace('[1:100]', '\[1:100\]')
+    elif ' ' in hosts:
+        hosts = '",\r\n        "'.join(hosts.split(' '))
+    if exclude_hosts.endswith('0/24'):
+        exclude_hosts = exclude_hosts.replace('0/24', '\[0:255\]')
+    elif exclude_hosts.endswith('0/28'):
+        exclude_hosts = exclude_hosts.replace('0/28', '\[0:15\]')
+    elif exclude_hosts.endswith('[1:100]'):
+        exclude_hosts = exclude_hosts.replace('[1:100]', '\[1:100\]')
+    elif ' ' in exclude_hosts:
+        exclude_hosts = '",\r\n        "'.join(exclude_hosts.split(' '))
+    source_show_and_check(
+        {'name': name},
+        generate_show_output({
+            'cred_name': cred_name,
+            'exclude_hosts': exclude_hosts,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
+    )
+
+
+@pytest.mark.parametrize('source_type, hosts, exclude_hosts',
+                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+def test_add_with_cred_hosts_exclude_file(
+        isolated_filesystem, qpc_server_config, hosts, exclude_hosts,
+        source_type):
+    """Add a source with cred and hosts populated on a file.
+
+    :id: 93d10834-9e9a-4713-8786-918d3d87a4b0
+    :description: Add a source entry providing the ``--name``, ``--cred``,
+        ``--exclude hosts``, and ``--hosts`` options, the value of the
+        ``--exclude-hosts`` option should be a file.
+    :steps: Run ``qpc source add --name <name> --cred <cred> --hosts
+        <hosts> --exclude-hosts <exclude_hosts_file> --type <type>``
+    :expectedresults: A new source entry is created with the data provided as
+        input.
+    """
+    cred_name = utils.uuid4()
+    name = utils.uuid4()
+    port = default_port_for_source(source_type)
+    cred_add_and_check(
+        {
+            'name': cred_name,
+            'username': utils.uuid4(),
+            'password': None,
+            'type': source_type,
+        },
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
+    )
+
+    with open('exclude_hosts_file', 'w') as handler:
+        handler.write(exclude_hosts.replace(' ', '\n') + '\n')
+
+    qpc_source_add = pexpect.spawn(
+        """qpc source add --name {} --cred {} --hosts {} --exclude-hosts={}
+        --type {}"""
+        .format(name, cred_name, hosts, 'exclude_hosts_file',  source_type)
+    )
+    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
+    assert qpc_source_add.expect(pexpect.EOF) == 0
+    qpc_source_add.close()
+    assert qpc_source_add.exitstatus == 0
+
+    if hosts.endswith('0/24'):
+        hosts = hosts.replace('0/24', '\[0:255\]')
+    elif hosts.endswith('[1:100]'):
+        hosts = hosts.replace('[1:100]', '\[1:100\]')
+    elif ' ' in hosts:
+        hosts = '",\r\n        "'.join(hosts.split(' '))
+    if exclude_hosts.endswith('0/24'):
+        exclude_hosts = exclude_hosts.replace('0/24', '\[0:255\]')
+    elif exclude_hosts.endswith('0/28'):
+        exclude_hosts = exclude_hosts.replace('0/28', '\[0:15\]')
+    elif exclude_hosts.endswith('[1:100]'):
+        exclude_hosts = exclude_hosts.replace('[1:100]', '\[1:100\]')
+    elif ' ' in exclude_hosts:
+        exclude_hosts = '",\r\n        "'.join(exclude_hosts.split(' '))
+    source_show_and_check(
+        {'name': name},
+        generate_show_output({
+            'cred_name': cred_name,
+            'exclude_hosts': exclude_hosts,
+            'hosts': hosts,
+            'name': name,
+            'port': port,
+            'source_type': source_type,
+        })
+    )
 
 
 def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
