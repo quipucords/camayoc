@@ -71,7 +71,7 @@ def assert_source_create_fails(source):
     source.client = orig_client
 
 
-def gen_valid_source(cleanup, src_type, host, create=True):
+def gen_valid_source(cleanup, src_type, host, create=True, exclude_host=None):
     """Create valid source."""
     cred = Credential(cred_type=src_type, password=uuid4())
     cred.create()
@@ -80,6 +80,7 @@ def gen_valid_source(cleanup, src_type, host, create=True):
         source_type=src_type,
         hosts=[host],
         credential_ids=[cred._id],
+        exclude_hosts=[exclude_host],
     )
     if create:
         source.create()

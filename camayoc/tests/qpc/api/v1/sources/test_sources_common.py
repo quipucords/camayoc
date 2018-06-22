@@ -67,6 +67,27 @@ def test_create(shared_client, cleanup, scan_host, src_type):
     assert_matches_server(src)
 
 
+@pytest.mark.parametrize('scan_host', CREATE_DATA)
+def test_create_exclude_hosts(shared_client, cleanup, scan_host):
+    """Create a source with the excluded hosts option.
+
+    :id: 40365ec0-a8b5-4dc9-b7b4-dad826602d66
+    :description: Create a network source with some excluded host IPs.
+    :steps:
+        1) Create host credential
+        2) Send POST with data to create the source using the credential to
+           the source endpoint, with the exclude hosts option.
+    :expectedresults: A new source entry is created with the data.
+    """
+    source = gen_valid_source(
+            cleanup,
+            'network',
+            host='1.1.1.1',
+            exclude_host='2.2.2.2',
+    )
+    print(source.list().json())
+
+
 @pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
 def test_update(shared_client, cleanup, scan_host, src_type):
