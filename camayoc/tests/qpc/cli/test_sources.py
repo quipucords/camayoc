@@ -21,9 +21,12 @@ import pytest
 from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT, QPC_HOST_MANAGER_TYPES
 from camayoc.tests.qpc.cli.utils import (
+    convert_ip_format,
     cred_add_and_check,
     scan_add_and_check,
     scan_show,
+    source_add_and_check,
+    source_edit_and_check,
     source_show_and_check,
 )
 
@@ -44,18 +47,18 @@ VALID_SOURCE_TYPE_HOSTS = (
     ('vcenter', 'vcenter.example.com'),
 )
 
-VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS = (
+VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
     ('network', '192.168.0.42', '192.168.0.43'),
-    ('network', '192.168.0.42', '192.168.0.2 192.168.0.45'),
-    ('network', '192.168.0.42', '192.168.1.0/28'),
-    ('network', '192.168.0.42', '192.168.30.[1:100]'),
+    ('network', '192.168.0.1 192.168.0.2', '192.168.0.2 192.168.0.45'),
+    ('network', '192.168.0.0/24', '192.168.1.0/28'),
+    ('network', '192.168.0.[1:100]', '192.168.30.[1:100]'),
     ('network', 'host.example.com', 'excluded.example.com'),
-    ('network', 'host.example.com', '192.168.30.1'),
+    ('network', 'host.example.com 192.168.30.1', '192.168.30.1'),
     ('network', '192.168.0.42', 'excluded.example.com'),
 )
 
 # The --exclude-hosts option is only valid for 'network' source types.
-INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS = (
+INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
     ('vcenter', '192.168.0.42', '192.168.0.43'),
     ('satellite', '192.168.0.42', '192.168.0.43'),
 )
@@ -148,12 +151,7 @@ def test_add_with_cred_hosts(
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', '\[0:255\]')
-    elif hosts.endswith('[1:100]'):
-        hosts = hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in hosts:
-        hosts = '",\r\n        "'.join(hosts.split(' '))
+    hosts = convert_ip_format(hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -205,12 +203,7 @@ def test_add_with_cred_hosts_file(
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', '\[0:255\]')
-    elif hosts.endswith('[1:100]'):
-        hosts = hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in hosts:
-        hosts = '",\r\n        "'.join(hosts.split(' '))
+    hosts = convert_ip_format(hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -630,7 +623,7 @@ def test_add_with_disable_ssl_negative(
 
 
 @pytest.mark.parametrize('source_type, hosts, exclude_hosts',
-                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_add_with_exclude_hosts(
         isolated_filesystem, qpc_server_config, hosts, exclude_hosts,
         source_type):
@@ -667,20 +660,8 @@ def test_add_with_exclude_hosts(
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', '\[0:255\]')
-    elif hosts.endswith('[1:100]'):
-        hosts = hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in hosts:
-        hosts = '",\r\n        "'.join(hosts.split(' '))
-    if exclude_hosts.endswith('0/24'):
-        exclude_hosts = exclude_hosts.replace('0/24', '\[0:255\]')
-    elif exclude_hosts.endswith('0/28'):
-        exclude_hosts = exclude_hosts.replace('0/28', '\[0:15\]')
-    elif exclude_hosts.endswith('[1:100]'):
-        exclude_hosts = exclude_hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in exclude_hosts:
-        exclude_hosts = '",\r\n        "'.join(exclude_hosts.split(' '))
+    hosts = convert_ip_format(hosts)
+    exclude_hosts = convert_ip_format(exclude_hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -695,7 +676,7 @@ def test_add_with_exclude_hosts(
 
 
 @pytest.mark.parametrize('source_type, hosts, exclude_hosts',
-                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_add_with_cred_hosts_exclude_file(
         isolated_filesystem, qpc_server_config, hosts, exclude_hosts,
         source_type):
@@ -736,20 +717,8 @@ def test_add_with_cred_hosts_exclude_file(
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == 0
 
-    if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', '\[0:255\]')
-    elif hosts.endswith('[1:100]'):
-        hosts = hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in hosts:
-        hosts = '",\r\n        "'.join(hosts.split(' '))
-    if exclude_hosts.endswith('0/24'):
-        exclude_hosts = exclude_hosts.replace('0/24', '\[0:255\]')
-    elif exclude_hosts.endswith('0/28'):
-        exclude_hosts = exclude_hosts.replace('0/28', '\[0:15\]')
-    elif exclude_hosts.endswith('[1:100]'):
-        exclude_hosts = exclude_hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in exclude_hosts:
-        exclude_hosts = '",\r\n        "'.join(exclude_hosts.split(' '))
+    hosts = convert_ip_format(hosts)
+    exclude_hosts = convert_ip_format(exclude_hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -764,7 +733,7 @@ def test_add_with_cred_hosts_exclude_file(
 
 
 @pytest.mark.parametrize('source_type, hosts, exclude_hosts',
-                         INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+                         INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_add_exclude_hosts_negative(isolated_filesystem, qpc_server_config,
                                     source_type, hosts, exclude_hosts):
     """Attempt to add an incompatible source type with ``--exclude-hosts`` flag.
@@ -965,12 +934,7 @@ def test_edit_hosts(
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 0
 
-    if new_hosts.endswith('0/24'):
-        new_hosts = new_hosts.replace('0/24', '\[0:255\]')
-    elif new_hosts.endswith('[1:100]'):
-        new_hosts = new_hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in new_hosts:
-        new_hosts = '",\r\n        "'.join(new_hosts.split(' '))
+    new_hosts = convert_ip_format(new_hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -1042,12 +1006,7 @@ def test_edit_hosts_file(
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 0
 
-    if new_hosts.endswith('0/24'):
-        new_hosts = new_hosts.replace('0/24', '\[0:255\]')
-    elif new_hosts.endswith('[1:100]'):
-        new_hosts = new_hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in new_hosts:
-        new_hosts = '",\r\n        "'.join(new_hosts.split(' '))
+    new_hosts = convert_ip_format(new_hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -1112,7 +1071,7 @@ def test_edit_hosts_negative(
 
 
 @pytest.mark.parametrize('source_type, hosts, new_exclude_hosts',
-                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_edit_exclude_hosts(
         isolated_filesystem, qpc_server_config, hosts, new_exclude_hosts,
         source_type):
@@ -1140,46 +1099,22 @@ def test_edit_exclude_hosts(
         },
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
-    qpc_source_add = pexpect.spawn(
-        """qpc source add --name {} --cred {} --hosts {} --exclude-hosts {}
-        --type {}"""
-        .format(name, cred_name, hosts, exclude_hosts, source_type)
-    )
-    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
-    assert qpc_source_add.expect(pexpect.EOF) == 0
-    qpc_source_add.close()
-    assert qpc_source_add.exitstatus == 0
-    source_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_name': cred_name,
-            'exclude_hosts': exclude_hosts,
-            'hosts': hosts,
-            'name': name,
-            'port': port,
-            'source_type': source_type,
-        })
-    )
 
-    qpc_source_edit = pexpect.spawn(
-        'qpc source edit --name {} --exclude-hosts {}'
-        .format(name, new_exclude_hosts)
-    )
-    assert qpc_source_edit.expect(
-        'Source "{}" was updated'.format(name)) == 0
-    assert qpc_source_edit.expect(pexpect.EOF) == 0
-    qpc_source_edit.close()
-    assert qpc_source_edit.exitstatus == 0
+    source_add_and_check({
+        'name': name,
+        'cred': [cred_name],
+        'hosts': [hosts],
+        'exclude-hosts': [exclude_hosts],
+        'type': source_type,
+    })
 
-    if new_exclude_hosts.endswith('0/24'):
-        new_exclude_hosts = new_exclude_hosts.replace('0/24', '\[0:255\]')
-    elif new_exclude_hosts.endswith('0/28'):
-        new_exclude_hosts = new_exclude_hosts.replace('0/28', '\[0:15\]')
-    elif new_exclude_hosts.endswith('[1:100]'):
-        new_exclude_hosts = new_exclude_hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in new_exclude_hosts:
-        new_exclude_hosts = '",\r\n        "'.join(new_exclude_hosts
-                                                   .split(' '))
+    source_edit_and_check({
+        'name': name,
+        'exclude-hosts': [new_exclude_hosts],
+    })
+
+    hosts = convert_ip_format(hosts)
+    new_exclude_hosts = convert_ip_format(new_exclude_hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({
@@ -1194,7 +1129,7 @@ def test_edit_exclude_hosts(
 
 
 @pytest.mark.parametrize('source_type, hosts, new_exclude_hosts',
-                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE_HOSTS)
+                         VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_edit_exclude_hosts_file(
         isolated_filesystem, qpc_server_config, hosts, new_exclude_hosts,
         source_type):
@@ -1223,49 +1158,25 @@ def test_edit_exclude_hosts_file(
         },
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
-    qpc_source_add = pexpect.spawn(
-        """qpc source add --name {} --cred {} --hosts {} --exclude-hosts {}
-        --type {}"""
-        .format(name, cred_name, hosts, exclude_hosts, source_type)
-    )
-    assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
-    assert qpc_source_add.expect(pexpect.EOF) == 0
-    qpc_source_add.close()
-    assert qpc_source_add.exitstatus == 0
-    source_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_name': cred_name,
-            'exclude_hosts': exclude_hosts,
-            'hosts': hosts,
-            'name': name,
-            'port': port,
-            'source_type': source_type,
-        })
-    )
+
+    source_add_and_check({
+        'name': name,
+        'cred': [cred_name],
+        'hosts': [hosts],
+        'exclude-hosts': [exclude_hosts],
+        'type': source_type,
+    })
 
     with open('exclude_hosts_file', 'w') as handler:
         handler.write(new_exclude_hosts.replace(' ', '\n') + '\n')
 
-    qpc_source_edit = pexpect.spawn(
-        'qpc source edit --name {} --exclude-hosts {}'
-        .format(name, 'exclude_hosts_file')
-    )
-    assert qpc_source_edit.expect(
-        'Source "{}" was updated'.format(name)) == 0
-    assert qpc_source_edit.expect(pexpect.EOF) == 0
-    qpc_source_edit.close()
-    assert qpc_source_edit.exitstatus == 0
+    source_edit_and_check({
+        'name': name,
+        'exclude-hosts': ['exclude_hosts_file'],
+    })
 
-    if new_exclude_hosts.endswith('0/24'):
-        new_exclude_hosts = new_exclude_hosts.replace('0/24', '\[0:255\]')
-    elif new_exclude_hosts.endswith('0/28'):
-        new_exclude_hosts = new_exclude_hosts.replace('0/28', '\[0:15\]')
-    elif new_exclude_hosts.endswith('[1:100]'):
-        new_exclude_hosts = new_exclude_hosts.replace('[1:100]', '\[1:100\]')
-    elif ' ' in new_exclude_hosts:
-        new_exclude_hosts = '",\r\n        "'.join(new_exclude_hosts
-                                                   .split(' '))
+    hosts = convert_ip_format(hosts)
+    new_exclude_hosts = convert_ip_format(new_exclude_hosts)
     source_show_and_check(
         {'name': name},
         generate_show_output({

@@ -182,6 +182,19 @@ report_summary = functools.partial(cli_command, 'qpc report summary')
 """Run ``qpc report summary`` with ``options`` and return output."""
 
 
+def convert_ip_format(ipaddr):
+    """Convert IP strings (for generating expected test results)."""
+    if ipaddr.endswith('0/24'):
+        ipaddr = ipaddr.replace('0/24', '\[0:255\]')
+    elif ipaddr.endswith('0/28'):
+        ipaddr = ipaddr.replace('0/28', '\[0:15\]')
+    elif ipaddr.endswith('[1:100]'):
+        ipaddr = ipaddr.replace('[1:100]', '\[1:100\]')
+    elif ' ' in ipaddr:
+        ipaddr = '",\r\n        "'.join(ipaddr.split(' '))
+    return ipaddr
+
+
 def source_add_and_check(options, inputs=None, exitstatus=0):
     """Add a new source entry.
 
@@ -197,6 +210,8 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
         options['cred'] = ' '.join(options['cred'])
     if 'hosts' in options:
         options['hosts'] = ' '.join(options['hosts'])
+    if 'exclude-hosts' in options:
+        options['exclude-hosts'] = ' '.join(options['exclude-hosts'])
     if 'type' not in options:
         options['type'] = 'network'
     command = 'qpc source add'
@@ -204,7 +219,7 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
         if value is None:
             command += ' --{}'.format(key)
         else:
-            command += ' --{}={}'.format(key, value)
+            command += ' --{} {}'.format(key, value)
     qpc_source_add = pexpect.spawn(command)
     if inputs is None:
         inputs = []
@@ -216,6 +231,42 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
     assert qpc_source_add.expect(pexpect.EOF) == 0
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == exitstatus
+
+
+def source_edit_and_check(options, inputs=None, exitstatus=0):
+    """Edit an existing source entry.
+
+    :param options: A dictionary mapping the option names and their values.
+        Pass ``None`` for flag options.
+    :param inputs: A list of tuples mapping the input prompts and the value to
+        be filled. For example::
+
+            inputs=[('prompt1:', 'input1'), ('prompt2:', 'input2')]
+    :param exitstatus: Expected exit status code.
+    """
+    if 'cred' in options:
+        options['cred'] = ' '.join(options['cred'])
+    if 'hosts' in options:
+        options['hosts'] = ' '.join(options['hosts'])
+    if 'exclude-hosts' in options:
+        options['exclude-hosts'] = ' '.join(options['exclude-hosts'])
+    command = 'qpc source edit'
+    for key, value in options.items():
+        if value is None:
+            command += ' --{}'.format(key)
+        else:
+            command += ' --{} {}'.format(key, value)
+    qpc_source_edit = pexpect.spawn(command)
+    if inputs is None:
+        inputs = []
+    for prompt, value in inputs:
+        assert qpc_source_edit.expect(prompt) == 0
+        qpc_source_edit.sendline(value)
+    assert qpc_source_edit.expect(
+        'Source "{}" was updated'.format(options['name'])) == 0
+    assert qpc_source_edit.expect(pexpect.EOF) == 0
+    qpc_source_edit.close()
+    assert qpc_source_edit.exitstatus == exitstatus
 
 
 def source_show_and_check(options, output, exitstatus=0):
