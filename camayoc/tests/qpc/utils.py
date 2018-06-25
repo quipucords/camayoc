@@ -45,7 +45,7 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
-def assert_source_create_fails(source, type=None):
+def assert_source_create_fails(source, type=''):
     """Assert that the create method of this source fails.
 
     :param source: The source object.
