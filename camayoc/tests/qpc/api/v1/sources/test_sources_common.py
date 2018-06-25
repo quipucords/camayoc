@@ -81,13 +81,12 @@ def test_create_exclude_hosts(shared_client, cleanup, scan_host):
            the source endpoint, with the exclude hosts option.
     :expectedresults: A new source entry is created with the data.
     """
-    source = gen_valid_source(
+    gen_valid_source(
             cleanup,
             'network',
-            host='1.1.1.1',
-            exclude_host=scan_host,
+            hosts='1.1.1.1',
+            exclude_hosts=scan_host,
     )
-    print(source.list().json())
 
 
 @pytest.mark.parametrize('scan_host', CREATE_DATA)
@@ -240,7 +239,7 @@ def test_update_with_bad_exclude_host(src_type, scan_host, cleanup):
     :expectedresults: Error codes are returned and the source is not updated.
     """
     src = gen_valid_source(cleanup, src_type, scan_host)
-    original_data = copy.deepcopy(src.fields())
+    original_data = src.fields()
     # Test updating source with bad excluded host
     src.exclude_hosts = ['*invalid!!host&*']
     assert_source_update_fails(original_data, src)

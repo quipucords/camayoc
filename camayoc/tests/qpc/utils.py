@@ -45,7 +45,7 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
-def assert_source_create_fails(source, type=''):
+def assert_source_create_fails(source, source_type=''):
     """Assert that the create method of this source fails.
 
     :param source: The source object.
@@ -67,26 +67,27 @@ def assert_source_create_fails(source, type=''):
             ['Source of type satellite must have a single credential.']},
         {'exclude_hosts':
             ['The exclude_hosts option is not valid for source of type ' +
-             type + '.']}]
+             source_type + '.']}]
     response = create_response.json()
     assert response in expected_errors
     # give the source its original client back
     source.client = orig_client
 
 
-def gen_valid_source(cleanup, src_type, host, create=True, exclude_host=None):
+def gen_valid_source(cleanup, src_type, hosts, create=True,
+                     exclude_hosts=None):
     """Create valid source."""
     cred = Credential(cred_type=src_type, password=uuid4())
     cred.create()
     cleanup.append(cred)
     source = Source(
         source_type=src_type,
-        hosts=[host],
+        hosts=[hosts],
         credential_ids=[cred._id],
     )
     # QPC does not accept blank exclude_host values, only add it if not empty.
-    if exclude_host is not None:
-        source.exclude_hosts = [exclude_host]
+    if exclude_hosts is not None:
+        source.exclude_hosts = [exclude_hosts]
     if create:
         source.create()
         cleanup.append(source)
