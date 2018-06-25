@@ -24,6 +24,7 @@ from camayoc.qpc_models import (
 )
 from camayoc.tests.qpc.utils import (
     assert_matches_server,
+    assert_source_create_fails,
     assert_source_update_fails,
     gen_valid_source,
 )
@@ -31,6 +32,7 @@ from camayoc.utils import uuid4
 
 CREATE_DATA = ['localhost', '127.0.0.1', 'example.com']
 DEFAULT_PORT = {'network': 22, 'vcenter': 443, 'satellite': 443}
+INCOMPATIBLE_SRC_TYPES = {'vcenter', 'satellite'}
 
 
 @pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
@@ -83,9 +85,42 @@ def test_create_exclude_hosts(shared_client, cleanup, scan_host):
             cleanup,
             'network',
             host='1.1.1.1',
-            exclude_host='2.2.2.2',
+            exclude_host=scan_host,
     )
     print(source.list().json())
+
+
+@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize('src_type', INCOMPATIBLE_SRC_TYPES)
+def test_create_exclude_hosts_negative(shared_client, cleanup,
+                                       scan_host, src_type):
+    """Attempt to create a source with excluded hosts with an invalid source type.
+
+    :id: 52ba8847-81d7-4c8a-a5bd-1f946f5f39b5
+    :description: Attempt to create a source with exclude_hosts with an invalid
+        source type, like vcenter or satellite.
+    :steps:
+        1) Create host credential
+        2) Send POST with data to create the source using the credential to
+           the endpoint, with the exclude_host option and invalid source type.
+    :expectedresults: Creation of the source fails with a message about an
+        invalid source type.
+    """
+    cred = Credential(
+        cred_type=src_type,
+        client=shared_client,
+        password=uuid4()
+    )
+    cred.create()
+    cleanup.append(cred)
+    src = Source(
+        source_type=src_type,
+        client=shared_client,
+        hosts=[scan_host],
+        credential_ids=[cred._id],
+    )
+    src.exclude_hosts = ['10.10.10.10']
+    assert_source_create_fails(src, src_type)
 
 
 @pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
@@ -188,6 +223,45 @@ def test_update_with_bad_host(src_type, scan_host, cleanup):
     original_data = copy.deepcopy(src.fields())
     # Test updating source with bad host
     src.hosts = ['*invalid!!host&*']
+    assert_source_update_fails(original_data, src)
+
+
+@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize('scan_host', CREATE_DATA)
+def test_update_with_bad_exclude_host(src_type, scan_host, cleanup):
+    """Attempt to update valid source with an invalid excluded host.
+
+    :id: 62cc08ad-1149-4c2b-a4ad-0e4c07d10ff6
+    :description: Create valid {network, vcenter} source, and then attempt to
+        update it with an invalid excluded hostname option.
+    :steps:
+        1) Create valid credential and source
+        2) Update the source with an invalid excluded host
+    :expectedresults: Error codes are returned and the source is not updated.
+    """
+    src = gen_valid_source(cleanup, src_type, scan_host)
+    original_data = copy.deepcopy(src.fields())
+    # Test updating source with bad excluded host
+    src.exclude_hosts = ['*invalid!!host&*']
+    assert_source_update_fails(original_data, src)
+
+
+@pytest.mark.parametrize('src_type', INCOMPATIBLE_SRC_TYPES)
+@pytest.mark.parametrize('scan_host', CREATE_DATA)
+def test_update_with_invalid_src_type(src_type, scan_host, cleanup):
+    """Attempt to update exclude_hosts with a non-network source type.
+
+    :id: 66467eb5-79ab-4430-9957-b49fca4cd9ef
+    :description: Create valid non-network source, and then attempt to
+        update it with an excluded hostname option.
+    :steps:
+        1) Create valid credential and source that isn't a network type
+        2) Update the source with an excluded host
+    :expectedresults: Error codes are returned and the source is not updated.
+    """
+    src = gen_valid_source(cleanup, src_type, scan_host)
+    original_data = copy.deepcopy(src.fields())
+    src.exclude_hosts = ['10.10.10.10']
     assert_source_update_fails(original_data, src)
 
 

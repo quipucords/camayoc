@@ -280,7 +280,6 @@ class Source(QPCObject):
             client=None,
             name=None,
             hosts=None,
-            exclude_hosts=None,
             port=None,
             credential_ids=None,
             source_type=None,
@@ -295,7 +294,6 @@ class Source(QPCObject):
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_SOURCE_PATH
         self.hosts = hosts
-        self.exclude_hosts = exclude_hosts
         if port is not None:
             self.port = port
         if options is not None:

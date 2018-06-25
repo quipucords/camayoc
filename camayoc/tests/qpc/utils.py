@@ -45,7 +45,7 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
-def assert_source_create_fails(source):
+def assert_source_create_fails(source, type=None):
     """Assert that the create method of this source fails.
 
     :param source: The source object.
@@ -64,7 +64,10 @@ def assert_source_create_fails(source):
         {'hosts':
             ['Source of type satellite must have a single hosts.']},
         {'credentials':
-            ['Source of type satellite must have a single credential.']}]
+            ['Source of type satellite must have a single credential.']},
+        {'exclude_hosts':
+            ['The exclude_hosts option is not valid for source of type ' +
+             type + '.']}]
     response = create_response.json()
     assert response in expected_errors
     # give the source its original client back
@@ -80,8 +83,10 @@ def gen_valid_source(cleanup, src_type, host, create=True, exclude_host=None):
         source_type=src_type,
         hosts=[host],
         credential_ids=[cred._id],
-        exclude_hosts=[exclude_host],
     )
+    # QPC does not accept blank exclude_host values, only add it if not empty.
+    if exclude_host is not None:
+        source.exclude_hosts = [exclude_host]
     if create:
         source.create()
         cleanup.append(source)
