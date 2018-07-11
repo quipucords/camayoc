@@ -32,6 +32,6 @@ def test_login_logout(browser):
     assert browser.selenium.title == 'Red Hat Entitlements Reporting'
 
     dashboard = DashboardView(browser)
-    dashboard.user_dropdown.select_item('Logout')
+    dashboard.user_dropdown.select_item('Log out')
 
     login.login.wait_displayed()
