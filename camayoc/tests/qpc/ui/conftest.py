@@ -5,7 +5,7 @@ from widgetastic.browser import Browser
 
 from camayoc.utils import get_qpc_url
 
-from .views import DashboardView, LoginView
+from .views import LoginView
 
 
 def pytest_collection_modifyitems(config, items):
@@ -42,10 +42,10 @@ def chrome_options(chrome_options):
 
     By default testing is done in headless mode.
     """
-#    chrome_options.add_argument('--headless')
-#    chrome_options.add_argument('--disable-gpu')
-#    chrome_options.add_argument('--no-sandbox')
-#    chrome_options.add_argument('--allow-insecure-localhost')
+    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--allow-insecure-localhost')
     return chrome_options
 
 
