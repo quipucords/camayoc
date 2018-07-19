@@ -32,6 +32,7 @@ def create_credential(view):
     """Create a credential through the UI."""
     dash = DashboardView(view)
     dash.nav.select('Credentials')
+    # TODO: Parametrize for different types of credentials.
     try:
         add_credential_dropdown = Dropdown(view, 'Add Credential')
         add_credential_dropdown.item_select('Network Credential')
