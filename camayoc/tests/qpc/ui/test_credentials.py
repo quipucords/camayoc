@@ -11,18 +11,14 @@
 """
 from uuid import uuid4
 
-
 from selenium.common.exceptions import NoSuchElementException
-
 
 from smartloc import Locator
 
-
+from widgetastic.exceptions import WidgetOperationFailed as wof
 from widgetastic.widget import Checkbox
 
-
 from widgetastic_patternfly import Button, Dropdown
-
 
 from .utils import clear_toasts, fill
 from .views import CredentialModalView, DashboardView, DeleteModalView
@@ -73,7 +69,11 @@ def test_create_delete_credential(browser, qpc_login):
     create_credential(browser)
     # Confirmation alert covers checkboxes and buttons when clicking
     check = Checkbox(browser, locator=Locator(css='[type="checkbox"]'))
-    check.fill(True)
+    try:
+        check.fill(True)
+    except wof:
+        clear_toasts(view=browser)
+        check.fill(True)
     Button(browser, 'Delete').click()
     DeleteModalView(browser, locator=Locator(
                         css='.modal-content')).delete_button.click()
