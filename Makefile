@@ -1,6 +1,6 @@
 TESTIMONY_TOKENS="caseautomation, casecomponent, caseimportance, caselevel, caseposneg, description, expectedresults, id, requirement, setup, subtype1, subtype2, steps, teardown, testtype, upstream, title"
 TESTIMONY_MINIMUM_TOKENS="id, requirement, caseautomation, caselevel, casecomponent, testtype, caseimportance, upstream"
-PYTEST_OPTIONS=--verbose --driver=Chrome
+PYTEST_OPTIONS=--verbose
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
@@ -88,7 +88,7 @@ test-qpc-api:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/api
 
 test-qpc-ui:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/ui
+	py.test $(PYTEST_OPTIONS) --driver=Chrome camayoc/tests/qpc/ui
 
 test-qpc-cli:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/cli
