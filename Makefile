@@ -88,7 +88,7 @@ test-qpc-api:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/api
 
 test-qpc-ui:
-	py.test $(PYTEST_OPTIONS) --driver=Chrome camayoc/tests/qpc/ui
+	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/ui
 
 test-qpc-cli:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/cli
