@@ -1,12 +1,12 @@
 # coding=utf-8
 """Utility class for UI tests."""
 
-from selenium.common.exceptions import NoSuchElementException \
-        as NoSuchElement, StaleElementReferenceException as StaleElement
+from selenium.common.exceptions import NoSuchElementException, \
+        StaleElementReferenceException
 
 from smartloc import Locator
 
-from widgetastic.widget import GenericLocatorWidget as LocWidget, TextInput
+from widgetastic.widget import GenericLocatorWidget, TextInput
 
 
 def fill(view, xpath_locator, text):
@@ -24,6 +24,6 @@ def clear_toasts(view, count=1):
     for i in range(count):
         try:
             view.wait_for_element(locator=Locator(css='.close'))
-            LocWidget(view, locator=Locator(css='.close')).click()
-        except (NoSuchElement, StaleElement) as e:
+            GenericLocatorWidget(view, locator=Locator(css='.close')).click()
+        except (NoSuchElementException, StaleElementReferenceException):
             break
