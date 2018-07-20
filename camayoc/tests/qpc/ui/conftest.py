@@ -40,9 +40,9 @@ def browser(selenium):
 def chrome_options(chrome_options):
     """Set options if using a chrome webdriver.
 
-    By default testing is done in headless mode.
+    Headless mode lowers memory overhead while performing the same tests.
     """
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--allow-insecure-localhost')

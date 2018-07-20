@@ -1,6 +1,6 @@
 TESTIMONY_TOKENS="caseautomation, casecomponent, caseimportance, caselevel, caseposneg, description, expectedresults, id, requirement, setup, subtype1, subtype2, steps, teardown, testtype, upstream, title"
 TESTIMONY_MINIMUM_TOKENS="id, requirement, caseautomation, caselevel, casecomponent, testtype, caseimportance, upstream"
-PYTEST_OPTIONS=--verbose
+PYTEST_OPTIONS=--verbose --driver=Chrome
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
