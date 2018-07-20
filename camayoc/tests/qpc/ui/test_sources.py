@@ -1,7 +1,7 @@
 # coding=utf-8
 """Test for handling sources in the UI.
 
-caseautomation: automated
+:caseautomation: automated
 :casecomponent: ui
 :caseimportance: high
 :caselevel: integration
@@ -18,10 +18,10 @@ from .views import DashboardView
 def test_create_source(browser):
     """Create a source through the UI.
 
-    :id:
-    :description:
-    :steps:
-    :expectedresults:
+    :id: b1f64fd6-0421-4650-aa6d-149cb3099012
+    :description: Creates a source in the UI.
+    :steps: TODO
+    :expectedresults: TODO
     """
     dash = DashboardView(browser)
     dash.nav.select('Sources')
