@@ -14,7 +14,7 @@ def fill(view, xpath_locator, text):
     TextInput(view, locator=Locator(xpath=xpath_locator)).fill(text)
 
 
-def clear_toasts(view, count=1):
+def clear_toasts(view, count=20):
     """Attempt to flush any confirmation dialogs that may have appeared.
 
     Use this function to clear out dialogs that may be preventing buttons
