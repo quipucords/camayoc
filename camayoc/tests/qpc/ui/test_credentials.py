@@ -27,7 +27,7 @@ from widgetastic_patternfly import Button, Dropdown
 
 from camayoc import utils
 
-from .utils import clear_toasts, fill
+from .utils import clear_toasts, field_xpath, fill
 from .views import CredentialModalView, DashboardView, DeleteModalView
 
 CREDENTIAL_TYPES = ['Network', 'Satellite', 'VCenter']
@@ -59,11 +59,6 @@ def set_checkbox(view, name, fill):
     except WidgetOperationFailed:
         clear_toasts(view=view)
         checkbox.fill(fill)
-
-
-def field_xpath(label):
-    """Build an xpath for selecting a form field based on its label."""
-    return '//input[ancestor::node()[2]/label[text() = "' + label + '"]]'
 
 
 def create_credential(view, options):
