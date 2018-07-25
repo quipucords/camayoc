@@ -74,4 +74,3 @@ def test_create_source(browser, qpc_login):
         xpath='//span[contains(@class, "pficon-delete")]' +
         '/ancestor::node()[5]//*[text()="' + name + '"]')).click()
     DeleteModalView(browser).delete_button.click()
-    import pdb; pdb.set_trace()
