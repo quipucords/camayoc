@@ -14,9 +14,13 @@ def fill(view, xpath_locator, text):
     TextInput(view, locator=Locator(xpath=xpath_locator)).fill(text)
 
 
-def field_xpath(label):
+def field_xpath(label, textarea=False):
     """Build an xpath for selecting a form field based on its label."""
-    return '//input[ancestor::node()[2]/label[text() = "' + label + '"]]'
+    if textarea:
+        return '//textarea[ancestor::node()[2]/label[text() = "' + \
+                label + '"]]'
+    else:
+        return '//input[ancestor::node()[2]/label[text() = "' + label + '"]]'
 
 
 def radio_xpath(label):
