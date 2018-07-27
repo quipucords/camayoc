@@ -25,18 +25,11 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(skip_ui)
 
 
-#  @pytest.fixture(scope='session')
-#  def selenium(selenium):
-#      """Override selenium default by changing the browser window size."""
-#      selenium.set_window_size(1200, 800)
-#      return selenium
-
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def browser(request):
     """Selenium instance."""
     chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--allow-insecure-localhost')
