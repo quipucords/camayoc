@@ -9,62 +9,46 @@
 :testtype: functional
 :upstream: yes
 """
-import time
-
-from selenium.common.exceptions import NoSuchElementException
-
-from smartloc import Locator
-
-from widgetastic.widget import GenericLocatorWidget
-
-from widgetastic_patternfly import Button, Dropdown
+import pytest
 
 from camayoc import utils
 
-from .utils import (
-        clear_toasts,
-        field_xpath,
-        fill,
-        radio_xpath
-)
-from .views import DashboardView, DeleteModalView, SourceModalView
+from .utils import create_source, delete_source
+
+SOURCE_DATA = {
+    'Network': [
+        '127.0.0.1',
+        '127.0.0.1, 127.0.0.2',
+        '192.168.1.[1:100]',
+        '192.168.0.0/24',
+        'example.sonar.com'],
+    'Satellite': [
+        '127.0.0.1',
+        'examplesatellite.sonar.com'],
+    'VCenter': [
+        '127.0.0.1',
+        'examplevcenter.sonar.com'],
+    }
 
 
-def test_create_source(browser, qpc_login, credentials):
-    """Create a source through the UI.
+@pytest.mark.parametrize('source_type, ', SOURCE_DATA.keys())
+def test_create_delete_source(browser, qpc_login, credentials, source_type):
+    """Create and then delete a source through the UI.
 
     :id: b1f64fd6-0421-4650-aa6d-149cb3099012
     :description: Creates a source in the UI.
     :steps:
         1) Go to the sources page and open the sources modal.
         2) Fill in the required information and create a new source.
-    :expectedresults: A new source is created with the provided information.
+        3) Remove the newly created source.
+    :expectedresults: A new source is created with the provided information,
+        then it is deleted.
     """
-    # TODO: Turn creation and deletion of sources into utility functions.
-    dash = DashboardView(browser)
-    dash.nav.select('Sources')
-    try:
-        Button(browser, 'Add Source').click()
-    except NoSuchElementException:
-        Button(browser, 'Add').click()
-
-    modal = SourceModalView(browser, locator=Locator(css='.modal-content'))
-    GenericLocatorWidget(
-            modal, locator=Locator(xpath=radio_xpath('Network Range'))).click()
-    modal.next_button.click()
-    name = utils.uuid4()
-    fill(modal, field_xpath('Name'), name)
-    fill(modal, field_xpath('Search Addresses', textarea=True), '127.0.0.1')
-    fill(modal, field_xpath('Port'), '')  # default port of 22
-    cred_dropdown = Dropdown(modal, 'Select one or more credentials')
-    cred_dropdown.item_select(credentials['Network'])
-    Button(modal, 'Save').click()
-    browser.wait_for_element(locator=Locator('//button[text()="Close"]'))
-    Button(modal, 'Close', classes=[Button.PRIMARY]).click()
-    time.sleep(0.3)  # wait for window animation to complete
-    #  Deletion inherently asserts that the new sources exists in the UI.
-    GenericLocatorWidget(browser, locator=Locator(
-        xpath='//div[//*/text()="' + name +
-        '"]//*[contains(@class, "pficon-delete")]')).click()
-    DeleteModalView(browser).delete_button.click()
-    clear_toasts(browser)
+    source_name = utils.uuid4()
+    credential_name = credentials[source_type]
+    for addresses in SOURCE_DATA[source_type]:
+        create_source(
+                browser, credential_name, source_type, source_name, addresses)
+        #  Deletion implicitly asserts new sources exists in the UI.
+        delete_source(browser, source_name)
+        browser.refresh()

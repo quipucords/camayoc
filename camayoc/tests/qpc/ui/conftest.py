@@ -60,6 +60,7 @@ def credentials(browser, qpc_login):
     # Credential type is a case-sensitive parameter and matches UI text
     names = {
         'Network': uuid4(),
+        'Network2': uuid4(),
         'Satellite': uuid4(),
         'VCenter': uuid4()
         }
@@ -73,6 +74,8 @@ def credentials(browser, qpc_login):
         'credential_type': 'Network'
     }
     create_credential(browser, options)
+    options['name'] = names['Network2']
+    create_credential(browser, options)
     options['name'] = names['Satellite']
     options['credential_type'] = 'Satellite'
     create_credential(browser, options)
@@ -80,4 +83,5 @@ def credentials(browser, qpc_login):
     options['credential_type'] = 'VCenter'
     create_credential(browser, options)
     yield names
+    browser.refresh()
     delete_credential(browser, set(names.values()))

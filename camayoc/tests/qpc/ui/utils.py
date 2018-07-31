@@ -17,7 +17,19 @@ from widgetastic.widget import Checkbox, GenericLocatorWidget, TextInput
 
 from widgetastic_patternfly import Button, Dropdown
 
-from .views import CredentialModalView, DashboardView, DeleteModalView
+from .views import (
+        CredentialModalView,
+        DashboardView,
+        DeleteModalView,
+        SourceModalView
+)
+
+
+SOURCE_TYPE_RADIO_LABELS = {
+    'Network': 'Network Range',
+    'Satellite': 'Satellite',
+    'VCenter': 'vCenter Server'
+}
 
 
 def checkbox_xpath(credential_name):
@@ -85,6 +97,7 @@ def clear_toasts(view, count=20):
 
 def create_credential(view, options):
     """Create a credential through the UI."""
+    clear_toasts(view=view)
     dash = DashboardView(view)
     dash.nav.select('Credentials')
     # Display differs depending on whether or not credentials already exist
@@ -132,7 +145,7 @@ def create_credential(view, options):
 
 def delete_credential(view, names):
     """Delete a credential through the UI."""
-    clear_toasts(view=view)
+    view.refresh()
     dash = DashboardView(view)
     dash.nav.select('Credentials')
     for name in names:
@@ -141,7 +154,55 @@ def delete_credential(view, names):
     DeleteModalView(view, locator=Locator(
                         css='.modal-content')).delete_button.click()
     for name in names:
-        time.sleep(0.2)  # wait for element deletion to complete
+        time.sleep(0.5)
         with pytest.raises(
                 (NoSuchElementException, StaleElementReferenceException)):
-            view.element(locator=Locator(xpath=checkbox_xpath(name)))
+            view.wait_for_element(locator=Locator(xpath=checkbox_xpath(name)),
+                                  timeout=0.6)
+
+
+def create_source(view, credential_name, source_type, source_name, addresses):
+    """Create a source through the UI."""
+    clear_toasts(view=view)
+    dash = DashboardView(view)
+    dash.nav.select('Sources')
+    try:
+        Button(view, 'Add Source').click()
+    except NoSuchElementException:
+        Button(view, 'Add').click()
+
+    modal = SourceModalView(view, locator=Locator(css='.modal-content'))
+    radio_label = SOURCE_TYPE_RADIO_LABELS[source_type]
+    time.sleep(0.2)  # animation timing wait
+    GenericLocatorWidget(
+            modal, locator=Locator(xpath=radio_xpath(radio_label))).click()
+    modal.next_button.click()
+    fill(modal, field_xpath('Name'), source_name)
+    if source_type is 'Network':
+        fill(
+            modal, field_xpath('Search Addresses', textarea=True), addresses)
+        fill(modal, field_xpath('Port'), '')  # default port of 22
+        cred_dropdown = Dropdown(modal, 'Select one or more credentials')
+        cred_dropdown.item_select(credential_name)
+    else:
+        fill(modal, field_xpath('IP Address or Hostname'), addresses)
+        cred_dropdown = Dropdown(modal, 'Select a credential')
+        cred_dropdown.item_select(credential_name)
+    Button(modal, 'Save').click()
+    view.wait_for_element(locator=Locator('//button[text()="Close"]'))
+    Button(modal, 'Close', classes=[Button.PRIMARY]).click()
+    time.sleep(0.3)  # wait for window animation to complete
+
+
+def delete_source(view, source_name):
+    """Delete a source through the UI."""
+    GenericLocatorWidget(view, locator=Locator(
+        xpath='//div[//*/text()="' + source_name +
+        '"]//*[contains(@class, "pficon-delete")]')).click()
+    DeleteModalView(view).delete_button.click()
+    time.sleep(0.2)  # animation timing wait
+    with pytest.raises(
+            (NoSuchElementException, StaleElementReferenceException)):
+        view.element(locator=Locator(
+            xpath='//div[//*/text()="' + source_name +
+            '"]//*[contains(@class, "pficon-delete")]'))
