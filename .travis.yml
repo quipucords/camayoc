@@ -2,8 +2,8 @@ cache: pip
 language: python
 sudo: false
 python:
-    - '3.5'
     - '3.6'
+    - '3.7'
 install:
     - make install-dev
     - pip install codecov
