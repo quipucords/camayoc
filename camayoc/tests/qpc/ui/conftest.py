@@ -63,7 +63,7 @@ def credentials(browser, qpc_login):
         'Network2': uuid4(),
         'Satellite': uuid4(),
         'VCenter': uuid4()
-        }
+    }
     username = uuid4()
     password = uuid4()
 

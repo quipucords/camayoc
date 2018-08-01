@@ -44,11 +44,16 @@ def test_create_delete_source(browser, qpc_login, credentials, source_type):
     :expectedresults: A new source is created with the provided information,
         then it is deleted.
     """
-    source_name = utils.uuid4()
+    #  A dict of source names with the address parameters as keys is created.
+    source_names = {}
+    #  Credentials have to be the same type as the source, so we use pre-made
+    #  credentials that exist for each type.
     credential_name = credentials[source_type]
     for addresses in SOURCE_DATA[source_type]:
-        create_source(
-                browser, credential_name, source_type, source_name, addresses)
-        #  Deletion implicitly asserts new sources exists in the UI.
-        delete_source(browser, source_name)
-        browser.refresh()
+        source_name = utils.uuid4()
+        source_names[addresses] = source_name
+        create_source(browser, credential_name, source_type,
+                      source_name, addresses)
+    #  Deletion internally asserts all new sources exist in the UI.
+    for addresses in SOURCE_DATA[source_type]:
+        delete_source(browser, source_names[addresses])

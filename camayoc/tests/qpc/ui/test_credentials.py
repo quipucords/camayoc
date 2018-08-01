@@ -19,7 +19,7 @@ from .utils import (
         check_auth_type,
         create_credential,
         delete_credential,
-)
+    )
 
 CREDENTIAL_TYPES = ['Network', 'Satellite', 'VCenter']
 

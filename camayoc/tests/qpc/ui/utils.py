@@ -22,20 +22,20 @@ from .views import (
         DashboardView,
         DeleteModalView,
         SourceModalView
-)
+    )
 
 
 SOURCE_TYPE_RADIO_LABELS = {
     'Network': 'Network Range',
     'Satellite': 'Satellite',
     'VCenter': 'vCenter Server'
-}
+    }
 
 
 def checkbox_xpath(credential_name):
     """Build an xpath for selecting a checkbox next to a credential."""
-    return ('//div[text()="' + str(credential_name) +
-            '"]/ancestor::node()[7]//*[@type="checkbox"]')
+    return (f"""//div[text()="{credential_name}"]/ancestor::node()[7]
+            //*[@type="checkbox"]""")
 
 
 def check_auth_type(credential_name, auth_type):
@@ -44,9 +44,8 @@ def check_auth_type(credential_name, auth_type):
     Example types include 'SSH Key' and 'Username and Password'.
     If the Locator cannot find a match, an exception is raised.
     """
-    Locator(xpath='//span[text() = "' +
-            auth_type + '" and ancestor::node()[2]//*[text()="' +
-            credential_name + '"]]')
+    Locator(xpath=f"""//span[text()="{auth_type}" and ancestor::node()[2]
+            //*[text()="{credential_name}"]]""")
 
 
 def set_checkbox(view, name, fill):
@@ -68,15 +67,14 @@ def fill(view, xpath_locator, text):
 def field_xpath(label, textarea=False):
     """Build an xpath for selecting a form field based on its label."""
     if textarea:
-        return ('//textarea[ancestor::node()[2]/label[text() = "' +
-                label + '"]]')
+        return (f'//textarea[ancestor::node()[2]/label[text() = "{label}"]]')
     else:
-        return '//input[ancestor::node()[2]/label[text() = "' + label + '"]]'
+        return (f'//input[ancestor::node()[2]/label[text() = "{label}"]]')
 
 
 def radio_xpath(label):
     """Build an xpath for selecting a radio button based on its label."""
-    return '//label[text()="' + label + '"]'
+    return f'//label[text()="{label}"]'
 
 
 def clear_toasts(view, count=20):
@@ -152,13 +150,12 @@ def delete_credential(view, names):
         set_checkbox(view, name, True)
     Button(view, 'Delete').click()
     DeleteModalView(view, locator=Locator(
-                        css='.modal-content')).delete_button.click()
+        css='.modal-content')).delete_button.click()
+    time.sleep(0.5)  # animation timing wait
     for name in names:
-        time.sleep(0.5)
-        with pytest.raises(
-                (NoSuchElementException, StaleElementReferenceException)):
-            view.wait_for_element(locator=Locator(xpath=checkbox_xpath(name)),
-                                  timeout=0.6)
+        with pytest.raises(NoSuchElementException):
+            view.wait_for_element(
+                locator=Locator(xpath=checkbox_xpath(name)), timeout=1)
 
 
 def create_source(view, credential_name, source_type, source_name, addresses):
@@ -174,13 +171,12 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     modal = SourceModalView(view, locator=Locator(css='.modal-content'))
     radio_label = SOURCE_TYPE_RADIO_LABELS[source_type]
     time.sleep(0.2)  # animation timing wait
-    GenericLocatorWidget(
-            modal, locator=Locator(xpath=radio_xpath(radio_label))).click()
+    GenericLocatorWidget(modal, locator=Locator(
+        xpath=radio_xpath(radio_label))).click()
     modal.next_button.click()
     fill(modal, field_xpath('Name'), source_name)
     if source_type is 'Network':
-        fill(
-            modal, field_xpath('Search Addresses', textarea=True), addresses)
+        fill(modal, field_xpath('Search Addresses', textarea=True), addresses)
         fill(modal, field_xpath('Port'), '')  # default port of 22
         cred_dropdown = Dropdown(modal, 'Select one or more credentials')
         cred_dropdown.item_select(credential_name)
@@ -191,18 +187,20 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     Button(modal, 'Save').click()
     view.wait_for_element(locator=Locator('//button[text()="Close"]'))
     Button(modal, 'Close', classes=[Button.PRIMARY]).click()
-    time.sleep(0.3)  # wait for window animation to complete
+    time.sleep(0.2)  # wait for window animation to complete
 
 
 def delete_source(view, source_name):
     """Delete a source through the UI."""
-    GenericLocatorWidget(view, locator=Locator(
-        xpath='//div[//*/text()="' + source_name +
-        '"]//*[contains(@class, "pficon-delete")]')).click()
-    DeleteModalView(view).delete_button.click()
     time.sleep(0.2)  # animation timing wait
-    with pytest.raises(
-            (NoSuchElementException, StaleElementReferenceException)):
+    GenericLocatorWidget(view, locator=Locator(
+        xpath=f"""//div[text()="{source_name}"]/ancestor::node()[7]
+            //*[contains(@class,"pficon-delete")]""")).click()
+    time.sleep(0.2)
+    DeleteModalView(view).delete_button.click()
+    time.sleep(0.2)
+    with pytest.raises(NoSuchElementException):
         view.element(locator=Locator(
-            xpath='//div[//*/text()="' + source_name +
-            '"]//*[contains(@class, "pficon-delete")]'))
+            xpath=f"""//div[text()="{source_name}"]/ancestor::node()[7]
+            //*[contains(@class,"pficon-delete")]"""))
+    view.refresh()
