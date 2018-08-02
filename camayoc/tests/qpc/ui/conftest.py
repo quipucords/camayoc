@@ -27,13 +27,24 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope='module')
 def browser(request):
-    """Selenium instance."""
+    """Selenium instance.
+
+    The current configuration takes advantage of a remote
+    webdriver for configurable setup. As of writing, this supports
+    a standalone chrome container. The following command can be used
+    to spin up the container (one line, no line breaks)
+
+    'docker run -d -p 4444:4444 -v /dev/shm:/dev/shm
+    selenium/standalone-chrome:3.13.0-argon'
+    """
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--allow-insecure-localhost')
-    driver = webdriver.Chrome(chrome_options=chrome_options)
+    driver = webdriver.Remote(
+        'http://127.0.0.1:4444/wd/hub',
+        desired_capabilities=chrome_options.to_capabilities())
     driver.get(get_qpc_url())
     driver.set_window_size(1200, 800)
     yield Browser(driver)
