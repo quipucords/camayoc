@@ -196,6 +196,7 @@ def delete_source(view, source_name):
     view.refresh()
     dash = DashboardView(view)
     dash.nav.select('Sources')
+    time.sleep(0.2)
     GenericLocatorWidget(view, locator=Locator(
         xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
                '//*[contains(@class,"pficon-delete")]'))).click()
