@@ -2,13 +2,10 @@
 import pytest
 
 from camayoc import api
-from camayoc.qpc_models import (
-    Credential,
-    Scan,
-    Source,
-)
+from camayoc.qpc_models import Credential, Scan, Source
 
 
+@pytest.fixture(scope='function')
 def sort_and_delete(trash):
     """Sort and delete a list of QPCObject typed items in the correct order."""
     creds = []
@@ -39,7 +36,6 @@ def sort_and_delete(trash):
             assert response.status_code < 500
 
 
-@pytest.fixture(scope='function')
 def cleanup():
     """Fixture that cleans up any created quipucords objects after a test."""
     trash = []

@@ -34,8 +34,8 @@ SOURCE_TYPE_RADIO_LABELS = {
 
 def checkbox_xpath(credential_name):
     """Build an xpath for selecting a checkbox next to a credential."""
-    return (f"""//div[text()="{credential_name}"]/ancestor::node()[7]
-            //*[@type="checkbox"]""")
+    return ((f'//div[text()="{credential_name}"]/ancestor::node()[7]'
+            '//*[@type="checkbox"]'))
 
 
 def check_auth_type(credential_name, auth_type):
@@ -44,8 +44,8 @@ def check_auth_type(credential_name, auth_type):
     Example types include 'SSH Key' and 'Username and Password'.
     If the Locator cannot find a match, an exception is raised.
     """
-    Locator(xpath=f"""//span[text()="{auth_type}" and ancestor::node()[2]
-            //*[text()="{credential_name}"]]""")
+    Locator(xpath=(f'//span[text()="{auth_type}" and ancestor::node()[2]'
+                   '//*[text()="{credential_name}"]]'))
 
 
 def set_checkbox(view, name, fill):
@@ -132,8 +132,9 @@ def create_credential(view, options):
     time.sleep(0.5)
     modal.save_button.click()
     time.sleep(0.5)
+    view.refresh()
     # clear any artifacts from confirmation dialog
-    clear_toasts(view=view)
+    view.refresh()
     view.wait_for_element(
             locator=Locator(xpath=checkbox_xpath(options['name'])), delay=0.3)
     # Checkbox next to name of credential is used to check for existence
@@ -192,15 +193,16 @@ def create_source(view, credential_name, source_type, source_name, addresses):
 
 def delete_source(view, source_name):
     """Delete a source through the UI."""
-    time.sleep(0.2)  # animation timing wait
+    view.refresh()
+    dash = DashboardView(view)
+    dash.nav.select('Sources')
     GenericLocatorWidget(view, locator=Locator(
-        xpath=f"""//div[text()="{source_name}"]/ancestor::node()[7]
-            //*[contains(@class,"pficon-delete")]""")).click()
+        xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
+               '//*[contains(@class,"pficon-delete")]'))).click()
     time.sleep(0.2)
     DeleteModalView(view).delete_button.click()
     time.sleep(0.2)
     with pytest.raises(NoSuchElementException):
         view.element(locator=Locator(
-            xpath=f"""//div[text()="{source_name}"]/ancestor::node()[7]
-            //*[contains(@class,"pficon-delete")]"""))
-    view.refresh()
+            xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
+                   '//*[contains(@class,"pficon-delete")]')))

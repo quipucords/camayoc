@@ -5,9 +5,10 @@ from selenium import webdriver
 
 from widgetastic.browser import Browser
 
+from camayoc.tests.qpc.cli.conftest import cleanup_server
 from camayoc.utils import get_qpc_url, uuid4
 
-from .utils import create_credential, delete_credential
+from .utils import create_credential
 from .views import LoginView
 
 
@@ -45,8 +46,21 @@ def browser(request):
     driver = webdriver.Remote(
         'http://127.0.0.1:4444/wd/hub',
         desired_capabilities=chrome_options.to_capabilities())
+
+#   Local chrome driver outside of container
+
+#   driver = webdriver.Chrome(
+#   desired_capabilities=chrome_options.to_capabilities())
+
+#   Firefox containerized driver
+
+#   firefox_options = webdriver.firefox.options.Options()
+#   firefox_options.add_argument('--headless')
+#   driver = webdriver.Remote(
+#       'http://127.0.0.1:4444/wd/hub',
+#       desired_capabilities=firefox_options.to_capabilities())
     driver.get(get_qpc_url())
-    driver.set_window_size(1200, 800)
+    driver.maximize_window()
     yield Browser(driver)
     driver.close()
 
@@ -58,6 +72,7 @@ def qpc_login(browser):
     login.username.fill('admin')
     login.password.fill('pass')
     login.login.click()
+#   assert browser.selenium.title == 'Entitlements Reporting'
     assert browser.selenium.title == 'Red Hat Entitlements Reporting'
 
 
@@ -94,5 +109,8 @@ def credentials(browser, qpc_login):
     options['credential_type'] = 'VCenter'
     create_credential(browser, options)
     yield names
-    browser.refresh()
-    delete_credential(browser, set(names.values()))
+    # Some tests are flaky, so we need to do a full clear
+    # to garbage-collect resources from failed calls.
+    # A clear-all option doesn't exit in the UI,
+    # So it is done through the CLI instead.
+    cleanup_server()
