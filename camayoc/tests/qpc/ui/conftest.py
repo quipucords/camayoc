@@ -46,7 +46,6 @@ def browser(request):
     driver = webdriver.Remote(
         'http://127.0.0.1:4444/wd/hub',
         desired_capabilities=chrome_options.to_capabilities())
-
 #   Local chrome driver outside of container
 
 #   driver = webdriver.Chrome(
