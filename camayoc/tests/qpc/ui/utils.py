@@ -193,10 +193,13 @@ def create_source(view, credential_name, source_type, source_name, addresses):
 
 def delete_source(view, source_name):
     """Delete a source through the UI."""
-    view.refresh()
+    clear_toasts(view=view)
     dash = DashboardView(view)
     dash.nav.select('Sources')
-    time.sleep(0.2)
+    time.sleep(0.5)
+    view.wait_for_element(locator=Locator(
+        xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
+               '//*[contains(@class,"pficon-delete")]')))
     GenericLocatorWidget(view, locator=Locator(
         xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
                '//*[contains(@class,"pficon-delete")]'))).click()
