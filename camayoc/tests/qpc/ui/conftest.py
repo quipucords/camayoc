@@ -43,6 +43,9 @@ def browser(request):
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--allow-insecure-localhost')
+
+#   Chrome containerized driver
+
     driver = webdriver.Remote(
         'http://127.0.0.1:4444/wd/hub',
         desired_capabilities=chrome_options.to_capabilities())
@@ -50,7 +53,7 @@ def browser(request):
 #   Local chrome driver outside of container
 
 #   driver = webdriver.Chrome(
-#   desired_capabilities=chrome_options.to_capabilities())
+#       desired_capabilities=chrome_options.to_capabilities())
 
 #   Firefox containerized driver
 
