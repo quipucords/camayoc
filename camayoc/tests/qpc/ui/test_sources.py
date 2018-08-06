@@ -33,7 +33,7 @@ SOURCE_DATA = {
     }
 
 
-@flaky(max_runs=5)
+@flaky(max_runs=15)
 @pytest.mark.parametrize('source_type, ', SOURCE_DATA.keys())
 def test_create_delete_source(browser, qpc_login, credentials, source_type):
     """Create and then delete a source through the UI.
