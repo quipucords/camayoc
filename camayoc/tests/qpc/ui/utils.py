@@ -32,10 +32,33 @@ SOURCE_TYPE_RADIO_LABELS = {
     }
 
 
-def checkbox_xpath(credential_name):
-    """Build an xpath for selecting a checkbox next to a credential."""
-    return ((f'//div[text()="{credential_name}"]/ancestor::node()[7]'
-            '//*[@type="checkbox"]'))
+def row_xpath(row_name):
+    """Build an xpath for selecting a certain row.
+
+    Works for credentials or sources.
+    """
+    return (f'//div[contains(@class, "list-view-pf-top-align")'
+            f' and descendant::div[text()="{row_name}"]]')
+
+
+def checkbox_xpath(row_name):
+    """Build an xpath for selecting a checkbox in a row.
+
+    Works for credentials or sources.
+    """
+    return (f'//div[contains(@class, "list-view-pf-top-align")'
+            f' and descendant::div[text()="{row_name}"]]'
+            f'/descendant::input[contains(@type,"checkbox")]')
+
+
+def delete_xpath(row_name):
+    """Return an xpath for selecting the delete button in a row.
+
+    Works for credentials or sources.
+    """
+    return (f'//div[contains(@class, "list-view-pf-top-align") and '
+            f'descendant::div[text()="{row_name}"]]/descendant::span'
+            f'[contains(@class, "pficon-delete")]')
 
 
 def check_auth_type(credential_name, auth_type):
@@ -45,7 +68,7 @@ def check_auth_type(credential_name, auth_type):
     If the Locator cannot find a match, an exception is raised.
     """
     Locator(xpath=(f'//span[text()="{auth_type}" and ancestor::node()[2]'
-                   '//*[text()="{credential_name}"]]'))
+                   f'//*[text()="{credential_name}"]]'))
 
 
 def set_checkbox(view, name, fill):
@@ -98,7 +121,7 @@ def create_credential(view, options):
     clear_toasts(view=view)
     dash = DashboardView(view)
     dash.nav.select('Credentials')
-    # Display differs depending on whether or not credentials already exist
+    # Display differs depending on whether or not credentials already exist.
     try:
         add_credential_dropdown = Dropdown(view, 'Add Credential')
         add_credential_dropdown.item_select(
@@ -109,10 +132,12 @@ def create_credential(view, options):
                 options['credential_type'] + ' Credential')
     modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
 
-    # workaround, should be `assert modal.save_button.disabled`
+    # Workaround, should be `assert modal.save_button.disabled`
     # https://github.com/RedHatQE/widgetastic.patternfly/pull/66
     assert modal.save_button.browser.get_attribute(
-            'disabled', modal.save_button)
+        'disabled', modal.save_button)
+
+    # Fill in the required credential information.
     fill(modal, field_xpath('Credential Name'), options['name'])
     fill(modal, field_xpath('Username'), options['username'])
     if 'sshkeyfile' in options:
@@ -125,21 +150,23 @@ def create_credential(view, options):
     if 'become_user' in options:
         fill(modal, field_xpath('Become User'), options['become_user'])
         fill(modal, field_xpath('Become Password'), options['become_pass'])
+
     assert not modal.save_button.browser.get_attribute(
             'disabled', modal.save_button)
-    # hack to deal with the fact that the GET refresh isn't
-    # implemented with saving
+
+    # Hack to deal with the fact that the GET refresh isn't
+    # implemented when the save button is clicked.
+    # https://github.com/quipucords/quipucords/issues/1399
     time.sleep(0.5)
     modal.save_button.click()
     time.sleep(0.5)
     view.refresh()
-    # clear any artifacts from confirmation dialog
-    view.refresh()
-    view.wait_for_element(
-            locator=Locator(xpath=checkbox_xpath(options['name'])), delay=0.3)
-    # Checkbox next to name of credential is used to check for existence
+    dash.nav.select('Credentials')
+    # Assert the row with the credential name exists.
+    view.wait_for_element(locator=Locator(
+        xpath=row_xpath(options['name'])), delay=0.3)
     assert isinstance(view.element(locator=Locator(
-        xpath=checkbox_xpath(options['name']))), WebElement)
+        xpath=row_xpath(options['name']))), WebElement)
 
 
 def delete_credential(view, names):
@@ -147,16 +174,19 @@ def delete_credential(view, names):
     view.refresh()
     dash = DashboardView(view)
     dash.nav.select('Credentials')
+    # Select all the checkboxes next to the credentials to be deleted.
     for name in names:
         set_checkbox(view, name, True)
     Button(view, 'Delete').click()
     DeleteModalView(view, locator=Locator(
         css='.modal-content')).delete_button.click()
-    time.sleep(0.5)  # animation timing wait
+    # Wait for the deletion animations to complete,
+    # and verify that the rows are gone.
+    time.sleep(0.5)
     for name in names:
         with pytest.raises(NoSuchElementException):
-            view.wait_for_element(
-                locator=Locator(xpath=checkbox_xpath(name)), timeout=1)
+            view.wait_for_element(locator=Locator(
+                xpath=row_xpath(name)), timeout=1)
 
 
 def create_source(view, credential_name, source_type, source_name, addresses):
@@ -164,17 +194,23 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     clear_toasts(view=view)
     dash = DashboardView(view)
     dash.nav.select('Sources')
+    # Display varies depending on whether or not sources already exist.
     try:
         Button(view, 'Add Source').click()
     except NoSuchElementException:
         Button(view, 'Add').click()
 
+    # Source creation wizard
     modal = SourceModalView(view, locator=Locator(css='.modal-content'))
     radio_label = SOURCE_TYPE_RADIO_LABELS[source_type]
-    time.sleep(0.2)  # animation timing wait
+
+    # Wait for radio button to become responsive before clicking a source type.
+    time.sleep(0.2)
     GenericLocatorWidget(modal, locator=Locator(
         xpath=radio_xpath(radio_label))).click()
     modal.next_button.click()
+
+    # Fill in required source information.
     fill(modal, field_xpath('Name'), source_name)
     if source_type is 'Network':
         fill(modal, field_xpath('Search Addresses', textarea=True), addresses)
@@ -188,7 +224,10 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     Button(modal, 'Save').click()
     view.wait_for_element(locator=Locator('//button[text()="Close"]'))
     Button(modal, 'Close', classes=[Button.PRIMARY]).click()
-    time.sleep(0.2)  # wait for window animation to complete
+
+    # Verify that the new row source has been created.
+    view.wait_for_element(locator=Locator(xpath=row_xpath(source_name)))
+    view.element(locator=Locator(xpath=row_xpath(source_name)))
 
 
 def delete_source(view, source_name):
@@ -198,15 +237,12 @@ def delete_source(view, source_name):
     dash.nav.select('Sources')
     time.sleep(0.5)
     view.wait_for_element(locator=Locator(
-        xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
-               '//*[contains(@class,"pficon-delete")]')))
+        xpath=(delete_xpath(source_name))))
     GenericLocatorWidget(view, locator=Locator(
-        xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
-               '//*[contains(@class,"pficon-delete")]'))).click()
-    time.sleep(0.2)
+        xpath=delete_xpath(source_name))).click()
+    time.sleep(0.5)
     DeleteModalView(view).delete_button.click()
-    time.sleep(0.2)
+    view.refresh()
     with pytest.raises(NoSuchElementException):
-        view.element(locator=Locator(
-            xpath=(f'//div[text()="{source_name}"]/ancestor::node()[7]'
-                   '//*[contains(@class,"pficon-delete")]')))
+        view.wait_for_element(locator=Locator(xpath=delete_xpath(source_name)),
+                              timeout=1)
