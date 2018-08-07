@@ -129,6 +129,38 @@ install the qpc_ executable in such a way that it is available in your
     directory  because some tests create temporary files in ``/tmp`` that
     must be accessed by the server.
 
+
+For UI tests, you should set the `SELENIUM_DRIVER` environment variable to either `Chrome`
+or `Firefox` depending on what you want to use. If this is not set, `Chrome`
+is used by default. Additionally, you need to set up remote containers for use::
+   
+   # Chrome Selenium container, run as one line.
+   docker run -d -P -p 4444:4444 --net="host" -v /dev/shm:/dev/shm \
+   -v /tmp:/tmp:z selenium/standalone-chrome:3.14.0-arsenic
+
+   # Firefox Selenium container
+   docker run -d -P -p 4444:4444 --net="host" -v /dev/shm:/dev/shm \
+   -v /tmp:/tmp:z selenium/standalone-firefox:3.14.0-arsenic
+
+Additionally, you may want to observe the UI tests directly. In order to do so::
+   
+   # Chrome debug mode
+   docker run -d -P -p 4444:4444 -p 5900:5900 --net="host" -v /dev/shm:/dev/shm \
+   -v /tmp:/tmp:z selenium/standalone-chrome-debug:3.14.0-arsenic
+   
+   # Firefox debug mode
+   docker run -d -P -p 4444:4444 -p 5900:5900 --net="host" -v /dev/shm:/dev/shm \
+   -v /tmp:/tmp:z selenium/standalone-firefox-debug:3.14.0-arsenic
+
+You also probably need to comment out or unset the `--headless` option for your browser, located in `camayoc/tests/qpc/ui/conftest.py`.
+
+This then starts a VNC server which may be viewed with the command::
+   vncviewer :5900
+
+There may be a password when using `vncviewer`, which by default is `secret`.
+For more information on configuring debug mode, see https://github.com/SeleniumHQ/docker-selenium/#debugging.
+
+
 To only test the API, CLI, or UI, you can take advantage of the
 following make targets::
 

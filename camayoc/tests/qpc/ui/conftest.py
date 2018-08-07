@@ -1,4 +1,6 @@
 """Test utilities for quipucords' UI tests."""
+import os
+
 import pytest
 
 from selenium import webdriver
@@ -30,37 +32,32 @@ def pytest_collection_modifyitems(config, items):
 def browser(request):
     """Selenium instance.
 
-    The current configuration takes advantage of a remote
-    webdriver for configurable setup. As of writing, this supports
-    a standalone chrome container. The following command can be used
-    to spin up the container (one line, no line breaks)
-
-    'docker run -d -p 4444:4444 -v /dev/shm:/dev/shm
-    selenium/standalone-chrome:3.13.0-argon'
+    See README for configuration of remote browser containers.
     """
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--allow-insecure-localhost')
+    # Default to chrome for UI testing.
+    try:
+        os.environ['SELENIUM_DRIVER']
+    except KeyError:
+        os.environ['SELENIUM_DRIVER'] = 'Chrome'
 
-#   Chrome containerized driver
+    driver_type = os.environ['SELENIUM_DRIVER']
+    if driver_type == 'Chrome':
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--allow-insecure-localhost')
+        driver = webdriver.Remote(
+            'http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=chrome_options.to_capabilities())
 
-    driver = webdriver.Remote(
-        'http://127.0.0.1:4444/wd/hub',
-        desired_capabilities=chrome_options.to_capabilities())
-#   Local chrome driver outside of container
+    elif driver_type == 'Firefox':
+        firefox_options = webdriver.firefox.options.Options()
+        firefox_options.add_argument('--headless')
+        driver = webdriver.Remote(
+            'http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=firefox_options.to_capabilities())
 
-#   driver = webdriver.Chrome(
-#       desired_capabilities=chrome_options.to_capabilities())
-
-#   Firefox containerized driver
-
-#   firefox_options = webdriver.firefox.options.Options()
-#   firefox_options.add_argument('--headless')
-#   driver = webdriver.Remote(
-#       'http://127.0.0.1:4444/wd/hub',
-#       desired_capabilities=firefox_options.to_capabilities())
     driver.get(get_qpc_url())
     driver.maximize_window()
     yield Browser(driver)
@@ -74,6 +71,8 @@ def qpc_login(browser):
     login.username.fill('admin')
     login.password.fill('pass')
     login.login.click()
+    # Firefox uses the commented out title for some reason.
+    # https://github.com/quipucords/quipucords/issues/1401
 #   assert browser.selenium.title == 'Entitlements Reporting'
     assert browser.selenium.title == 'Red Hat Entitlements Reporting'
 
@@ -115,4 +114,9 @@ def credentials(browser, qpc_login):
     # to garbage-collect resources from failed calls.
     # A clear-all option doesn't exit in the UI,
     # So it is done through the CLI instead.
-    cleanup_server()
+    # Also, an internal server error sometimes occurs when wiping credentials
+    # https://github.com/quipucords/quipucords/issues/1275
+    try:
+        cleanup_server()
+    except Exception:
+        cleanup_server()

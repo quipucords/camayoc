@@ -33,6 +33,7 @@ SOURCE_DATA = {
     }
 
 
+# Flakiness of test due to https://github.com/quipucords/quipucords/issues/1275
 @flaky(max_runs=10)
 @pytest.mark.parametrize('source_type, ', SOURCE_DATA.keys())
 def test_create_delete_source(browser, qpc_login, credentials, source_type):
