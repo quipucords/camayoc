@@ -29,7 +29,11 @@ def test_login_logout(browser):
     login.password.fill('pass')
     login.login.click()
 
-    assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    # https://github.com/quipucords/quipucords/issues/1401
+    try:
+        assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    except AssertionError:
+        assert browser.selenium.title == 'Entitlements Reporting'
 
     dashboard = DashboardView(browser)
     dashboard.user_dropdown.select_item('Log out')

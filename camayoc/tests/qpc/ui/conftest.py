@@ -59,7 +59,7 @@ def browser(request):
             f'Unsupported SELENIUM_DRIVER provided: {driver_type}')
 
     driver.get(get_qpc_url())
-    driver.maximize_window()
+    driver.set_window_size(1920, 1080)
     yield Browser(driver)
     driver.close()
 
@@ -73,8 +73,10 @@ def qpc_login(browser):
     login.login.click()
     # Firefox uses the commented out title for some reason.
     # https://github.com/quipucords/quipucords/issues/1401
-#   assert browser.selenium.title == 'Entitlements Reporting'
-    assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    try:
+        assert browser.selenium.title == 'Entitlements Reporting'
+    except AssertionError:
+        assert browser.selenium.title == 'Red Hat Entitlements Reporting'
 
 
 @pytest.fixture(scope='module')
