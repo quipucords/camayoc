@@ -73,6 +73,7 @@ def qpc_login(browser):
     login.login.click()
     # Firefox uses the commented out title for some reason.
     # https://github.com/quipucords/quipucords/issues/1401
+    # https://github.com/quipucords/camayoc/issues/281
     try:
         assert browser.selenium.title == 'Entitlements Reporting'
     except AssertionError:

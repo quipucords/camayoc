@@ -139,6 +139,7 @@ def create_credential(view, options):
 
     # Workaround, should be `assert modal.save_button.disabled`
     # https://github.com/RedHatQE/widgetastic.patternfly/pull/66
+    # https://github.com/quipucords/camayoc/issues/279
     assert modal.save_button.browser.get_attribute(
         'disabled', modal.save_button)
 
@@ -162,6 +163,7 @@ def create_credential(view, options):
     # Hack to deal with the fact that the GET refresh isn't
     # implemented when the save button is clicked.
     # https://github.com/quipucords/quipucords/issues/1399
+    # https://github.com/quipucords/camayoc/issues/280
     wait_for_animation()
     modal.save_button.click()
     wait_for_animation()

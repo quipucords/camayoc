@@ -30,6 +30,7 @@ def test_login_logout(browser):
     login.login.click()
 
     # https://github.com/quipucords/quipucords/issues/1401
+    # https://github.com/quipucords/camayoc/issues/281
     try:
         assert browser.selenium.title == 'Red Hat Entitlements Reporting'
     except AssertionError:
