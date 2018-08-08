@@ -142,7 +142,9 @@ is used by default. Additionally, you need to set up remote containers for use::
    docker run -d -P -p 4444:4444 --net="host" -v /dev/shm:/dev/shm \
    -v /tmp:/tmp:z selenium/standalone-firefox:3.14.0-arsenic
 
-Additionally, you may want to observe the UI tests directly. In order to do so::
+Additionally, you may want to observe the UI tests directly. In order to do so, you
+need to use the debug versions of these remote containers, which provide a VNC server
+on port 5900::
    
    # Chrome debug mode
    docker run -d -P -p 4444:4444 -p 5900:5900 --net="host" -v /dev/shm:/dev/shm \
@@ -152,9 +154,14 @@ Additionally, you may want to observe the UI tests directly. In order to do so::
    docker run -d -P -p 4444:4444 -p 5900:5900 --net="host" -v /dev/shm:/dev/shm \
    -v /tmp:/tmp:z selenium/standalone-firefox-debug:3.14.0-arsenic
 
-You also probably need to comment out or unset the `--headless` option for your browser, located in `camayoc/tests/qpc/ui/conftest.py`.
+Ensure that the environment variable `SELENIUM_DEBUG` is set to `True`::
+   
+   export SELENIUM_DEBUG="True"
 
-This then starts a VNC server which may be viewed with the command::
+To observe tests as they run, use a VNC viewer. On Fedora, `vncviewer` is provided
+by installing tigervnc. If the container is on localhost and port 5900, you can view the browser
+with the following command::
+
    vncviewer :5900
 
 There may be a password when using `vncviewer`, which by default is `secret`.

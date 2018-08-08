@@ -35,28 +35,28 @@ def browser(request):
     See README for configuration of remote browser containers.
     """
     # Default to chrome for UI testing.
-    try:
-        os.environ['SELENIUM_DRIVER']
-    except KeyError:
-        os.environ['SELENIUM_DRIVER'] = 'Chrome'
-
-    driver_type = os.environ['SELENIUM_DRIVER']
-    if driver_type == 'Chrome':
+    driver_type = os.environ.get('SELENIUM_DRIVER', 'chrome').lower()
+    debug_mode = (os.environ.get('SELENIUM_DEBUG', 'false').lower() == 'true')
+    if driver_type == 'chrome':
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')
+        if debug_mode:
+            chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--allow-insecure-localhost')
         driver = webdriver.Remote(
             'http://127.0.0.1:4444/wd/hub',
             desired_capabilities=chrome_options.to_capabilities())
-
-    elif driver_type == 'Firefox':
+    elif driver_type == 'firefox':
         firefox_options = webdriver.firefox.options.Options()
-        firefox_options.add_argument('--headless')
+        if debug_mode:
+            firefox_options.add_argument('--headless')
         driver = webdriver.Remote(
             'http://127.0.0.1:4444/wd/hub',
             desired_capabilities=firefox_options.to_capabilities())
+    else:
+        raise ValueError(
+            f'Unsupported SELENIUM_DRIVER provided: {driver_type}')
 
     driver.get(get_qpc_url())
     driver.maximize_window()
@@ -112,11 +112,4 @@ def credentials(browser, qpc_login):
     yield names
     # Some tests are flaky, so we need to do a full clear
     # to garbage-collect resources from failed calls.
-    # A clear-all option doesn't exit in the UI,
-    # So it is done through the CLI instead.
-    # Also, an internal server error sometimes occurs when wiping credentials
-    # https://github.com/quipucords/quipucords/issues/1275
-    try:
-        cleanup_server()
-    except Exception:
-        cleanup_server()
+    cleanup_server()

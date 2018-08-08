@@ -32,6 +32,11 @@ SOURCE_TYPE_RADIO_LABELS = {
     }
 
 
+def wait_for_animation(multiplier=1):
+    """Wait for animations to complete."""
+    time.sleep(0.5 * multiplier)
+
+
 def row_xpath(row_name):
     """Build an xpath for selecting a certain row.
 
@@ -157,9 +162,9 @@ def create_credential(view, options):
     # Hack to deal with the fact that the GET refresh isn't
     # implemented when the save button is clicked.
     # https://github.com/quipucords/quipucords/issues/1399
-    time.sleep(0.5)
+    wait_for_animation()
     modal.save_button.click()
-    time.sleep(0.5)
+    wait_for_animation()
     view.refresh()
     dash.nav.select('Credentials')
     # Assert the row with the credential name exists.
@@ -182,7 +187,7 @@ def delete_credential(view, names):
         css='.modal-content')).delete_button.click()
     # Wait for the deletion animations to complete,
     # and verify that the rows are gone.
-    time.sleep(0.5)
+    wait_for_animation(2)
     for name in names:
         with pytest.raises(NoSuchElementException):
             view.wait_for_element(locator=Locator(
@@ -205,7 +210,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     radio_label = SOURCE_TYPE_RADIO_LABELS[source_type]
 
     # Wait for radio button to become responsive before clicking a source type.
-    time.sleep(0.2)
+    wait_for_animation()
     GenericLocatorWidget(modal, locator=Locator(
         xpath=radio_xpath(radio_label))).click()
     modal.next_button.click()
@@ -235,12 +240,12 @@ def delete_source(view, source_name):
     clear_toasts(view=view)
     dash = DashboardView(view)
     dash.nav.select('Sources')
-    time.sleep(0.5)
+    wait_for_animation()
     view.wait_for_element(locator=Locator(
         xpath=(delete_xpath(source_name))))
     GenericLocatorWidget(view, locator=Locator(
         xpath=delete_xpath(source_name))).click()
-    time.sleep(0.5)
+    wait_for_animation()
     DeleteModalView(view).delete_button.click()
     view.refresh()
     with pytest.raises(NoSuchElementException):
