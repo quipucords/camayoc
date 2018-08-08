@@ -171,7 +171,7 @@ def create_credential(view, options):
     dash.nav.select('Credentials')
     # Assert the row with the credential name exists.
     view.wait_for_element(locator=Locator(
-        xpath=row_xpath(options['name'])), delay=0.3)
+        xpath=row_xpath(options['name'])), delay=0.3, timeout=10)
     assert isinstance(view.element(locator=Locator(
         xpath=row_xpath(options['name']))), WebElement)
 
@@ -202,6 +202,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     dash = DashboardView(view)
     dash.nav.select('Sources')
     # Display varies depending on whether or not sources already exist.
+    wait_for_animation(2)
     try:
         Button(view, 'Add Source').click()
     except NoSuchElementException:

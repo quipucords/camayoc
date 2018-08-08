@@ -9,6 +9,7 @@
 :testtype: functional
 :upstream: yes
 """
+from .utils import wait_for_animation
 from .views import DashboardView, LoginView
 
 
@@ -37,6 +38,7 @@ def test_login_logout(browser):
         assert browser.selenium.title == 'Entitlements Reporting'
 
     dashboard = DashboardView(browser)
+    wait_for_animation()
     dashboard.user_dropdown.select_item('Log out')
 
     login.login.wait_displayed()
