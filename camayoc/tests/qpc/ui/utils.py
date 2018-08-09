@@ -198,9 +198,7 @@ def delete_credential(view, names):
 
 def create_source(view, credential_name, source_type, source_name, addresses):
     """Create a source through the UI."""
-    view.refresh()
     clear_toasts(view=view)
-    wait_for_animation(2)
     dash = DashboardView(view)
     dash.nav.select('Sources')
     # Display varies depending on whether or not sources already exist.
@@ -233,7 +231,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
         cred_dropdown = Dropdown(modal, 'Select a credential')
         cred_dropdown.item_select(credential_name)
     Button(modal, 'Save').click()
-    wait_for_animation(2)
+    wait_for_animation(4)
     view.wait_for_element(locator=Locator('//button[text()="Close"]'))
     Button(modal, 'Close', classes=[Button.PRIMARY]).click()
 

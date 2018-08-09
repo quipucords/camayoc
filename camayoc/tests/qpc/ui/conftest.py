@@ -20,7 +20,7 @@ def pytest_collection_modifyitems(config, items):
     If no driver option is present then UI test should be skipped.
     UI tests should be marked with @pytest.mark.ui
     """
-    if not config.getoption('--driver', None):
+    if not os.environ.get('SELENIUM_DRIVER', None):
         skip_ui = pytest.mark.skip(
             reason='need --driver option to run UI tests')
         for item in items:
