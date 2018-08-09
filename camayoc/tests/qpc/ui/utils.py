@@ -199,6 +199,7 @@ def delete_credential(view, names):
 def create_source(view, credential_name, source_type, source_name, addresses):
     """Create a source through the UI."""
     view.refresh()
+    wait_for_animation(2)
     dash = DashboardView(view)
     dash.nav.select('Sources')
     # Display varies depending on whether or not sources already exist.
