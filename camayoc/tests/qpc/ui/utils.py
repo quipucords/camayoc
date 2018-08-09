@@ -202,7 +202,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     dash = DashboardView(view)
     dash.nav.select('Sources')
     # Display varies depending on whether or not sources already exist.
-    wait_for_animation(2)
+    wait_for_animation(4)
     try:
         Button(view, 'Add Source').click()
     except NoSuchElementException:
