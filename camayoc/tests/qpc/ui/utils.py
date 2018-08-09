@@ -5,6 +5,7 @@ import time
 import pytest
 
 from selenium.common.exceptions import (
+        MoveTargetOutOfBoundsException,
         NoSuchElementException,
         StaleElementReferenceException
 )
@@ -117,8 +118,10 @@ def clear_toasts(view, count=20):
         try:
             view.wait_for_element(locator=Locator(css='.close'), timeout=0.6)
             GenericLocatorWidget(view, locator=Locator(css='.close')).click()
-        except (NoSuchElementException, StaleElementReferenceException):
-            break
+        except (MoveTargetOutOfBoundsException,
+                NoSuchElementException,
+                StaleElementReferenceException):
+                break
 
 
 def create_credential(view, options):
