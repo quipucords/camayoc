@@ -198,6 +198,7 @@ def delete_credential(view, names):
 
 def create_source(view, credential_name, source_type, source_name, addresses):
     """Create a source through the UI."""
+    view.refresh()
     clear_toasts(view=view)
     wait_for_animation(2)
     dash = DashboardView(view)
@@ -217,6 +218,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     wait_for_animation()
     GenericLocatorWidget(modal, locator=Locator(
         xpath=radio_xpath(radio_label))).click()
+    wait_for_animation(2)
     modal.next_button.click()
 
     # Fill in required source information.
@@ -231,6 +233,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
         cred_dropdown = Dropdown(modal, 'Select a credential')
         cred_dropdown.item_select(credential_name)
     Button(modal, 'Save').click()
+    wait_for_animation(2)
     view.wait_for_element(locator=Locator('//button[text()="Close"]'))
     Button(modal, 'Close', classes=[Button.PRIMARY]).click()
 
@@ -252,6 +255,7 @@ def delete_source(view, source_name):
     wait_for_animation()
     DeleteModalView(view).delete_button.click()
     view.refresh()
+    wait_for_animation(2)
     with pytest.raises(NoSuchElementException):
         view.wait_for_element(locator=Locator(xpath=delete_xpath(source_name)),
                               timeout=1)
