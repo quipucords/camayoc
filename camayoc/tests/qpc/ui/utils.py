@@ -238,6 +238,9 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     view.wait_for_element(locator=Locator('//button[text()="Close"]'))
     Button(modal, 'Close', classes=[Button.PRIMARY]).click()
 
+    wait_for_animation(2)
+    # mitigate database lock issue quipucords/quipucords/issues/1275
+    clear_toasts(view=view)
     # Verify that the new row source has been created.
     view.wait_for_element(locator=Locator(xpath=row_xpath(source_name)))
     view.element(locator=Locator(xpath=row_xpath(source_name)))
@@ -253,10 +256,11 @@ def delete_source(view, source_name):
         xpath=(delete_xpath(source_name))))
     GenericLocatorWidget(view, locator=Locator(
         xpath=delete_xpath(source_name))).click()
+    # mitigate database lock issue quipucords/quipucords/issues/1275
     wait_for_animation()
     DeleteModalView(view).delete_button.click()
-    view.refresh()
-    wait_for_animation(2)
+    wait_for_animation()
+    clear_toasts(view=view)
     with pytest.raises(NoSuchElementException):
         view.wait_for_element(locator=Locator(xpath=delete_xpath(source_name)),
-                              timeout=1)
+                              timeout=2)

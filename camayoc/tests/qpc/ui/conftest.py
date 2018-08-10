@@ -59,7 +59,7 @@ def browser(request):
             f'Unsupported SELENIUM_DRIVER provided: {driver_type}')
 
     driver.get(get_qpc_url())
-    driver.set_window_size(1920, 1080)
+    driver.maximize_window()
     yield Browser(driver)
     driver.close()
 
@@ -115,4 +115,9 @@ def credentials(browser, qpc_login):
     yield names
     # Some tests are flaky, so we need to do a full clear
     # to garbage-collect resources from failed calls.
-    cleanup_server()
+    # database lock sometimes occurs, so we attempt this twice
+    # quipucords/quipucords/issues/1275
+    try:
+        cleanup_server()
+    except Exception:
+        cleanup_server()
