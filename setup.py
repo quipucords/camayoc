@@ -52,7 +52,6 @@ setup(
         ],
     },
     install_requires=[
-        'flaky',
         'pexpect',
         'plumbum',
         'pytest',
