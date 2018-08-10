@@ -131,8 +131,7 @@ install the qpc_ executable in such a way that it is available in your
 
 
 For UI tests, you should set the `SELENIUM_DRIVER` environment variable to either `Chrome`
-or `Firefox` depending on what you want to use. If this is not set, `Chrome`
-is used by default. Additionally, you need to set up remote containers for use::
+or `Firefox` depending on what you want to use. If this is not set, UI tests are skipped. Additionally, you need to set up remote containers for use::
    
    # Chrome Selenium container, run as one line.
    docker run -d -P -p 4444:4444 --net="host" -v /dev/shm:/dev/shm \
