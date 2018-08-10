@@ -5,7 +5,7 @@ from camayoc import api
 from camayoc.qpc_models import (
     Credential,
     Scan,
-    Source,
+    Source
 )
 
 

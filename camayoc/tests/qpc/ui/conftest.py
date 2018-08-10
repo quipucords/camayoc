@@ -1,13 +1,16 @@
 """Test utilities for quipucords' UI tests."""
+import os
+
 import pytest
 
 from selenium import webdriver
 
 from widgetastic.browser import Browser
 
+from camayoc.tests.qpc.cli.conftest import cleanup_server
 from camayoc.utils import get_qpc_url, uuid4
 
-from .utils import create_credential, delete_credential
+from .utils import create_credential
 from .views import LoginView
 
 
@@ -17,7 +20,7 @@ def pytest_collection_modifyitems(config, items):
     If no driver option is present then UI test should be skipped.
     UI tests should be marked with @pytest.mark.ui
     """
-    if not config.getoption('--driver', None):
+    if not os.environ.get('SELENIUM_DRIVER', None):
         skip_ui = pytest.mark.skip(
             reason='need --driver option to run UI tests')
         for item in items:
@@ -29,24 +32,34 @@ def pytest_collection_modifyitems(config, items):
 def browser(request):
     """Selenium instance.
 
-    The current configuration takes advantage of a remote
-    webdriver for configurable setup. As of writing, this supports
-    a standalone chrome container. The following command can be used
-    to spin up the container (one line, no line breaks)
-
-    'docker run -d -p 4444:4444 -v /dev/shm:/dev/shm
-    selenium/standalone-chrome:3.13.0-argon'
+    See README for configuration of remote browser containers.
     """
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--allow-insecure-localhost')
-    driver = webdriver.Remote(
-        'http://127.0.0.1:4444/wd/hub',
-        desired_capabilities=chrome_options.to_capabilities())
+    # Default to chrome for UI testing.
+    driver_type = os.environ.get('SELENIUM_DRIVER', 'chrome').lower()
+    debug_mode = (os.environ.get('SELENIUM_DEBUG', 'false').lower() == 'true')
+    if driver_type == 'chrome':
+        chrome_options = webdriver.ChromeOptions()
+        if debug_mode:
+            chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--allow-insecure-localhost')
+        driver = webdriver.Remote(
+            'http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=chrome_options.to_capabilities())
+    elif driver_type == 'firefox':
+        firefox_options = webdriver.firefox.options.Options()
+        if debug_mode:
+            firefox_options.add_argument('--headless')
+        driver = webdriver.Remote(
+            'http://127.0.0.1:4444/wd/hub',
+            desired_capabilities=firefox_options.to_capabilities())
+    else:
+        raise ValueError(
+            f'Unsupported SELENIUM_DRIVER provided: {driver_type}')
+
     driver.get(get_qpc_url())
-    driver.set_window_size(1200, 800)
+    driver.maximize_window()
     yield Browser(driver)
     driver.close()
 
@@ -58,7 +71,13 @@ def qpc_login(browser):
     login.username.fill('admin')
     login.password.fill('pass')
     login.login.click()
-    assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    # Firefox uses the commented out title for some reason.
+    # https://github.com/quipucords/quipucords/issues/1401
+    # https://github.com/quipucords/camayoc/issues/281
+    try:
+        assert browser.selenium.title == 'Entitlements Reporting'
+    except AssertionError:
+        assert browser.selenium.title == 'Red Hat Entitlements Reporting'
 
 
 @pytest.fixture(scope='module')
@@ -94,5 +113,11 @@ def credentials(browser, qpc_login):
     options['credential_type'] = 'VCenter'
     create_credential(browser, options)
     yield names
-    browser.refresh()
-    delete_credential(browser, set(names.values()))
+    # Some tests are flaky, so we need to do a full clear
+    # to garbage-collect resources from failed calls.
+    # database lock sometimes occurs, so we attempt this twice
+    # quipucords/quipucords/issues/1275
+    try:
+        cleanup_server()
+    except Exception:
+        cleanup_server()

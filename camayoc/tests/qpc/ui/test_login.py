@@ -9,6 +9,7 @@
 :testtype: functional
 :upstream: yes
 """
+from .utils import wait_for_animation
 from .views import DashboardView, LoginView
 
 
@@ -29,9 +30,15 @@ def test_login_logout(browser):
     login.password.fill('pass')
     login.login.click()
 
-    assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    # https://github.com/quipucords/quipucords/issues/1401
+    # https://github.com/quipucords/camayoc/issues/281
+    try:
+        assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    except AssertionError:
+        assert browser.selenium.title == 'Entitlements Reporting'
 
     dashboard = DashboardView(browser)
+    wait_for_animation()
     dashboard.user_dropdown.select_item('Log out')
 
     login.login.wait_displayed()

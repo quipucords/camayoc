@@ -31,6 +31,8 @@ SOURCE_DATA = {
     }
 
 
+@pytest.mark.skip(reason=('github.com/quipucords/quipucords/issues/1275'
+                          ' causes db lock and high chance of failure'))
 @pytest.mark.parametrize('source_type, ', SOURCE_DATA.keys())
 def test_create_delete_source(browser, qpc_login, credentials, source_type):
     """Create and then delete a source through the UI.
