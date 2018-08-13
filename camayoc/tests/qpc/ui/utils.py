@@ -67,6 +67,16 @@ def delete_xpath(row_name):
             f'[contains(@class, "pficon-delete")]')
 
 
+def edit_xpath(row_name):
+    """Return an xpath for selecting the edit button in a row.
+
+    Works for credentials or sources.
+    """
+    return (f'//div[contains(@class, "list-view-pf-top-align") and '
+            f'descendant::div[text()="{row_name}"]]/descendant::span'
+            f'[contains(@class, "pficon-edit")]')
+
+
 def check_auth_type(credential_name, auth_type):
     """Verify the authentication type of a credential.
 
@@ -99,6 +109,11 @@ def field_xpath(label, textarea=False):
         return (f'//textarea[ancestor::node()[2]/label[text() = "{label}"]]')
     else:
         return (f'//input[ancestor::node()[2]/label[text() = "{label}"]]')
+
+
+def get_field_value(view, label, textarea=False):
+    """Get the current value of a form field."""
+    return (view.element(field_xpath(label, textarea)).get_property('value'))
 
 
 def radio_xpath(label):
@@ -153,11 +168,13 @@ def create_credential(view, options):
         auth_type = Dropdown(view, 'Username and Password')
         auth_type.item_select('SSH Key')
         fill(modal, field_xpath('SSH Key File'), options['sshkeyfile'])
-        fill(modal, field_xpath('Passphrase'), options['passphrase'])
+        if 'passphrase' in options:
+            fill(modal, field_xpath('Passphrase'), options['passphrase'])
     else:
         fill(modal, field_xpath('Password'), options['password'])
     if 'become_user' in options:
         fill(modal, field_xpath('Become User'), options['become_user'])
+    if 'become_pass' in options:
         fill(modal, field_xpath('Become Password'), options['become_pass'])
 
     assert not modal.save_button.browser.get_attribute(
@@ -197,6 +214,63 @@ def delete_credential(view, names):
         with pytest.raises(NoSuchElementException):
             view.wait_for_element(locator=Locator(
                 xpath=row_xpath(name)), timeout=1)
+
+
+def edit_credential(view, original_name, options):
+    """Edit a credential through the UI and verify it was edited.
+
+    :param view: The view context (should be the browser view)
+    :param original_name: The original name of the credential.
+    :param options: The options to be edited within the credential.
+    """
+    view.refresh()
+    dash = DashboardView(view)
+    dash.nav.select('Credentials')
+    view.wait_for_element(locator=Locator(
+        xpath=(edit_xpath(original_name))))
+    GenericLocatorWidget(view, locator=Locator(
+        xpath=edit_xpath(original_name))).click()
+    modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
+    if 'name' in options:
+        fill(modal, field_xpath('Credential Name'), options['name'])
+    if 'username' in options:
+        fill(modal, field_xpath('Username'), options['username'])
+    if 'sshkeyfile' in options:
+        try:
+            auth_type = Dropdown(view, 'Username and Password')
+            auth_type.item_select('SSH Key')
+        except NoSuchElementException:
+            auth_type = Dropdown(view, 'SSH Key')
+            auth_type.item_select('SSH Key')
+        fill(modal, field_xpath('SSH Key File'), options['sshkeyfile'])
+    elif 'password' in options:
+        fill(modal, field_xpath('Password'), options['password'])
+    if 'become_user' in options:
+        fill(modal, field_xpath('Become User'), options['become_user'])
+    # Hack to deal with the fact that the GET refresh isn't
+    # implemented when the save button is clicked.
+    # https://github.com/quipucords/quipucords/issues/1399
+    # https://github.com/quipucords/camayoc/issues/280
+    wait_for_animation()
+    modal.save_button.click()
+    wait_for_animation()
+    view.refresh()
+    dash.nav.select('Credentials')
+    # Assert the row with the credential name exists.
+    view.wait_for_element(locator=Locator(
+        xpath=row_xpath(options['name'])), delay=0.3, timeout=10)
+    GenericLocatorWidget(view, locator=Locator(
+        xpath=edit_xpath(options['name']))).click()
+    modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
+    # Assert that the changed variables were in fact changed.
+    if 'name' in options:
+        assert (get_field_value(view, 'Credential Name') == options['name'])
+    if 'username' in options:
+        assert (get_field_value(view, 'Username') == options['username'])
+    if 'sshkeyfile' in options:
+        assert (get_field_value(view, 'SSH Key File') == options['sshkeyfile'])
+    if 'become_user' in options:
+        assert (get_field_value(view, 'Become User') == options['become_user'])
 
 
 def create_source(view, credential_name, source_type, source_name, addresses):

@@ -19,6 +19,7 @@ from .utils import (
         check_auth_type,
         create_credential,
         delete_credential,
+        edit_credential
     )
 
 CREDENTIAL_TYPES = ['Network', 'Satellite', 'VCenter']
@@ -141,3 +142,39 @@ def test_credential_sshkey_optional(
     })
     check_auth_type(name, 'SSH Key')
     delete_credential(browser, {name})
+
+
+@pytest.mark.parametrize('credential_type', CREDENTIAL_TYPES)
+def test_edit_credential(browser, qpc_login, credential_type):
+    """Edit a credential's parameters.
+
+    :id: 3a4626ab-c667-41dc-944e-62ac05d51bbe
+    :description: Creates a credential, then attempts to edit all of the
+        parameters that were set, then verifies that they were changed.
+    :steps:
+        1) Log into the UI.
+        2) Go to the credentials page and open the Add Credential modal.
+        3) Fill required + optional fields, using the SSH key option and save.
+        4) Edit the credential parameters and save, make sure it changed.
+        4) Delete the newly created credential.
+    :expectedresults: A new credential is created, edited, then deleted.
+    """
+    options = {
+        'name': utils.uuid4(),
+        'username': utils.uuid4(),
+        'password': utils.uuid4(),
+        'credential_type': credential_type,
+    }
+    if credential_type == 'Network':
+        options['become_user'] = utils.uuid4()
+    create_credential(browser, options)
+    new_options = {
+        'name': utils.uuid4(),
+        'username': utils.uuid4(),
+        'password': utils.uuid4(),
+        'credential_type': credential_type,
+    }
+    if credential_type == 'Network':
+        new_options['become_user'] = utils.uuid4()
+    edit_credential(browser, options['name'], new_options)
+    delete_credential(browser, {new_options['name']})
