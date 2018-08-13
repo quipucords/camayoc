@@ -156,8 +156,7 @@ def test_edit_credential(browser, qpc_login, source_type):
         2) Go to the credentials page and open the Add Credential modal.
         3) Fill required + optional fields, using the SSH key option and save.
         4) Edit the credential parameters and save, make sure it changed.
-        5) Delete the newly created credential.
-    :expectedresults: A new credential is created, edited, then deleted.
+    :expectedresults: A new credential is created and then edited.
     """
     options = {
         'name': utils.uuid4(),
