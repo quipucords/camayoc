@@ -22,11 +22,11 @@ from .utils import (
         edit_credential
     )
 
-CREDENTIAL_TYPES = ['Network', 'Satellite', 'VCenter']
+SOURCE_TYPES = ['Network', 'Satellite', 'VCenter']
 
 
-@pytest.mark.parametrize('credential_type', CREDENTIAL_TYPES)
-def test_create_delete_credential(browser, qpc_login, credential_type):
+@pytest.mark.parametrize('source_type', SOURCE_TYPES)
+def test_create_delete_credential(browser, qpc_login, source_type):
     """Create and then delete a credential in the quipucords UI.
 
     :id: d9fd61f5-1e8e-4091-b8c5-bc787884c6be
@@ -45,7 +45,7 @@ def test_create_delete_credential(browser, qpc_login, credential_type):
         'name': name,
         'username': username,
         'password': password,
-        'credential_type': credential_type
+        'source_type': source_type
     })
     delete_credential(browser, {name})
 
@@ -73,7 +73,7 @@ def test_create_delete_credential_optional(browser, qpc_login):
         'name': name,
         'username': username,
         'password': password,
-        'credential_type': 'Network',
+        'source_type': 'Network',
         'become_user': become_user,
         'become_pass': become_pass
     })
@@ -104,7 +104,7 @@ def test_create_delete_credential_sshkey(
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
         'passphrase': passphrase,
-        'credential_type': 'Network'
+        'source_type': 'Network'
     })
     check_auth_type(name, 'SSH Key')
     delete_credential(browser, {name})
@@ -136,7 +136,7 @@ def test_credential_sshkey_optional(
         'username': username,
         'sshkeyfile': str(sshkeyfile.resolve()),
         'passphrase': passphrase,
-        'credential_type': 'Network',
+        'source_type': 'Network',
         'become_user': become_user,
         'become_pass': become_pass
     })
@@ -144,8 +144,8 @@ def test_credential_sshkey_optional(
     delete_credential(browser, {name})
 
 
-@pytest.mark.parametrize('credential_type', CREDENTIAL_TYPES)
-def test_edit_credential(browser, qpc_login, credential_type):
+@pytest.mark.parametrize('source_type', SOURCE_TYPES)
+def test_edit_credential(browser, qpc_login, source_type):
     """Edit a credential's parameters.
 
     :id: 3a4626ab-c667-41dc-944e-62ac05d51bbe
@@ -163,18 +163,18 @@ def test_edit_credential(browser, qpc_login, credential_type):
         'name': utils.uuid4(),
         'username': utils.uuid4(),
         'password': utils.uuid4(),
-        'credential_type': credential_type,
+        'source_type': source_type,
     }
-    if credential_type == 'Network':
+    if source_type == 'Network':
         options['become_user'] = utils.uuid4()
     create_credential(browser, options)
     new_options = {
         'name': utils.uuid4(),
         'username': utils.uuid4(),
         'password': utils.uuid4(),
-        'credential_type': credential_type,
+        'source_type': source_type,
     }
-    if credential_type == 'Network':
+    if source_type == 'Network':
         new_options['become_user'] = utils.uuid4()
     edit_credential(browser, options['name'], new_options)
     delete_credential(browser, {new_options['name']})

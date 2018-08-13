@@ -95,16 +95,16 @@ def credentials(browser, qpc_login):
         'name': (names['Network']),
         'username': username,
         'password': password,
-        'credential_type': 'Network'
+        'source_type': 'Network'
     }
     create_credential(browser, options)
     options['name'] = names['Network2']
     create_credential(browser, options)
     options['name'] = names['Satellite']
-    options['credential_type'] = 'Satellite'
+    options['source_type'] = 'Satellite'
     create_credential(browser, options)
     options['name'] = names['VCenter']
-    options['credential_type'] = 'VCenter'
+    options['source_type'] = 'VCenter'
     create_credential(browser, options)
     yield names
     # Some tests are flaky, so we need to do a full clear
