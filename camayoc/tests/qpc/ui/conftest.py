@@ -71,13 +71,7 @@ def qpc_login(browser):
     login.username.fill('admin')
     login.password.fill('pass')
     login.login.click()
-    # Firefox uses the commented out title for some reason.
-    # https://github.com/quipucords/quipucords/issues/1401
-    # https://github.com/quipucords/camayoc/issues/281
-    try:
-        assert browser.selenium.title == 'Entitlements Reporting'
-    except AssertionError:
-        assert browser.selenium.title == 'Red Hat Entitlements Reporting'
+    assert browser.selenium.title == 'Entitlements Reporting'
 
 
 @pytest.fixture(scope='module')
@@ -101,16 +95,16 @@ def credentials(browser, qpc_login):
         'name': (names['Network']),
         'username': username,
         'password': password,
-        'credential_type': 'Network'
+        'source_type': 'Network'
     }
     create_credential(browser, options)
     options['name'] = names['Network2']
     create_credential(browser, options)
     options['name'] = names['Satellite']
-    options['credential_type'] = 'Satellite'
+    options['source_type'] = 'Satellite'
     create_credential(browser, options)
     options['name'] = names['VCenter']
-    options['credential_type'] = 'VCenter'
+    options['source_type'] = 'VCenter'
     create_credential(browser, options)
     yield names
     # Some tests are flaky, so we need to do a full clear

@@ -32,6 +32,17 @@ SOURCE_TYPE_RADIO_LABELS = {
     'VCenter': 'vCenter Server'
     }
 
+CREDENTIAL_FIELD_LABELS = {
+        'name': 'Credential Name',
+        'username': 'Username',
+        'password': 'Password',
+        'become_user': 'Become User',
+        'become_pass': 'Become Password',
+        'source_type': 'Source Type',
+        'sshkeyfile': 'SSH Key File',
+        'passphrase': 'Passphrase'
+    }
+
 
 def wait_for_animation(multiplier=1):
     """Wait for animations to complete."""
@@ -65,6 +76,16 @@ def delete_xpath(row_name):
     return (f'//div[contains(@class, "list-view-pf-top-align") and '
             f'descendant::div[text()="{row_name}"]]/descendant::span'
             f'[contains(@class, "pficon-delete")]')
+
+
+def edit_xpath(row_name):
+    """Return an xpath for selecting the edit button in a row.
+
+    Works for credentials or sources.
+    """
+    return (f'//div[contains(@class, "list-view-pf-top-align") and '
+            f'descendant::div[text()="{row_name}"]]/descendant::span'
+            f'[contains(@class, "pficon-edit")]')
 
 
 def check_auth_type(credential_name, auth_type):
@@ -101,6 +122,11 @@ def field_xpath(label, textarea=False):
         return (f'//input[ancestor::node()[2]/label[text() = "{label}"]]')
 
 
+def get_field_value(view, label, textarea=False):
+    """Get the current value of a form field."""
+    return (view.element(field_xpath(label, textarea)).get_property('value'))
+
+
 def radio_xpath(label):
     """Build an xpath for selecting a radio button based on its label."""
     return f'//label[text()="{label}"]'
@@ -124,6 +150,26 @@ def clear_toasts(view, count=20):
                 break
 
 
+def fill_credential_info(view, options):
+    """Fill out the credential modal based on available options."""
+    for option, data in options.items():
+        # Skip source type as it can't be edited here.
+        if (option == 'source_type'):
+            continue
+        # Locate the dropdown and select the appropriate type.
+        if ((option == 'sshkeyfile') or (option == 'password')):
+            if (options['source_type'] == 'Network'):
+                try:
+                    auth_type = Dropdown(view, 'Username and Password')
+                except NoSuchElementException:
+                    auth_type = Dropdown(view, 'SSH Key')
+                if option == 'sshkeyfile':
+                    auth_type.item_select('SSH Key')
+                else:
+                    auth_type.item_select('Username and Password')
+        fill(view, field_xpath(CREDENTIAL_FIELD_LABELS[option]), data)
+
+
 def create_credential(view, options):
     """Create a credential through the UI."""
     clear_toasts(view=view)
@@ -133,11 +179,11 @@ def create_credential(view, options):
     try:
         add_credential_dropdown = Dropdown(view, 'Add Credential')
         add_credential_dropdown.item_select(
-                options['credential_type'] + ' Credential')
+                options['source_type'] + ' Credential')
     except NoSuchElementException:
         add_credential_dropdown = Dropdown(view, 'Add')
         add_credential_dropdown.item_select(
-                options['credential_type'] + ' Credential')
+                options['source_type'] + ' Credential')
     modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
 
     # Workaround, should be `assert modal.save_button.disabled`
@@ -145,20 +191,7 @@ def create_credential(view, options):
     # https://github.com/quipucords/camayoc/issues/279
     assert modal.save_button.browser.get_attribute(
         'disabled', modal.save_button)
-
-    # Fill in the required credential information.
-    fill(modal, field_xpath('Credential Name'), options['name'])
-    fill(modal, field_xpath('Username'), options['username'])
-    if 'sshkeyfile' in options:
-        auth_type = Dropdown(view, 'Username and Password')
-        auth_type.item_select('SSH Key')
-        fill(modal, field_xpath('SSH Key File'), options['sshkeyfile'])
-        fill(modal, field_xpath('Passphrase'), options['passphrase'])
-    else:
-        fill(modal, field_xpath('Password'), options['password'])
-    if 'become_user' in options:
-        fill(modal, field_xpath('Become User'), options['become_user'])
-        fill(modal, field_xpath('Become Password'), options['become_pass'])
+    fill_credential_info(view, options)
 
     assert not modal.save_button.browser.get_attribute(
             'disabled', modal.save_button)
@@ -197,6 +230,52 @@ def delete_credential(view, names):
         with pytest.raises(NoSuchElementException):
             view.wait_for_element(locator=Locator(
                 xpath=row_xpath(name)), timeout=1)
+
+
+def edit_credential(view, original_name, options):
+    """Edit a credential through the UI and verify it was edited.
+
+    :param view: The view context (should be the browser view)
+    :param original_name: The original name of the credential.
+    :param options: The options to be edited within the credential.
+    """
+    view.refresh()
+    dash = DashboardView(view)
+    dash.nav.select('Credentials')
+    view.wait_for_element(locator=Locator(
+        xpath=(edit_xpath(original_name))))
+    GenericLocatorWidget(view, locator=Locator(
+        xpath=edit_xpath(original_name))).click()
+    modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
+    fill_credential_info(view, options)
+
+    # Hack to deal with the fact that the GET refresh isn't
+    # implemented when the save button is clicked.
+    # https://github.com/quipucords/quipucords/issues/1399
+    # https://github.com/quipucords/camayoc/issues/280
+    wait_for_animation()
+    modal.save_button.click()
+    wait_for_animation()
+    view.refresh()
+    dash.nav.select('Credentials')
+    # Assert the row with the credential name exists.
+    # If the name was updated, use the new name.
+    current_name = original_name
+    if 'name' in options:
+        current_name = options['name']
+    view.wait_for_element(locator=Locator(
+        xpath=row_xpath(current_name)), delay=0.3, timeout=10)
+    GenericLocatorWidget(view, locator=Locator(
+        xpath=edit_xpath(current_name))).click()
+    modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
+    # Assert that the changed variables were in fact changed.
+    # Passwords are skipped because they aren't accessible.
+    for option, data in options.items():
+        if ((option == 'password') or
+                (option == 'become_pass') or
+                (option == 'source_type')):
+            continue
+        assert(get_field_value(view, CREDENTIAL_FIELD_LABELS[option]) == data)
 
 
 def create_source(view, credential_name, source_type, source_name, addresses):
