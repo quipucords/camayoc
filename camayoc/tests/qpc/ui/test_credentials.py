@@ -154,7 +154,7 @@ def test_edit_credential(browser, qpc_login, source_type):
     :steps:
         1) Log into the UI.
         2) Go to the credentials page and open the Add Credential modal.
-        3) Fill required + optional fields, using the SSH key option and save.
+        3) Fill required + optional fields, using the password option and save.
         4) Edit the credential parameters and save, make sure it changed.
     :expectedresults: A new credential is created and then edited.
     """
@@ -177,3 +177,35 @@ def test_edit_credential(browser, qpc_login, source_type):
         new_options['become_user'] = utils.uuid4()
     edit_credential(browser, options['name'], new_options)
     delete_credential(browser, {new_options['name']})
+
+
+def test_edit_credential_sshkey(browser, qpc_login, isolated_filesystem):
+    """Edit the sshkeyfile of a credential.
+
+    :id: 77281d4c-de9f-4db9-9a9f-0c78b0d3811e
+    :description: Creates a credential, then attempts to edit the sshkeyfile
+        to use a new one. The edit is then verified.
+    :steps:
+        1) Log into the UI.
+        2) Go to the credentials page and open the Add Credential modal.
+        3) Fill required fields, using the SSH key option and save.
+        4) Edit the credential parameters and save, make sure it changed.
+    :expectedresults: A new credential is created and then edited.
+    """
+    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile.touch()
+    options = {
+        'name': utils.uuid4(),
+        'username': utils.uuid4(),
+        'sshkeyfile': str(sshkeyfile.resolve()),
+        'source_type': 'Network',
+    }
+    create_credential(browser, options)
+    new_sshkeyfile = Path(utils.uuid4())
+    new_sshkeyfile.touch()
+    new_options = {
+        'sshkeyfile': str(new_sshkeyfile.resolve()),
+        'source_type': 'Network'
+    }
+    edit_credential(browser, options['name'], new_options)
+    delete_credential(browser, {options['name']})
