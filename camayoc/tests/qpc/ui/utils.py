@@ -161,12 +161,13 @@ def fill_credential_info(view, options):
             if (options['source_type'] == 'Network'):
                 try:
                     auth_type = Dropdown(view, 'Username and Password')
+                    if option == 'sshkeyfile':
+                        auth_type.item_select('SSH Key')
                 except NoSuchElementException:
                     auth_type = Dropdown(view, 'SSH Key')
-                if option == 'sshkeyfile':
-                    auth_type.item_select('SSH Key')
-                else:
-                    auth_type.item_select('Username and Password')
+                    if option == 'password':
+                        auth_type.item_select('Username and Password')
+        view.clear(field_xpath(CREDENTIAL_FIELD_LABELS[option]))
         fill(view, field_xpath(CREDENTIAL_FIELD_LABELS[option]), data)
 
 
@@ -248,7 +249,6 @@ def edit_credential(view, original_name, options):
         xpath=edit_xpath(original_name))).click()
     modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
     fill_credential_info(view, options)
-
     # Hack to deal with the fact that the GET refresh isn't
     # implemented when the save button is clicked.
     # https://github.com/quipucords/quipucords/issues/1399
@@ -258,6 +258,7 @@ def edit_credential(view, original_name, options):
     wait_for_animation()
     view.refresh()
     dash.nav.select('Credentials')
+
     # Assert the row with the credential name exists.
     # If the name was updated, use the new name.
     current_name = original_name
@@ -268,6 +269,7 @@ def edit_credential(view, original_name, options):
     GenericLocatorWidget(view, locator=Locator(
         xpath=edit_xpath(current_name))).click()
     modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
+
     # Assert that the changed variables were in fact changed.
     # Passwords are skipped because they aren't accessible.
     for option, data in options.items():
@@ -275,7 +277,13 @@ def edit_credential(view, original_name, options):
                 (option == 'become_pass') or
                 (option == 'source_type')):
             continue
-        assert(get_field_value(view, CREDENTIAL_FIELD_LABELS[option]) == data)
+        browser_data = get_field_value(view, CREDENTIAL_FIELD_LABELS[option])
+        if (option == 'sshkeyfile'):
+            # tmp files are resolved with alias prefixes in some cases.
+            # the characters afer the final '/' remain consistent.
+            assert(browser_data.rpartition('/')[2] == data.rpartition('/')[2])
+        else:
+            assert(browser_data == data)
 
 
 def create_source(view, credential_name, source_type, source_name, addresses):

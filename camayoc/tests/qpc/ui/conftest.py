@@ -39,7 +39,7 @@ def browser(request):
     debug_mode = (os.environ.get('SELENIUM_DEBUG', 'false').lower() == 'true')
     if driver_type == 'chrome':
         chrome_options = webdriver.ChromeOptions()
-        if debug_mode:
+        if not debug_mode:
             chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--no-sandbox')
