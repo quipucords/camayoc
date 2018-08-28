@@ -213,3 +213,75 @@ def test_negative_update_invalid(
     assert_source_update_fails(original_data, src)
     src.hosts = ['1**2@33^']
     assert_source_update_fails(original_data, src)
+
+
+def test_create_empty_str_host_valid(shared_client, cleanup):
+    """Create a host manager source and then add host data with empty string.
+
+    :id: 4bfbf5b0-81bd-48a3-8C57-bae55590285d
+    :description: Create network source of multiple hosts including an empty
+        string and credential.
+    :steps:
+        1) Create a network credential
+        2) Create a source with multiple host including empty string
+    :expectedresults: New source is created with all hosts except the empty
+        string filtered out.
+    """
+    empty_str_host_data = ['192.0.2.1', '192.0.2.10', '']
+    hosts_without_empty_str = ['192.0.2.1', '192.0.2.10']
+    # initialize & create original credential & source
+    pwd_cred = Credential(
+        cred_type=NETWORK_TYPE,
+        client=shared_client,
+        password=uuid4()
+    )
+    pwd_cred.create()
+
+    src = Source(
+        source_type=NETWORK_TYPE,
+        client=shared_client,
+        hosts=empty_str_host_data,
+        credential_ids=[pwd_cred._id],
+    )
+    created_data = src.create()
+    created_data = created_data.json()
+    assert created_data['hosts'] == hosts_without_empty_str
+    # add the ids to the lists to destroy after the test is done
+    cleanup.extend([pwd_cred, src])
+
+
+def test_update_empty_str_host_valid(shared_client, cleanup):
+    """Create a host manager source and then add host data with empty string.
+
+    :id: 850b06ba-8e3f-4699-b24b-e75aad20a63a
+    :description: Assert that we can update a source with hosts including an
+         empty string, but the empty string is filtered out.
+    :steps:
+        1) Create a valid network credential and source
+        2) Attempt to update with host list including empty string
+        3) Assert update is made but with the empty string filtered out.
+    :expectedresults: Source is updated with only valid host list.
+    """
+    empty_str_host_data = ['192.0.2.1', '192.0.2.10', '']
+    hosts_without_empty_str = ['192.0.2.1', '192.0.2.10']
+    # initialize & create original credential & source
+    pwd_cred = Credential(
+        cred_type=NETWORK_TYPE,
+        client=shared_client,
+        password=uuid4()
+    )
+    pwd_cred.create()
+
+    src = Source(
+        source_type=NETWORK_TYPE,
+        client=shared_client,
+        hosts=['127.0.0.1'],
+        credential_ids=[pwd_cred._id],
+    )
+    src.create()
+
+    # add the ids to the lists to destroy after the test is done
+    cleanup.extend([pwd_cred, src])
+    src.hosts = empty_str_host_data
+    updated_data = src.update().json()
+    assert updated_data['hosts'] == hosts_without_empty_str
