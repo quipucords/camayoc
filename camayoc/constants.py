@@ -360,6 +360,7 @@ QPC_OPTIONAL_PRODUCTS = (
     'jboss_brms',
     'jboss_eap',
     'jboss_fuse',
+    'jboss_ws',
 )
 """Optional products that can be enabled or disabled for a scan."""
 

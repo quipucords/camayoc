@@ -77,6 +77,7 @@ CSV_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
     'jboss brms',
     'jboss eap',
     'jboss fuse',
+    'jboss web server',
 )
 """Summary report expected fields for CSV output."""
 
@@ -143,6 +144,9 @@ FACTS = (
     'jboss_eap_systemctl_unit_files',
     'jboss_fuse_chkconfig',
     'jboss_fuse_systemctl_unit_files',
+    'jws_home_candidates',
+    'jws_installed_with_rpm',
+    'jws_version',
     'karaf_homes',
     'kie_search_candidates',
     'kie_server_candidates',
