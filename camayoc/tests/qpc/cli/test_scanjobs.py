@@ -145,7 +145,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem,
     scan_add_and_check({
         'name': scan_name,
         'sources': source_name,
-        'disabled-optional-products': QPC_OPTIONAL_PRODUCTS,
+        'disabled-optional-products': ' '.join(QPC_OPTIONAL_PRODUCTS),
     })
     result = scan_start({
         'name': scan_name,
