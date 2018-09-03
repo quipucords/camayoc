@@ -14,12 +14,15 @@ import re
 
 import pytest
 
-from camayoc.constants import (QPC_BRMS_EXTENDED_FACTS,
-                               QPC_BRMS_RAW_FACTS,
-                               QPC_EAP_EXTENDED_FACTS,
-                               QPC_EAP_RAW_FACTS,
-                               QPC_FUSE_EXTENDED_FACTS,
-                               QPC_FUSE_RAW_FACTS)
+from camayoc.constants import (
+    QPC_BRMS_EXTENDED_FACTS,
+    QPC_BRMS_RAW_FACTS,
+    QPC_EAP_EXTENDED_FACTS,
+    QPC_EAP_RAW_FACTS,
+    QPC_FUSE_EXTENDED_FACTS,
+    QPC_FUSE_RAW_FACTS,
+    QPC_OPTIONAL_PRODUCTS,
+)
 from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import uuid4
 
@@ -142,7 +145,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem,
     scan_add_and_check({
         'name': scan_name,
         'sources': source_name,
-        'disabled-optional-products': 'jboss_fuse jboss_brms jboss_eap',
+        'disabled-optional-products': QPC_OPTIONAL_PRODUCTS,
     })
     result = scan_start({
         'name': scan_name,
