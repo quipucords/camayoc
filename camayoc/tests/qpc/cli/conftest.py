@@ -92,20 +92,21 @@ def qpc_server_config():
             'the Camayoc\'s configuration file.')
     command = 'qpc server config --host {} --port {}{}{}'.format(
         hostname, port, https, ssl_verify)
-    qpc_server_config = pexpect.spawn(command)
-    qpc_server_config.logfile = BytesIO()
-    assert qpc_server_config.expect(pexpect.EOF) == 0
-    qpc_server_config.close()
-    assert qpc_server_config.exitstatus == 0
+    output, exitstatus = pexpect.run(
+        command, encoding='utf8', withexitstatus=True)
+    assert exitstatus == 0, output
 
     # now login to the server
     command = 'qpc server login --username {}'.format(username)
-    qpc_server_login = pexpect.spawn(command)
-    assert qpc_server_login.expect('Password: ') == 0
-    qpc_server_login.sendline(password)
-    assert qpc_server_login.expect(pexpect.EOF) == 0
-    qpc_server_login.close()
-    assert qpc_server_login.exitstatus == 0
+    output, exitstatus = pexpect.run(
+        command,
+        encoding='utf8',
+        events=[
+            ('Password: ', password + '\n'),
+        ],
+        withexitstatus=True,
+    )
+    assert exitstatus == 0, output
 
 
 @pytest.fixture(params=QPC_SOURCE_TYPES)
