@@ -144,6 +144,7 @@ FACTS = (
     'jboss_eap_systemctl_unit_files',
     'jboss_fuse_chkconfig',
     'jboss_fuse_systemctl_unit_files',
+    'jws_has_cert',
     'jws_home_candidates',
     'jws_installed_with_rpm',
     'jws_version',
