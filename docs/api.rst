@@ -49,7 +49,10 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.conftest
     api/camayoc.tests.qpc.ui
     api/camayoc.tests.qpc.ui.conftest
+    api/camayoc.tests.qpc.ui.test_credentials
     api/camayoc.tests.qpc.ui.test_login
+    api/camayoc.tests.qpc.ui.test_sources
+    api/camayoc.tests.qpc.ui.utils
     api/camayoc.tests.qpc.ui.views
     api/camayoc.tests.qpc.utils
     api/camayoc.tests.remote
