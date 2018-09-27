@@ -1,6 +1,5 @@
 """Test utilities for quipucords' ``qpc`` tests."""
 import re
-from io import BytesIO
 
 import pexpect
 
