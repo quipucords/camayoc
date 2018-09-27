@@ -43,6 +43,7 @@ def vcenter_client():
             host=vcenter_host,
             user=vcenter_user,
             pwd=vcenter_pwd,
+            connectionPoolTimeout=-1,
         )
     except ssl.SSLError:
         c = SmartConnect(
@@ -50,6 +51,7 @@ def vcenter_client():
             user=vcenter_user,
             pwd=vcenter_pwd,
             sslContext=ssl._create_unverified_context(),
+            connectionPoolTimeout=-1,
         )
     yield c
     Disconnect(c)

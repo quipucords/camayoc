@@ -17,7 +17,10 @@ from camayoc.qpc_models import (
     Source,
 )
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
-from camayoc.tests.utils import get_vcenter_vms, wait_until_live
+from camayoc.tests.utils import (
+    get_vcenter_vms,
+    vcenter_vms,
+)
 from camayoc.utils import run_scans
 
 
@@ -25,43 +28,20 @@ SCAN_DATA = {}
 """Cache to associate the named scans with their results."""
 
 
-def create_cred(cred_info, session_cleanup):
+def create_cred(cred_info, cleanup):
     """Given info about cred from config file, create it and return id."""
-    c = Credential(
-        cred_type=cred_info['type'],
-        username=cred_info['username'],
-    )
-    if cred_info.get('sshkeyfile'):
-        c.ssh_keyfile = cred_info['sshkeyfile']
-    else:
-        c.password = cred_info['password']
+    c = Credential(**cred_info)
     c.create()
-    session_cleanup.append(c)
+    cleanup.append(c)
     return c._id
 
 
-def create_source(source_info, cred_name_to_id_dict, session_cleanup):
-    """Given info about source from config file, create it.
-
-    :returns: A tuple containing the The id of the created source and a
-        dictionary of the expected products from the config file.
-    """
-    cred_ids = [value for key, value in cred_name_to_id_dict.items(
-    ) if key in source_info['credentials']]
-    host = source_info.get('ipv4') if source_info.get(
-        'ipv4') else source_info.get('hostname')
-    src = Source(
-        source_type=source_info.get('type', 'network'),
-        hosts=[host],
-        credential_ids=cred_ids,
-        options=source_info.get('options')
-    )
-    expected_products = source_info.get('products', {})
-    expected_products.update(
-        {'distribution': source_info.get('distribution', {})})
+def create_source(source_info, cleanup):
+    """Given info about source from config file, create it and return id."""
+    src = Source(**source_info)
     src.create()
-    session_cleanup.append(src)
-    return src._id, expected_products
+    cleanup.append(src)
+    return src._id
 
 
 def run_scan(scan, disabled_optional_products, enabled_extended_product_search,
@@ -111,7 +91,7 @@ def run_scan(scan, disabled_optional_products, enabled_extended_product_search,
 
 
 @pytest.fixture(scope='session', autouse=run_scans())
-def run_all_scans(vcenter_client, session_cleanup):
+def run_all_scans(vcenter_client):
     """Run all configured scans caching the report id associated with each.
 
     Run each scan defined in the ``qpc`` section of the configuration file.
@@ -176,12 +156,18 @@ def run_all_scans(vcenter_client, session_cleanup):
     and one scan will be run against the three sources each created with
     their own credential.
     """
+    cleanup = []
     config = get_config()
-    creds = config['credentials']
-    scans = config.get('qpc', {}).get('scans', [])
-    if scans == []:
+
+    config_scans = config.get('qpc', {}).get('scans', [])
+    if not config_scans:
         # if no scans are defined, no need to go any further
         return
+
+    config_creds = {
+        credential['name']: credential
+        for credential in config.get('credentials', [])
+    }
     inventory = {
         machine['hostname']: machine for machine in config['inventory']
     }
@@ -189,70 +175,74 @@ def run_all_scans(vcenter_client, session_cleanup):
         machine['hostname']: machine for machine in config['inventory']
         if machine.get('hypervisor') == 'vcenter'
     }
-    if not creds or not inventory:
+
+    if not config_creds or not inventory:
         raise ValueError(
             'Make sure to have credentials and inventory'
             ' items in the config file'
         )
-    vcenter_hostnames = list(vcenter_inventory.keys())
-    cred_ids = {}
+
+    credential_ids = {}
     source_ids = {}
-    for cred in creds:
-        # create creds on server
-        # create dict that associates the name of the cred to the cred id
-        cred_ids[cred['name']] = create_cred(cred, session_cleanup)
-    for hostname, source in inventory.items():
-        # create sources on server, and keep track of source ids for each scan
-        # name of cred to cred id on server
-        source_ids[hostname], expected_products = create_source(
-            source,
-            cred_ids,
-            session_cleanup
-        )
-        for scan in scans:
-            scan.setdefault('source_ids', [])
-            scan.setdefault('expected_products', [])
-            scan.setdefault('source_id_to_hostname', {})
-            for source in scan['sources']:
-                if hostname == source:
-                    scan['source_ids'].append(source_ids[hostname])
-                    scan['expected_products'].append(
-                        {source_ids[hostname]: expected_products}
-                    )
-                    scan['source_id_to_hostname'].update(
-                        {source_ids[hostname]: hostname}
-                    )
-    for scan in scans:
-        # grab the disabled products if they exist, otherwise {}
-        disabled_optional_products = scan.get('disabled_optional_products', {})
-        enabled_extended_product_search = scan.get(
-            'enabled_extended_product_search',
-            {})
-        scan_type = scan.get('type', 'inspect')
-        # update the sources dict of each item in the scans list with the
-        # source id if hosts are marked as being hosted on vcenter, turn them
-        # on. then wait until they are live
-        # then run the scan, caching the report id associated with the scan
-        # and finally turn the managed machines off.
-        vcenter_vms = [
-            vm for vm in get_vcenter_vms(vcenter_client)
-            if (vm.name in vcenter_hostnames) and (vm.name in scan['sources'])
-        ]
-        machines_to_wait = []
-        for vm in vcenter_vms:
-            if vm.runtime.powerState == 'poweredOff':
-                vm.PowerOnVM_Task()
-                machines_to_wait.append(inventory[vm.name])
-        wait_until_live(machines_to_wait, timeout=120)
-        # now all host should be live and we can run the scan
-        # all results will be saved in global cache
-        # if errors occur, they will be saved but scanning will go on
-        run_scan(scan, disabled_optional_products,
-                 enabled_extended_product_search,
-                 cleanup=session_cleanup, scan_type=scan_type)
-        for vm in vcenter_vms:
-            if vm.runtime.powerState == 'poweredOn':
-                vm.PowerOffVM_Task()
+    expected_products = {}
+    for scan in config_scans:
+        scan_vms = {
+            vm.name: vm for vm in get_vcenter_vms(vcenter_client)
+            if (vm.name in vcenter_inventory) and (vm.name in scan['sources'])
+        }
+
+        with vcenter_vms(scan_vms.values()):
+            for source_name in scan['sources']:
+                if source_name not in source_ids:
+                    machine = inventory[source_name]
+                    for credential_name in machine['credentials']:
+                        if credential_name not in credential_ids:
+                            credential = config_creds[credential_name].copy()
+                            credential.pop('rho', None)
+                            credential['cred_type'] = credential.pop('type')
+                            credential['ssh_keyfile'] = credential.pop(
+                                'sshkeyfile', None)
+                            credential_ids[credential_name] = create_cred(
+                                credential, cleanup)
+                    if machine.get('type', 'network') == 'network':
+                        vm = scan_vms[machine['hostname']]
+                        machine['ipv4'] = vm.guest.ipAddress
+                    source_info = {
+                        'source_type': machine.get('type', 'network'),
+                        'hosts': [machine.get('ipv4') or machine['hostname']],
+                        'credential_ids': [
+                            credential_ids[credential]
+                            for credential in machine['credentials']
+                        ],
+                    }
+                    source_ids[source_name] = create_source(
+                        source_info, cleanup)
+                    expected_products[source_name] = machine.get(
+                        'products', {})
+                    expected_products[source_name].update(
+                        {'distribution': source_info.get('distribution', {})})
+
+            scan_info = {
+                'expected_products': [],
+                'name': scan['name'],
+                'source_id_to_hostname': {},
+                'source_ids': [],
+            }
+            for source_name in scan['sources']:
+                source_id = source_ids[source_name]
+                scan_info['expected_products'].append({
+                    source_id: expected_products[source_name],
+                })
+                scan_info['source_id_to_hostname'][source_id] = source_name
+                scan_info['source_ids'].append(source_id)
+
+            run_scan(
+                scan_info,
+                scan.get('disabled_optional_products', {}),
+                scan.get('enabled_extended_product_search', {}),
+                cleanup=cleanup,
+                scan_type=scan.get('type', 'inspect')
+            )
 
 
 def scan_list():

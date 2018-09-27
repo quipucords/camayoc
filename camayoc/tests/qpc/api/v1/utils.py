@@ -159,9 +159,8 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
             )
         )
 
-    while (not scanjob.status() or not scanjob.status()
-            == state) and timeout > 0:
-        current_status = scanjob.status()
+    current_status = scanjob.status()
+    while (not current_status or not current_status == state) and timeout > 0:
         if state in stopped_states and current_status in stopped_states:
             # scanjob is no longer running, so we will return
             return
@@ -205,3 +204,4 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
                         scanjob.read().json().get('tasks'))))
         time.sleep(5)
         timeout -= 5
+        current_status = scanjob.status()

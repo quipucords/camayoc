@@ -2,7 +2,7 @@
 import pytest
 
 from camayoc import api
-from camayoc.qpc_models import Credential, Source
+from camayoc.qpc_models import Credential, Scan, Source
 from camayoc.utils import run_scans, uuid4
 
 mark_runs_scans = pytest.mark.skipif(run_scans() is False,
@@ -93,3 +93,33 @@ def gen_valid_source(cleanup, src_type, hosts, create=True,
         cleanup.append(source)
         assert_matches_server(source)
     return source
+
+
+def sort_and_delete(trash):
+    """Sort and delete a list of QPCObject typed items in the correct order."""
+    creds = []
+    sources = []
+    scans = []
+    # first sort into types because we have to delete scans before sources
+    # and sources before scans
+    for obj in trash:
+        if isinstance(obj, Credential):
+            creds.append(obj)
+            continue
+        if isinstance(obj, Source):
+            sources.append(obj)
+            continue
+        if isinstance(obj, Scan):
+            scans.append(obj)
+            continue
+
+    client = api.Client(response_handler=api.echo_handler)
+    for collection in [scans, sources, creds]:
+        for obj in collection:
+            # Override client to use a fresh one. It may have been a while
+            # since the object was created and its token may be invalid.
+            obj.client = client
+            # Only assert that we do not hit an internal server error, in case
+            # for some reason the object was allready cleaned up by the test
+            response = obj.delete()
+            assert response.status_code < 500
