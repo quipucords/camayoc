@@ -33,7 +33,7 @@ setup(
     extras_require={
         'dev': [
             # For `make docs`
-            'sphinx',
+            'sphinx<1.8',
             # For `make docs-serve`
             'sphinx-serve',
             # For `make lint`
