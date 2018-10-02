@@ -122,4 +122,4 @@ def sort_and_delete(trash):
             # Only assert that we do not hit an internal server error, in case
             # for some reason the object was allready cleaned up by the test
             response = obj.delete()
-            assert response.status_code < 500
+            assert response.status_code < 500, response.content
