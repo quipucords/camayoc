@@ -215,6 +215,8 @@ def run_all_scans(vcenter_client):
                             for credential in machine['credentials']
                         ],
                     }
+                    if 'options' in machine:
+                        source_info['options'] = machine['options'].copy()
                     source_ids[source_name] = create_source(
                         source_info, cleanup)
                     expected_products[source_name] = machine.get(
