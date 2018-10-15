@@ -42,7 +42,7 @@ nitpick_ignore = [
     ('py:class', 'object'),
     ('py:class', 'tuple'),
     ('py:class', 'unittest.case.TestCase'),
-    ('py:class', 'widgetastic.widget.View'),
+    ('py:class', 'widgetastic.widget.base.View'),
 ]
 nitpicky = True
 pygments_style = 'sphinx'
