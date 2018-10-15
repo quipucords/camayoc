@@ -12,6 +12,7 @@ import pexpect
 from camayoc.config import get_config
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
+    FailedMergeReportException,
     FailedScanException,
     WaitTimeError,
 )
@@ -86,6 +87,34 @@ def wait_for_scan(scan_job_id, status='completed', timeout=900):
         'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
         'The information about the scan is:\n{}\n'
         .format(scan_job_id, status, pformat(result))
+    )
+
+
+def wait_for_report_merge(job_id, status='completed', timeout=900):
+    """Wait for a report merge to reach some ``status`` up to ``timeout`` seconds.
+
+    :param job_id: Merge job ID to wait for.
+    :param status: Merge status which will wait for. Default is completed.
+    :param timeout: wait up to this amount of seconds. Default is 900.
+    """
+    while timeout > 0:
+        result = report_merge_status({'job': job_id})
+        if status != 'failed' and result['status'] == 'failed':
+            raise FailedMergeReportException(
+                'The merge report job with ID "{}" has failed '
+                'unexpectedly.\n\n'
+                'The information about the merge report job is:\n{}\n'
+                .format(job_id, pformat(result))
+            )
+        if result['status'] == status:
+            return
+        time.sleep(5)
+        timeout -= 5
+    raise WaitTimeError(
+        'Timeout waiting for the merge report job with ID "{}" to achieve '
+        'the "{}" status.\n\n'
+        'The current information about the merge report job is:\n{}\n'
+        .format(job_id, status, pformat(result))
     )
 
 
@@ -177,6 +206,19 @@ report_detail = functools.partial(cli_command, 'qpc report detail')
 
 report_merge = functools.partial(cli_command, 'qpc report merge')
 """Run ``qpc report merge`` with ``options`` and return output."""
+
+
+def report_merge_status(options=None, exitstatus=0):
+    """Run ``qpc report merge-status`` with ``options`` and return output."""
+    output = cli_command('qpc report merge-status', options, exitstatus)
+    match = re.match(
+        r'Job id: (?P<id>\d+) status is (?P<status>\w+)(.*id: '
+        '"(?P<report_id>\d+)")?',
+        output,
+        flags=re.DOTALL,
+    )
+    return match.groupdict()
+
 
 report_summary = functools.partial(cli_command, 'qpc report summary')
 """Run ``qpc report summary`` with ``options`` and return output."""

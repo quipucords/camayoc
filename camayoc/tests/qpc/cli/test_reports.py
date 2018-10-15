@@ -24,10 +24,12 @@ from .utils import (
     config_sources,
     report_detail,
     report_merge,
+    report_merge_status,
     report_summary,
     scan_add_and_check,
     scan_job,
     scan_start,
+    wait_for_report_merge,
     wait_for_scan,
 )
 
@@ -134,24 +136,32 @@ FACTS = (
     'jboss_brms_business_central_candidates',
     'jboss_brms_decision_central_candidates',
     'jboss_brms_kie_server_candidates',
+    'jboss_brms_locate_kie_api',
     'jboss_brms_manifest_mf',
     'jboss_eap_chkconfig',
     'jboss_eap_common_files',
     'jboss_eap_id_jboss',
+    'jboss_eap_locate_jboss_modules_jar',
     'jboss_eap_packages',
     'jboss_eap_processes',
     'jboss_eap_running_paths',
     'jboss_eap_systemctl_unit_files',
+    'jboss_fuse_activemq_ver',
+    'jboss_fuse_camel_ver',
     'jboss_fuse_chkconfig',
+    'jboss_fuse_cxf_ver',
     'jboss_fuse_systemctl_unit_files',
+    'jboss_processes',
     'jws_has_cert',
     'jws_home_candidates',
     'jws_installed_with_rpm',
     'jws_version',
     'karaf_homes',
+    'karaf_locate_karaf_jar',
     'kie_search_candidates',
     'kie_server_candidates',
     'kie_server_candidates_eap',
+    'redhat_packages_certs',
     'redhat_packages_gpg_is_redhat',
     'redhat_packages_gpg_last_built',
     'redhat_packages_gpg_last_installed',
@@ -173,6 +183,8 @@ FACTS = (
     'uname_os',
     'uname_processor',
     'user_has_sudo',
+    'virt_num_guests',
+    'virt_num_running_guests',
     'virt_type',
     'virt_virt',
     'yum_enabled_repolist',
@@ -262,7 +274,7 @@ def test_summary_report(
         'output-file': output_path,
     })
 
-    assert output.strip() == 'Report written successfully..'
+    assert output.strip() == 'Report written successfully.'
 
     with open(output_path) as f:
         if output_format == 'json':
@@ -311,7 +323,7 @@ def test_detail_report(
         source_option: scan[source_option],
     })
 
-    assert output.strip() == 'Report written successfully..'
+    assert output.strip() == 'Report written successfully.'
 
     with open(output_path) as f:
         if output_format == 'json':
@@ -385,12 +397,15 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
         merge_option: ' '.join(merge_values),
     })
 
-    match = re.match(
-        r'Scan job results successfully merged.  Report ID is (\d+).',
+    match = re.search(
+        r'Merge reports job created. Job ID is (\d+).',
         output
     )
     assert match is not None
-    report_id = match.group(1)
+    job_id = match.group(1)
+
+    wait_for_report_merge(job_id)
+    report_id = report_merge_status({'job': job_id})['report_id']
 
     output_path = '{}.json'.format(uuid4())
     output = report_summary({
@@ -398,7 +413,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
         'json': None,
         'output-file': output_path,
     })
-    assert output.strip() == 'Report written successfully..'
+    assert output.strip() == 'Report written successfully.'
 
     with open(output_path) as f:
         report = json.load(f)
