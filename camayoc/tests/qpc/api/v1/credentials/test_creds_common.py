@@ -69,7 +69,6 @@ def test_update(cred_type, field, shared_client, cleanup):
     assert_matches_server(cred)
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize('cred_type', QPC_SOURCE_TYPES)
 def test_negative_update_to_invalid(
     cred_type,
@@ -295,7 +294,7 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
     cleanup.remove(cred)
 
 
-@pytest.mark.skip
+@pytest.mark.parametrize('cred_type', QPC_SOURCE_TYPES)
 def test_negative_update_to_other_type(
     shared_client,
     cleanup,
