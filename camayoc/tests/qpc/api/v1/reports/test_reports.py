@@ -246,7 +246,9 @@ def test_products_found_deployment_report(scan_info):
             reason='No report id was returned from scan '
                    'named {scan_name}'.format(scan_name=scan_info['name']))
     report = api.Client().get(
-        'reports/{}/deployments'.format(report_id)).json().get('report')
+        'reports/{}/deployments'.format(report_id)).json()
+    assert report['status'] == 'complete', report
+    report = report.get('system_fingerprints')
     errors_found = []
     for entity in report:
         all_found_products = []
@@ -325,7 +327,9 @@ def test_OS_found_deployment_report(scan_info):
             reason='No report id was returned from scan '
                    'named {scan_name}'.format(scan_name=scan_info['name']))
     report = api.Client().get(
-        'reports/{}/deployments'.format(report_id)).json().get('report')
+        'reports/{}/deployments'.format(report_id)).json()
+    assert report['status'] == 'complete', report
+    report = report.get('system_fingerprints')
     errors_found = []
     for entity in report:
         for source_to_product_map in result['expected_products']:
