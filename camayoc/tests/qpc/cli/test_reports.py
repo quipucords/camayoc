@@ -58,17 +58,8 @@ SUMMARY_REPORT_FIELDS = (
     'redhat_certs',
     'redhat_package_count',
     'sources',
-    'subscription_manager_id',
     'system_creation_date',
     'system_last_checkin_date',
-    'virtualized_type',
-    'vm_cluster',
-    'vm_datacenter',
-    'vm_dns_name',
-    'vm_host',
-    'vm_host_socket_count',
-    'vm_state',
-    'vm_uuid',
 )
 """Common summary report expected fields."""
 
@@ -84,10 +75,8 @@ CSV_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
 """Summary report expected fields for CSV output."""
 
 JSON_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
-    'id',
     'metadata',
     'products',
-    'report_id',
 )
 """Summary report expected fields for JSON output."""
 
@@ -195,6 +184,17 @@ _SCANS = []
 """Global list of scans to generate reports from."""
 
 
+def assert_json_report_fields(
+        report_fields, expected_fields=JSON_SUMMARY_REPORT_FIELDS):
+    """Assert that report fields are a subset of expected field."""
+    report_fields = set(report_fields)
+    expected_fields = set(expected_fields)
+    assert report_fields.issubset(expected_fields), (
+        'Extra report fields: {}'
+        .format(report_fields - expected_fields)
+    )
+
+
 @pytest.fixture(autouse=True, scope='module')
 def setup_reports_prerequisites():
     """Perform a couple of scans to generate reports from.
@@ -229,7 +229,7 @@ def setup_reports_prerequisites():
             'name': scan['name'],
         })
         match = re.match(r'Scan "(\d+)" started.', result)
-        assert match is not None
+        assert match is not None, result
         scan_job_id = match.group(1)
         scan['scan-job'] = scan_job_id
         wait_for_scan(scan_job_id)
@@ -292,13 +292,18 @@ def test_summary_report(
             # Finally normalize the information to match what is returned by
             # the JSON format so we can do assertion later.
             report = {
-                'report': [row for row in reader],
+                'system_fingerprints': [row for row in reader],
                 'report_id': header.splitlines()[1],
             }
             expected_fields = CSV_SUMMARY_REPORT_FIELDS
 
-    for report_item in report['report']:
-        assert sorted(report_item.keys()) == sorted(expected_fields)
+    for report_item in report['system_fingerprints']:
+        if output_format == 'csv':
+            # CSV reports must include all fields
+            assert sorted(report_item.keys()) == sorted(expected_fields)
+        else:
+            # JSON reports will only diplay fields that are not null nor blank
+            assert_json_report_fields(report_item.keys(), expected_fields)
 
 
 @pytest.mark.parametrize('source_option', REPORT_SOURCE_OPTIONS)
@@ -398,10 +403,10 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     })
 
     match = re.search(
-        r'Merge reports job created. Job ID is (\d+).',
+        r'Report merge job (\d+) created.',
         output
     )
-    assert match is not None
+    assert match is not None, output
     job_id = match.group(1)
 
     wait_for_report_merge(job_id)
@@ -418,7 +423,5 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     with open(output_path) as f:
         report = json.load(f)
 
-    assert len(report['report']) == len(_SCANS)
-
-    for report_item in report['report']:
-        assert sorted(report_item.keys()) == sorted(JSON_SUMMARY_REPORT_FIELDS)
+    for report_item in report['system_fingerprints']:
+        assert_json_report_fields(report_item.keys())

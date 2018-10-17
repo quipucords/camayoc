@@ -212,7 +212,7 @@ def report_merge_status(options=None, exitstatus=0):
     """Run ``qpc report merge-status`` with ``options`` and return output."""
     output = cli_command('qpc report merge-status', options, exitstatus)
     match = re.match(
-        r'Job id: (?P<id>\d+) status is (?P<status>\w+)(.*id: '
+        r'Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: '
         '"(?P<report_id>\d+)")?',
         output,
         flags=re.DOTALL,
