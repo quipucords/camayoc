@@ -247,7 +247,7 @@ def test_products_found_deployment_report(scan_info):
                    'named {scan_name}'.format(scan_name=scan_info['name']))
     report = api.Client().get(
         'reports/{}/deployments'.format(report_id)).json()
-    assert report['status'] == 'completed', report
+    assert report.get('status') == 'completed', report
     report = report.get('system_fingerprints')
     errors_found = []
     for entity in report:
@@ -328,7 +328,7 @@ def test_OS_found_deployment_report(scan_info):
                    'named {scan_name}'.format(scan_name=scan_info['name']))
     report = api.Client().get(
         'reports/{}/deployments'.format(report_id)).json()
-    assert report['status'] == 'completed', report
+    assert report.get('status') == 'completed', report
     report = report.get('system_fingerprints')
     errors_found = []
     for entity in report:
