@@ -213,7 +213,7 @@ def report_merge_status(options=None, exitstatus=0):
     output = cli_command('qpc report merge-status', options, exitstatus)
     match = re.match(
         r'Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: '
-        '"(?P<report_id>\d+)")?',
+        r'"(?P<report_id>\d+)")?',
         output,
         flags=re.DOTALL,
     )
@@ -227,11 +227,11 @@ report_summary = functools.partial(cli_command, 'qpc report summary')
 def convert_ip_format(ipaddr):
     """Convert IP strings (for generating expected test results)."""
     if ipaddr.endswith('0/24'):
-        ipaddr = ipaddr.replace('0/24', '\[0:255\]')
+        ipaddr = ipaddr.replace('0/24', r'\[0:255\]')
     elif ipaddr.endswith('0/28'):
-        ipaddr = ipaddr.replace('0/28', '\[0:15\]')
+        ipaddr = ipaddr.replace('0/28', r'\[0:15\]')
     elif ipaddr.endswith('[1:100]'):
-        ipaddr = ipaddr.replace('[1:100]', '\[1:100\]')
+        ipaddr = ipaddr.replace('[1:100]', r'\[1:100\]')
     elif ' ' in ipaddr:
         ipaddr = '",\r\n        "'.join(ipaddr.split(' '))
     return ipaddr

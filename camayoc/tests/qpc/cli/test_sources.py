@@ -74,31 +74,31 @@ def default_port_for_source(source_type):
 
 def generate_show_output(data):
     """Generate a regex pattern with the data for a qpc cred show output."""
-    output = '{\r\n'
+    output = r'{\r\n'
     output += (
-        '    "credentials": \[\r\n'
-        '        {{\r\n'
-        '            "id": \\d+,\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
+        r'    "credentials": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": \d+,\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
         .format(data['cred_name'])
     )
     if data.get('exclude_hosts'):
         output += (
-            '    "exclude_hosts": \[\r\n'
-            '        "{}"\r\n'
-            '    \],\r\n'
+            r'    "exclude_hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r'    \],\r\n'
             .format(data['exclude_hosts'])
         )
     output += (
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
         .format(data['hosts'])
     )
-    output += '    "id": \\d+,\r\n'
-    output += '    "name": "{}",\r\n'.format(data['name'])
+    output += r'    "id": \d+,\r\n'
+    output += r'    "name": "{}",\r\n'.format(data['name'])
     source_type = data['source_type']
     if source_type in QPC_HOST_MANAGER_TYPES:
         data.setdefault('options', {}).setdefault('ssl_cert_verify', 'true')
@@ -294,8 +294,8 @@ def test_add_with_port_negative(
         .format(name, cred_name, hosts, port, source_type)
     )
     assert qpc_source_add.expect(
-        'Port value {} should be a positive integer in the valid range '
-        '\(0-65535\)'
+        r'Port value {} should be a positive integer in the valid range '
+        r'\(0-65535\)'
         .format(port)
     ) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0

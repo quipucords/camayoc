@@ -56,25 +56,25 @@ def test_add_with_auth_hosts(isolated_filesystem, hosts):
     assert rho_profile_add.exitstatus == 0
 
     if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', '\[0:255\]')
+        hosts = hosts.replace('0/24', r'\[0:255\]')
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -120,25 +120,25 @@ def test_add_with_auth_hosts_file(isolated_filesystem, hosts):
     assert rho_profile_add.exitstatus == 0
 
     if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', '\[0:255\]')
+        hosts = hosts.replace('0/24', r'\[0:255\]')
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -185,19 +185,19 @@ def test_add_with_sshport(isolated_filesystem):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "{}"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "{}"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name, sshport)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -234,8 +234,8 @@ def test_add_with_sshport_negative(isolated_filesystem):
         .format(name, auth_name, hosts, sshport)
     )
     assert rho_profile_add.expect(
-        'Port value {} should be a positive integer in the valid range '
-        '\(0-65535\)'
+        r'Port value {} should be a positive integer in the valid range '
+        r'\(0-65535\)'
         .format(sshport)
     ) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
@@ -280,19 +280,19 @@ def test_edit_auth(isolated_filesystem):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -314,19 +314,19 @@ def test_edit_auth(isolated_filesystem):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(new_auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -414,19 +414,19 @@ def test_edit_hosts(isolated_filesystem, new_hosts):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -444,25 +444,25 @@ def test_edit_hosts(isolated_filesystem, new_hosts):
     assert rho_profile_edit.exitstatus == 0
 
     if new_hosts.endswith('0/24'):
-        new_hosts = new_hosts.replace('0/24', '\[0:255\]')
+        new_hosts = new_hosts.replace('0/24', r'\[0:255\]')
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, new_hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -506,19 +506,19 @@ def test_edit_hosts_file(isolated_filesystem, new_hosts):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -539,25 +539,25 @@ def test_edit_hosts_file(isolated_filesystem, new_hosts):
     assert rho_profile_edit.exitstatus == 0
 
     if new_hosts.endswith('0/24'):
-        new_hosts = new_hosts.replace('0/24', '\[0:255\]')
+        new_hosts = new_hosts.replace('0/24', r'\[0:255\]')
     rho_profile_show = pexpect.spawn(
         'rho profile show --name={}'.format(name)
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, new_hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -648,19 +648,19 @@ def test_edit_sshport(isolated_filesystem):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "{}"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "{}"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name, sshport)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -682,19 +682,19 @@ def test_edit_sshport(isolated_filesystem):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "{}"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "{}"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name, new_sshport)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
@@ -786,19 +786,19 @@ def test_clear(isolated_filesystem):
     )
     input_vault_password(rho_profile_show)
     assert rho_profile_show.expect(
-        '{{\r\n'
-        '    "auth": \[\r\n'
-        '        {{\r\n'
-        '            "id": ".*",\r\n'
-        '            "name": "{}"\r\n'
-        '        }}\r\n'
-        '    \],\r\n'
-        '    "hosts": \[\r\n'
-        '        "{}"\r\n'
-        '    \],\r\n'
-        '    "name": "{}",\r\n'
-        '    "ssh_port": "22"\r\n'
-        '}}\r\n'
+        r'{{\r\n'
+        r'    "auth": \[\r\n'
+        r'        {{\r\n'
+        r'            "id": ".*",\r\n'
+        r'            "name": "{}"\r\n'
+        r'        }}\r\n'
+        r'    \],\r\n'
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r'    \],\r\n'
+        r'    "name": "{}",\r\n'
+        r'    "ssh_port": "22"\r\n'
+        r'}}\r\n'
         .format(auth_name, hosts, name)
     ) == 0, rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
