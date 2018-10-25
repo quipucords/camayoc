@@ -58,8 +58,17 @@ SUMMARY_REPORT_FIELDS = (
     'redhat_certs',
     'redhat_package_count',
     'sources',
+    'subscription_manager_id',
     'system_creation_date',
     'system_last_checkin_date',
+    'virtualized_type',
+    'vm_cluster',
+    'vm_datacenter',
+    'vm_dns_name',
+    'vm_host',
+    'vm_host_socket_count',
+    'vm_state',
+    'vm_uuid',
 )
 """Common summary report expected fields."""
 
@@ -274,29 +283,35 @@ def test_summary_report(
         'output-file': output_path,
     })
 
-    assert output.strip() == 'Report written successfully.'
+    assert 'Report written successfully.' in output
 
     with open(output_path) as f:
         if output_format == 'json':
             report = json.load(f)
             expected_fields = JSON_SUMMARY_REPORT_FIELDS
         else:
-            # For CSV we need to massage the data a little bit. First ensure
-            # there is a header with the report id and the report section.
-            header = ''.join(f.readline() for _ in range(5))
-            assert header == 'Report\n{}\n\n\nReport:\n'.format(
-                scan['report'])
-            # Now that we extracted the header we can call the CSV reader to
-            # read the report information
+            # For CSV we need to massage the data a little bit. First extract
+            # the Report ID, Report Type, Report Version information.
+            headers = [f.readline() for _ in range(5)]
+            report_id, report_type, report_version = (
+                headers[1].strip().split(',')
+            )
+            # Ensure that the report has the System Fingerprints section
+            assert headers[4].strip() == 'System Fingerprints:'
+            # Now that we extracted the  report information we can use CSV
+            # reader to read the system fingerprints information
             reader = csv.DictReader(f)
             # Finally normalize the information to match what is returned by
-            # the JSON format so we can do assertion later.
+            # the JSON format so we can do assertions later.
             report = {
+                'report_id': report_id,
+                'report_type': report_type,
+                'report_version': report_version,
                 'system_fingerprints': [row for row in reader],
-                'report_id': header.splitlines()[1],
             }
             expected_fields = CSV_SUMMARY_REPORT_FIELDS
 
+    assert report['report_type'] == 'deployments'
     for report_item in report['system_fingerprints']:
         if output_format == 'csv':
             # CSV reports must include all fields
@@ -328,7 +343,7 @@ def test_detail_report(
         source_option: scan[source_option],
     })
 
-    assert output.strip() == 'Report written successfully.'
+    assert 'Report written successfully.' in output
 
     with open(output_path) as f:
         if output_format == 'json':
@@ -338,7 +353,9 @@ def test_detail_report(
             # there is a header with the report id, number of sources and
             # sources' information.
             headers = [f.readline() for _ in range(8)]
-            report_id, number_sources = headers[1].strip().split(',')
+            report_id, report_type, report_version, number_sources = (
+                headers[1].strip().split(',')
+            )
             server_id, source_name, source_type = headers[6].strip().split(',')
             # Now that we extracted the header we can call the CSV reader to
             # read the report information
@@ -347,6 +364,7 @@ def test_detail_report(
             # the JSON format so we can do assertion later.
             report = {
                 'id': report_id,
+                'report_type': report_type,
                 'sources': [{
                     'facts': [row for row in reader],
                     'server_id': server_id,
@@ -355,6 +373,7 @@ def test_detail_report(
                 }],
             }
 
+    assert report['report_type'] == 'details'
     assert len(report['sources']) == len(scan['sources'])
     for report_source, scan_source in zip(report['sources'], scan['sources']):
         assert 'server_id' in report_source
@@ -418,7 +437,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
         'json': None,
         'output-file': output_path,
     })
-    assert output.strip() == 'Report written successfully.'
+    assert 'Report written successfully.' in output
 
     with open(output_path) as f:
         report = json.load(f)
