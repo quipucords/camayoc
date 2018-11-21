@@ -19,6 +19,7 @@ from .utils import (
     config_scans,
     config_sources,
     cred_add_and_check,
+    setup_qpc,
     source_add_and_check,
 )
 
@@ -32,7 +33,7 @@ def setup_scan_prerequisites(request):
             module_path.endswith('test_scanjobs.py')):
         return
 
-    qpc_server_config()
+    setup_qpc()
 
     # Create new creds
     for credential in config_credentials():
@@ -61,51 +62,8 @@ def setup_scan_prerequisites(request):
 
 @pytest.fixture()
 def qpc_server_config():
-    """Read Camayoc's configuration file and configure qpc.
-
-    Both hostname and port must be available on the configuration file, for
-    example::
-
-        qpc:
-          hostname: localhost
-          port: 8000
-    """
-    config = get_config()
-    hostname = config.get('qpc', {}).get('hostname')
-    port = config.get('qpc', {}).get('port')
-    username = config.get('qpc', {}).get('username', 'admin')
-    password = config.get('qpc', {}).get('password', 'pass')
-    https = config.get('qpc', {}).get('https', False)
-    if not https:
-        https = ' --use-http'
-    else:
-        https = ''
-    ssl_verify = config.get('qpc', {}).get('ssl-verify', False)
-    if ssl_verify not in (True, False):
-        ssl_verify = ' --ssl-verify={}'.format(ssl_verify)
-    else:
-        ssl_verify = ''
-    if not all([hostname, port]):
-        raise ValueError(
-            'Both hostname and port must be defined under the qpc section on '
-            'the Camayoc\'s configuration file.')
-    command = 'qpc server config --host {} --port {}{}{}'.format(
-        hostname, port, https, ssl_verify)
-    output, exitstatus = pexpect.run(
-        command, encoding='utf8', withexitstatus=True)
-    assert exitstatus == 0, output
-
-    # now login to the server
-    command = 'qpc server login --username {}'.format(username)
-    output, exitstatus = pexpect.run(
-        command,
-        encoding='utf8',
-        events=[
-            ('Password: ', password + '\n'),
-        ],
-        withexitstatus=True,
-    )
-    assert exitstatus == 0, output
+    """Configure and login qpc with Camayoc's configuration info."""
+    setup_qpc()
 
 
 @pytest.fixture(params=QPC_SOURCE_TYPES)

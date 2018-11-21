@@ -411,3 +411,68 @@ source_show = functools.partial(cli_command, 'qpc source show')
 def scan_job(options=None, exitstatus=0):
     """Run ``qpc scan job`` command with ``options`` returning its output."""
     return json.loads(cli_command('qpc scan job', options, exitstatus))
+
+
+def setup_qpc():
+    """Configure and login qpc with Camayoc's configuration info.
+
+    The minimum required configuration is both ``hostname`` and ``port``, for
+    example::
+
+        qpc:
+          hostname: localhost
+          port: 8000
+
+    If not specified ``https``, ``ssl-verify``, ``username`` and ``password``
+    will use their default values: ``false``, ``false``, ``admin`` and ``pass``
+    respectively.
+
+    See below an example with all fields being defined::
+
+        qpc:
+          hostname: quipucords.example.com
+          https: true
+          password: youshallnotpass
+          port: 443
+          ssl-verify: /path/to/custom/certificate
+          username: gandalf
+    """
+    qpc_config = get_config().get('qpc', {})
+
+    hostname = qpc_config.get('hostname')
+    port = qpc_config.get('port')
+    if not all([hostname, port]):
+        raise ValueError(
+            'Both hostname and port must be defined under the qpc section on '
+            'the Camayoc\'s configuration file.')
+
+    https = qpc_config.get('https', False)
+    if not https:
+        https = ' --use-http'
+    else:
+        https = ''
+    ssl_verify = qpc_config.get('ssl-verify', False)
+    if ssl_verify not in (True, False):
+        ssl_verify = ' --ssl-verify={}'.format(ssl_verify)
+    else:
+        ssl_verify = ''
+
+    command = 'qpc server config --host {} --port {}{}{}'.format(
+        hostname, port, https, ssl_verify)
+    output, exitstatus = pexpect.run(
+        command, encoding='utf8', withexitstatus=True)
+    assert exitstatus == 0, output
+
+    # now login to the server
+    username = qpc_config.get('username', 'admin')
+    password = qpc_config.get('password', 'pass')
+    command = 'qpc server login --username {}'.format(username)
+    output, exitstatus = pexpect.run(
+        command,
+        encoding='utf8',
+        events=[
+            ('Password: ', password + '\n'),
+        ],
+        withexitstatus=True,
+    )
+    assert exitstatus == 0, output
