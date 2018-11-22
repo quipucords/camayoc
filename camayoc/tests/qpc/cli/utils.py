@@ -18,6 +18,25 @@ from camayoc.exceptions import (
 )
 
 
+def clear_all_entities():
+    """Clear all entities from the server.
+
+    We must delete all entities on the server in the correct order, first
+    scans, then sources, then credentials.
+    """
+    error_finder = re.compile('internal server error')
+    errors = []
+    output = []
+    for command in ('scan', 'source', 'cred'):
+        clear_output = pexpect.run(
+                                    'qpc {} clear --all'.format(command),
+                                    encoding='utf8',
+                                    )
+        errors.extend(error_finder.findall(clear_output))
+        output.append(clear_output)
+    assert errors == [], output
+
+
 def config_credentials():
     """Return all credentials available on configuration file for CLI scans."""
     try:

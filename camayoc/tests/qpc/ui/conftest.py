@@ -7,7 +7,7 @@ from selenium import webdriver
 
 from widgetastic.browser import Browser
 
-from camayoc.tests.qpc.cli.conftest import cleanup_server
+from camayoc.tests.qpc.cli.utils import clear_all_entities
 from camayoc.utils import get_qpc_url, uuid4
 
 from .utils import create_credential
@@ -112,6 +112,6 @@ def credentials(browser, qpc_login):
     # database lock sometimes occurs, so we attempt this twice
     # quipucords/quipucords/issues/1275
     try:
-        cleanup_server()
+        clear_all_entities()
     except Exception:
-        cleanup_server()
+        clear_all_entities()

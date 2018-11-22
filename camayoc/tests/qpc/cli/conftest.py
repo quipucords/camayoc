@@ -15,6 +15,7 @@ from camayoc.constants import (
 from camayoc.utils import name_getter
 
 from .utils import (
+    clear_all_entities,
     config_credentials,
     config_scans,
     config_sources,
@@ -80,22 +81,8 @@ def scan_type(request):
 
 @pytest.fixture(scope='module', autouse=True)
 def cleanup_server():
-    """Cleanup objects on the server after each module runs.
-
-    We must delete all objects on the server in the correct order, first scans,
-    then sources, then credentials.
-    """
-    error_finder = re.compile('internal server error')
-    errors = []
-    output = []
-    for command in ('scan', 'source', 'cred'):
-        clear_output = pexpect.run(
-                                    'qpc {} clear --all'.format(command),
-                                    encoding='utf8',
-                                    )
-        errors.extend(error_finder.findall(clear_output))
-        output.append(clear_output)
-    assert errors == [], output
+    """Cleanup objects on the server after each module runs."""
+    clear_all_entities()
 
 
 @pytest.fixture(params=config_credentials(), ids=name_getter)
