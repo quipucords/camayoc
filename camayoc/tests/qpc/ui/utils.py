@@ -44,9 +44,9 @@ CREDENTIAL_FIELD_LABELS = {
     }
 
 
-def wait_for_animation(multiplier=1):
+def wait_for_animation(wait_time=0.5):
     """Wait for animations to complete."""
-    time.sleep(0.5 * multiplier)
+    time.sleep(wait_time)
 
 
 def row_xpath(row_name):
@@ -208,7 +208,7 @@ def create_credential(view, options):
     dash.nav.select('Credentials')
     # Assert the row with the credential name exists.
     view.wait_for_element(locator=Locator(
-        xpath=row_xpath(options['name'])), delay=0.3, timeout=10)
+        xpath=row_xpath(options['name'])), delay=0.5, timeout=10)
     assert isinstance(view.element(locator=Locator(
         xpath=row_xpath(options['name']))), WebElement)
 
@@ -226,7 +226,7 @@ def delete_credential(view, names):
         css='.modal-content')).delete_button.click()
     # Wait for the deletion animations to complete,
     # and verify that the rows are gone.
-    wait_for_animation(2)
+    wait_for_animation(1)
     for name in names:
         with pytest.raises(NoSuchElementException):
             view.wait_for_element(locator=Locator(
@@ -248,6 +248,7 @@ def edit_credential(view, original_name, options):
     GenericLocatorWidget(view, locator=Locator(
         xpath=edit_xpath(original_name))).click()
     modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
+    wait_for_animation(1)
     fill_credential_info(view, options)
     # Hack to deal with the fact that the GET refresh isn't
     # implemented when the save button is clicked.
@@ -265,7 +266,7 @@ def edit_credential(view, original_name, options):
     if 'name' in options:
         current_name = options['name']
     view.wait_for_element(locator=Locator(
-        xpath=row_xpath(current_name)), delay=0.3, timeout=10)
+        xpath=row_xpath(current_name)), delay=0.5, timeout=10)
     GenericLocatorWidget(view, locator=Locator(
         xpath=edit_xpath(current_name))).click()
     modal = CredentialModalView(view, locator=Locator(css='.modal-content'))
@@ -292,7 +293,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     dash = DashboardView(view)
     dash.nav.select('Sources')
     # Display varies depending on whether or not sources already exist.
-    wait_for_animation(2)
+    wait_for_animation(1)
     try:
         Button(view, 'Add Source').click()
     except NoSuchElementException:
@@ -306,7 +307,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
     wait_for_animation()
     GenericLocatorWidget(modal, locator=Locator(
         xpath=radio_xpath(radio_label))).click()
-    wait_for_animation(2)
+    wait_for_animation(1)
     modal.next_button.click()
 
     # Fill in required source information.
@@ -321,11 +322,11 @@ def create_source(view, credential_name, source_type, source_name, addresses):
         cred_dropdown = Dropdown(modal, 'Select a credential')
         cred_dropdown.item_select(credential_name)
     Button(modal, 'Save').click()
-    wait_for_animation(4)
+    wait_for_animation(2)
     view.wait_for_element(locator=Locator('//button[text()="Close"]'))
     Button(modal, 'Close', classes=[Button.PRIMARY]).click()
 
-    wait_for_animation(2)
+    wait_for_animation(1)
     # mitigate database lock issue quipucords/quipucords/issues/1275
     clear_toasts(view=view)
     # Verify that the new row source has been created.
