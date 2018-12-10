@@ -1,11 +1,7 @@
 """Test utilities for quipucords' ``qpc`` tests."""
-import re
-
-import pexpect
 
 import pytest
 
-from camayoc.config import get_config
 from camayoc.constants import (
     BECOME_PASSWORD_INPUT,
     CONNECTION_PASSWORD_INPUT,
