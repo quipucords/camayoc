@@ -24,10 +24,10 @@ from camayoc.utils import uuid4
 from .utils import (
     config_sources,
     report_detail,
+    report_download,
     report_merge,
     report_merge_status,
     report_summary,
-    report_download,
     scan_add_and_check,
     scan_job,
     scan_start,
@@ -463,13 +463,13 @@ def test_download_report(
 
     :id: a8c8ef8c-fa64-11e8-82bb-8c1645a90ee2
     :description: Ensures reports can be downloaded in tar.gz format (ensures
-    command fails if specified output not tar.gz) by report id, or scanjob
-    id. Also ensures that package is not automatically extracted after
-    download.
+        command fails if specified output not tar.gz) by report id, or scanjob
+        id. Also ensures that package is not automatically extracted after
+        download.
     :steps: Run ``qpc report download (--scan-job <scan-job-id> | --report
         <report-id>) --output-file <output-path>``
-    :expectedresults: The downloaded report must be an un-extracted tar.gz package
-        and must contain the expected report.
+    :expectedresults: The downloaded report must be an un-extracted tar.gz
+        package and must contain the expected report.
     """
     scan = random.choice(_SCANS)
     output_path = f'{uuid4()}'
@@ -499,7 +499,6 @@ def test_download_report(
             source_option: scan[source_option],
             'output-file': missing_output_path,
         })
-    #print('\nException Info: {}'.format(no_dir_exception_info))
     expected_msg = 'directory /no/such/number does not exist'
     assert no_dir_exception_info.match(expected_msg)
 
@@ -510,6 +509,5 @@ def test_download_report(
             source_option: scan[source_option],
             'output-file': non_tar_file,
         })
-    # print('\nException Info2: {}'.format(tar_exception_info))
-    expected_tar_error = "extension is required to be tar.gz"
+    expected_tar_error = 'extension is required to be tar.gz'
     assert tar_exception_info.match(expected_tar_error)

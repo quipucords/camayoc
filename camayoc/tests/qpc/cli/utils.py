@@ -245,6 +245,7 @@ report_summary = functools.partial(cli_command, 'qpc report summary')
 report_download = functools.partial(cli_command, 'qpc report download')
 """Run ``qpc report download`` with ``options`` and return output."""
 
+
 def convert_ip_format(ipaddr):
     """Convert IP strings (for generating expected test results)."""
     if ipaddr.endswith('0/24'):
