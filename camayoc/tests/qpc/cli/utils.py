@@ -242,6 +242,8 @@ def report_merge_status(options=None, exitstatus=0):
 report_summary = functools.partial(cli_command, 'qpc report summary')
 """Run ``qpc report summary`` with ``options`` and return output."""
 
+report_download = functools.partial(cli_command, 'qpc report download')
+"""Run ``qpc report download`` with ``options`` and return output."""
 
 def convert_ip_format(ipaddr):
     """Convert IP strings (for generating expected test results)."""
