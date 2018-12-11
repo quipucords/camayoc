@@ -15,6 +15,7 @@ import os
 import pprint
 import random
 import re
+import tarfile
 
 import pytest
 
@@ -23,6 +24,7 @@ from camayoc.utils import uuid4
 from .utils import (
     config_sources,
     report_detail,
+    report_download,
     report_merge,
     report_merge_status,
     report_summary,
@@ -452,3 +454,75 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
 
     for report_item in report['system_fingerprints']:
         assert_json_report_fields(report_item.keys())
+
+
+@pytest.mark.parametrize('source_option', REPORT_SOURCE_OPTIONS)
+def test_download_report(
+        source_option, isolated_filesystem, qpc_server_config):
+    """Ensure a report can be downloaded and has expected information.
+
+    :id: a8c8ef8c-fa64-11e8-82bb-8c1645a90ee2
+    :description: Ensures reports can be downloaded in tar.gz format (ensures
+        command fails if specified output not tar.gz) by report id, or scanjob
+        id. Also ensures that package is not automatically extracted after
+        download.
+    :steps: Run ``qpc report download (--scan-job <scan-job-id> | --report
+        <report-id>) --output-file <output-path>``
+    :expectedresults: The downloaded report must be an un-extracted tar.gz
+        package and must contain the expected report.
+    """
+    scan = random.choice(_SCANS)
+    output_path = f'{uuid4()}'
+    output_pkg = f'{output_path}.tar.gz'
+    output = report_download({
+        source_option: scan[source_option],
+        'output-file': output_pkg,
+    })
+    # Test that package downloaded
+    assert 'successfully written to' in output, \
+        'Unexpected output from qpc report download! \n' \
+        'Expected to find "successfully written to" in output.' \
+        f'Actual output: {output}'
+    assert os.path.isfile(output_pkg), \
+        'Unexpected output from qpc report download!\n' \
+        f'Download package not found at expected location: {output_pkg}'
+
+    # Test that tar isn't extracted
+    pkg = tarfile.open(output_pkg)
+    pkg_contents = pkg.getnames()
+
+    pkg_top_contents = list(set(map(os.path.dirname, pkg_contents)))
+    found_top_contents = list(filter(lambda src: src in os.listdir(),
+                                     pkg_top_contents))
+    assert not found_top_contents, \
+        'Unexpected output from qpc report download!\n' \
+        f"Package appears to be extracted. Top level items of package found in \
+        package's dir: {found_top_contents}"
+
+    # Test that fails on non-existant path
+    missing_output_path = f'/no/such/number/{output_pkg})'
+    with pytest.raises(AssertionError, message='I expected to fail with an\
+    AssertionError due to a missing directory') as no_dir_exception_info:
+        report_download({
+            source_option: scan[source_option],
+            'output-file': missing_output_path,
+        })
+    expected_msg = 'directory /no/such/number does not exist'
+    assert no_dir_exception_info.match(expected_msg), \
+        'Unexpected output from qpc report download! \n' \
+        f'Expected to find "{expected_msg}" in output, actual output was: \
+        {str(no_dir_exception_info.value)}'
+
+    # Test that non tar.gz files fail
+    non_tar_file = f'{format(uuid4())}'
+    with pytest.raises(AssertionError, message='I expected to fail with an \
+    AssertionError due to a bad output value specified') as tar_exception_info:
+        report_download({
+            source_option: scan[source_option],
+            'output-file': non_tar_file,
+        })
+    expected_tar_error = 'extension is required to be tar.gz'
+    assert tar_exception_info.match(expected_tar_error), \
+        'Unexpected output from qpc report download!\n' \
+        f'Expected to find "{expected_tar_error}" in output, actual output \
+        was: {str(no_dir_exception_info.value)}'
