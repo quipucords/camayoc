@@ -1,5 +1,6 @@
 # coding=utf-8
 """Utility functions for Quipucords cli tests."""
+import csv
 import functools
 import itertools
 import json
@@ -498,3 +499,38 @@ def setup_qpc():
         withexitstatus=True,
     )
     assert exitstatus == 0, output
+
+
+def normalize_csv_report(f, header_range=5, fingerprint_line=4):
+    """Helper Function.
+
+    Extracts and normalizes csv report to match what is returned by the\
+    JSON format.
+
+    """
+    # For CSV we need to massage the data a little bit. First extract the
+    # Report information to use later.
+    report_headers = [f.readline() for _ in range(header_range)]
+    header_keys = report_headers[0].strip().split(',')
+    header_values = report_headers[1].strip().split(',')
+    # Dynamically Pull the header items into a dictionary.
+    report_info = dict(map(lambda key, value: [key.lower().replace(' ', '_'),
+                                               value], header_keys,
+                           header_values))
+
+    # Ensure that the report has the System Fingerprints section
+    assert report_headers[fingerprint_line].strip() == 'System Fingerprints:',\
+        "Report did contain 'System Fingerprints Section at the\
+         expected location.'"
+
+    # Now that we extracted the report information we can use CSV reader to
+    # read the system fingerprints information
+    reader = csv.DictReader(f)
+    report = {
+        'report_id': report_info['report_id'],
+        'report_type': report_info['report_type'],
+        'report_version': report_info['report_version'],
+        'report_platform_id': report_info['report_platform_id'],
+        'system_fingerprints': [row for row in reader],
+    }
+    return report

@@ -23,6 +23,7 @@ from camayoc.utils import uuid4
 
 from .utils import (
     config_sources,
+    normalize_csv_report,
     report_detail,
     report_download,
     report_merge,
@@ -300,25 +301,8 @@ def test_summary_report(
             report = json.load(f)
             expected_fields = JSON_SUMMARY_REPORT_FIELDS
         else:
-            # For CSV we need to massage the data a little bit. First extract
-            # the Report ID, Report Type, Report Version information.
-            headers = [f.readline() for _ in range(5)]
-            report_id, report_type, report_version = (
-                headers[1].strip().split(',')
-            )
-            # Ensure that the report has the System Fingerprints section
-            assert headers[4].strip() == 'System Fingerprints:'
-            # Now that we extracted the  report information we can use CSV
-            # reader to read the system fingerprints information
-            reader = csv.DictReader(f)
-            # Finally normalize the information to match what is returned by
-            # the JSON format so we can do assertions later.
-            report = {
-                'report_id': report_id,
-                'report_type': report_type,
-                'report_version': report_version,
-                'system_fingerprints': [row for row in reader],
-            }
+            report = normalize_csv_report(f, header_range=5,
+                                          fingerprint_line=4)
             expected_fields = CSV_SUMMARY_REPORT_FIELDS
 
     assert report['report_type'] == 'deployments'
@@ -362,6 +346,8 @@ def test_detail_report(
             # For CSV we need to massage the data a little bit. First ensure
             # there is a header with the report id, number of sources and
             # sources' information.
+            import pdb
+            pdb.set_trace()
             headers = [f.readline() for _ in range(8)]
             report_id, report_type, report_version, number_sources = (
                 headers[1].strip().split(',')
