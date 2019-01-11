@@ -9,7 +9,6 @@
 :testtype: functional
 :upstream: yes
 """
-import csv
 import json
 import os
 import pprint
@@ -301,8 +300,8 @@ def test_summary_report(
             report = json.load(f)
             expected_fields = JSON_SUMMARY_REPORT_FIELDS
         else:
-            report = normalize_csv_report(f, header_range=5,
-                                          fingerprint_line=4)
+            report = normalize_csv_report(f, 5, [(0, 1)],
+                                          report_type='summary')
             expected_fields = CSV_SUMMARY_REPORT_FIELDS
 
     assert report['report_type'] == 'deployments'
@@ -346,28 +345,8 @@ def test_detail_report(
             # For CSV we need to massage the data a little bit. First ensure
             # there is a header with the report id, number of sources and
             # sources' information.
-            import pdb
-            pdb.set_trace()
-            headers = [f.readline() for _ in range(8)]
-            report_id, report_type, report_version, number_sources = (
-                headers[1].strip().split(',')
-            )
-            server_id, source_name, source_type = headers[6].strip().split(',')
-            # Now that we extracted the header we can call the CSV reader to
-            # read the report information
-            reader = csv.DictReader(f)
-            # Finally normalize the information to match what is returned by
-            # the JSON format so we can do assertion later.
-            report = {
-                'id': report_id,
-                'report_type': report_type,
-                'sources': [{
-                    'facts': [row for row in reader],
-                    'server_id': server_id,
-                    'source_name': source_name,
-                    'source_type': source_type,
-                }],
-            }
+            report = normalize_csv_report(f, 8, [(0, 1), (5, 6)],
+                                          report_type='detail')
 
     assert report['report_type'] == 'details'
     assert len(report['sources']) == len(scan['sources'])
