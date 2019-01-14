@@ -18,11 +18,8 @@ import tarfile
 
 import pytest
 
+from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
 from camayoc.utils import uuid4
-
-from camayoc.tests.qpc.cli.csv_report_parsing import (
-    normalize_csv_report
-)
 
 from .utils import (
     config_sources,
