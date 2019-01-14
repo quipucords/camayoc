@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Help functions for csv report tests"""
+"""Helper functions for parsing csv reports"""
 
 import csv
 
