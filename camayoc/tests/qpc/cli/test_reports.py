@@ -22,7 +22,6 @@ from camayoc.utils import uuid4
 
 from .utils import (
     config_sources,
-    normalize_csv_report,
     report_detail,
     report_download,
     report_merge,
@@ -35,6 +34,11 @@ from .utils import (
     wait_for_scan,
 )
 
+from camayoc.tests.qpc.cli.csv_report_parsing import (
+    normalize_csv_report
+)
+
+# from csv_report_parsing import normalize_csv_report
 
 REPORT_OUTPUT_FORMATS = ('csv', 'json')
 """Valid report output formats."""

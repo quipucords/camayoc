@@ -1,6 +1,5 @@
 # coding=utf-8
 """Utility functions for Quipucords cli tests."""
-import csv
 import functools
 import itertools
 import json
@@ -499,85 +498,3 @@ def setup_qpc():
         withexitstatus=True,
     )
     assert exitstatus == 0, output
-
-
-# I don't love the names of these functions...
-def normalize_summary_report(header_info, reader):
-    """Takes information from report_info dict, and reader and returns a
-    summary report"""
-    report_info = header_info[0]
-    report = {
-        'report_id': report_info['report_id'],
-        'report_type': report_info['report_type'],
-        'report_version': report_info['report_version'],
-        'report_platform_id': report_info['report_platform_id'],
-        'system_fingerprints': [row for row in reader],
-    }
-    return report
-
-
-def normalize_detail_report(header_info, reader):
-    """Takes information from report_info dict, and reader and returns a
-    detail format report"""
-    # import pdb; pdb.set_trace()
-    report_info = header_info[0]
-    source_info = header_info[1]
-    report = {
-        'id': report_info['report_id'],
-        'report_type': report_info['report_type'],
-        'sources': [{
-            'facts': [row for row in reader],
-            'server_id': source_info['server_identifier'],
-            'source_name': source_info['source_name'],
-            'source_type': source_info['source_type'],
-        }],
-    }
-    return report
-
-
-def extract_key_value_lines(input_lines, line_pairs):
-    """Extracts several line pairs into dictionaryies, and returns a list of
-    all of them"""
-    return [zip_line_pairs(input_lines, key_ind, value_ind)
-            for (key_ind, value_ind) in line_pairs]
-
-
-def zip_line_pairs(input_lines, key_ind, value_ind):
-    """get key_values from two lines and return dict"""
-    header_keys = input_lines[key_ind].strip().split(',')
-    header_values = input_lines[value_ind].strip().split(',')
-
-    # Dynamically Pull the header items into a dictionary.
-    paired_info = dict(map(lambda key, value:
-                           [key.lower().replace(' ', '_'), value],
-                           header_keys,
-                           header_values))
-    return paired_info
-
-
-def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
-    """Helper Function.
-
-    Extracts and normalizes csv report to match what is returned by the\
-    JSON format.
-    """
-    # For CSV we need to massage the data a little bit. First extract the
-    # Report information to use later.
-    report_headers = [f.readline() for _ in range(header_range)]
-
-    header_info = extract_key_value_lines(report_headers,
-                                          header_lines)
-
-    # Ensure that the report has the System Fingerprints section
-    # assert report_headers[fingerprint_line].strip() == 'System Fingerprints:'\
-    #     "Report did contain 'System Fingerprints Section at the\
-    #      expected location.'"
-
-    # Now that we extracted the report information we can use CSV reader to
-    # read the system fingerprints information
-    reader = csv.DictReader(f)
-    if report_type == 'summary':
-        report = normalize_summary_report(header_info, reader)
-    else:
-        report = normalize_detail_report(header_info, reader)
-    return report
