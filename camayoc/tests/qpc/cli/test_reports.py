@@ -20,6 +20,10 @@ import pytest
 
 from camayoc.utils import uuid4
 
+from camayoc.tests.qpc.cli.csv_report_parsing import (
+    normalize_csv_report
+)
+
 from .utils import (
     config_sources,
     report_detail,
@@ -32,10 +36,6 @@ from .utils import (
     scan_start,
     wait_for_report_merge,
     wait_for_scan,
-)
-
-from camayoc.tests.qpc.cli.csv_report_parsing import (
-    normalize_csv_report
 )
 
 # from csv_report_parsing import normalize_csv_report
