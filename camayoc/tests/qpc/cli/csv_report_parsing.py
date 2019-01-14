@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Helper functions for parsing csv reports"""
+"""Helper functions for parsing csv reports."""
 
 import csv
 
@@ -20,7 +20,7 @@ EXPECTED_DETAIL_REPORT_ID_FIELDS = [
 
 
 def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
-    """ Extracts and normalizes csv report to match the returned JSON report.
+    """Extract and normalize csv report to match the returned JSON report.
 
     :param f: A file object for the csv
     :param header_range: An int specifing the range that the head extends into
@@ -48,12 +48,15 @@ def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
 
 
 def normalize_summary_report(header_info, reader):
-    """Takes information from report_info dict, and reader and returns a
-    summary report"""
+    """Normalize report info into a summary report.
+
+    Takes information from report_info dict, and reader and returns a
+    summary report
+    """
     report_info = header_info[0]
 
     # Ensure extracted fields match expected
-    expected_keys = [x.lower().replace(" ", "_") for x in
+    expected_keys = [x.lower().replace(' ', '_') for x in
                      EXPECTED_SUMMARY_REPORT_ID_FIELDS]
     assert sorted(report_info.keys()) == sorted(expected_keys),\
         "Extracted Report Fields didn't match expected list"
@@ -69,15 +72,18 @@ def normalize_summary_report(header_info, reader):
 
 
 def normalize_detail_report(header_info, reader):
-    """Takes information from report_info dict, and reader and returns a
-    detail format report"""
+    """Normalize report info into a detail report.
+
+    Takes information from report_info dict, and reader and returns a
+    detail format report
+    """
     # The first dictionary grabbed contains the report info
     report_info = header_info[0]
     # The second contains the source header info
     source_info = header_info[1]
 
     # Ensure extracted fields match expected
-    expected_keys = [x.lower().replace(" ", "_") for x in
+    expected_keys = [x.lower().replace(' ', '_') for x in
                      EXPECTED_DETAIL_REPORT_ID_FIELDS]
     assert sorted(report_info.keys()) == sorted(expected_keys),\
         "Extracted Report Fields didn't match expected list"
@@ -96,8 +102,7 @@ def normalize_detail_report(header_info, reader):
 
 
 def extract_key_value_lines(input_lines, line_pairs, delim=','):
-    """Extracts several line pairs into dictionaries, and returns a list of
-    all of them
+    """Extract multiple line pairs into list of dictionaries.
 
     :param input_lines: a list of csv line strings.
     :param line_pairs: A list of tuples containg the index pairs for the lines
@@ -110,7 +115,7 @@ def extract_key_value_lines(input_lines, line_pairs, delim=','):
 
 
 def zip_line_pairs(input_lines, key_ind, value_ind, delim=','):
-    """Takes a list of csv strings, and zips 2 of them into a dictionary.
+    """Take a list of csv strings, and combine 2 of them into a dictionary.
 
     :param input_lines: a list of csv lines
     :param key_ind: the index value for which line in ``input_lines`` should be
