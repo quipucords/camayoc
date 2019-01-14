@@ -3,6 +3,21 @@
 
 import csv
 
+EXPECTED_SUMMARY_REPORT_ID_FIELDS = [
+    'Report ID',
+    'Report Type',
+    'Report Version',
+    'Report Platform ID',
+]
+
+EXPECTED_DETAIL_REPORT_ID_FIELDS = [
+    'Report ID',
+    'Report Type',
+    'Report Version',
+    'Report Platform ID',
+    'Number Sources'
+]
+
 
 def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
     """ Extracts and normalizes csv report to match the returned JSON report.
@@ -36,6 +51,13 @@ def normalize_summary_report(header_info, reader):
     """Takes information from report_info dict, and reader and returns a
     summary report"""
     report_info = header_info[0]
+
+    # Ensure extracted fields match expected
+    expected_keys = [x.lower().replace(" ", "_") for x in
+                     EXPECTED_SUMMARY_REPORT_ID_FIELDS]
+    assert sorted(report_info.keys()) == sorted(expected_keys),\
+        "Extracted Report Fields didn't match expected list"
+
     report = {
         'report_id': report_info['report_id'],
         'report_type': report_info['report_type'],
@@ -53,6 +75,13 @@ def normalize_detail_report(header_info, reader):
     report_info = header_info[0]
     # The second contains the source header info
     source_info = header_info[1]
+
+    # Ensure extracted fields match expected
+    expected_keys = [x.lower().replace(" ", "_") for x in
+                     EXPECTED_DETAIL_REPORT_ID_FIELDS]
+    assert sorted(report_info.keys()) == sorted(expected_keys),\
+        "Extracted Report Fields didn't match expected list"
+
     report = {
         'id': report_info['report_id'],
         'report_type': report_info['report_type'],
