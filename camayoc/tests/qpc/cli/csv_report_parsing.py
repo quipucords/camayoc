@@ -3,20 +3,16 @@
 
 import csv
 
-EXPECTED_SUMMARY_REPORT_ID_FIELDS = [
+EXPECTED_SUMMARY_REPORT_ID_FIELDS = (
     'Report ID',
     'Report Type',
     'Report Version',
     'Report Platform ID',
-]
+)
 
-EXPECTED_DETAIL_REPORT_ID_FIELDS = [
-    'Report ID',
-    'Report Type',
-    'Report Version',
-    'Report Platform ID',
-    'Number Sources'
-]
+EXPECTED_DETAIL_REPORT_ID_FIELDS = EXPECTED_SUMMARY_REPORT_ID_FIELDS + (
+    'Number Sources',
+)
 
 
 def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
@@ -41,17 +37,21 @@ def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
     # read the system fingerprints information
     reader = csv.DictReader(f)
     if report_type == 'summary':
-        report = normalize_summary_report(header_info, reader)
+        return normalize_summary_report(header_info, reader)
     else:
-        report = normalize_detail_report(header_info, reader)
-    return report
+        return normalize_detail_report(header_info, reader)
 
 
 def normalize_summary_report(header_info, reader):
     """Normalize report info into a summary report.
 
     Takes information from report_info dict, and reader and returns a
-    summary report
+    summary report.
+
+    :param header_info: A list of dictonaries, which each dictonary containing
+        the information of a header.
+    :param reader: A DictReader containing the parsed content (remainder after
+        header section) of a report.
     """
     report_info = header_info[0]
 
@@ -76,6 +76,11 @@ def normalize_detail_report(header_info, reader):
 
     Takes information from report_info dict, and reader and returns a
     detail format report
+
+    :param header_info: A list of dictonaries, which each dictonary containing
+        the information of a header.
+    :param reader: A DictReader containing the parsed content (remainder after
+        header section) of a report.
     """
     # The first dictionary grabbed contains the report info
     report_info = header_info[0]
@@ -127,9 +132,6 @@ def zip_line_pairs(input_lines, key_ind, value_ind, delim=','):
     header_keys = input_lines[key_ind].strip().split(delim)
     header_values = input_lines[value_ind].strip().split(delim)
 
-    # Dynamically Pull the header items into a dictionary.
-    paired_info = dict(map(lambda key, value:
-                           [key.lower().replace(' ', '_'), value],
-                           header_keys,
-                           header_values))
-    return paired_info
+    # Dynamically zip the header items into a dictionary.
+    return {key.lower().replace(' ', '_'): value for key, value in
+            zip(header_keys, header_values)}
