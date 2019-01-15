@@ -54,7 +54,7 @@ setup(
     install_requires=[
         'pexpect',
         'plumbum',
-        'pytest',
+        'pytest>=3.6',
         'pyvmomi',
         'pyxdg',
         'pyyaml',

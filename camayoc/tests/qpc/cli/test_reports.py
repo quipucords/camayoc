@@ -9,7 +9,6 @@
 :testtype: functional
 :upstream: yes
 """
-import csv
 import json
 import os
 import pprint
@@ -19,6 +18,7 @@ import tarfile
 
 import pytest
 
+from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
 from camayoc.utils import uuid4
 
 from .utils import (
@@ -35,6 +35,7 @@ from .utils import (
     wait_for_scan,
 )
 
+# from csv_report_parsing import normalize_csv_report
 
 REPORT_OUTPUT_FORMATS = ('csv', 'json')
 """Valid report output formats."""
@@ -300,25 +301,8 @@ def test_summary_report(
             report = json.load(f)
             expected_fields = JSON_SUMMARY_REPORT_FIELDS
         else:
-            # For CSV we need to massage the data a little bit. First extract
-            # the Report ID, Report Type, Report Version information.
-            headers = [f.readline() for _ in range(5)]
-            report_id, report_type, report_version = (
-                headers[1].strip().split(',')
-            )
-            # Ensure that the report has the System Fingerprints section
-            assert headers[4].strip() == 'System Fingerprints:'
-            # Now that we extracted the  report information we can use CSV
-            # reader to read the system fingerprints information
-            reader = csv.DictReader(f)
-            # Finally normalize the information to match what is returned by
-            # the JSON format so we can do assertions later.
-            report = {
-                'report_id': report_id,
-                'report_type': report_type,
-                'report_version': report_version,
-                'system_fingerprints': [row for row in reader],
-            }
+            report = normalize_csv_report(f, 5, [(0, 1)],
+                                          report_type='summary')
             expected_fields = CSV_SUMMARY_REPORT_FIELDS
 
     assert report['report_type'] == 'deployments'
@@ -362,26 +346,8 @@ def test_detail_report(
             # For CSV we need to massage the data a little bit. First ensure
             # there is a header with the report id, number of sources and
             # sources' information.
-            headers = [f.readline() for _ in range(8)]
-            report_id, report_type, report_version, number_sources = (
-                headers[1].strip().split(',')
-            )
-            server_id, source_name, source_type = headers[6].strip().split(',')
-            # Now that we extracted the header we can call the CSV reader to
-            # read the report information
-            reader = csv.DictReader(f)
-            # Finally normalize the information to match what is returned by
-            # the JSON format so we can do assertion later.
-            report = {
-                'id': report_id,
-                'report_type': report_type,
-                'sources': [{
-                    'facts': [row for row in reader],
-                    'server_id': server_id,
-                    'source_name': source_name,
-                    'source_type': source_type,
-                }],
-            }
+            report = normalize_csv_report(f, 8, [(0, 1), (5, 6)],
+                                          report_type='detail')
 
     assert report['report_type'] == 'details'
     assert len(report['sources']) == len(scan['sources'])
