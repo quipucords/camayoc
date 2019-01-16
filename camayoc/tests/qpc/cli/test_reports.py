@@ -75,6 +75,7 @@ SUMMARY_REPORT_FIELDS = (
     'vm_datacenter',
     'vm_dns_name',
     'vm_host',
+    'vm_host_core_count',
     'vm_host_socket_count',
     'vm_state',
     'vm_uuid',
