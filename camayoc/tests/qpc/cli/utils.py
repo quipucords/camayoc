@@ -220,7 +220,7 @@ def cred_show_and_check(options, output, exitstatus=0):
     assert qpc_cred_show.exitstatus == exitstatus
 
 
-report_detail = functools.partial(cli_command, 'qpc report detail')
+report_detail = functools.partial(cli_command, 'qpc report details')
 """Run ``qpc report detail`` with ``options`` and return output."""
 
 report_merge = functools.partial(cli_command, 'qpc report merge')
