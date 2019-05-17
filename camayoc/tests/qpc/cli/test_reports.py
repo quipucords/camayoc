@@ -96,6 +96,10 @@ CSV_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
 JSON_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
     'metadata',
     'products',
+    'system_platform_id',
+    'cpu_core_per_socket',
+    'id',
+    'deployment_report',
 )
 """Summary report expected fields for JSON output."""
 
@@ -120,7 +124,6 @@ FACTS = (
     'cpu_vendor_id',
     'date_anaconda_log',
     'date_date',
-    'date_filesystem_create',
     'date_machine_id',
     'date_yum_history',
     'decision_central_candidates',
@@ -146,13 +149,11 @@ FACTS = (
     'jboss_brms_decision_central_candidates',
     'jboss_brms_kie_server_candidates',
     'jboss_brms_locate_kie_api',
-    'jboss_brms_manifest_mf',
     'jboss_eap_chkconfig',
     'jboss_eap_common_files',
     'jboss_eap_id_jboss',
     'jboss_eap_locate_jboss_modules_jar',
     'jboss_eap_packages',
-    'jboss_eap_processes',
     'jboss_eap_running_paths',
     'jboss_eap_systemctl_unit_files',
     'jboss_fuse_activemq_ver',
@@ -170,21 +171,9 @@ FACTS = (
     'kie_search_candidates',
     'kie_server_candidates',
     'kie_server_candidates_eap',
-    'redhat_packages_certs',
     'redhat_packages_gpg_is_redhat',
-    'redhat_packages_gpg_last_built',
-    'redhat_packages_gpg_last_installed',
     'redhat_packages_gpg_num_installed_packages',
     'redhat_packages_gpg_num_rh_packages',
-    'redhat_release_name',
-    'redhat_release_release',
-    'redhat_release_version',
-    'subman_consumed',
-    'subman_cpu_core_per_socket',
-    'subman_cpu_cpu',
-    'subman_cpu_cpu_socket',
-    'subman_virt_host_type',
-    'subman_virt_is_guest',
     'system_purpose_json',
     'uname_all',
     'uname_hardware_platform',
@@ -313,6 +302,7 @@ def test_summary_report(
             assert sorted(report_item.keys()) == sorted(expected_fields)
         else:
             # JSON reports will only diplay fields that are not null nor blank
+            import pdb; pdb.set_trace;
             assert_json_report_fields(report_item.keys(), expected_fields)
 
 
