@@ -47,9 +47,9 @@ def validate_csv_response(response):
     try:
         csv_text = response.text
         csv.reader(csv_text, delimiter=',')
-        summary_csv = 'Report\r\n' in csv_text
+        deployments_csv = 'Report\r\n' in csv_text
         details_csv = 'Report,Number Sources\r\n' in csv_text
-        assert summary_csv or details_csv, msg + ' Incorrect data format.'
+        assert deployments_csv or details_csv, msg + ' Incorrect data format.'
     except csv.Error:
         assert False, msg
 
@@ -99,10 +99,10 @@ def test_report_content_consistency():
     validate_csv_response(report.details(headers=accept_csv))
     validate_json_response(report.details(headers=accept_json))
 
-    validate_csv_response(report.summary(headers=accept_csv))
-    validate_json_response(report.summary(headers=accept_json))
-    validate_csv_response(report.summary(headers=accept_csv))
-    validate_json_response(report.summary(headers=accept_json))
+    validate_csv_response(report.deployments(headers=accept_csv))
+    validate_json_response(report.deployments(headers=accept_json))
+    validate_csv_response(report.deployments(headers=accept_csv))
+    validate_json_response(report.deployments(headers=accept_json))
 
 
 def assert_merge_fails(ids, errors_found, report):
@@ -159,9 +159,9 @@ def test_merge_reports_from_scanjob():
     id2 = scan2.get('scan_job_id')
     report = Report()
     response = report.create_from_merge([id1, id2])
-    summary = report.summary()
+    deployments = report.deployments()
     details = report.details()
-    status_codes = [response.status_code, summary.status_code,
+    status_codes = [response.status_code, deployments.status_code,
                     details.status_code]
     error = False
     for code in status_codes:
@@ -171,15 +171,15 @@ def test_merge_reports_from_scanjob():
         errors_found.append(
             'Merging scan jobs with identifiers: {scan1_id}, {scan2_id}'
             'resulted in a failed merge report. The report returned a status\n'
-            'code of {report_status}. The summary endpoint returned a status\n'
-            'code of {summary_status}. The details endpoint returned a '
+            'code of {report_status}. The deployments endpoint returned a status\n'
+            'code of {deployments_status}. The details endpoint returned a '
             'status code of {details_status}.\n'
             'The full results from the first scan were: {s1}\n'
             'The full results from the second scan were: {s2}\n'.format(
                 scan1_id=id1,
                 scan2_id=id2,
                 report_status=response.status_code,
-                summary_status=summary.status_code,
+                deployments_status=deployments.status_code,
                 details_status=details.status_code,
                 s1=pformat(scan1),
                 s2=pformat(scan2),

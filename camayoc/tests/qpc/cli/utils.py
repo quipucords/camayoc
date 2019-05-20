@@ -239,8 +239,8 @@ def report_merge_status(options=None, exitstatus=0):
     return match.groupdict()
 
 
-report_summary = functools.partial(cli_command, 'qpc report deployments')
-"""Run ``qpc report summary`` with ``options`` and return output."""
+report_deployments = functools.partial(cli_command, 'qpc report deployments')
+"""Run ``qpc report deployments`` with ``options`` and return output."""
 
 report_download = functools.partial(cli_command, 'qpc report download')
 """Run ``qpc report download`` with ``options`` and return output."""

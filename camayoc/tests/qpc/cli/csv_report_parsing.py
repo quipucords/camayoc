@@ -3,19 +3,20 @@
 
 import csv
 
-EXPECTED_SUMMARY_REPORT_ID_FIELDS = (
+EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS = (
     'Report ID',
     'Report Type',
     'Report Version',
     'Report Platform ID',
 )
 
-EXPECTED_DETAIL_REPORT_ID_FIELDS = EXPECTED_SUMMARY_REPORT_ID_FIELDS + (
+EXPECTED_DETAIL_REPORT_ID_FIELDS = EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS + (
     'Number Sources',
 )
 
 
-def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
+def normalize_csv_report(f, header_range, header_lines,
+                         report_type='deployments'):
     """Extract and normalize csv report to match the returned JSON report.
 
     :param f: A file object for the csv
@@ -25,7 +26,7 @@ def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
         lines to be used as the key/value pairs of each header info dictionary
         (ex: [(0,1), (3,4)] ).
     :param report_type: A string that defines what type of report object to
-        return, 'summary' or 'detail'. Defaults to 'summary'.
+        return, 'deployments' or 'detail'. Defaults to 'deployments'.
     """
     # First grab the header information from the file object.
     report_headers = [f.readline() for _ in range(header_range)]
@@ -36,17 +37,17 @@ def normalize_csv_report(f, header_range, header_lines, report_type='summary'):
     # Now that we extracted the report information we can use CSV reader to
     # read the system fingerprints information
     reader = csv.DictReader(f)
-    if report_type == 'summary':
-        return normalize_summary_report(header_info, reader)
+    if report_type == 'deployments':
+        return normalize_deployments_report(header_info, reader)
     else:
         return normalize_detail_report(header_info, reader)
 
 
-def normalize_summary_report(header_info, reader):
-    """Normalize report info into a summary report.
+def normalize_deployments_report(header_info, reader):
+    """Normalize report info into a deployments report.
 
     Takes information from report_info dict, and reader and returns a
-    summary report.
+    deployments report.
 
     :param header_info: A list of dictonaries, which each dictonary containing
         the information of a header.
@@ -57,7 +58,7 @@ def normalize_summary_report(header_info, reader):
 
     # Ensure extracted fields match expected
     expected_keys = [x.lower().replace(' ', '_') for x in
-                     EXPECTED_SUMMARY_REPORT_ID_FIELDS]
+                     EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS]
     assert sorted(report_info.keys()) == sorted(expected_keys),\
         "Extracted Report Fields didn't match expected list"
 

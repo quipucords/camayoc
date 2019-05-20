@@ -27,7 +27,7 @@ from .utils import (
     report_download,
     report_merge,
     report_merge_status,
-    report_summary,
+    report_deployments,
     scan_add_and_check,
     scan_job,
     scan_start,
@@ -43,7 +43,7 @@ REPORT_OUTPUT_FORMATS = ('csv', 'json')
 REPORT_SOURCE_OPTIONS = ('report', 'scan-job')
 """Options to generate reports from."""
 
-SUMMARY_REPORT_FIELDS = (
+DEPLOYMENTS_REPORT_FIELDS = (
     'architecture',
     'bios_uuid',
     'cpu_core_count',
@@ -80,9 +80,9 @@ SUMMARY_REPORT_FIELDS = (
     'vm_state',
     'vm_uuid',
 )
-"""Common summary report expected fields."""
+"""Common deployments report expected fields."""
 
-CSV_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
+CSV_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
     'detection-network',
     'detection-satellite',
     'detection-vcenter',
@@ -91,9 +91,9 @@ CSV_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
     'jboss fuse',
     'jboss web server',
 )
-"""Summary report expected fields for CSV output."""
+"""Deployments report expected fields for CSV output."""
 
-JSON_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
+JSON_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
     'metadata',
     'products',
     'system_platform_id',
@@ -101,7 +101,7 @@ JSON_SUMMARY_REPORT_FIELDS = SUMMARY_REPORT_FIELDS + (
     'id',
     'deployment_report',
 )
-"""Summary report expected fields for JSON output."""
+"""Deployments report expected fields for JSON output."""
 
 
 FACTS = (
@@ -195,7 +195,7 @@ _SCANS = []
 
 
 def assert_json_report_fields(
-        report_fields, expected_fields=JSON_SUMMARY_REPORT_FIELDS):
+        report_fields, expected_fields=JSON_DEPLOYMENTS_REPORT_FIELDS):
     """Assert that report fields are a subset of expected field."""
     report_fields = set(report_fields)
     expected_fields = set(expected_fields)
@@ -264,21 +264,21 @@ def setup_reports_prerequisites():
 
 @pytest.mark.parametrize('source_option', REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize('output_format', REPORT_OUTPUT_FORMATS)
-def test_summary_report(
+def test_deployments_report(
         source_option, output_format, isolated_filesystem, qpc_server_config):
-    """Ensure a summary report can be generated and has expected information.
+    """Ensure a deployments report can be generated and has expected information.
 
     :id: 0ddfdd85-0836-46b5-9541-cf62b5d9c7bc
-    :description: Ensure CSV and JSON summary reports can be generated and
+    :description: Ensure CSV and JSON deployments reports can be generated and
         have expected fields.
-    :steps: Run ``qpc report summary (--scan-job <scan-job-id> | --report
+    :steps: Run ``qpc report deployments (--scan-job <scan-job-id> | --report
         <report-id>) (--json | --csv) --output-file <output-path>``
     :expectedresults: The generated report must be on the requested format
         (either CSV or JSON) and must have the expected fields.
     """
     scan = random.choice(_SCANS)
     output_path = '{}.{}'.format(uuid4(), output_format)
-    output = report_summary({
+    output = report_deployments({
         source_option: scan[source_option],
         output_format: None,
         'output-file': output_path,
@@ -289,11 +289,11 @@ def test_summary_report(
     with open(output_path) as f:
         if output_format == 'json':
             report = json.load(f)
-            expected_fields = JSON_SUMMARY_REPORT_FIELDS
+            expected_fields = JSON_DEPLOYMENTS_REPORT_FIELDS
         else:
             report = normalize_csv_report(f, 5, [(0, 1)],
-                                          report_type='summary')
-            expected_fields = CSV_SUMMARY_REPORT_FIELDS
+                                          report_type='deployments')
+            expected_fields = CSV_DEPLOYMENTS_REPORT_FIELDS
 
     assert report['report_type'] == 'deployments'
     for report_item in report['system_fingerprints']:
@@ -369,7 +369,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
         1) Run ``qpc report merge (--job-ids <scan-job-ids> | --report-ids
            <report-ids> | --json-files <json-files)``. Note the
            merged-report-id.
-        2) Run ``qpc report summary --report <merged-report-id>``.
+        2) Run ``qpc report deployments --report <merged-report-id>``.
         3) Ensure the merged report has the expected number of aggregated
            reports and each report have the expected fields.
     :expectedresults: The merged report must be on the requested format
@@ -399,7 +399,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     report_id = report_merge_status({'job': job_id})['report_id']
 
     output_path = '{}.json'.format(uuid4())
-    output = report_summary({
+    output = report_deployments({
         'report': report_id,
         'json': None,
         'output-file': output_path,
