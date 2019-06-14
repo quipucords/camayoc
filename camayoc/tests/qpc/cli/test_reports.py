@@ -124,7 +124,7 @@ FACTS = (
     'cpu_vendor_id',
     'date_anaconda_log',
     'date_date',
-    'data_filesystem_create',
+    'date_filesystem_create',
     'date_machine_id',
     'date_yum_history',
     'decision_central_candidates',
