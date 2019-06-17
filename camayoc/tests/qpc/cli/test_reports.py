@@ -23,11 +23,11 @@ from camayoc.utils import uuid4
 
 from .utils import (
     config_sources,
+    report_deployments,
     report_detail,
     report_download,
     report_merge,
     report_merge_status,
-    report_deployments,
     scan_add_and_check,
     scan_job,
     scan_start,
@@ -303,7 +303,6 @@ def test_deployments_report(
             assert sorted(report_item.keys()) == sorted(expected_fields)
         else:
             # JSON reports will only diplay fields that are not null nor blank
-            import pdb; pdb.set_trace;
             assert_json_report_fields(report_item.keys(), expected_fields)
 
 

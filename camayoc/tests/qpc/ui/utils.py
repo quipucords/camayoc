@@ -147,7 +147,7 @@ def clear_toasts(view, count=20):
         except (MoveTargetOutOfBoundsException,
                 NoSuchElementException,
                 StaleElementReferenceException):
-                break
+            break
 
 
 def fill_credential_info(view, options):
@@ -312,7 +312,7 @@ def create_source(view, credential_name, source_type, source_name, addresses):
 
     # Fill in required source information.
     fill(modal, field_xpath('Name'), source_name)
-    if source_type is 'Network':
+    if source_type == 'Network':
         fill(modal, field_xpath('Search Addresses', textarea=True), addresses)
         fill(modal, field_xpath('Port'), '')  # default port of 22
         cred_dropdown = Dropdown(modal, 'Select one or more credentials')

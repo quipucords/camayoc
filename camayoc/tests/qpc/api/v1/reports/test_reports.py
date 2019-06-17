@@ -171,9 +171,9 @@ def test_merge_reports_from_scanjob():
         errors_found.append(
             'Merging scan jobs with identifiers: {scan1_id}, {scan2_id}'
             'resulted in a failed merge report. The report returned a status\n'
-            'code of {report_status}. The deployments endpoint returned a status\n'
-            'code of {deployments_status}. The details endpoint returned a '
-            'status code of {details_status}.\n'
+            'code of {report_status}. The deployments endpoint returned a'
+            'status code of {deployments_status}. The details endpoint'
+            'returned a status code of {details_status}.\n'
             'The full results from the first scan were: {s1}\n'
             'The full results from the second scan were: {s2}\n'.format(
                 scan1_id=id1,
