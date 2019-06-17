@@ -33,7 +33,7 @@ SCAN_RESULTS = {}
 """Cache for the scan results returned by :func:get_scan_result."""
 
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def isolated_filesystem():
     """Override isolated_filesystem fixture updating the scope."""
     with utils.isolated_filesystem():
@@ -49,26 +49,27 @@ def scan_machine(machine, auth, profile_name):
     Any unexpected behavior will raise an AssertionError.
     """
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(profile_name, auth['name'], machine['ipv4'])
+        "rho profile add --name {} --auth {} --hosts {}".format(
+            profile_name, auth["name"], machine["ipv4"]
+        )
     )
     input_vault_password(rho_profile_add)
-    assert rho_profile_add.expect(
-        'Profile "{}" was added'.format(profile_name)) == 0
+    assert rho_profile_add.expect('Profile "{}" was added'.format(profile_name)) == 0
     assert rho_profile_add.expect(pexpect.EOF) == 0
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    reportfile = '{}-report.csv'.format(profile_name)
+    reportfile = "{}-report.csv".format(profile_name)
     rho_scan = pexpect.spawn(
-        'rho scan --profile {} --reportfile {} --facts all'
-        .format(profile_name, reportfile),
+        "rho scan --profile {} --reportfile {} --facts all".format(
+            profile_name, reportfile
+        ),
         timeout=300,
     )
     input_vault_password(rho_scan)
     rho_scan.logfile = BytesIO()
     assert rho_scan.expect(pexpect.EOF) == 0
-    logfile = rho_scan.logfile.getvalue().decode('utf-8')
+    logfile = rho_scan.logfile.getvalue().decode("utf-8")
     rho_scan.logfile.close()
     rho_scan.close()
     assert rho_scan.exitstatus == 0, logfile
@@ -76,7 +77,7 @@ def scan_machine(machine, auth, profile_name):
     return reportfile
 
 
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def scan_machines(vcenter_client, isolated_filesystem):
     """Scan all machines caching the results.
 
@@ -129,59 +130,54 @@ def scan_machines(vcenter_client, isolated_filesystem):
     for each auth and machine combination.
     """
     config = get_config()
-    auths = [auth for auth in config['credentials']
-             if auth['type'] == 'network' and auth.get('rho', True)]
+    auths = [
+        auth
+        for auth in config["credentials"]
+        if auth["type"] == "network" and auth.get("rho", True)
+    ]
     inventory = {
-        machine['hostname']: machine for machine in config['inventory']
-        if machine.get('hypervisor') == 'vcenter'
+        machine["hostname"]: machine
+        for machine in config["inventory"]
+        if machine.get("hypervisor") == "vcenter"
     }
     if not auths or not inventory:
         raise ValueError(
-            'Make sure to have credentials and inventory'
-            ' items in the config file'
+            "Make sure to have credentials and inventory" " items in the config file"
         )
-    hostnames = [machine['hostname'] for machine in inventory.values()]
-    vms = [
-        vm for vm in get_vcenter_vms(vcenter_client)
-        if vm.name in hostnames
-    ]
+    hostnames = [machine["hostname"] for machine in inventory.values()]
+    vms = [vm for vm in get_vcenter_vms(vcenter_client) if vm.name in hostnames]
     for auth in auths:
-        if auth.get('sshkeyfile'):
-            auth_add({
-                'name': auth['name'],
-                'username': auth['username'],
-                'sshkeyfile': auth['sshkeyfile'],
-            })
-        elif auth.get('password'):
+        if auth.get("sshkeyfile"):
             auth_add(
                 {
-                    'name': auth['name'],
-                    'username': auth['username'],
-                    'password': None,
-                },
-                [(
-                    CONNECTION_PASSWORD_INPUT,
-                    auth['password']
-                )],
+                    "name": auth["name"],
+                    "username": auth["username"],
+                    "sshkeyfile": auth["sshkeyfile"],
+                }
+            )
+        elif auth.get("password"):
+            auth_add(
+                {"name": auth["name"], "username": auth["username"], "password": None},
+                [(CONNECTION_PASSWORD_INPUT, auth["password"])],
             )
     chunk_size = 5
-    chunks = [vms[i:i+chunk_size] for i in range(0, len(vms), chunk_size)]
+    chunks = [vms[i : i + chunk_size] for i in range(0, len(vms), chunk_size)]
     for chunk in chunks:
         machines_to_wait = []
         for vm in chunk:
-            if vm.runtime.powerState == 'poweredOff':
+            if vm.runtime.powerState == "poweredOff":
                 vm.PowerOnVM_Task()
                 machines_to_wait.append(inventory[vm.name])
         wait_until_live(machines_to_wait)
         for vm in chunk:
-            if vm.runtime.powerState == 'poweredOn':
+            if vm.runtime.powerState == "poweredOn":
                 machine = inventory[vm.name]
                 for auth in auths:
-                    profile_name = machine['hostname'] + '-' + auth['name']
+                    profile_name = machine["hostname"] + "-" + auth["name"]
                     try:
                         result = scan_machine(machine, auth, profile_name)
                     except (AssertionError, pexpect.exceptions.EOF) as err:
-                        with open(profile_name, 'w') as handler:
+                        with open(profile_name, "w") as handler:
                             handler.write(str(err))
                         result = None
                     SCAN_RESULTS[profile_name] = result
@@ -193,12 +189,16 @@ def scan_permutations():
     """Generate a tuple of hostname and auth matching expected scans."""
     try:
         config = get_config()
-        auths = [auth for auth in config['credentials']
-                 if auth['type'] == 'network' and auth.get('rho', True)]
+        auths = [
+            auth
+            for auth in config["credentials"]
+            if auth["type"] == "network" and auth.get("rho", True)
+        ]
         inventory = {
-                machine['hostname']: machine for machine in config['inventory']
-                if machine.get('hypervisor') == 'vcenter'
-                }
+            machine["hostname"]: machine
+            for machine in config["inventory"]
+            if machine.get("hypervisor") == "vcenter"
+        }
         return list(itertools.product(inventory, auths))
     except (ConfigFileNotFoundError, KeyError):
         return []
@@ -206,11 +206,10 @@ def scan_permutations():
 
 def get_permutation_id(param):
     """Return a string representation for each  :func:`test_scan` parameter."""
-    return param.get('name') or param.get('hostname')
+    return param.get("name") or param.get("hostname")
 
 
-@pytest.mark.parametrize(
-    'machine,auth', scan_permutations(), ids=get_permutation_id)
+@pytest.mark.parametrize("machine,auth", scan_permutations(), ids=get_permutation_id)
 def test_scan(machine, auth):
     """Test each scan report.
 
@@ -221,15 +220,16 @@ def test_scan(machine, auth):
         auth.
     :expectedresults: The generate report must have the expected fact values.
     """
-    profile_name = machine + '-' + auth['name']
+    profile_name = machine + "-" + auth["name"]
     result = SCAN_RESULTS[profile_name]
     if result is None:
         with open(profile_name) as handler:
             result = handler.read()
         pytest.fail(
-            'Was not able to scan {0[hostname]} using the auth {1[name]}.\n'
-            'Machine object: {0}\n\nAuth object: {1}\n\nException: {2}'
-            .format(machine, auth, result)
+            "Was not able to scan {0[hostname]} using the auth {1[name]}.\n"
+            "Machine object: {0}\n\nAuth object: {1}\n\nException: {2}".format(
+                machine, auth, result
+            )
         )
 
     with open(result) as f:

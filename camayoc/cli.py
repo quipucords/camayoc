@@ -8,7 +8,7 @@ import plumbum
 from camayoc import exceptions
 
 
-System = namedtuple('System', 'hostname transport')
+System = namedtuple("System", "hostname transport")
 """A system representation to run commands on."""
 
 
@@ -57,13 +57,15 @@ class CompletedProcess(object):
 
     def __repr__(self):
         """Provide an ``eval``-compatible string representation."""
-        str_kwargs = ', '.join([
-            'args={!r}'.format(self.args),
-            'returncode={!r}'.format(self.returncode),
-            'stdout={!r}'.format(self.stdout),
-            'stderr={!r}'.format(self.stderr),
-        ])
-        return '{}({})'.format(type(self).__name__, str_kwargs)
+        str_kwargs = ", ".join(
+            [
+                "args={!r}".format(self.args),
+                "returncode={!r}".format(self.returncode),
+                "stdout={!r}".format(self.stdout),
+                "stderr={!r}".format(self.stderr),
+            ]
+        )
+        return "{}({})".format(type(self).__name__, str_kwargs)
 
     def check_returncode(self):
         """Raise an exception if ``returncode`` is non-zero.
@@ -94,10 +96,7 @@ class CompletedProcess(object):
         """
         if self.returncode != 0:
             raise exceptions.CalledProcessError(
-                self.args,
-                self.returncode,
-                self.stdout,
-                self.stderr,
+                self.args, self.returncode, self.stdout, self.stderr
             )
 
 
@@ -154,8 +153,8 @@ class Client(object):
         hostname = system.hostname
         transport = system.transport
         if transport is None:
-            transport = 'local' if hostname == socket.getfqdn() else 'ssh'
-        if transport == 'local':
+            transport = "local" if hostname == socket.getfqdn() else "ssh"
+        if transport == "local":
             self.machine = plumbum.machines.local
         else:  # transport == 'ssh'
             # The SshMachine is a wrapper around the system's "ssh" binary.
@@ -183,7 +182,7 @@ class Client(object):
         """
         # Let self.response_handler check return codes. See:
         # https://plumbum.readthedocs.io/en/latest/api/commands.html#plumbum.commands.base.BaseCommand.run
-        kwargs.setdefault('retcode')
+        kwargs.setdefault("retcode")
 
         code, stdout, stderr = self.machine[args[0]].run(args[1:], **kwargs)
         completed_process = CompletedProcess(args, code, stdout, stderr)

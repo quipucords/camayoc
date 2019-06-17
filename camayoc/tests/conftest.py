@@ -11,7 +11,7 @@ from camayoc import utils
 from camayoc.config import get_config
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def vcenter_client():
     """Create a vCenter client.
 
@@ -34,9 +34,9 @@ def vcenter_client():
     the configuration file but environment variable takes precedence.
     """
     config = get_config()
-    vcenter_host = os.getenv('VCHOSTNAME', config['vcenter']['hostname'])
-    vcenter_user = os.getenv('VCUSER', config['vcenter']['username'])
-    vcenter_pwd = os.getenv('VCPASS', config['vcenter']['password'])
+    vcenter_host = os.getenv("VCHOSTNAME", config["vcenter"]["hostname"])
+    vcenter_user = os.getenv("VCUSER", config["vcenter"]["username"])
+    vcenter_pwd = os.getenv("VCPASS", config["vcenter"]["password"])
 
     try:
         c = SmartConnect(

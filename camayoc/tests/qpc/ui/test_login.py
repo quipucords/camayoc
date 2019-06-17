@@ -26,14 +26,14 @@ def test_login_logout(browser):
     :expectedresults: Both login and logout must work.
     """
     login = LoginView(browser)
-    login.username.fill('admin')
-    login.password.fill('pass')
+    login.username.fill("admin")
+    login.password.fill("pass")
     login.login.click()
 
-    assert browser.selenium.title == 'Entitlements Reporting'
+    assert browser.selenium.title == "Entitlements Reporting"
 
     dashboard = DashboardView(browser)
     wait_for_animation()
-    dashboard.user_dropdown.select_item('Log out')
+    dashboard.user_dropdown.select_item("Log out")
 
     login.login.wait_displayed()

@@ -21,7 +21,7 @@ from camayoc.tests.qpc.utils import mark_runs_scans
 
 
 @mark_runs_scans
-@pytest.mark.parametrize('source_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_pause_cancel(shared_client, cleanup, source_type):
     """Run a scan on a system and confirm we can pause and cancel it.
 
@@ -38,20 +38,19 @@ def test_pause_cancel(shared_client, cleanup, source_type):
     scn = util.prepare_scan(source_type, cleanup)
     if not scn:
         pytest.skip(
-            'No {0} type source was found in the config file.'
-            .format(source_type)
+            "No {0} type source was found in the config file.".format(source_type)
         )
     job = ScanJob(scan_id=scn._id)
     job.create()
-    util.wait_until_state(job, state='running', timeout=60)
+    util.wait_until_state(job, state="running", timeout=60)
     job.pause()
-    util.wait_until_state(job, state='paused', timeout=60)
+    util.wait_until_state(job, state="paused", timeout=60)
     job.cancel()
-    util.wait_until_state(job, state='canceled', timeout=60)
+    util.wait_until_state(job, state="canceled", timeout=60)
 
 
 @mark_runs_scans
-@pytest.mark.parametrize('source_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_restart(shared_client, cleanup, source_type):
     """Run a scan on a system and confirm we can pause and restart it.
 
@@ -69,13 +68,12 @@ def test_restart(shared_client, cleanup, source_type):
     scn = util.prepare_scan(source_type, cleanup)
     if not scn:
         pytest.skip(
-            'No {0} type source was found in the config file.'
-            .format(source_type)
+            "No {0} type source was found in the config file.".format(source_type)
         )
     job = ScanJob(scan_id=scn._id)
     job.create()
-    util.wait_until_state(job, state='running', timeout=60)
+    util.wait_until_state(job, state="running", timeout=60)
     job.pause()
-    util.wait_until_state(job, state='paused', timeout=60)
+    util.wait_until_state(job, state="paused", timeout=60)
     job.restart()
-    util.wait_until_state(job, state='completed')
+    util.wait_until_state(job, state="completed")

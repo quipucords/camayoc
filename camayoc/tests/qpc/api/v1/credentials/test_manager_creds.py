@@ -13,18 +13,14 @@ import pytest
 
 import requests
 
-from camayoc.constants import (
-    QPC_BECOME_METHODS,
-    QPC_HOST_MANAGER_TYPES,
-)
+from camayoc.constants import QPC_BECOME_METHODS, QPC_HOST_MANAGER_TYPES
 from camayoc.qpc_models import Credential
 from camayoc.utils import uuid4
 
 
-@pytest.mark.parametrize('method', QPC_BECOME_METHODS)
-@pytest.mark.parametrize('cred_type', QPC_HOST_MANAGER_TYPES)
-def test_negative_create_with_become(
-        cred_type, shared_client, cleanup, method):
+@pytest.mark.parametrize("method", QPC_BECOME_METHODS)
+@pytest.mark.parametrize("cred_type", QPC_HOST_MANAGER_TYPES)
+def test_negative_create_with_become(cred_type, shared_client, cleanup, method):
     """Attempt to pass 'become' options to host manager credentials.
 
     :id: d04e3e1b-c7f1-4cc2-a4a4-a3d3317f95ce

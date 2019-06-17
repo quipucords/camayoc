@@ -51,8 +51,7 @@ class CompletedProcessTestCase(unittest.TestCase):
     def setUp(self):
         """Generate kwargs that can be used to instantiate a completed proc."""
         self.kwargs = {
-            key: utils.uuid4()
-            for key in {'args', 'returncode', 'stdout', 'stderr'}
+            key: utils.uuid4() for key in {"args", "returncode", "stdout", "stderr"}
         }
 
     def test_init(self):
@@ -65,13 +64,13 @@ class CompletedProcessTestCase(unittest.TestCase):
 
     def test_check_returncode_zero(self):
         """Call ``check_returncode`` when ``returncode`` is zero."""
-        self.kwargs['returncode'] = 0
+        self.kwargs["returncode"] = 0
         completed_proc = cli.CompletedProcess(**self.kwargs)
         self.assertIsNone(completed_proc.check_returncode())
 
     def test_check_returncode_nonzero(self):
         """Call ``check_returncode`` when ``returncode`` is not zero."""
-        self.kwargs['returncode'] = 1
+        self.kwargs["returncode"] = 1
         completed_proc = cli.CompletedProcess(**self.kwargs)
         with self.assertRaises(exceptions.CalledProcessError):
             completed_proc.check_returncode()
@@ -80,6 +79,7 @@ class CompletedProcessTestCase(unittest.TestCase):
         """Assert ``__repr__()`` can be parsed by ``eval()``."""
         string = repr(cli.CompletedProcess(**self.kwargs))
         from camayoc.cli import CompletedProcess  # noqa pylint:disable=unused-variable
+
         # pylint:disable=eval-used
         self.assertEqual(string, repr(eval(string)))
 
@@ -89,7 +89,7 @@ class ClientTestCase(unittest.TestCase):
 
     def test_explicit_local_transport(self):
         """Assert it is possible to explicitly ask for a "local" transport."""
-        system = cli.System(hostname=utils.uuid4(), transport='local')
+        system = cli.System(hostname=utils.uuid4(), transport="local")
         self.assertIsInstance(cli.Client(system).machine, LocalMachine)
 
     def test_implicit_local_transport(self):
@@ -99,20 +99,19 @@ class ClientTestCase(unittest.TestCase):
 
     def test_explicit_ssh_transport(self):
         """Assert it is possible to explicitly ask for a "ssh" transport."""
-        system = cli.System(hostname=utils.uuid4(), transport='ssh')
-        with mock.patch(
-                'camayoc.cli.plumbum.machines.SshMachine') as SshMachine:
+        system = cli.System(hostname=utils.uuid4(), transport="ssh")
+        with mock.patch("camayoc.cli.plumbum.machines.SshMachine") as SshMachine:
             machine = mock.Mock()
             SshMachine.return_value = machine
             self.assertIs(cli.Client(system).machine, machine)
 
     def test_default_response_handler(self):
         """Assert the default response handler checks return codes."""
-        system = cli.System(hostname=utils.uuid4(), transport='local')
+        system = cli.System(hostname=utils.uuid4(), transport="local")
         self.assertIs(cli.Client(system).response_handler, cli.code_handler)
 
     def test_explicit_response_handler(self):
         """Assert it is possible to explicitly set a response handler."""
-        system = cli.System(hostname=utils.uuid4(), transport='local')
+        system = cli.System(hostname=utils.uuid4(), transport="local")
         handler = mock.Mock()
         self.assertIs(cli.Client(system, handler).response_handler, handler)

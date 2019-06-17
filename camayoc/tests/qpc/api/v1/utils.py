@@ -5,19 +5,9 @@ import pprint
 import time
 
 from camayoc import config
-from camayoc.constants import (
-    QPC_SCAN_STATES,
-    QPC_SCAN_TERMINAL_STATES,
-)
-from camayoc.exceptions import (
-    StoppedScanException,
-    WaitTimeError,
-)
-from camayoc.qpc_models import (
-    Credential,
-    Scan,
-    Source
-)
+from camayoc.constants import QPC_SCAN_STATES, QPC_SCAN_TERMINAL_STATES
+from camayoc.exceptions import StoppedScanException, WaitTimeError
+from camayoc.qpc_models import Credential, Scan, Source
 
 
 def get_source(source_type, cleanup):
@@ -58,40 +48,39 @@ def get_source(source_type, cleanup):
         associtated with it.
     """
     cfg = config.get_config()
-    cred_list = cfg.get('credentials', [])
-    src_list = cfg.get('qpc', {}).get('sources', [])
+    cred_list = cfg.get("credentials", [])
+    src_list = cfg.get("qpc", {}).get("sources", [])
     config_src = {}
     if not (src_list and cred_list):
         return
     for src in src_list:
-        if src.get('type') == source_type:
+        if src.get("type") == source_type:
             config_src = src
     if config_src:
-        config_src.setdefault('credential_ids', [])
-        src_creds = config_src.get('credentials')
+        config_src.setdefault("credential_ids", [])
+        src_creds = config_src.get("credentials")
         for cred in src_creds:
             for config_cred in cred_list:
-                if cred == config_cred['name']:
+                if cred == config_cred["name"]:
                     server_cred = Credential(
-                        cred_type=source_type,
-                        username=config_cred['username'],
+                        cred_type=source_type, username=config_cred["username"]
                     )
-                    if config_cred.get('password'):
-                        server_cred.password = config_cred['password']
+                    if config_cred.get("password"):
+                        server_cred.password = config_cred["password"]
                     else:
-                        server_cred.ssh_keyfile = config_cred['sshkeyfile']
+                        server_cred.ssh_keyfile = config_cred["sshkeyfile"]
 
                     server_cred.create()
                     cleanup.append(server_cred)
-                    config_src['credential_ids'].append(server_cred._id)
+                    config_src["credential_ids"].append(server_cred._id)
         server_src = Source(
-            hosts=config_src['hosts'],
-            credential_ids=config_src['credential_ids'],
+            hosts=config_src["hosts"],
+            credential_ids=config_src["credential_ids"],
             source_type=source_type,
         )
 
-        if config_src.get('options'):
-            server_src.options = config_src.get('options')
+        if config_src.get("options"):
+            server_src.options = config_src.get("options")
 
         server_src.create()
         cleanup.append(server_src)
@@ -119,16 +108,13 @@ def prepare_scan(source_type, cleanup):
     src = get_source(source_type, cleanup)
     if not src:
         return
-    scn = Scan(
-        scan_type='inspect',
-        source_ids=[src._id],
-    )
+    scn = Scan(scan_type="inspect", source_ids=[src._id])
     scn.create()
     cleanup.append(scn)
     return scn
 
 
-def wait_until_state(scanjob, timeout=3600, state='completed'):
+def wait_until_state(scanjob, timeout=3600, state="completed"):
     """Wait until the scanjob has failed or reached desired state.
 
     The default state is 'completed'.
@@ -148,14 +134,13 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
     reporting that a task really is still running. All other terminal
     states will cause this function to return.
     """
-    valid_states = QPC_SCAN_STATES + ('stopped',)
-    stopped_states = QPC_SCAN_TERMINAL_STATES + ('stopped',)
+    valid_states = QPC_SCAN_STATES + ("stopped",)
+    stopped_states = QPC_SCAN_TERMINAL_STATES + ("stopped",)
     if state not in valid_states:
         raise ValueError(
-            'You have called `wait_until_state` and specified an invalid\n'
+            "You have called `wait_until_state` and specified an invalid\n"
             'state={0}. Valid options for "state" are [ {1} ]'.format(
-                state,
-                pprint.pformat(valid_states),
+                state, pprint.pformat(valid_states)
             )
         )
 
@@ -166,42 +151,41 @@ def wait_until_state(scanjob, timeout=3600, state='completed'):
             return
         if timeout <= 0:
             raise WaitTimeError(
-                'You have called wait_until_state() on a scanjob with\n'
-                'ID={scanjob_id} and the scanjob timed out while waiting\n'
+                "You have called wait_until_state() on a scanjob with\n"
+                "ID={scanjob_id} and the scanjob timed out while waiting\n"
                 'to achieve the state="{expected_state}"\n'
-                'When the scanjob timed out, it had the'
+                "When the scanjob timed out, it had the"
                 ' state="{scanjob_state}".\n'
-                'The scanjob was started for the scan with id {scan_id}'
-                'The full details of the scanjob were \n{scanjob_details}\n'
+                "The scanjob was started for the scan with id {scan_id}"
+                "The full details of the scanjob were \n{scanjob_details}\n"
                 'The "results" available from the scanjob were'
-                '\n{scanjob_results}\n'.format(
+                "\n{scanjob_results}\n".format(
                     scanjob_id=scanjob._id,
                     scan_id=scanjob.scan_id,
                     expected_state=state,
                     scanjob_state=current_status,
-                    scanjob_details=pprint.pformat(
-                        scanjob.read().json()),
-                    scanjob_results=pprint.pformat(
-                        scanjob.read().json().get('tasks'))))
-        if state not in stopped_states and \
-                current_status in QPC_SCAN_TERMINAL_STATES:
+                    scanjob_details=pprint.pformat(scanjob.read().json()),
+                    scanjob_results=pprint.pformat(scanjob.read().json().get("tasks")),
+                )
+            )
+        if state not in stopped_states and current_status in QPC_SCAN_TERMINAL_STATES:
             raise StoppedScanException(
-                'You have called wait_until_state() on a scanjob with\n'
-                'ID={scanjob_id} has stopped running instead of reaching \n'
+                "You have called wait_until_state() on a scanjob with\n"
+                "ID={scanjob_id} has stopped running instead of reaching \n"
                 'the state="{expected_state}"\n'
                 'When the scanjob stopped, it had the state="{scanjob_state}".'
-                '\nThe scanjob was started for the scan with id {scan_id}'
-                'The full details of the scanjob were \n{scanjob_details}\n'
+                "\nThe scanjob was started for the scan with id {scan_id}"
+                "The full details of the scanjob were \n{scanjob_details}\n"
                 'The "results" available from the scanjob were \n'
-                '{scanjob_results}\n' .format(
+                "{scanjob_results}\n".format(
                     scanjob_id=scanjob._id,
                     scan_id=scanjob.scan_id,
                     expected_state=state,
                     scanjob_state=current_status,
-                    scanjob_details=pprint.pformat(
-                        scanjob.read().json()),
-                    scanjob_results=pprint.pformat(
-                        scanjob.read().json().get('tasks'))))
+                    scanjob_details=pprint.pformat(scanjob.read().json()),
+                    scanjob_results=pprint.pformat(scanjob.read().json().get("tasks")),
+                )
+            )
         time.sleep(5)
         timeout -= 5
         current_status = scanjob.status()

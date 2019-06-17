@@ -23,39 +23,39 @@ from camayoc.constants import (
     MASKED_PASSWORD_OUTPUT,
 )
 from camayoc.tests.qpc.cli.utils import (
-        cred_add_and_check,
-        cred_show_and_check,
-        source_add_and_check,
-        source_show
+    cred_add_and_check,
+    cred_show_and_check,
+    source_add_and_check,
+    source_show,
 )
 
 
 def generate_show_output(data):
     """Generate a regex pattern with the data for a qpc cred show output."""
-    cred_type = data.get('cred_type', 'network')
-    output = '{\r\n'
-    if cred_type == 'network':
+    cred_type = data.get("cred_type", "network")
+    output = "{\r\n"
+    if cred_type == "network":
         output += '    "become_method": "{}",\r\n'.format(
-            data.get('become_method', 'sudo'))
-        if 'become_password' in data:
-            output += '    "become_password": "{}",\r\n'.format(
-                data['become_password'])
-        output += '    "become_user": "{}",\r\n'.format(
-            data.get('become_user', 'root'))
+            data.get("become_method", "sudo")
+        )
+        if "become_password" in data:
+            output += '    "become_password": "{}",\r\n'.format(data["become_password"])
+        output += '    "become_user": "{}",\r\n'.format(data.get("become_user", "root"))
     output += '    "cred_type": "{}",\r\n'.format(cred_type)
-    output += '    "id": {},\r\n'.format(data.get('id', '\\d+'))
-    output += '    "name": "{}",\r\n'.format(data['name'])
-    if 'password' in data:
-        output += '    "password": "{}",\r\n'.format(data['password'])
-    if 'ssh_keyfile' in data:
-        output += '    "ssh_keyfile": "{}",\r\n'.format(data['ssh_keyfile'])
-    output += '    "username": "{}"\r\n'.format(data['username'])
-    output += '}\r\n'
+    output += '    "id": {},\r\n'.format(data.get("id", "\\d+"))
+    output += '    "name": "{}",\r\n'.format(data["name"])
+    if "password" in data:
+        output += '    "password": "{}",\r\n'.format(data["password"])
+    if "ssh_keyfile" in data:
+        output += '    "ssh_keyfile": "{}",\r\n'.format(data["ssh_keyfile"])
+    output += '    "username": "{}"\r\n'.format(data["username"])
+    output += "}\r\n"
     return output
 
 
 def test_add_with_username_password(
-        isolated_filesystem, qpc_server_config, source_type):
+    isolated_filesystem, qpc_server_config, source_type
+):
     """Add an auth with username and password.
 
     :id: c935d34c-54f6-443f-a85c-344934bc0cfb
@@ -68,30 +68,26 @@ def test_add_with_username_password(
     name = utils.uuid4()
     username = utils.uuid4()
     cred_add_and_check(
-        {
-            'name': name,
-            'username': username,
-            'password': None,
-            'type': source_type,
-        },
-        [
-            (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
-        ],
+        {"name": name, "username": username, "password": None, "type": source_type},
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_type': source_type,
-            'name': name,
-            'password': MASKED_PASSWORD_OUTPUT,
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "cred_type": source_type,
+                "name": name,
+                "password": MASKED_PASSWORD_OUTPUT,
+                "username": username,
+            }
+        ),
     )
 
 
 def test_add_with_username_password_become_password(
-        isolated_filesystem, qpc_server_config):
+    isolated_filesystem, qpc_server_config
+):
     """Add an auth with username, password and become password.
 
     :id: df0d61d5-363f-400a-961c-04146f6089e1
@@ -105,12 +101,7 @@ def test_add_with_username_password_become_password(
     name = utils.uuid4()
     username = utils.uuid4()
     cred_add_and_check(
-        {
-            'name': name,
-            'username': username,
-            'password': None,
-            'become-password': None,
-        },
+        {"name": name, "username": username, "password": None, "become-password": None},
         [
             (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
             (BECOME_PASSWORD_INPUT, utils.uuid4()),
@@ -118,13 +109,15 @@ def test_add_with_username_password_become_password(
     )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'become_password': MASKED_PASSWORD_OUTPUT,
-            'name': name,
-            'password': MASKED_PASSWORD_OUTPUT,
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "become_password": MASKED_PASSWORD_OUTPUT,
+                "name": name,
+                "password": MASKED_PASSWORD_OUTPUT,
+                "username": username,
+            }
+        ),
     )
 
 
@@ -143,24 +136,21 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {"name": name, "ssh_keyfile": sshkeyfile.resolve(), "username": username}
+        ),
     )
 
 
 def test_add_with_username_sshkeyfile_become_password(
-        isolated_filesystem, qpc_server_config):
+    isolated_filesystem, qpc_server_config
+):
     """Add an auth with username, sshkeyfile and become password.
 
     :id: 94a45a9b-cda7-41e7-8be5-caf598917ebb
@@ -177,24 +167,24 @@ def test_add_with_username_sshkeyfile_become_password(
     sshkeyfile.touch()
     cred_add_and_check(
         {
-            'name': name,
-            'username': username,
-            'sshkeyfile': str(sshkeyfile.resolve()),
-            'become-password': None,
+            "name": name,
+            "username": username,
+            "sshkeyfile": str(sshkeyfile.resolve()),
+            "become-password": None,
         },
-        [
-            (BECOME_PASSWORD_INPUT, utils.uuid4()),
-        ]
+        [(BECOME_PASSWORD_INPUT, utils.uuid4())],
     )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'become_password': MASKED_PASSWORD_OUTPUT,
-            'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "become_password": MASKED_PASSWORD_OUTPUT,
+                "name": name,
+                "ssh_keyfile": sshkeyfile.resolve(),
+                "username": username,
+            }
+        ),
     )
 
 
@@ -211,45 +201,41 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
     username = utils.uuid4()
     new_username = utils.uuid4()
     cred_add_and_check(
-        {
-            'name': name,
-            'password': None,
-            'type': source_type,
-            'username': username,
-        },
-        [
-            (CONNECTION_PASSWORD_INPUT, utils.uuid4()),
-        ],
+        {"name": name, "password": None, "type": source_type, "username": username},
+        [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_type': source_type,
-            'name': name,
-            'password': MASKED_PASSWORD_OUTPUT,
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "cred_type": source_type,
+                "name": name,
+                "password": MASKED_PASSWORD_OUTPUT,
+                "username": username,
+            }
+        ),
     )
 
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --username={}'.format(name, new_username)
+        "qpc cred edit --name={} --username={}".format(name, new_username)
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect(
-        'Credential "{}" was updated'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_type': source_type,
-            'name': name,
-            'password': MASKED_PASSWORD_OUTPUT,
-            'username': new_username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "cred_type": source_type,
+                "name": name,
+                "password": MASKED_PASSWORD_OUTPUT,
+                "username": new_username,
+            }
+        ),
     )
 
 
@@ -265,20 +251,17 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     name = utils.uuid4()
     username = utils.uuid4()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --username={}'.format(name, username)
+        "qpc cred edit --name={} --username={}".format(name, username)
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect(
-        'Credential "{}" does not exist'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus != 0
@@ -297,46 +280,42 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     password = utils.uuid4()
     new_password = utils.uuid4()
     cred_add_and_check(
-        {
-            'name': name,
-            'username': username,
-            'password': None,
-            'type': source_type,
-        },
-        [
-            (CONNECTION_PASSWORD_INPUT, password),
-        ],
+        {"name": name, "username": username, "password": None, "type": source_type},
+        [(CONNECTION_PASSWORD_INPUT, password)],
     )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_type': source_type,
-            'name': name,
-            'password': MASKED_PASSWORD_OUTPUT,
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "cred_type": source_type,
+                "name": name,
+                "password": MASKED_PASSWORD_OUTPUT,
+                "username": username,
+            }
+        ),
     )
 
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --password'.format(name, new_password)
+        "qpc cred edit --name={} --password".format(name, new_password)
     )
     assert qpc_cred_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_password)
-    assert qpc_cred_edit.expect(
-        'Credential "{}" was updated'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'cred_type': source_type,
-            'name': name,
-            'password': MASKED_PASSWORD_OUTPUT,
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "cred_type": source_type,
+                "name": name,
+                "password": MASKED_PASSWORD_OUTPUT,
+                "username": username,
+            }
+        ),
     )
 
 
@@ -353,18 +332,13 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --password'.format(name)
-    )
-    assert qpc_cred_edit.expect(
-        'Credential "{}" does not exist'.format(name)) == 0
+    qpc_cred_edit = pexpect.spawn("qpc cred edit --name={} --password".format(name))
+    assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus != 0
@@ -384,39 +358,37 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     sshkeyfile.touch()
     new_sshkeyfile = Path(utils.uuid4())
     new_sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {"name": name, "ssh_keyfile": sshkeyfile.resolve(), "username": username}
+        ),
     )
 
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sshkeyfile {}'
-        .format(name, str(new_sshkeyfile.resolve()))
+        "qpc cred edit --name={} --sshkeyfile {}".format(
+            name, str(new_sshkeyfile.resolve())
+        )
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect(
-        'Credential "{}" was updated'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'name': name,
-            'ssh_keyfile': new_sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "name": name,
+                "ssh_keyfile": new_sshkeyfile.resolve(),
+                "username": username,
+            }
+        ),
     )
 
 
@@ -433,22 +405,20 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     name = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sshkeyfile {}'
-        .format(name, str(sshkeyfile.resolve()))
+        "qpc cred edit --name={} --sshkeyfile {}".format(
+            name, str(sshkeyfile.resolve())
+        )
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect(
-        'Credential "{}" does not exist'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus != 0
@@ -470,46 +440,46 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     new_become_password = utils.uuid4()
     cred_add_and_check(
         {
-            'name': name,
-            'username': username,
-            'sshkeyfile': str(sshkeyfile.resolve()),
-            'become-password': None,
+            "name": name,
+            "username": username,
+            "sshkeyfile": str(sshkeyfile.resolve()),
+            "become-password": None,
         },
-        [
-            (BECOME_PASSWORD_INPUT, become_password),
-        ],
+        [(BECOME_PASSWORD_INPUT, become_password)],
     )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'become_password': MASKED_PASSWORD_OUTPUT,
-            'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "become_password": MASKED_PASSWORD_OUTPUT,
+                "name": name,
+                "ssh_keyfile": sshkeyfile.resolve(),
+                "username": username,
+            }
+        ),
     )
 
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --become-password'
-        .format(name, new_become_password)
+        "qpc cred edit --name={} --become-password".format(name, new_become_password)
     )
     assert qpc_cred_edit.expect(BECOME_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_become_password)
-    assert qpc_cred_edit.expect(
-        'Credential "{}" was updated'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'become_password': MASKED_PASSWORD_OUTPUT,
-            'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {
+                "become_password": MASKED_PASSWORD_OUTPUT,
+                "name": name,
+                "ssh_keyfile": sshkeyfile.resolve(),
+                "username": username,
+            }
+        ),
     )
 
 
@@ -525,18 +495,15 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     name = utils.uuid4()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --become-password'.format(name)
+        "qpc cred edit --name={} --become-password".format(name)
     )
-    assert qpc_cred_edit.expect(
-        'Credential "{}" does not exist'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus != 0
@@ -556,12 +523,12 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
-        'qpc cred edit --name={} --sshkeyfile {}'
-        .format(name, str(sshkeyfile.resolve()))
+        "qpc cred edit --name={} --sshkeyfile {}".format(
+            name, str(sshkeyfile.resolve())
+        )
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect(
-        'Credential "{}" does not exist'.format(name)) == 0
+    assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus != 0
@@ -580,36 +547,25 @@ def test_clear(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': name,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+    )
 
     cred_show_and_check(
-        {'name': name},
-        generate_show_output({
-            'name': name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": name},
+        generate_show_output(
+            {"name": name, "ssh_keyfile": sshkeyfile.resolve(), "username": username}
+        ),
     )
 
-    qpc_cred_clear = pexpect.spawn(
-        'qpc cred clear --name={}'.format(name)
-    )
-    assert qpc_cred_clear.expect(
-        'Credential "{}" was removed'.format(name)) == 0
+    qpc_cred_clear = pexpect.spawn("qpc cred clear --name={}".format(name))
+    assert qpc_cred_clear.expect('Credential "{}" was removed'.format(name)) == 0
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 0
 
-    qpc_cred_show = pexpect.spawn(
-        'qpc cred show --name={}'.format(name)
-    )
-    assert qpc_cred_show.expect(
-        'Credential "{}" does not exist'.format(name)
-    ) == 0
+    qpc_cred_show = pexpect.spawn("qpc cred show --name={}".format(name))
+    assert qpc_cred_show.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
 
@@ -635,83 +591,67 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         using it has been deleted.
     """
     cred_name = utils.uuid4()
-    cred_type = 'network'
+    cred_type = "network"
     source_name = utils.uuid4()
-    hosts = ['127.0.0.1']
+    hosts = ["127.0.0.1"]
     username = utils.uuid4()
     sshkeyfile = Path(utils.uuid4())
     sshkeyfile.touch()
-    cred_add_and_check({
-        'name': cred_name,
-        'type': cred_type,
-        'username': username,
-        'sshkeyfile': str(sshkeyfile.resolve()),
-    })
+    cred_add_and_check(
+        {
+            "name": cred_name,
+            "type": cred_type,
+            "username": username,
+            "sshkeyfile": str(sshkeyfile.resolve()),
+        }
+    )
 
     cred_show_and_check(
-        {'name': cred_name},
-        generate_show_output({
-            'name': cred_name,
-            'ssh_keyfile': sshkeyfile.resolve(),
-            'username': username,
-        })
+        {"name": cred_name},
+        generate_show_output(
+            {
+                "name": cred_name,
+                "ssh_keyfile": sshkeyfile.resolve(),
+                "username": username,
+            }
+        ),
     )
     # create dependent source
-    source_add_and_check({
-        'name': source_name,
-        'cred': [cred_name],
-        'hosts': hosts,
-    })
-    output = source_show({
-        'name': source_name
-    })
+    source_add_and_check({"name": source_name, "cred": [cred_name], "hosts": hosts})
+    output = source_show({"name": source_name})
     output = json.loads(output)
     # try to delete credential
-    qpc_cred_clear = pexpect.spawn(
-        'qpc cred clear --name={}'.format(cred_name)
-    )
+    qpc_cred_clear = pexpect.spawn("qpc cred clear --name={}".format(cred_name))
     qpc_cred_clear.logfile = BytesIO()
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     assert (
-            qpc_cred_clear.logfile.getvalue().strip().decode('utf-8') ==
-            'Error: Credential cannot be deleted because it is used by 1'
-            ' or more sources.\r\n'
-            "sources: {'id': '%s', 'name': '%s'}\r\n"
-            'Failed to remove credential "%s". '
-            'For more information, see the server log file.' % (output['id'],
-                                                                source_name,
-                                                                cred_name)
+        qpc_cred_clear.logfile.getvalue().strip().decode("utf-8")
+        == "Error: Credential cannot be deleted because it is used by 1"
+        " or more sources.\r\n"
+        "sources: {'id': '%s', 'name': '%s'}\r\n"
+        'Failed to remove credential "%s". '
+        "For more information, see the server log file."
+        % (output["id"], source_name, cred_name)
     )
     qpc_cred_clear.logfile.close()
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 1
     qpc_cred_clear.close()
     # delete the source using credential
-    qpc_source_clear = pexpect.spawn(
-        'qpc source clear --name={}'.format(source_name)
-    )
-    assert qpc_source_clear.expect(
-        'Source "{}" was removed'.format(source_name)
-    ) == 0
+    qpc_source_clear = pexpect.spawn("qpc source clear --name={}".format(source_name))
+    assert qpc_source_clear.expect('Source "{}" was removed'.format(source_name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
     # successfully remove credential
-    qpc_cred_clear = pexpect.spawn(
-        'qpc cred clear --name={}'.format(cred_name)
-    )
-    assert qpc_cred_clear.expect(
-        'Credential "{}" was removed'.format(cred_name)) == 0
+    qpc_cred_clear = pexpect.spawn("qpc cred clear --name={}".format(cred_name))
+    assert qpc_cred_clear.expect('Credential "{}" was removed'.format(cred_name)) == 0
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 0
     # try showing cred
-    qpc_cred_show = pexpect.spawn(
-        'qpc cred show --name={}'.format(cred_name)
-    )
-    assert qpc_cred_show.expect(
-        'Credential "{}" does not exist'.format(cred_name)
-    ) == 0
+    qpc_cred_show = pexpect.spawn("qpc cred show --name={}".format(cred_name))
+    assert qpc_cred_show.expect('Credential "{}" does not exist'.format(cred_name)) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
 
@@ -727,15 +667,12 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
         be removed.
     """
     name = utils.uuid4()
-    qpc_cred_clear = pexpect.spawn(
-        'qpc cred clear --name={}'.format(name)
-    )
+    qpc_cred_clear = pexpect.spawn("qpc cred clear --name={}".format(name))
     qpc_cred_clear.logfile = BytesIO()
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
-    assert (
-        qpc_cred_clear.logfile.getvalue().strip().decode('utf-8') ==
-        'Credential "{}" was not found.'.format(name)
-    )
+    assert qpc_cred_clear.logfile.getvalue().strip().decode(
+        "utf-8"
+    ) == 'Credential "{}" was not found.'.format(name)
     qpc_cred_clear.logfile.close()
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 1
@@ -756,25 +693,29 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
         sshkeyfile = Path(utils.uuid4())
         sshkeyfile.touch()
         auth = {
-            'name': name,
-            'password': None,
-            'ssh_keyfile': str(sshkeyfile.resolve()),
-            'become_password': None,
-            'username': username,
+            "name": name,
+            "password": None,
+            "ssh_keyfile": str(sshkeyfile.resolve()),
+            "become_password": None,
+            "username": username,
         }
         auths.append(auth)
-        cred_add_and_check({
-            'name': name,
-            'username': username,
-            'sshkeyfile': str(sshkeyfile.resolve()),
-        })
+        cred_add_and_check(
+            {
+                "name": name,
+                "username": username,
+                "sshkeyfile": str(sshkeyfile.resolve()),
+            }
+        )
 
     output, exitstatus = pexpect.run(
-        'qpc cred clear --all', encoding='utf-8', withexitstatus=True)
-    assert 'All credentials were removed.' in output
+        "qpc cred clear --all", encoding="utf-8", withexitstatus=True
+    )
+    assert "All credentials were removed." in output
     assert exitstatus == 0
 
     output, exitstatus = pexpect.run(
-        'qpc cred list', encoding='utf8', withexitstatus=True)
-    assert 'No credentials exist yet.' in output
+        "qpc cred list", encoding="utf8", withexitstatus=True
+    )
+    assert "No credentials exist yet." in output
     assert exitstatus == 0

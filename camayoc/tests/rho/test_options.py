@@ -16,24 +16,24 @@ import pytest
 
 
 RHO_COMMANDS = (
-    'rho',
-    'rho auth add',
-    'rho auth clear',
-    'rho auth edit',
-    'rho auth list',
-    'rho auth show',
-    'rho fact list',
-    'rho fact hash',
-    'rho profile add',
-    'rho profile clear',
-    'rho profile edit',
-    'rho profile list',
-    'rho profile show',
-    'rho scan',
+    "rho",
+    "rho auth add",
+    "rho auth clear",
+    "rho auth edit",
+    "rho auth list",
+    "rho auth show",
+    "rho fact list",
+    "rho fact hash",
+    "rho profile add",
+    "rho profile clear",
+    "rho profile edit",
+    "rho profile list",
+    "rho profile show",
+    "rho scan",
 )
 
 
-@pytest.mark.parametrize('command', RHO_COMMANDS)
+@pytest.mark.parametrize("command", RHO_COMMANDS)
 def test_help_option(isolated_filesystem, command):
     """Test the various commands for the presence of help option.
 
@@ -44,25 +44,24 @@ def test_help_option(isolated_filesystem, command):
     :expectedresults: The help message is shown and a zero exit code is
         returned.
     """
-    process = pexpect.spawn(command + ' --help')
+    process = pexpect.spawn(command + " --help")
     process.logfile = io.BytesIO()
     assert process.expect(pexpect.EOF) == 0
-    output = process.logfile.getvalue().decode('utf-8')
+    output = process.logfile.getvalue().decode("utf-8")
     assert len(output) > 0
-    assert 'Usage: {}'.format(command) in output
-    if command == 'rho':
-        assert 'Supported modules:' in output
+    assert "Usage: {}".format(command) in output
+    if command == "rho":
+        assert "Supported modules:" in output
     else:
-        assert 'Options:' in output
+        assert "Options:" in output
     process.logfile.close()
     process.close()
     assert process.exitstatus == 0
 
 
-@pytest.mark.parametrize('command', [
-    command for command in RHO_COMMANDS
-    if not command.endswith('list')
-])
+@pytest.mark.parametrize(
+    "command", [command for command in RHO_COMMANDS if not command.endswith("list")]
+)
 def test_help_no_option(isolated_filesystem, command):
     """Test the various commands for the presence of help option.
 
@@ -76,13 +75,13 @@ def test_help_no_option(isolated_filesystem, command):
     process = pexpect.spawn(command)
     process.logfile = io.BytesIO()
     assert process.expect(pexpect.EOF) == 0
-    output = process.logfile.getvalue().decode('utf-8')
+    output = process.logfile.getvalue().decode("utf-8")
     assert len(output) > 0
-    assert 'Usage: {}'.format(command) in output
-    if command == 'rho':
-        assert 'Supported modules:' in output
+    assert "Usage: {}".format(command) in output
+    if command == "rho":
+        assert "Supported modules:" in output
     else:
-        assert 'Options:' in output
+        assert "Options:" in output
     process.logfile.close()
     process.close()
     assert process.exitstatus == 1

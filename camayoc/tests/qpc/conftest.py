@@ -5,7 +5,7 @@ from camayoc import api
 from camayoc.tests.qpc.utils import sort_and_delete
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def cleanup():
     """Fixture that cleans up any created quipucords objects after a test."""
     trash = []

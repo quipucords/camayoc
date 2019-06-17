@@ -17,21 +17,18 @@ from camayoc.constants import (
 )
 from camayoc.utils import uuid4
 
-OPTIONAL_PROD_KEY = 'disabled_optional_products'
+OPTIONAL_PROD_KEY = "disabled_optional_products"
 
 
 class QPCObject(object):
     """A base class for other QPC models."""
 
-    def __init__(
-            self,
-            client=None,
-            _id=None):
+    def __init__(self, client=None, _id=None):
         """Provide shared methods for QPC model objects."""
         # we want to allow for an empty string name
         self._id = _id
         self.client = client if client else api.Client()
-        self.endpoint = ''
+        self.endpoint = ""
 
     def fields(self):
         """Return a dictionary with all fields.
@@ -41,7 +38,7 @@ class QPCObject(object):
         the client and endpoint associated with objects of this type.
         """
         fields = self.payload()
-        fields['id'] = self._id
+        fields["id"] = self._id
         return fields
 
     def path(self):
@@ -50,28 +47,22 @@ class QPCObject(object):
         This concatenates the endpoint and the id of this object,
         to be used to read details about this object or to delete it.
         """
-        return urljoin(self.endpoint, '{}/'.format(self._id))
+        return urljoin(self.endpoint, "{}/".format(self._id))
 
     def payload(self):
         """Return a dictionary for POST or PUT requests."""
         return {
-            k: v for k, v in vars(self).items()
-            if k not in ['_id',
-                         'client',
-                         'endpoint',
-                         ]
+            k: v
+            for k, v in vars(self).items()
+            if k not in ["_id", "client", "endpoint"]
         }
 
     def update_payload(self):
         """Return a dictionary for POST or PUT requests."""
         return {
-            k: v for k, v in vars(self).items()
-            if k not in ['_id',
-                         'client',
-                         'endpoint',
-                         'cred_type',
-                         'source_type'
-                         ]
+            k: v
+            for k, v in vars(self).items()
+            if k not in ["_id", "client", "endpoint", "cred_type", "source_type"]
         }
 
     def to_str(self):
@@ -103,9 +94,9 @@ class QPCObject(object):
         """
         response = self.client.post(self.endpoint, self.payload(), **kwargs)
         if response.status_code in range(200, 203):
-            self._id = response.json().get('id')
-            if response.json().get('port'):
-                self.port = response.json().get('port')
+            self._id = response.json().get("id")
+            if response.json().get("port"):
+                self.port = response.json().get("port")
         return response
 
     def list(self, **kwargs):
@@ -178,17 +169,18 @@ class Credential(QPCObject):
     """
 
     def __init__(
-            self,
-            client=None,
-            name=None,
-            username=None,
-            password=None,
-            ssh_keyfile=None,
-            cred_type=None,
-            become_method=None,
-            become_password=None,
-            become_user=None,
-            _id=None):
+        self,
+        client=None,
+        name=None,
+        username=None,
+        password=None,
+        ssh_keyfile=None,
+        cred_type=None,
+        become_method=None,
+        become_password=None,
+        become_user=None,
+        _id=None,
+    ):
         """Create a host credential with given data.
 
         If no arguments are passed, then a api.Client will be initialized and a
@@ -225,8 +217,8 @@ class Credential(QPCObject):
 
         if not isinstance(other, dict):
             raise TypeError(
-                'Objects of type Credential can only be compared to'
-                'Credential objects or dictionaries.'
+                "Objects of type Credential can only be compared to"
+                "Credential objects or dictionaries."
             )
 
         password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
@@ -236,20 +228,21 @@ class Credential(QPCObject):
         all_keys = set(local_keys).union(other_keys)
         for key in all_keys:
             if key not in [
-                'password',
-                'become_method',
-                'become_user',
-                    'become_password']:
+                "password",
+                "become_method",
+                "become_user",
+                "become_password",
+            ]:
                 if not local_items.get(key) == other.get(key):
                     return False
-            if 'password' in key and local_items.get(key) is not None:
+            if "password" in key and local_items.get(key) is not None:
                 if not password_matcher.match(other.get(key)):
                     return False
-            if key == 'become_method':
-                if not other.get(key) == local_items.get(key, 'sudo'):
+            if key == "become_method":
+                if not other.get(key) == local_items.get(key, "sudo"):
                     return False
-            if key == 'become_user':
-                if not other.get(key) == local_items.get(key, 'root'):
+            if key == "become_user":
+                if not other.get(key) == local_items.get(key, "root"):
                     return False
         return True
 
@@ -276,15 +269,16 @@ class Source(QPCObject):
     """
 
     def __init__(
-            self,
-            client=None,
-            name=None,
-            hosts=None,
-            port=None,
-            credential_ids=None,
-            source_type=None,
-            options=None,
-            _id=None):
+        self,
+        client=None,
+        name=None,
+        hosts=None,
+        port=None,
+        credential_ids=None,
+        source_type=None,
+        options=None,
+        _id=None,
+    ):
         """Iniitalize a Source object with given data.
 
         If no port is supplied, it will be set to 22 by default.
@@ -316,8 +310,8 @@ class Source(QPCObject):
 
         if not isinstance(other, dict):
             raise TypeError(
-                'Objects of type Source can only be compared to'
-                'Sources objects or dictionaries.'
+                "Objects of type Source can only be compared to"
+                "Sources objects or dictionaries."
             )
 
         local_items = self.fields()
@@ -325,36 +319,32 @@ class Source(QPCObject):
         other_keys = other.keys()
         all_keys = set(local_keys).union(other_keys)
         for key in all_keys:
-            if key == 'port':
-                default_port = 22 if self.source_type == 'network' else 443
-                if int(
-                    other.get(key)) != int(
-                    local_items.get(
-                        key,
-                        default_port)):
+            if key == "port":
+                default_port = 22 if self.source_type == "network" else 443
+                if int(other.get(key)) != int(local_items.get(key, default_port)):
                     return False
-            if key == 'options':
+            if key == "options":
                 if self.source_type in QPC_HOST_MANAGER_TYPES:
-                    if hasattr(self, 'options'):
-                        ssl_verify = self.options.get('ssl_cert_verify', True)
+                    if hasattr(self, "options"):
+                        ssl_verify = self.options.get("ssl_cert_verify", True)
                     else:
                         ssl_verify = True
-                    if other.get(key, {}).get('ssl_cert_verify') != ssl_verify:
+                    if other.get(key, {}).get("ssl_cert_verify") != ssl_verify:
                         return False
 
-            if key == 'credentials':
-                other_creds = other.get('credentials')
+            if key == "credentials":
+                other_creds = other.get("credentials")
                 cred_ids = []
                 # the server returns a list of dictionaries
                 # one for each credential associated with the Source
                 # we extract from this all the id's and then compare it with
                 # the list of id's we used to create the source
                 for cred in other_creds:
-                    cred_ids.append(cred.get('id'))
+                    cred_ids.append(cred.get("id"))
                 if sorted(local_items.get(key)) != sorted(cred_ids):
                     return False
 
-            if key not in ['port', 'credentials', 'options']:
+            if key not in ["port", "credentials", "options"]:
                 if not other.get(key) == local_items.get(key):
                     return False
         return True
@@ -389,15 +379,16 @@ class Scan(QPCObject):
     """
 
     def __init__(
-            self,
-            client=None,
-            source_ids=None,
-            max_concurrency=50,
-            disabled_optional_products=None,
-            enabled_extended_product_search=None,
-            scan_type='inspect',
-            name=None,
-            _id=None):
+        self,
+        client=None,
+        source_ids=None,
+        max_concurrency=50,
+        disabled_optional_products=None,
+        enabled_extended_product_search=None,
+        scan_type="inspect",
+        name=None,
+        _id=None,
+    ):
         """Iniitalize a Scan object with given data.
 
         If no value for max_concurrency is given, it will be set to 50, and if
@@ -414,13 +405,13 @@ class Scan(QPCObject):
 
         # valid scan types are 'connect' and 'inspect'
         self.scan_type = scan_type
-        self.options = {'max_concurrency': max_concurrency}
+        self.options = {"max_concurrency": max_concurrency}
         if disabled_optional_products:
-            self.options['disabled_optional_products'] = \
-                disabled_optional_products
+            self.options["disabled_optional_products"] = disabled_optional_products
         if enabled_extended_product_search:
-            self.options['enabled_extended_product_search'] = \
-                enabled_extended_product_search
+            self.options[
+                "enabled_extended_product_search"
+            ] = enabled_extended_product_search
 
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.
@@ -442,7 +433,7 @@ class Scan(QPCObject):
         :returns: requests.models.Response. A successful delete has the return
             code `204`.
         """
-        path = urljoin(self.path(), 'jobs/')
+        path = urljoin(self.path(), "jobs/")
         return self.client.get(path, **kwargs)
 
     def equivalent(self, other):
@@ -462,8 +453,8 @@ class Scan(QPCObject):
 
         if not isinstance(other, dict):
             raise TypeError(
-                'Objects of type Scan can only be compared to'
-                'Scan objects or dictionaries.'
+                "Objects of type Scan can only be compared to"
+                "Scan objects or dictionaries."
             )
 
         local_items = self.fields()
@@ -471,13 +462,13 @@ class Scan(QPCObject):
         other_keys = other.keys()
         all_keys = set(local_keys).union(other_keys)
         for key in all_keys:
-            if key == 'status':
+            if key == "status":
                 continue
-            if key == 'sources':
-                other_sources = [src['id'] for src in other[key]]
+            if key == "sources":
+                other_sources = [src["id"] for src in other[key]]
                 if sorted(local_items[key]) != sorted(other_sources):
                     return False
-            if key not in ['status', 'sources', 'options']:
+            if key not in ["status", "sources", "options"]:
                 if not other[key] == local_items[key]:
                     return False
         return True
@@ -486,12 +477,7 @@ class Scan(QPCObject):
 class ScanJob(QPCObject):
     """A class to aid in the creation and control of Scan Jobs in tests."""
 
-    def __init__(
-            self,
-            client=None,
-            scan_id=None,
-            _id=None
-    ):
+    def __init__(self, client=None, scan_id=None, _id=None):
         """Initialize a ScanJob object for a given scan."""
         super().__init__(client=client, _id=_id)
 
@@ -513,10 +499,10 @@ class ScanJob(QPCObject):
         :returns: requests.models.Response. The json of this response contains
             the data associated with this object's ``self._id``.
         """
-        path = urljoin(QPC_SCAN_PATH, '{}/jobs/'.format(self.scan_id))
+        path = urljoin(QPC_SCAN_PATH, "{}/jobs/".format(self.scan_id))
         response = self.client.post(path, payload=self.payload(), **kwargs)
         if response.status_code in range(200, 203):
-            self._id = response.json().get('id')
+            self._id = response.json().get("id")
         return response
 
     def list(self, **kwargs):
@@ -532,7 +518,7 @@ class ScanJob(QPCObject):
             contains a list of dictionaries with the data associated with each
             object of this type stored on the server.
         """
-        path = urljoin(QPC_SCAN_PATH, '{}/jobs/'.format(self.scan_id))
+        path = urljoin(QPC_SCAN_PATH, "{}/jobs/".format(self.scan_id))
         return self.client.get(path, **kwargs)
 
     def pause(self, **kwargs):
@@ -541,7 +527,7 @@ class ScanJob(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.path(), 'pause/')
+        path = urljoin(self.path(), "pause/")
         return self.client.put(path, {}, **kwargs)
 
     def cancel(self, **kwargs):
@@ -550,7 +536,7 @@ class ScanJob(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.path(), 'cancel/')
+        path = urljoin(self.path(), "cancel/")
         return self.client.put(path, {}, **kwargs)
 
     def restart(self, **kwargs):
@@ -559,7 +545,7 @@ class ScanJob(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.path(), 'restart/')
+        path = urljoin(self.path(), "restart/")
         return self.client.put(path, {}, **kwargs)
 
     def connection_results(self, **kwargs):
@@ -568,7 +554,7 @@ class ScanJob(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.path(), 'connection/')
+        path = urljoin(self.path(), "connection/")
         return self.client.get(path, **kwargs)
 
     def inspection_results(self, **kwargs):
@@ -577,7 +563,7 @@ class ScanJob(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.path(), 'inspection/')
+        path = urljoin(self.path(), "inspection/")
         return self.client.get(path, **kwargs)
 
     def status(self):
@@ -587,16 +573,14 @@ class ScanJob(QPCObject):
         If you call this method on a scan that does not exist on the server,
         you will get an HTTPError.
         """
-        return self.read().json().get('status')
+        return self.read().json().get("status")
 
     def equivalent(self, other):
         """Alert the user that this method is not implemented.
 
         :raises: NotImplementedError
         """
-        raise NotImplementedError(
-            'ScanJobs do not have an equivalent() method.'
-        )
+        raise NotImplementedError("ScanJobs do not have an equivalent() method.")
 
 
 class Report(QPCObject):
@@ -630,11 +614,7 @@ class Report(QPCObject):
         >>> report.details()
     """
 
-    def __init__(
-            self,
-            client=None,
-            _id=None
-    ):
+    def __init__(self, client=None, _id=None):
         """Initialize a Report Object."""
         super().__init__(client=client, _id=_id)
 
@@ -648,10 +628,10 @@ class Report(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(QPC_SCANJOB_PATH, str(scan_job_id), '/')
+        path = urljoin(QPC_SCANJOB_PATH, str(scan_job_id), "/")
         response = self.client.get(path, **kwargs)
         if response.status_code in range(200, 203):
-            self._id = response.json().get('report_id')
+            self._id = response.json().get("report_id")
         return response
 
     def create_from_merge(self, ids, **kwargs):
@@ -661,11 +641,11 @@ class Report(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.endpoint, 'merge/')
-        payload = {'jobs': ids}
+        path = urljoin(self.endpoint, "merge/")
+        payload = {"jobs": ids}
         response = self.client.put(path, payload, **kwargs)
         if response.status_code in range(200, 203):
-            self._id = response.json().get('id')
+            self._id = response.json().get("id")
         return response
 
     def details(self, **kwargs):
@@ -674,7 +654,7 @@ class Report(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.endpoint, '{}/details/'.format(self._id))
+        path = urljoin(self.endpoint, "{}/details/".format(self._id))
         response = self.client.get(path, **kwargs)
         return response
 
@@ -684,6 +664,6 @@ class Report(QPCObject):
         :param ``**kwargs``: Additional arguments accepted by Requests's
             `request.request()` method.
         """
-        path = urljoin(self.endpoint, '{}/deployments/'.format(self._id))
+        path = urljoin(self.endpoint, "{}/deployments/".format(self._id))
         response = self.client.get(path, **kwargs)
         return response

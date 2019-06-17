@@ -48,18 +48,12 @@ def get_config():
     return cfg
 
 
-def power_control(vcenter_host,
-                  vcenter_user,
-                  vcenter_password,
-                  vcenter_action,
-                  pattern):
+def power_control(
+    vcenter_host, vcenter_user, vcenter_password, vcenter_action, pattern
+):
     """Connect to vcenter and perform action on all sonar machines."""
     try:
-        c = SmartConnect(
-            host=vcenter_host,
-            user=vcenter_user,
-            pwd=vcenter_password,
-        )
+        c = SmartConnect(host=vcenter_host, user=vcenter_user, pwd=vcenter_password)
     except ssl.SSLError:
         c = SmartConnect(
             host=vcenter_host,
@@ -71,83 +65,85 @@ def power_control(vcenter_host,
     pattern_matcher = re.compile(pattern)
     for vm in get_vcenter_vms(c):
         if pattern_matcher.findall(vm.name):
-            if vcenter_action == 'ON':
-                if vm.runtime.powerState == 'poweredOff':
+            if vcenter_action == "ON":
+                if vm.runtime.powerState == "poweredOff":
                     vm.PowerOnVM_Task()
-            if vcenter_action == 'OFF':
-                if vm.runtime.powerState == 'poweredOn':
+            if vcenter_action == "OFF":
+                if vm.runtime.powerState == "poweredOn":
                     vm.PowerOffVM_Task()
 
     Disconnect(c)
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='The vcenter hostname.')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="The vcenter hostname.")
     parser.add_argument(
-        '--host ',
+        "--host ",
         required=False,
         default=None,
-        action='store',
-        dest='vcenter_host',
+        action="store",
+        dest="vcenter_host",
         type=str,
-        help=('This is the hostname where you would log into vcenter from a'
-              ' browser')
+        help=(
+            "This is the hostname where you would log into vcenter from a" " browser"
+        ),
     )
     parser.add_argument(
-        '--user ',
+        "--user ",
         required=False,
         default=None,
-        action='store',
-        dest='vcenter_user',
+        action="store",
+        dest="vcenter_user",
         type=str,
-        help='Username on vcenter'
+        help="Username on vcenter",
     )
     parser.add_argument(
-        '--password ',
+        "--password ",
         required=False,
         default=None,
-        action='store',
-        dest='vcenter_password',
+        action="store",
+        dest="vcenter_password",
         type=str,
-        help='Password for given username on vcenter'
+        help="Password for given username on vcenter",
     )
     parser.add_argument(
-        '--pattern ',
+        "--pattern ",
         required=False,
-        default='^sonar-',
-        action='store',
-        dest='pattern',
+        default="^sonar-",
+        action="store",
+        dest="pattern",
         type=str,
-        help='String to match for VM names. Accepts regular expressions.'
+        help="String to match for VM names. Accepts regular expressions.",
     )
     parser.add_argument(
-        '--action ',
+        "--action ",
         required=False,
-        action='store',
-        const='ON',
-        nargs='?',
-        choices=['ON', 'OFF'],
-        dest='vcenter_action',
+        action="store",
+        const="ON",
+        nargs="?",
+        choices=["ON", "OFF"],
+        dest="vcenter_action",
         type=str,
-        default='ON',
-        help=('Action that you would like to perform on VMs.'
-              ' Options are to turn all machines ON or OFF.')
+        default="ON",
+        help=(
+            "Action that you would like to perform on VMs."
+            " Options are to turn all machines ON or OFF."
+        ),
     )
     args = parser.parse_args()
     cfg = get_config()
 
     if not args.vcenter_host:
-        if cfg.get('vcenter'):
-            args.vcenter_host = cfg.get('vcenter').get('hostname')
+        if cfg.get("vcenter"):
+            args.vcenter_host = cfg.get("vcenter").get("hostname")
 
     if not args.vcenter_user:
-        if cfg.get('vcenter'):
-            args.vcenter_user = cfg.get('vcenter').get('username')
+        if cfg.get("vcenter"):
+            args.vcenter_user = cfg.get("vcenter").get("username")
 
     if not args.vcenter_password:
-        if cfg.get('vcenter'):
-            args.vcenter_password = cfg.get('vcenter').get('password')
+        if cfg.get("vcenter"):
+            args.vcenter_password = cfg.get("vcenter").get("password")
 
     power_control(
         args.vcenter_host,
