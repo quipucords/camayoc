@@ -6,21 +6,10 @@ import pytest
 import requests
 
 from camayoc.config import get_config
-from camayoc.exceptions import (
-    ConfigFileNotFoundError,
-    WaitTimeError,
-)
-from camayoc.qpc_models import (
-    Credential,
-    Scan,
-    ScanJob,
-    Source,
-)
+from camayoc.exceptions import ConfigFileNotFoundError, WaitTimeError
+from camayoc.qpc_models import Credential, Scan, ScanJob, Source
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
-from camayoc.tests.utils import (
-    get_vcenter_vms,
-    vcenter_vms,
-)
+from camayoc.tests.utils import get_vcenter_vms, vcenter_vms
 from camayoc.utils import run_scans
 
 
@@ -44,53 +33,59 @@ def create_source(source_info, cleanup):
     return src._id
 
 
-def run_scan(scan, disabled_optional_products, enabled_extended_product_search,
-             cleanup, scan_type='inspect'):
+def run_scan(
+    scan,
+    disabled_optional_products,
+    enabled_extended_product_search,
+    cleanup,
+    scan_type="inspect",
+):
     """Scan a machine and cache any available results.
 
     If errors are encountered, save those and they can be included
     in test results.
     """
-    src_ids = scan['source_ids']
-    scan_name = scan['name']
+    src_ids = scan["source_ids"]
+    scan_name = scan["name"]
     SCAN_DATA[scan_name] = {
-        'scan_id': None,       # scan id
-        'scan_job_id': None,   # scan job id
-        'final_status': None,  # Did the scan job contain any failed tasks?
-        'scan_results': None,  # Number of systems reached, etc
-        'report_id': None,     # so we can retrieve report
-        'connection_results': None,  # details about connection scan
-        'inspection_results': None,  # details about inspection scan
-        'errors': [],
-        'expected_products': scan['expected_products'],
-        'source_id_to_hostname': scan['source_id_to_hostname'],
+        "scan_id": None,  # scan id
+        "scan_job_id": None,  # scan job id
+        "final_status": None,  # Did the scan job contain any failed tasks?
+        "scan_results": None,  # Number of systems reached, etc
+        "report_id": None,  # so we can retrieve report
+        "connection_results": None,  # details about connection scan
+        "inspection_results": None,  # details about inspection scan
+        "errors": [],
+        "expected_products": scan["expected_products"],
+        "source_id_to_hostname": scan["source_id_to_hostname"],
     }
     try:
         scan = Scan(
-            source_ids=src_ids, scan_type=scan_type,
+            source_ids=src_ids,
+            scan_type=scan_type,
             disabled_optional_products=disabled_optional_products,
-            enabled_extended_product_search=enabled_extended_product_search)
+            enabled_extended_product_search=enabled_extended_product_search,
+        )
         scan.create()
         cleanup.append(scan)
         scanjob = ScanJob(scan_id=scan._id)
         scanjob.create()
-        SCAN_DATA[scan_name]['scan_id'] = scan._id
-        SCAN_DATA[scan_name]['scan_job_id'] = scanjob._id
-        wait_until_state(scanjob, state='stopped')
-        SCAN_DATA[scan_name]['final_status'] = scanjob.status()
-        SCAN_DATA[scan_name]['scan_results'] = scanjob.read().json()
-        SCAN_DATA[scan_name]['report_id'] = scanjob.read(
-        ).json().get('report_id')
-        if scan_type == 'inspect':
-            SCAN_DATA[scan_name]['task_results'] = \
-                scanjob.read().json().get('tasks')
-            SCAN_DATA[scan_name]['inspection_results'] = \
-                scanjob.inspection_results().json().get('results')
+        SCAN_DATA[scan_name]["scan_id"] = scan._id
+        SCAN_DATA[scan_name]["scan_job_id"] = scanjob._id
+        wait_until_state(scanjob, state="stopped")
+        SCAN_DATA[scan_name]["final_status"] = scanjob.status()
+        SCAN_DATA[scan_name]["scan_results"] = scanjob.read().json()
+        SCAN_DATA[scan_name]["report_id"] = scanjob.read().json().get("report_id")
+        if scan_type == "inspect":
+            SCAN_DATA[scan_name]["task_results"] = scanjob.read().json().get("tasks")
+            SCAN_DATA[scan_name]["inspection_results"] = (
+                scanjob.inspection_results().json().get("results")
+            )
     except (requests.HTTPError, WaitTimeError) as e:
-        SCAN_DATA[scan_name]['errors'].append('{}'.format(pformat(str(e))))
+        SCAN_DATA[scan_name]["errors"].append("{}".format(pformat(str(e))))
 
 
-@pytest.fixture(scope='session', autouse=run_scans())
+@pytest.fixture(scope="session", autouse=run_scans())
 def run_all_scans(vcenter_client):
     """Run all configured scans caching the report id associated with each.
 
@@ -159,27 +154,24 @@ def run_all_scans(vcenter_client):
     cleanup = []
     config = get_config()
 
-    config_scans = config.get('qpc', {}).get('scans', [])
+    config_scans = config.get("qpc", {}).get("scans", [])
     if not config_scans:
         # if no scans are defined, no need to go any further
         return
 
     config_creds = {
-        credential['name']: credential
-        for credential in config.get('credentials', [])
+        credential["name"]: credential for credential in config.get("credentials", [])
     }
-    inventory = {
-        machine['hostname']: machine for machine in config['inventory']
-    }
+    inventory = {machine["hostname"]: machine for machine in config["inventory"]}
     vcenter_inventory = {
-        machine['hostname']: machine for machine in config['inventory']
-        if machine.get('hypervisor') == 'vcenter'
+        machine["hostname"]: machine
+        for machine in config["inventory"]
+        if machine.get("hypervisor") == "vcenter"
     }
 
     if not config_creds or not inventory:
         raise ValueError(
-            'Make sure to have credentials and inventory'
-            ' items in the config file'
+            "Make sure to have credentials and inventory" " items in the config file"
         )
 
     credential_ids = {}
@@ -187,70 +179,72 @@ def run_all_scans(vcenter_client):
     expected_products = {}
     for scan in config_scans:
         scan_vms = {
-            vm.name: vm for vm in get_vcenter_vms(vcenter_client)
-            if (vm.name in vcenter_inventory) and (vm.name in scan['sources'])
+            vm.name: vm
+            for vm in get_vcenter_vms(vcenter_client)
+            if (vm.name in vcenter_inventory) and (vm.name in scan["sources"])
         }
 
         with vcenter_vms(scan_vms.values()):
-            for source_name in scan['sources']:
+            for source_name in scan["sources"]:
                 if source_name not in source_ids:
                     machine = inventory[source_name]
-                    for credential_name in machine['credentials']:
+                    for credential_name in machine["credentials"]:
                         if credential_name not in credential_ids:
                             credential = config_creds[credential_name].copy()
-                            credential.pop('rho', None)
-                            credential['cred_type'] = credential.pop('type')
-                            credential['ssh_keyfile'] = credential.pop(
-                                'sshkeyfile', None)
+                            credential.pop("rho", None)
+                            credential["cred_type"] = credential.pop("type")
+                            credential["ssh_keyfile"] = credential.pop(
+                                "sshkeyfile", None
+                            )
                             credential_ids[credential_name] = create_cred(
-                                credential, cleanup)
-                    if machine.get('type', 'network') == 'network':
-                        vm = scan_vms[machine['hostname']]
-                        machine['ipv4'] = vm.guest.ipAddress
+                                credential, cleanup
+                            )
+                    if machine.get("type", "network") == "network":
+                        vm = scan_vms[machine["hostname"]]
+                        machine["ipv4"] = vm.guest.ipAddress
                     source_info = {
-                        'source_type': machine.get('type', 'network'),
-                        'hosts': [machine.get('ipv4') or machine['hostname']],
-                        'credential_ids': [
+                        "source_type": machine.get("type", "network"),
+                        "hosts": [machine.get("ipv4") or machine["hostname"]],
+                        "credential_ids": [
                             credential_ids[credential]
-                            for credential in machine['credentials']
+                            for credential in machine["credentials"]
                         ],
                     }
-                    if 'options' in machine:
-                        source_info['options'] = machine['options'].copy()
-                    source_ids[source_name] = create_source(
-                        source_info, cleanup)
-                    expected_products[source_name] = machine.get(
-                        'products', {})
+                    if "options" in machine:
+                        source_info["options"] = machine["options"].copy()
+                    source_ids[source_name] = create_source(source_info, cleanup)
+                    expected_products[source_name] = machine.get("products", {})
                     expected_products[source_name].update(
-                        {'distribution': source_info.get('distribution', {})})
+                        {"distribution": source_info.get("distribution", {})}
+                    )
 
             scan_info = {
-                'expected_products': [],
-                'name': scan['name'],
-                'source_id_to_hostname': {},
-                'source_ids': [],
+                "expected_products": [],
+                "name": scan["name"],
+                "source_id_to_hostname": {},
+                "source_ids": [],
             }
-            for source_name in scan['sources']:
+            for source_name in scan["sources"]:
                 source_id = source_ids[source_name]
-                scan_info['expected_products'].append({
-                    source_id: expected_products[source_name],
-                })
-                scan_info['source_id_to_hostname'][source_id] = source_name
-                scan_info['source_ids'].append(source_id)
+                scan_info["expected_products"].append(
+                    {source_id: expected_products[source_name]}
+                )
+                scan_info["source_id_to_hostname"][source_id] = source_name
+                scan_info["source_ids"].append(source_id)
 
             run_scan(
                 scan_info,
-                scan.get('disabled_optional_products', {}),
-                scan.get('enabled_extended_product_search', {}),
+                scan.get("disabled_optional_products", {}),
+                scan.get("enabled_extended_product_search", {}),
                 cleanup=cleanup,
-                scan_type=scan.get('type', 'inspect')
+                scan_type=scan.get("type", "inspect"),
             )
 
 
 def scan_list():
     """Generate list of scan dict objects found in config file."""
     try:
-        return get_config().get('qpc', {}).get('scans', [])
+        return get_config().get("qpc", {}).get("scans", [])
     except (ConfigFileNotFoundError, KeyError):
         return []
 
@@ -264,7 +258,7 @@ def get_scan_result(scan_name):
     result = SCAN_DATA.get(scan_name)
     if result is None:
         raise RuntimeError(
-            'Absolutely no results available for scan named {0},\n'
-            'because no scan was even attempted.\n'.format(scan_name)
+            "Absolutely no results available for scan named {0},\n"
+            "because no scan was even attempted.\n".format(scan_name)
         )
     return result

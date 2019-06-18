@@ -22,8 +22,7 @@ from camayoc.tests.qpc.utils import assert_matches_server
 from camayoc.utils import uuid4
 
 
-def test_update_password_to_sshkeyfile(
-        shared_client, cleanup, isolated_filesystem):
+def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesystem):
     """Create a network credential using password and switch it to use sshkey.
 
     :id: 6e557092-192b-4f75-babc-abc5774fe965
@@ -35,10 +34,7 @@ def test_update_password_to_sshkeyfile(
         3) Confirm network credential has been updated.
     :expectedresults: The network credential is updated.
     """
-    cred = Credential(
-        cred_type='network',
-        client=shared_client,
-        password=uuid4())
+    cred = Credential(cred_type="network", client=shared_client, password=uuid4())
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
@@ -53,8 +49,7 @@ def test_update_password_to_sshkeyfile(
     assert_matches_server(cred)
 
 
-def test_update_sshkey_to_password(
-        shared_client, cleanup, isolated_filesystem):
+def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     """Create a network credential using password and switch it to use sshkey.
 
     :id: d24a54b5-3d8c-44e4-a0ae-61584a15b127
@@ -70,10 +65,7 @@ def test_update_sshkey_to_password(
     ssh_keyfile = Path(uuid4())
     ssh_keyfile.touch()
 
-    cred = Credential(
-        cred_type='network',
-        ssh_keyfile=str(ssh_keyfile.resolve()),
-    )
+    cred = Credential(cred_type="network", ssh_keyfile=str(ssh_keyfile.resolve()))
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
@@ -85,8 +77,7 @@ def test_update_sshkey_to_password(
     assert_matches_server(cred)
 
 
-def test_negative_update_to_invalid(
-        shared_client, cleanup, isolated_filesystem):
+def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem):
     """Attempt to update valid credential with invalid data.
 
     :id: c34ea917-ee36-4b93-8907-24a5f87bbed3
@@ -104,7 +95,7 @@ def test_negative_update_to_invalid(
     ssh_keyfile.touch()
 
     cred = Credential(
-        cred_type='network',
+        cred_type="network",
         client=shared_client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
@@ -119,7 +110,7 @@ def test_negative_update_to_invalid(
     cred.password = uuid4()
     response = cred.update()
     assert response.status_code == 400
-    assert 'either a password or an ssh_keyfile, not both' in response.text
+    assert "either a password or an ssh_keyfile, not both" in response.text
     cred.password = None
     assert_matches_server(cred)
 
@@ -128,13 +119,12 @@ def test_negative_update_to_invalid(
     del cred.ssh_keyfile
     response = cred.update()
     assert response.status_code == 400
-    assert 'must have either a password or an ssh_keyfile' in response.text
+    assert "must have either a password or an ssh_keyfile" in response.text
     cred.ssh_keyfile = old
     assert_matches_server(cred)
 
 
-def test_create_with_sshkey(
-        shared_client, cleanup, isolated_filesystem):
+def test_create_with_sshkey(shared_client, cleanup, isolated_filesystem):
     """Create a network credential with username and sshkey.
 
     :id: ab6fd574-2e9f-46b8-847d-17b23c19fdd2
@@ -146,7 +136,7 @@ def test_create_with_sshkey(
     ssh_keyfile.touch()
 
     cred = Credential(
-        cred_type='network',
+        cred_type="network",
         client=shared_client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
@@ -172,18 +162,18 @@ def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
 
     client = api.Client(api.echo_handler)
     cred = Credential(
-        cred_type='network',
+        cred_type="network",
         client=client,
         ssh_keyfile=str(ssh_keyfile.resolve()),
         password=uuid4(),
     )
     response = cred.create()
     assert response.status_code == 400
-    assert 'either a password or an ssh_keyfile, not both' in response.text
+    assert "either a password or an ssh_keyfile, not both" in response.text
     assert cred._id is None
 
 
-@pytest.mark.parametrize('method', QPC_BECOME_METHODS)
+@pytest.mark.parametrize("method", QPC_BECOME_METHODS)
 def test_create_become_method(cleanup, shared_client, method):
     """Create a network credential that uses become options.
 
@@ -194,7 +184,7 @@ def test_create_become_method(cleanup, shared_client, method):
     :expectedresults: A new network credential is created.
     """
     cred = Credential(
-        cred_type='network',
+        cred_type="network",
         client=shared_client,
         password=uuid4(),
         become_method=method,
@@ -207,11 +197,8 @@ def test_create_become_method(cleanup, shared_client, method):
     assert_matches_server(cred)
 
 
-@pytest.mark.parametrize('invalid_method', ['not-a-method', 86])
-def test_negative_invalid_become_method(cleanup,
-                                        shared_client,
-                                        invalid_method
-                                        ):
+@pytest.mark.parametrize("invalid_method", ["not-a-method", 86])
+def test_negative_invalid_become_method(cleanup, shared_client, invalid_method):
     """Attempt to create a network credential with unsupported become options.
 
     :id: f05f2ea8-ae9f-4bad-a76f-5246128400d9
@@ -223,7 +210,7 @@ def test_negative_invalid_become_method(cleanup,
     :expectedresults: No new credential is created.
     """
     cred = Credential(
-        cred_type='network',
+        cred_type="network",
         client=shared_client,
         password=uuid4(),
         become_method=invalid_method,

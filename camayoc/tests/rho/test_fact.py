@@ -36,14 +36,14 @@ def test_fact_list():
     :steps: Run ``rho fact list``
     :expectedresults: All the available facts are printed.
     """
-    rho_fact_list = pexpect.spawn('rho fact list')
+    rho_fact_list = pexpect.spawn("rho fact list")
     rho_fact_list.logfile = BytesIO()
     rho_fact_list.expect(pexpect.EOF)
-    output = rho_fact_list.logfile.getvalue().decode('utf-8')
+    output = rho_fact_list.logfile.getvalue().decode("utf-8")
     rho_fact_list.logfile.close()
     rho_fact_list.close()
     assert rho_fact_list.exitstatus == 0
-    facts = [line.split(' - ')[0].strip() for line in output.splitlines()]
+    facts = [line.split(" - ")[0].strip() for line in output.splitlines()]
     assert sorted(facts) == sorted(RHO_ALL_FACTS)
 
 
@@ -56,16 +56,12 @@ def test_fact_list_filter():
     :steps: Run ``rho fact list --filter <filter>``
     :expectedresults: Only the facts that match the filter are printed.
     """
-    facts = random.choice((
-        RHO_CONNECTION_FACTS,
-        RHO_JBOSS_FACTS + RHO_JBOSS_ALL_FACTS,
-    ))
-    fact_filter = facts[0].split('.')[0]
-    rho_fact_list = pexpect.spawn(
-        'rho fact list --filter {}'.format(fact_filter))
+    facts = random.choice((RHO_CONNECTION_FACTS, RHO_JBOSS_FACTS + RHO_JBOSS_ALL_FACTS))
+    fact_filter = facts[0].split(".")[0]
+    rho_fact_list = pexpect.spawn("rho fact list --filter {}".format(fact_filter))
     rho_fact_list.logfile = BytesIO()
     rho_fact_list.expect(pexpect.EOF)
-    output = rho_fact_list.logfile.getvalue().decode('utf-8')
+    output = rho_fact_list.logfile.getvalue().decode("utf-8")
     assert len(output.splitlines()) == len(facts)
     for fact in facts:
         assert fact in output
@@ -83,21 +79,16 @@ def test_fact_list_regex_filter():
     :steps: Run ``rho fact list --filter <regex_filter>``
     :expectedresults: Only the facts that match the regex filter are printed.
     """
-    expected_facts = (
-        'subman.virt.host_type',
-        'virt-what.type',
-        'virt.type',
-    )
-    rho_fact_list = pexpect.spawn(
-        'rho fact list --filter {}'.format(r'"[\w.-]+type"'))
+    expected_facts = ("subman.virt.host_type", "virt-what.type", "virt.type")
+    rho_fact_list = pexpect.spawn("rho fact list --filter {}".format(r'"[\w.-]+type"'))
     rho_fact_list.logfile = BytesIO()
     rho_fact_list.expect(pexpect.EOF)
-    output = rho_fact_list.logfile.getvalue().decode('utf-8')
+    output = rho_fact_list.logfile.getvalue().decode("utf-8")
     rho_fact_list.logfile.close()
     rho_fact_list.close()
     assert rho_fact_list.exitstatus == 0
 
-    facts = [line.split(' - ')[0].strip() for line in output.splitlines()]
+    facts = [line.split(" - ")[0].strip() for line in output.splitlines()]
     assert sorted(facts) == sorted(expected_facts)
 
 
@@ -110,31 +101,32 @@ def test_fact_hash(isolated_filesystem):
         <outputfile>``
     :expectedresults: Only the expected facts are hashed.
     """
-    facts_to_hash = OrderedDict({
-        'connection.host': utils.uuid4(),
-        'connection.port': utils.uuid4(),
-        'uname.all': utils.uuid4(),
-        'uname.hostname': utils.uuid4(),
-    })
+    facts_to_hash = OrderedDict(
+        {
+            "connection.host": utils.uuid4(),
+            "connection.port": utils.uuid4(),
+            "uname.all": utils.uuid4(),
+            "uname.hostname": utils.uuid4(),
+        }
+    )
     reportfile = utils.uuid4()
     outputfile = utils.uuid4()
-    with open(reportfile, 'w') as f:
-        f.write(','.join(facts_to_hash.keys()) + '\n')
-        f.write(','.join(facts_to_hash.values()) + '\n')
+    with open(reportfile, "w") as f:
+        f.write(",".join(facts_to_hash.keys()) + "\n")
+        f.write(",".join(facts_to_hash.values()) + "\n")
     rho_fact_hash = pexpect.spawn(
-        'rho fact hash --reportfile {} --outputfile {}'
-        .format(reportfile, outputfile)
+        "rho fact hash --reportfile {} --outputfile {}".format(reportfile, outputfile)
     )
     rho_fact_hash.logfile = BytesIO()
     rho_fact_hash.expect(pexpect.EOF)
-    output = rho_fact_hash.logfile.getvalue().decode('utf-8')
+    output = rho_fact_hash.logfile.getvalue().decode("utf-8")
     assert len(output.splitlines()) == 4
     rho_fact_hash.logfile.close()
     rho_fact_hash.close()
     assert rho_fact_hash.exitstatus == 0
 
     expected_hashed_facts = {
-        k: hashlib.sha256(v.encode('utf-8')).hexdigest()
+        k: hashlib.sha256(v.encode("utf-8")).hexdigest()
         for k, v in facts_to_hash.items()
     }
     with open(outputfile) as f:
@@ -145,7 +137,7 @@ def test_fact_hash(isolated_filesystem):
         assert parsed_facts == expected_hashed_facts
 
 
-@pytest.mark.parametrize('facts_value', ('file', 'string'))
+@pytest.mark.parametrize("facts_value", ("file", "string"))
 def test_fact_hash_with_facts(isolated_filesystem, facts_value):
     """Hash only the specified facts from a generated report.
 
@@ -155,36 +147,36 @@ def test_fact_hash_with_facts(isolated_filesystem, facts_value):
         --outputfile <outputfile>``
     :expectedresults: Only the specified facts are hashed.
     """
-    facts = OrderedDict({
-        'connection.host': utils.uuid4(),
-        'connection.port': utils.uuid4(),
-        'uname.all': utils.uuid4(),
-        'uname.hostname': utils.uuid4(),
-    })
-    facts_to_hash = [
-        'connection.host',
-        'connection.port',
-    ]
+    facts = OrderedDict(
+        {
+            "connection.host": utils.uuid4(),
+            "connection.port": utils.uuid4(),
+            "uname.all": utils.uuid4(),
+            "uname.hostname": utils.uuid4(),
+        }
+    )
+    facts_to_hash = ["connection.host", "connection.port"]
     reportfile = utils.uuid4()
     outputfile = utils.uuid4()
-    with open(reportfile, 'w') as f:
-        f.write(','.join(facts.keys()) + '\n')
-        f.write(','.join(facts.values()) + '\n')
+    with open(reportfile, "w") as f:
+        f.write(",".join(facts.keys()) + "\n")
+        f.write(",".join(facts.values()) + "\n")
 
-    if facts_value == 'file':
-        facts_value = 'facts_file'
-        with open(facts_value, 'w') as handler:
+    if facts_value == "file":
+        facts_value = "facts_file"
+        with open(facts_value, "w") as handler:
             for fact in facts_to_hash:
-                handler.write(fact + '\n')
+                handler.write(fact + "\n")
     else:
-        facts_value = ' '.join(facts_to_hash)
+        facts_value = " ".join(facts_to_hash)
     rho_fact_hash = pexpect.spawn(
-        'rho fact hash --facts {} --reportfile {} --outputfile {}'
-        .format(facts_value, reportfile, outputfile)
+        "rho fact hash --facts {} --reportfile {} --outputfile {}".format(
+            facts_value, reportfile, outputfile
+        )
     )
     rho_fact_hash.logfile = BytesIO()
     rho_fact_hash.expect(pexpect.EOF)
-    output = rho_fact_hash.logfile.getvalue().decode('utf-8')
+    output = rho_fact_hash.logfile.getvalue().decode("utf-8")
     assert len(output.splitlines()) == len(facts_to_hash)
     rho_fact_hash.logfile.close()
     rho_fact_hash.close()
@@ -193,7 +185,8 @@ def test_fact_hash_with_facts(isolated_filesystem, facts_value):
     expected_hashed_facts = facts.copy()
     for fact in facts_to_hash:
         expected_hashed_facts[fact] = hashlib.sha256(
-            expected_hashed_facts[fact].encode('utf-8')).hexdigest()
+            expected_hashed_facts[fact].encode("utf-8")
+        ).hexdigest()
 
     with open(outputfile) as f:
         reader = csv.DictReader(f)

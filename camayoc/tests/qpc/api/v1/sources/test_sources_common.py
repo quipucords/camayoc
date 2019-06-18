@@ -17,11 +17,7 @@ import pytest
 
 from camayoc import api
 from camayoc.constants import QPC_SOURCE_TYPES
-from camayoc.qpc_models import (
-    Credential,
-    Scan,
-    Source,
-)
+from camayoc.qpc_models import Credential, Scan, Source
 from camayoc.tests.qpc.utils import (
     assert_matches_server,
     assert_source_create_fails,
@@ -30,13 +26,13 @@ from camayoc.tests.qpc.utils import (
 )
 from camayoc.utils import uuid4
 
-CREATE_DATA = ['localhost', '127.0.0.1', 'example.com']
-DEFAULT_PORT = {'network': 22, 'vcenter': 443, 'satellite': 443}
-INCOMPATIBLE_SRC_TYPES = {'vcenter', 'satellite'}
+CREATE_DATA = ["localhost", "127.0.0.1", "example.com"]
+DEFAULT_PORT = {"network": 22, "vcenter": 443, "satellite": 443}
+INCOMPATIBLE_SRC_TYPES = {"vcenter", "satellite"}
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_create(shared_client, cleanup, scan_host, src_type):
     """Create a Source using a single credential.
 
@@ -50,11 +46,7 @@ def test_create(shared_client, cleanup, scan_host, src_type):
            the source endpoint.
     :expectedresults: A new  source entry is created with the data.
     """
-    cred = Credential(
-        cred_type=src_type,
-        client=shared_client,
-        password=uuid4()
-    )
+    cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     src = Source(
         source_type=src_type,
@@ -69,7 +61,7 @@ def test_create(shared_client, cleanup, scan_host, src_type):
     assert_matches_server(src)
 
 
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_create_exclude_hosts(shared_client, cleanup, scan_host):
     """Create a source with the excluded hosts option.
 
@@ -81,18 +73,12 @@ def test_create_exclude_hosts(shared_client, cleanup, scan_host):
            the source endpoint, with the exclude hosts option.
     :expectedresults: A new source entry is created with the data.
     """
-    gen_valid_source(
-            cleanup,
-            'network',
-            hosts='1.1.1.1',
-            exclude_hosts=scan_host,
-    )
+    gen_valid_source(cleanup, "network", hosts="1.1.1.1", exclude_hosts=scan_host)
 
 
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
-@pytest.mark.parametrize('src_type', INCOMPATIBLE_SRC_TYPES)
-def test_create_exclude_hosts_negative(shared_client, cleanup,
-                                       scan_host, src_type):
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
+@pytest.mark.parametrize("src_type", INCOMPATIBLE_SRC_TYPES)
+def test_create_exclude_hosts_negative(shared_client, cleanup, scan_host, src_type):
     """Attempt to create a source with excluded hosts with an invalid source type.
 
     :id: 52ba8847-81d7-4c8a-a5bd-1f946f5f39b5
@@ -105,11 +91,7 @@ def test_create_exclude_hosts_negative(shared_client, cleanup,
     :expectedresults: Creation of the source fails with a message about an
         invalid source type.
     """
-    cred = Credential(
-        cred_type=src_type,
-        client=shared_client,
-        password=uuid4()
-    )
+    cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
     src = Source(
@@ -118,12 +100,12 @@ def test_create_exclude_hosts_negative(shared_client, cleanup,
         hosts=[scan_host],
         credential_ids=[cred._id],
     )
-    src.exclude_hosts = ['10.10.10.10']
+    src.exclude_hosts = ["10.10.10.10"]
     assert_source_create_fails(src, src_type)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_update(shared_client, cleanup, scan_host, src_type):
     """Create a {network, vcenter} source and then update it.
 
@@ -138,11 +120,7 @@ def test_update(shared_client, cleanup, scan_host, src_type):
            the data
     :expectedresults: The source entry is created and updated.
     """
-    cred = Credential(
-        cred_type=src_type,
-        client=shared_client,
-        password=uuid4()
-    )
+    cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
     src = Source(
@@ -154,7 +132,7 @@ def test_update(shared_client, cleanup, scan_host, src_type):
     src.create()
     cleanup.append(src)
     assert_matches_server(src)
-    src.hosts = ['example.com']
+    src.hosts = ["example.com"]
     cred2 = Credential(cred_type=src_type, password=uuid4())
     cred2.create()
     cleanup.append(cred2)
@@ -163,8 +141,8 @@ def test_update(shared_client, cleanup, scan_host, src_type):
     assert_matches_server(src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_update_bad_credential(src_type, scan_host, cleanup):
     """Attempt to update valid source with invalid data.
 
@@ -185,8 +163,8 @@ def test_update_bad_credential(src_type, scan_host, cleanup):
     assert_source_update_fails(original_data, src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('field', ['credentials', 'hosts'])
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("field", ["credentials", "hosts"])
 def test_update_remove_field(src_type, cleanup, field):
     """Attempt to update valid source with either no hosts or no credentials.
 
@@ -198,15 +176,15 @@ def test_update_remove_field(src_type, cleanup, field):
         2) Update the source with no credentials or no hosts
     :expectedresults: Error codes are returned and the source is not updated.
     """
-    src = gen_valid_source(cleanup, src_type, 'localhost')
+    src = gen_valid_source(cleanup, src_type, "localhost")
     # we have to use deep copy because these are nested dictionaries
     original_data = copy.deepcopy(src.fields())
     setattr(src, field, [])
     assert_source_update_fails(original_data, src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_update_with_bad_host(src_type, scan_host, cleanup):
     """Attempt to update valid source with an invalid host.
 
@@ -221,12 +199,12 @@ def test_update_with_bad_host(src_type, scan_host, cleanup):
     src = gen_valid_source(cleanup, src_type, scan_host)
     original_data = copy.deepcopy(src.fields())
     # Test updating source with bad host
-    src.hosts = ['*invalid!!host&*']
+    src.hosts = ["*invalid!!host&*"]
     assert_source_update_fails(original_data, src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_update_with_bad_exclude_host(src_type, scan_host, cleanup):
     """Attempt to update valid source with an invalid excluded host.
 
@@ -241,12 +219,12 @@ def test_update_with_bad_exclude_host(src_type, scan_host, cleanup):
     src = gen_valid_source(cleanup, src_type, scan_host)
     original_data = src.fields()
     # Test updating source with bad excluded host
-    src.exclude_hosts = ['*invalid!!host&*']
+    src.exclude_hosts = ["*invalid!!host&*"]
     assert_source_update_fails(original_data, src)
 
 
-@pytest.mark.parametrize('src_type', INCOMPATIBLE_SRC_TYPES)
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("src_type", INCOMPATIBLE_SRC_TYPES)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_update_with_invalid_src_type(src_type, scan_host, cleanup):
     """Attempt to update exclude_hosts with a non-network source type.
 
@@ -260,15 +238,13 @@ def test_update_with_invalid_src_type(src_type, scan_host, cleanup):
     """
     src = gen_valid_source(cleanup, src_type, scan_host)
     original_data = copy.deepcopy(src.fields())
-    src.exclude_hosts = ['10.10.10.10']
+    src.exclude_hosts = ["10.10.10.10"]
     assert_source_update_fails(original_data, src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 @pytest.mark.parametrize(
-    'field',
-    ['name', 'hosts', 'credentials'],
-    ids=['name', 'hosts', 'credentials']
+    "field", ["name", "hosts", "credentials"], ids=["name", "hosts", "credentials"]
 )
 def test_negative_create_missing_data(src_type, cleanup, shared_client, field):
     """Attempt to create a source missing various data.
@@ -283,16 +259,13 @@ def test_negative_create_missing_data(src_type, cleanup, shared_client, field):
             c) credential id's
     :expectedresults: Error is thrown and no new source is created.
     """
-    cred = Credential(
-        cred_type=src_type,
-        client=shared_client,
-        password=uuid4())
+    cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
     src = Source(
         source_type=src_type,
         client=api.Client(response_handler=api.echo_handler),
-        hosts=['localhost'],
+        hosts=["localhost"],
         credential_ids=[cred._id],
     )
 
@@ -304,27 +277,19 @@ def test_negative_create_missing_data(src_type, cleanup, shared_client, field):
         cleanup.append(src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
-@pytest.mark.parametrize('data',
-                         [  # bad credential
-                             {'hosts': ['localhost'],
-                              'credential_ids': [-1],
-                                 'name': uuid4()},
-                             # bad host name
-                             {'hosts': ['*invalidhostname*'],
-                                 'credential_ids': None, 'name': uuid4()},
-                             # bad name
-                             {'hosts': ['localhost'],
-                                 'credential_ids': None, 'name': ''},
-                         ],
-                         ids=['bad-credential',
-                              'bad-hostname',
-                              'bad-name'])
-def test_negative_create_invalid_data(
-        src_type,
-        cleanup,
-        shared_client,
-        data):
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
+@pytest.mark.parametrize(
+    "data",
+    [  # bad credential
+        {"hosts": ["localhost"], "credential_ids": [-1], "name": uuid4()},
+        # bad host name
+        {"hosts": ["*invalidhostname*"], "credential_ids": None, "name": uuid4()},
+        # bad name
+        {"hosts": ["localhost"], "credential_ids": None, "name": ""},
+    ],
+    ids=["bad-credential", "bad-hostname", "bad-name"],
+)
+def test_negative_create_invalid_data(src_type, cleanup, shared_client, data):
     """Attempt to create a source with invalid data.
 
     The requests should be met with a 4XX response.
@@ -337,13 +302,10 @@ def test_negative_create_invalid_data(
         c) name
     :expectedresults: Error is thrown and no new source is created.
     """
-    cred = Credential(
-        cred_type=src_type,
-        client=shared_client,
-        password=uuid4())
+    cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
-    data['credential_ids'] = cred._id if not data['credential_ids'] else [-1]
+    data["credential_ids"] = cred._id if not data["credential_ids"] else [-1]
     src = Source(
         source_type=src_type,
         client=api.Client(response_handler=api.echo_handler),
@@ -356,7 +318,7 @@ def test_negative_create_invalid_data(
         cleanup.append(src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_read_all(src_type, cleanup, shared_client):
     """After created, retrieve all network sources with GET to api.
 
@@ -377,18 +339,18 @@ def test_read_all(src_type, cleanup, shared_client):
     created_srcs = []
     for _ in range(random.randint(2, 10)):
         # gen_valid_srcs will take care of cleanup
-        src = gen_valid_source(cleanup, src_type, 'localhost')
+        src = gen_valid_source(cleanup, src_type, "localhost")
         created_srcs.append(src)
         created_src_ids.add(src._id)
     this_page = Source().list().json()
     while this_page:
-        for source in this_page['results']:
-            if source['id'] in created_src_ids:
-                created_src_ids.remove(source['id'])
-        next_page = this_page.get('next')
+        for source in this_page["results"]:
+            if source["id"] in created_src_ids:
+                created_src_ids.remove(source["id"])
+        next_page = this_page.get("next")
         if next_page:
             # must strip url of host information
-            next_page = re.sub(r'.*/api', '/api', next_page)
+            next_page = re.sub(r".*/api", "/api", next_page)
             this_page = shared_client.get(next_page).json()
         else:
             break
@@ -396,16 +358,14 @@ def test_read_all(src_type, cleanup, shared_client):
     # if we found everything we created, then the list should be empty
     if created_src_ids:
         raise AssertionError(
-            'Expected to find all sources with correct data on server,\n'
-            'but the following sources did not match expected or were'
-            'missing from the server: \n'
-            '{}'.format(
-                ' '.join(created_src_ids)
-            )
+            "Expected to find all sources with correct data on server,\n"
+            "but the following sources did not match expected or were"
+            "missing from the server: \n"
+            "{}".format(" ".join(created_src_ids))
         )
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_delete(src_type, cleanup, shared_client):
     """After creating several {network, vcenter} sources, delete one.
 
@@ -426,7 +386,7 @@ def test_delete(src_type, cleanup, shared_client):
     echo_client = api.Client(response_handler=api.echo_handler)
     for i in range(num_srcs):
         # gen_valid_srcs will take care of cleanup
-        created_srcs.append(gen_valid_source(cleanup, src_type, 'localhost'))
+        created_srcs.append(gen_valid_source(cleanup, src_type, "localhost"))
     for i in range(num_srcs):
         delete_src = created_srcs.pop()
         delete_src.delete()
@@ -437,7 +397,7 @@ def test_delete(src_type, cleanup, shared_client):
             assert_matches_server(p)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_type_mismatch(src_type, cleanup, shared_client):
     """Attempt to create sources with credentials of the wrong type.
 
@@ -453,11 +413,10 @@ def test_type_mismatch(src_type, cleanup, shared_client):
     :expectedresults: An error is thrown and no new source is created.
     :caseautomation: notautomated
     """
-    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     other_types = set(QPC_SOURCE_TYPES).difference(set((src_type,)))
     other_cred = Credential(
-        password=uuid4(),
-        cred_type=random.choice(list(other_types)),
+        password=uuid4(), cred_type=random.choice(list(other_types))
     )
     other_cred.create()
     cleanup.append(other_cred)
@@ -467,10 +426,10 @@ def test_type_mismatch(src_type, cleanup, shared_client):
     assert create_response.status_code == 400
     if create_response.status_code in [200, 201]:
         cleanup.append(src)
-    assert 'source_type' in create_response.json().keys()
+    assert "source_type" in create_response.json().keys()
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_port_default(src_type, cleanup, shared_client):
     """Test that the correct default port is provided if it is not specified.
 
@@ -483,16 +442,16 @@ def test_port_default(src_type, cleanup, shared_client):
     :expectedresults: A source is created with sensible default port.
     :caseautomation: notautomated
     """
-    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     src.port = None
     src.create()
     cleanup.append(src)
     server_src = src.read().json()
-    assert server_src.get('port') == DEFAULT_PORT[src_type]
+    assert server_src.get("port") == DEFAULT_PORT[src_type]
     assert src.equivalent(server_src)
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_create_with_port(src_type, cleanup, shared_client):
     """Test that we may create with a custom port specified.
 
@@ -504,7 +463,7 @@ def test_create_with_port(src_type, cleanup, shared_client):
     :expectedresults: A source is created with user specified data.
     :caseautomation: notautomated
     """
-    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     src.port = random.randint(20, 9000)
     src.create()
     cleanup.append(src)
@@ -512,8 +471,8 @@ def test_create_with_port(src_type, cleanup, shared_client):
     assert src.equivalent(server_src)
 
 
-@pytest.mark.parametrize('bad_port', ['string**', -1, False])
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("bad_port", ["string**", -1, False])
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_negative_invalid_port(src_type, bad_port, cleanup, shared_client):
     """Test that we are prevented from using a nonsense value for the port.
 
@@ -527,7 +486,7 @@ def test_negative_invalid_port(src_type, bad_port, cleanup, shared_client):
     :expectedresults: The source is not created
     :caseautomation: notautomated
     """
-    src = gen_valid_source(cleanup, src_type, 'localhost', create=False)
+    src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     src.port = bad_port
     src.client = api.Client(api.echo_handler)
     create_response = src.create()
@@ -535,10 +494,10 @@ def test_negative_invalid_port(src_type, bad_port, cleanup, shared_client):
     if create_response.status_code in [200, 201]:
         cleanup.append(src)
     # assert that the server tells us what we did wrong
-    assert 'port' in create_response.json().keys()
+    assert "port" in create_response.json().keys()
 
 
-@pytest.mark.parametrize('src_type', QPC_SOURCE_TYPES)
+@pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
 def test_delete_with_dependencies(src_type, cleanup, shared_client):
     """Test that cannot delete sources if other objects depend on them.
 
@@ -553,8 +512,8 @@ def test_delete_with_dependencies(src_type, cleanup, shared_client):
     :expectedresults: The source is not created
     :caseautomation: notautomated
     """
-    src1 = gen_valid_source(cleanup, src_type, 'localhost')
-    src2 = gen_valid_source(cleanup, src_type, 'localhost')
+    src1 = gen_valid_source(cleanup, src_type, "localhost")
+    src2 = gen_valid_source(cleanup, src_type, "localhost")
     scns = []
     for i in range(random.randint(2, 6)):
         if i % 2 == 0:

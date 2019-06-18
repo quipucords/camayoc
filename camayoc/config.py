@@ -32,7 +32,7 @@ def get_config():
     """
     global _CONFIG  # pylint:disable=global-statement
     if _CONFIG is None:
-        with open(_get_config_file_path('camayoc', 'config.yaml')) as f:
+        with open(_get_config_file_path("camayoc", "config.yaml")) as f:
             _CONFIG = yaml.load(f)
     return deepcopy(_CONFIG)
 
@@ -57,9 +57,12 @@ def _get_config_file_path(xdg_config_dir, xdg_config_file):
     if path and os.path.isfile(path):
         return path
     raise exceptions.ConfigFileNotFoundError(
-        'Camayoc is unable to find a configuration file. The following '
-        '(XDG compliant) paths have been searched: ' + ', '.join([
-            os.path.join(config_dir, xdg_config_dir, xdg_config_file)
-            for config_dir in BaseDirectory.xdg_config_dirs
-        ])
+        "Camayoc is unable to find a configuration file. The following "
+        "(XDG compliant) paths have been searched: "
+        + ", ".join(
+            [
+                os.path.join(config_dir, xdg_config_dir, xdg_config_file)
+                for config_dir in BaseDirectory.xdg_config_dirs
+            ]
+        )
     )

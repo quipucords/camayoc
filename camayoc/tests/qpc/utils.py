@@ -5,8 +5,9 @@ from camayoc import api
 from camayoc.qpc_models import Credential, Scan, Source
 from camayoc.utils import run_scans, uuid4
 
-mark_runs_scans = pytest.mark.skipif(run_scans() is False,
-                                     reason='RUN_SCANS set to False')
+mark_runs_scans = pytest.mark.skipif(
+    run_scans() is False, reason="RUN_SCANS set to False"
+)
 """Decorator that skips tests if RUN_SCANS environment variable is 'False'."""
 
 
@@ -31,13 +32,13 @@ def assert_source_update_fails(original_data, source):
     assert update_response.status_code == 400
     server_data = source.read().json()
     for key, value in server_data.items():
-        if key == 'options' and original_data.get(key) is None:
+        if key == "options" and original_data.get(key) is None:
             continue
-        if key == 'credentials':
+        if key == "credentials":
             # the server creds are dicts with other data besides the id
             cred_ids = []
             for cred in value:
-                cred_ids.append(cred.get('id'))
+                cred_ids.append(cred.get("id"))
             assert sorted(original_data.get(key)) == sorted(cred_ids)
         else:
             assert original_data.get(key) == value
@@ -45,7 +46,7 @@ def assert_source_update_fails(original_data, source):
     source.client = orig_client
 
 
-def assert_source_create_fails(source, source_type=''):
+def assert_source_create_fails(source, source_type=""):
     """Assert that the create method of this source fails.
 
     :param source: The source object.
@@ -57,34 +58,30 @@ def assert_source_create_fails(source, source_type=''):
     create_response = source.create()
     assert create_response.status_code == 400
     expected_errors = [
-        {'hosts':
-            ['Source of type vcenter must have a single hosts.']},
-        {'credentials':
-            ['Source of type vcenter must have a single credential.']},
-        {'hosts':
-            ['Source of type satellite must have a single hosts.']},
-        {'credentials':
-            ['Source of type satellite must have a single credential.']},
-        {'exclude_hosts':
-            ['The exclude_hosts option is not valid for source of type ' +
-             source_type + '.']}]
+        {"hosts": ["Source of type vcenter must have a single hosts."]},
+        {"credentials": ["Source of type vcenter must have a single credential."]},
+        {"hosts": ["Source of type satellite must have a single hosts."]},
+        {"credentials": ["Source of type satellite must have a single credential."]},
+        {
+            "exclude_hosts": [
+                "The exclude_hosts option is not valid for source of type "
+                + source_type
+                + "."
+            ]
+        },
+    ]
     response = create_response.json()
     assert response in expected_errors
     # give the source its original client back
     source.client = orig_client
 
 
-def gen_valid_source(cleanup, src_type, hosts, create=True,
-                     exclude_hosts=None):
+def gen_valid_source(cleanup, src_type, hosts, create=True, exclude_hosts=None):
     """Create valid source."""
     cred = Credential(cred_type=src_type, password=uuid4())
     cred.create()
     cleanup.append(cred)
-    source = Source(
-        source_type=src_type,
-        hosts=[hosts],
-        credential_ids=[cred._id],
-    )
+    source = Source(source_type=src_type, hosts=[hosts], credential_ids=[cred._id])
     # QPC does not accept blank exclude_host values, only add it if not empty.
     if exclude_hosts is not None:
         source.exclude_hosts = [exclude_hosts]

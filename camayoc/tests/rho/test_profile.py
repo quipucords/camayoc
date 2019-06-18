@@ -23,7 +23,7 @@ from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.tests.rho.utils import auth_add, input_vault_password
 
 
-@pytest.mark.parametrize('hosts', ('127.0.0.1', '192.168.0.0/24'))
+@pytest.mark.parametrize("hosts", ("127.0.0.1", "192.168.0.0/24"))
 def test_add_with_auth_hosts(isolated_filesystem, hosts):
     """Add a profile with auth and hosts.
 
@@ -37,17 +37,12 @@ def test_add_with_auth_hosts(isolated_filesystem, hosts):
     auth_name = utils.uuid4()
     name = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -55,34 +50,34 @@ def test_add_with_auth_hosts(isolated_filesystem, hosts):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', r'\[0:255\]')
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    if hosts.endswith("0/24"):
+        hosts = hosts.replace("0/24", r"\[0:255\]")
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
 
-@pytest.mark.parametrize('hosts', ('127.0.0.1', '192.168.0.0/24'))
+@pytest.mark.parametrize("hosts", ("127.0.0.1", "192.168.0.0/24"))
 def test_add_with_auth_hosts_file(isolated_filesystem, hosts):
     """Add a profile with auth and hosts populated on a file.
 
@@ -98,20 +93,17 @@ def test_add_with_auth_hosts_file(isolated_filesystem, hosts):
     auth_name = utils.uuid4()
     name = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
-    with open('hosts_file', 'w') as handler:
-        handler.write(hosts + '\n')
+    with open("hosts_file", "w") as handler:
+        handler.write(hosts + "\n")
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, 'hosts_file')
+        "rho profile add --name {} --auth {} --hosts {}".format(
+            name, auth_name, "hosts_file"
+        )
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -119,28 +111,28 @@ def test_add_with_auth_hosts_file(isolated_filesystem, hosts):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    if hosts.endswith('0/24'):
-        hosts = hosts.replace('0/24', r'\[0:255\]')
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    if hosts.endswith("0/24"):
+        hosts = hosts.replace("0/24", r"\[0:255\]")
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
@@ -159,20 +151,17 @@ def test_add_with_sshport(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     sshport = random.randint(0, 65535)
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {} --sshport {}'
-        .format(name, auth_name, hosts, sshport)
+        "rho profile add --name {} --auth {} --hosts {} --sshport {}".format(
+            name, auth_name, hosts, sshport
+        )
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -180,26 +169,26 @@ def test_add_with_sshport(isolated_filesystem):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "{}"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name, sshport)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "{}"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name, sshport)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
@@ -218,26 +207,25 @@ def test_add_with_sshport_negative(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     sshport = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {} --sshport {}'
-        .format(name, auth_name, hosts, sshport)
+        "rho profile add --name {} --auth {} --hosts {} --sshport {}".format(
+            name, auth_name, hosts, sshport
+        )
     )
-    assert rho_profile_add.expect(
-        r'Port value {} should be a positive integer in the valid range '
-        r'\(0-65535\)'
-        .format(sshport)
-    ) == 0
+    assert (
+        rho_profile_add.expect(
+            r"Port value {} should be a positive integer in the valid range "
+            r"\(0-65535\)".format(sshport)
+        )
+        == 0
+    )
     assert rho_profile_add.expect(pexpect.EOF) == 0
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 1
@@ -253,21 +241,16 @@ def test_edit_auth(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     new_auth_name = utils.uuid4()
     for auth_name in (auth_name, new_auth_name):
         auth_add(
-            {
-                'name': auth_name,
-                'username': utils.uuid4(),
-                'password': None,
-            },
+            {"name": auth_name, "username": utils.uuid4(), "password": None},
             [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
         )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -275,60 +258,59 @@ def test_edit_auth(isolated_filesystem):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --auth {}'
-        .format(name, new_auth_name)
+        "rho profile edit --name {} --auth {}".format(name, new_auth_name)
     )
     input_vault_password(rho_profile_edit)
-    assert rho_profile_edit.expect('Profile \'{}\' edited'.format(name)) == 0
+    assert rho_profile_edit.expect("Profile '{}' edited".format(name)) == 0
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(new_auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(new_auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
@@ -344,20 +326,15 @@ def test_edit_auth_negative(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     invalid_name = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -366,19 +343,20 @@ def test_edit_auth_negative(isolated_filesystem):
     assert rho_profile_add.exitstatus == 0
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --auth {}'
-        .format(invalid_name, utils.uuid4())
+        "rho profile edit --name {} --auth {}".format(invalid_name, utils.uuid4())
     )
     input_vault_password(rho_profile_edit)
     rho_profile_edit.logfile = BytesIO()
-    assert rho_profile_edit.expect(
-        'Profile \'{}\' does not exist.'.format(invalid_name)) == 0
+    assert (
+        rho_profile_edit.expect("Profile '{}' does not exist.".format(invalid_name))
+        == 0
+    )
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 1
 
 
-@pytest.mark.parametrize('new_hosts', ('127.0.0.42', '192.168.0.0/24'))
+@pytest.mark.parametrize("new_hosts", ("127.0.0.42", "192.168.0.0/24"))
 def test_edit_hosts(isolated_filesystem, new_hosts):
     """Edit a profile's hosts.
 
@@ -389,19 +367,14 @@ def test_edit_hosts(isolated_filesystem, new_hosts):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -409,68 +382,67 @@ def test_edit_hosts(isolated_filesystem, new_hosts):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --hosts {}'
-        .format(name, new_hosts)
+        "rho profile edit --name {} --hosts {}".format(name, new_hosts)
     )
     input_vault_password(rho_profile_edit)
-    assert rho_profile_edit.expect('Profile \'{}\' edited'.format(name)) == 0
+    assert rho_profile_edit.expect("Profile '{}' edited".format(name)) == 0
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 0
 
-    if new_hosts.endswith('0/24'):
-        new_hosts = new_hosts.replace('0/24', r'\[0:255\]')
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    if new_hosts.endswith("0/24"):
+        new_hosts = new_hosts.replace("0/24", r"\[0:255\]")
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, new_hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, new_hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
 
-@pytest.mark.parametrize('new_hosts', ('127.0.0.42', '192.168.0.0/24'))
+@pytest.mark.parametrize("new_hosts", ("127.0.0.42", "192.168.0.0/24"))
 def test_edit_hosts_file(isolated_filesystem, new_hosts):
     """Edit a profile's hosts.
 
@@ -481,19 +453,14 @@ def test_edit_hosts_file(isolated_filesystem, new_hosts):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -501,65 +468,64 @@ def test_edit_hosts_file(isolated_filesystem, new_hosts):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
-    with open('hosts_file', 'w') as handler:
-        handler.write(new_hosts + '\n')
+    with open("hosts_file", "w") as handler:
+        handler.write(new_hosts + "\n")
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --hosts {}'
-        .format(name, 'hosts_file')
+        "rho profile edit --name {} --hosts {}".format(name, "hosts_file")
     )
     input_vault_password(rho_profile_edit)
-    assert rho_profile_edit.expect('Profile \'{}\' edited'.format(name)) == 0
+    assert rho_profile_edit.expect("Profile '{}' edited".format(name)) == 0
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 0
 
-    if new_hosts.endswith('0/24'):
-        new_hosts = new_hosts.replace('0/24', r'\[0:255\]')
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    if new_hosts.endswith("0/24"):
+        new_hosts = new_hosts.replace("0/24", r"\[0:255\]")
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, new_hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, new_hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
@@ -575,21 +541,16 @@ def test_edit_hosts_negative(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
-    new_hosts = '127.0.0.{}'.format(random.randint(2, 255))
+    hosts = "127.0.0.1"
+    new_hosts = "127.0.0.{}".format(random.randint(2, 255))
     invalid_name = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -598,13 +559,14 @@ def test_edit_hosts_negative(isolated_filesystem):
     assert rho_profile_add.exitstatus == 0
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --hosts {}'
-        .format(invalid_name, new_hosts)
+        "rho profile edit --name {} --hosts {}".format(invalid_name, new_hosts)
     )
     input_vault_password(rho_profile_edit)
     rho_profile_edit.logfile = BytesIO()
-    assert rho_profile_edit.expect(
-        'Profile \'{}\' does not exist.'.format(invalid_name)) == 0
+    assert (
+        rho_profile_edit.expect("Profile '{}' does not exist.".format(invalid_name))
+        == 0
+    )
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 1
@@ -620,22 +582,19 @@ def test_edit_sshport(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     sshport = new_sshport = random.randint(0, 65535)
     while sshport == new_sshport:
         new_sshport = random.randint(0, 65535)
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {} --sshport {}'
-        .format(name, auth_name, hosts, sshport)
+        "rho profile add --name {} --auth {} --hosts {} --sshport {}".format(
+            name, auth_name, hosts, sshport
+        )
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -643,60 +602,59 @@ def test_edit_sshport(isolated_filesystem):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "{}"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name, sshport)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "{}"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name, sshport)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --sshport {}'
-        .format(name, new_sshport)
+        "rho profile edit --name {} --sshport {}".format(name, new_sshport)
     )
     input_vault_password(rho_profile_edit)
-    assert rho_profile_edit.expect('Profile \'{}\' edited'.format(name)) == 0
+    assert rho_profile_edit.expect("Profile '{}' edited".format(name)) == 0
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "{}"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name, new_sshport)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "{}"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name, new_sshport)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
@@ -713,23 +671,20 @@ def test_edit_sshport_negative(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     sshport = new_sshport = random.randint(0, 65535)
     while sshport == new_sshport:
         new_sshport = random.randint(0, 65535)
     invalid_name = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {} --sshport {}'
-        .format(name, auth_name, hosts, sshport)
+        "rho profile add --name {} --auth {} --hosts {} --sshport {}".format(
+            name, auth_name, hosts, sshport
+        )
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -738,13 +693,14 @@ def test_edit_sshport_negative(isolated_filesystem):
     assert rho_profile_add.exitstatus == 0
 
     rho_profile_edit = pexpect.spawn(
-        'rho profile edit --name {} --sshport {}'
-        .format(invalid_name, new_sshport)
+        "rho profile edit --name {} --sshport {}".format(invalid_name, new_sshport)
     )
     input_vault_password(rho_profile_edit)
     rho_profile_edit.logfile = BytesIO()
-    assert rho_profile_edit.expect(
-        'Profile \'{}\' does not exist.'.format(invalid_name)) == 0
+    assert (
+        rho_profile_edit.expect("Profile '{}' does not exist.".format(invalid_name))
+        == 0
+    )
     assert rho_profile_edit.expect(pexpect.EOF) == 0
     rho_profile_edit.close()
     assert rho_profile_edit.exitstatus == 1
@@ -761,19 +717,14 @@ def test_clear(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     name = utils.uuid4()
-    hosts = '127.0.0.1'
+    hosts = "127.0.0.1"
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
     rho_profile_add = pexpect.spawn(
-        'rho profile add --name {} --auth {} --hosts {}'
-        .format(name, auth_name, hosts)
+        "rho profile add --name {} --auth {} --hosts {}".format(name, auth_name, hosts)
     )
     input_vault_password(rho_profile_add)
     assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
@@ -781,75 +732,62 @@ def test_clear(isolated_filesystem):
     rho_profile_add.close()
     assert rho_profile_add.exitstatus == 0
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        r'{{\r\n'
-        r'    "auth": \[\r\n'
-        r'        {{\r\n'
-        r'            "id": ".*",\r\n'
-        r'            "name": "{}"\r\n'
-        r'        }}\r\n'
-        r'    \],\r\n'
-        r'    "hosts": \[\r\n'
-        r'        "{}"\r\n'
-        r'    \],\r\n'
-        r'    "name": "{}",\r\n'
-        r'    "ssh_port": "22"\r\n'
-        r'}}\r\n'
-        .format(auth_name, hosts, name)
-    ) == 0, rho_profile_show.stdout
+    assert (
+        rho_profile_show.expect(
+            r"{{\r\n"
+            r'    "auth": \[\r\n'
+            r"        {{\r\n"
+            r'            "id": ".*",\r\n'
+            r'            "name": "{}"\r\n'
+            r"        }}\r\n"
+            r"    \],\r\n"
+            r'    "hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n"
+            r'    "name": "{}",\r\n'
+            r'    "ssh_port": "22"\r\n'
+            r"}}\r\n".format(auth_name, hosts, name)
+        )
+        == 0
+    ), rho_profile_show.stdout
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
     assert rho_profile_show.exitstatus == 0
 
     # Create some files to mimic if the profile was used on a scan to check if
     # RHO will properly deal with them
-    Path('rho/{}_hosts.yml'.format(name)).touch()
-    Path('rho/{}_host_auth_mapping'.format(name)).touch()
+    Path("rho/{}_hosts.yml".format(name)).touch()
+    Path("rho/{}_host_auth_mapping".format(name)).touch()
 
-    rho_profile_clear = pexpect.spawn(
-        'rho profile clear --name={}'.format(name)
-    )
+    rho_profile_clear = pexpect.spawn("rho profile clear --name={}".format(name))
     input_vault_password(rho_profile_clear)
-    assert rho_profile_clear.expect(
-        'Profile "{}" was removed'.format(name)
-    ) == 0
+    assert rho_profile_clear.expect('Profile "{}" was removed'.format(name)) == 0
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 0
 
-    rho_profile_clear = pexpect.spawn(
-        'rho profile clear --name={}'.format(name)
-    )
+    rho_profile_clear = pexpect.spawn("rho profile clear --name={}".format(name))
     input_vault_password(rho_profile_clear)
-    assert rho_profile_clear.expect(
-        'No such profile: \'{}\''.format(name)
-    ) == 0
+    assert rho_profile_clear.expect("No such profile: '{}'".format(name)) == 0
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 1
 
-    rho_profile_show = pexpect.spawn(
-        'rho profile show --name={}'.format(name)
-    )
+    rho_profile_show = pexpect.spawn("rho profile show --name={}".format(name))
     input_vault_password(rho_profile_show)
-    assert rho_profile_show.expect(
-        'Profile \'{}\' does not exist.'.format(name)
-    ) == 0
+    assert rho_profile_show.expect("Profile '{}' does not exist.".format(name)) == 0
     assert rho_profile_show.expect(pexpect.EOF) == 0
     rho_profile_show.close()
 
     # Check if RHO dealt with the created files.
-    assert not Path('rho/{}_hosts.yml'.format(name)).exists()
-    assert not Path('rho/{}_host_auth_mapping'.format(name)).exists()
-    assert Path(
-        'rho/(DELETED PROFILE){}_host_auth_mapping'.format(name)).exists()
+    assert not Path("rho/{}_hosts.yml".format(name)).exists()
+    assert not Path("rho/{}_host_auth_mapping".format(name)).exists()
+    assert Path("rho/(DELETED PROFILE){}_host_auth_mapping".format(name)).exists()
 
 
-@pytest.mark.parametrize('option', ('--name', '--all'))
+@pytest.mark.parametrize("option", ("--name", "--all"))
 def test_clear_no_profiles(isolated_filesystem, option):
     """Clear profiles no profiles were created.
 
@@ -862,12 +800,10 @@ def test_clear_no_profiles(isolated_filesystem, option):
            --all``.
     :expectedresults: A message stating that all network profiles were removed.
     """
-    if option == '--name':
-        option = '{}={}'.format(option, utils.uuid4())
-    rho_profile_clear = pexpect.spawn(
-        'rho profile clear {}'.format(option)
-    )
-    assert rho_profile_clear.expect('All network profiles removed') == 0
+    if option == "--name":
+        option = "{}={}".format(option, utils.uuid4())
+    rho_profile_clear = pexpect.spawn("rho profile clear {}".format(option))
+    assert rho_profile_clear.expect("All network profiles removed") == 0
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 0
@@ -884,14 +820,11 @@ def test_clear_negative(isolated_filesystem):
         can't be removed.
     """
     name = utils.uuid4()
-    rho_profile_clear = pexpect.spawn(
-        'rho profile clear --name={}'.format(name)
-    )
+    rho_profile_clear = pexpect.spawn("rho profile clear --name={}".format(name))
     rho_profile_clear.logfile = BytesIO()
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     assert (
-        rho_profile_clear.logfile.getvalue().strip() ==
-        b'All network profiles removed'
+        rho_profile_clear.logfile.getvalue().strip() == b"All network profiles removed"
     )
     rho_profile_clear.logfile.close()
     rho_profile_clear.close()
@@ -908,41 +841,37 @@ def test_clear_all(isolated_filesystem):
     """
     auth_name = utils.uuid4()
     auth_add(
-        {
-            'name': auth_name,
-            'username': utils.uuid4(),
-            'password': None,
-        },
+        {"name": auth_name, "username": utils.uuid4(), "password": None},
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
     profiles = []
     for _ in range(random.randint(2, 3)):
         name = utils.uuid4()
-        hosts = '127.0.0.1'
+        hosts = "127.0.0.1"
         profile = {
-            'auth': [{'name': auth_name}],
-            'hosts': [hosts],
-            'name': name,
-            'ssh_port': '22',
+            "auth": [{"name": auth_name}],
+            "hosts": [hosts],
+            "name": name,
+            "ssh_port": "22",
         }
         profiles.append(profile)
         rho_profile_add = pexpect.spawn(
-            'rho profile add --name {} --auth {} --hosts {}'
-            .format(name, auth_name, hosts)
+            "rho profile add --name {} --auth {} --hosts {}".format(
+                name, auth_name, hosts
+            )
         )
         input_vault_password(rho_profile_add)
-        assert rho_profile_add.expect(
-            'Profile "{}" was added'.format(name)) == 0
+        assert rho_profile_add.expect('Profile "{}" was added'.format(name)) == 0
         assert rho_profile_add.expect(pexpect.EOF) == 0
         rho_profile_add.close()
         assert rho_profile_add.exitstatus == 0
 
         # Create some files to mimic if the profile was used on a scan to check
         # if RHO will properly deal with them
-        Path('rho/{}_hosts.yml'.format(name)).touch()
-        Path('rho/{}_host_auth_mapping'.format(name)).touch()
+        Path("rho/{}_hosts.yml".format(name)).touch()
+        Path("rho/{}_host_auth_mapping".format(name)).touch()
 
-    rho_profile_list = pexpect.spawn('rho profile list')
+    rho_profile_list = pexpect.spawn("rho profile list")
     input_vault_password(rho_profile_list)
     logfile = BytesIO()
     rho_profile_list.logfile = logfile
@@ -950,31 +879,28 @@ def test_clear_all(isolated_filesystem):
     rho_profile_list.close()
     assert rho_profile_list.exitstatus == 0
 
-    output = json.loads(logfile.getvalue().decode('utf-8'))
+    output = json.loads(logfile.getvalue().decode("utf-8"))
     logfile.close()
 
     for profile in output:
-        del profile['auth'][0]['id']
+        del profile["auth"][0]["id"]
     assert profiles == output
 
-    rho_profile_clear = pexpect.spawn(
-        'rho profile clear --all'
-    )
-    assert rho_profile_clear.expect('All network profiles removed') == 0
+    rho_profile_clear = pexpect.spawn("rho profile clear --all")
+    assert rho_profile_clear.expect("All network profiles removed") == 0
     assert rho_profile_clear.expect(pexpect.EOF) == 0
     rho_profile_clear.close()
     assert rho_profile_clear.exitstatus == 0
 
-    for name in [profile['name'] for profile in profiles]:
+    for name in [profile["name"] for profile in profiles]:
         # Check if RHO dealt with the created files.
-        assert not Path('rho/{}_hosts.yml'.format(name)).exists()
-        assert not Path('rho/{}_host_auth_mapping'.format(name)).exists()
-        assert Path(
-            'rho/(DELETED PROFILE){}_host_auth_mapping'.format(name)).exists()
+        assert not Path("rho/{}_hosts.yml".format(name)).exists()
+        assert not Path("rho/{}_host_auth_mapping".format(name)).exists()
+        assert Path("rho/(DELETED PROFILE){}_host_auth_mapping".format(name)).exists()
 
-    rho_profile_list = pexpect.spawn('rho profile list')
+    rho_profile_list = pexpect.spawn("rho profile list")
     input_vault_password(rho_profile_list)
-    assert rho_profile_list.expect('No profiles exist yet.') == 0
+    assert rho_profile_list.expect("No profiles exist yet.") == 0
     assert rho_profile_list.expect(pexpect.EOF) == 0
     rho_profile_list.close()
     assert rho_profile_list.exitstatus == 1

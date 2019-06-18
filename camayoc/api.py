@@ -15,10 +15,7 @@ from requests.exceptions import HTTPError
 
 from camayoc import config
 from camayoc import exceptions
-from camayoc.constants import (
-    QPC_API_VERSION,
-    QPC_TOKEN_PATH,
-)
+from camayoc.constants import QPC_API_VERSION, QPC_TOKEN_PATH
 
 
 def raise_error_for_status(response):
@@ -30,35 +27,28 @@ def raise_error_for_status(response):
     r = response
     if (r.status_code >= 400) and (r.status_code <= 599):
         error_msgs = (
-            '\n============================================================\n'
-            '\nThe request you made received a status code that indicates\n'
-            'an error was encountered. Details about the request and the\n'
-            'response are below.\n'
-            '\n============================================================\n'
+            "\n============================================================\n"
+            "\nThe request you made received a status code that indicates\n"
+            "an error was encountered. Details about the request and the\n"
+            "response are below.\n"
+            "\n============================================================\n"
         )
 
         try:
-            response_message = 'json_error_message : {}'.format(
-                pformat(r.json()))
+            response_message = "json_error_message : {}".format(pformat(r.json()))
         except JSONDecodeError:
-            response_message = 'text_error_message : {}'.format(
-                pformat(r.text))
+            response_message = "text_error_message : {}".format(pformat(r.text))
 
-        error_msgs += '\n\n'.join(
+        error_msgs += "\n\n".join(
             [
-                'request path : {}'.format(pformat(
-                    r.request.path_url)),
-                'request body : {}'.format(pformat(
-                    r.request.body)),
-                'request headers : {}'.format(pformat(
-                    r.request.headers)),
-                'response code : {}'.format(r.status_code),
-                '{error_message}'.format(error_message=response_message)
+                "request path : {}".format(pformat(r.request.path_url)),
+                "request body : {}".format(pformat(r.request.body)),
+                "request headers : {}".format(pformat(r.request.headers)),
+                "response code : {}".format(r.status_code),
+                "{error_message}".format(error_message=response_message),
             ]
         )
-        error_msgs += (
-            '\n============================================================\n'
-        )
+        error_msgs += "\n============================================================\n"
         raise HTTPError(error_msgs)
 
 
@@ -141,11 +131,11 @@ class Client(object):
         """
         self.url = url
         self.token = None
-        cfg = config.get_config().get('qpc', {})
-        self.verify = cfg.get('ssl-verify', False)
+        cfg = config.get_config().get("qpc", {})
+        self.verify = cfg.get("ssl-verify", False)
 
         if not self.url:
-            hostname = cfg.get('hostname')
+            hostname = cfg.get("hostname")
 
             if not hostname:
                 raise exceptions.QPCBaseUrlNotFound(
@@ -153,16 +143,16 @@ class Client(object):
                     "no 'hostname' key found."
                 )
 
-            scheme = 'https' if cfg.get('https', False) else 'http'
-            port = str(cfg.get('port', ''))
-            netloc = hostname + ':{}'.format(port) if port else hostname
-            self.url = urlunparse(
-                (scheme, netloc, QPC_API_VERSION, '', '', ''))
+            scheme = "https" if cfg.get("https", False) else "http"
+            port = str(cfg.get("port", ""))
+            netloc = hostname + ":{}".format(port) if port else hostname
+            self.url = urlunparse((scheme, netloc, QPC_API_VERSION, "", "", ""))
 
         if not self.url:
             raise exceptions.QPCBaseUrlNotFound(
-                'No base url was specified to the client either with the '
-                'url="host" option or with the camayoc config file.')
+                "No base url was specified to the client either with the "
+                'url="host" option or with the camayoc config file.'
+            )
 
         if response_handler is None:
             self.response_handler = code_handler
@@ -174,18 +164,15 @@ class Client(object):
 
     def login(self):
         """Login to the server to receive an authorization token."""
-        cfg = config.get_config().get('qpc', {})
-        server_username = cfg.get('username', 'admin')
-        server_password = cfg.get('password', 'pass')
+        cfg = config.get_config().get("qpc", {})
+        server_username = cfg.get("username", "admin")
+        server_password = cfg.get("password", "pass")
         login_request = self.request(
-            'POST',
+            "POST",
             urljoin(self.url, QPC_TOKEN_PATH),
-            json={
-                'username': server_username,
-                'password': server_password
-            }
+            json={"username": server_username, "password": server_password},
         )
-        self.token = login_request.json()['token']
+        self.token = login_request.json()["token"]
         return login_request
 
     def logout(self, **kwargs):
@@ -194,8 +181,8 @@ class Client(object):
         Send a PUT request /api/v1/users/logout to make
         current token invalid.
         """
-        url = urljoin(self.url, 'users/logout/')
-        self.request('PUT', url, **kwargs)
+        url = urljoin(self.url, "users/logout/")
+        self.request("PUT", url, **kwargs)
         self.token = None
 
     def get_user(self, **kwargs):
@@ -203,44 +190,44 @@ class Client(object):
 
         Send a GET request ot /api/v1/users/current/' and return the response.
         """
-        url = urljoin(self.url, 'users/current/')
-        return self.request('GET', url, **kwargs)
+        url = urljoin(self.url, "users/current/")
+        return self.request("GET", url, **kwargs)
 
     def default_headers(self):
         """Build the headers for our request to the server."""
         if self.token:
-            return {'Authorization': 'Token {}'.format(self.token)}
+            return {"Authorization": "Token {}".format(self.token)}
         return {}
 
     def delete(self, endpoint, **kwargs):
         """Send an HTTP DELETE request."""
         url = urljoin(self.url, endpoint)
-        return self.request('DELETE', url, **kwargs)
+        return self.request("DELETE", url, **kwargs)
 
     def get(self, endpoint, **kwargs):
         """Send an HTTP GET request."""
         url = urljoin(self.url, endpoint)
-        return self.request('GET', url, **kwargs)
+        return self.request("GET", url, **kwargs)
 
     def options(self, endpoint, **kwargs):
         """Send an HTTP OPTIONS request."""
         url = urljoin(self.url, endpoint)
-        return self.request('OPTIONS', url, **kwargs)
+        return self.request("OPTIONS", url, **kwargs)
 
     def head(self, endpoint, **kwargs):
         """Send an HTTP HEAD request."""
         url = urljoin(self.url, endpoint)
-        return self.request('HEAD', url, **kwargs)
+        return self.request("HEAD", url, **kwargs)
 
     def post(self, endpoint, payload, **kwargs):
         """Send an HTTP POST request."""
         url = urljoin(self.url, endpoint)
-        return self.request('POST', url, json=payload, **kwargs)
+        return self.request("POST", url, json=payload, **kwargs)
 
     def put(self, endpoint, payload, **kwargs):
         """Send an HTTP PUT request."""
         url = urljoin(self.url, endpoint)
-        return self.request('PUT', url, json=payload, **kwargs)
+        return self.request("PUT", url, json=payload, **kwargs)
 
     def request(self, method, url, **kwargs):
         """Send an HTTP request.
@@ -255,7 +242,7 @@ class Client(object):
         #     request(method, url, **kwargs)
         #
         headers = self.default_headers()
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
-        kwargs.setdefault('verify', self.verify)
+        headers.update(kwargs.get("headers", {}))
+        kwargs["headers"] = headers
+        kwargs.setdefault("verify", self.verify)
         return self.response_handler(requests.request(method, url, **kwargs))

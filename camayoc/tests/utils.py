@@ -16,7 +16,8 @@ def get_vcenter_vms(vcenter_client):
         retrieve the list of all available vms.
     """
     view = vcenter_client.content.viewManager.CreateContainerView(
-        vcenter_client.content.rootFolder, [vim.VirtualMachine], True)
+        vcenter_client.content.rootFolder, [vim.VirtualMachine], True
+    )
     return view.view
 
 
@@ -27,13 +28,15 @@ def is_vm_powered_on(vm):
     power state is powered on and its IP address can be fetched.
     """
     # Be noisy if VMWare Tools is not installed.
-    assert vm.guest.toolsStatus != 'toolsNotInstalled'
+    assert vm.guest.toolsStatus != "toolsNotInstalled"
 
-    return all([
-        vm.runtime.powerState == 'poweredOn',
-        vm.guestHeartbeatStatus == 'green',
-        vm.guest.ipAddress is not None,
-    ])
+    return all(
+        [
+            vm.runtime.powerState == "poweredOn",
+            vm.guestHeartbeatStatus == "green",
+            vm.guest.ipAddress is not None,
+        ]
+    )
 
 
 def power_on_vms(vms, timeout=300):
@@ -55,8 +58,7 @@ def power_on_vms(vms, timeout=300):
 
     if vms_to_wait:
         assert timeout <= 0, (
-            f'Could not power on all {vms}, timed out waiting for '
-            f'{vms_to_wait}'
+            f"Could not power on all {vms}, timed out waiting for " f"{vms_to_wait}"
         )
 
 
@@ -64,22 +66,20 @@ def power_off_vms(vms, timeout=300):
     """Gracefully shutdown the vCenter vms."""
     vms_to_wait = []
     for vm in vms:
-        if vm.runtime.powerState != 'poweredOff':
+        if vm.runtime.powerState != "poweredOff":
             vm.ShutdownGuest()
             vms_to_wait.append(vm)
 
     while vms_to_wait and timeout > 0:
         vms_to_wait = [
-            vm for vm in vms_to_wait
-            if vm.runtime.powerState != 'poweredOff'
+            vm for vm in vms_to_wait if vm.runtime.powerState != "poweredOff"
         ]
         time.sleep(10)
         timeout -= 10
 
     if vms_to_wait:
         assert timeout <= 0, (
-            f'Could not power off all {vms}, timed out waiting for '
-            f'{vms_to_wait}'
+            f"Could not power off all {vms}, timed out waiting for " f"{vms_to_wait}"
         )
 
 
@@ -104,7 +104,7 @@ def is_live(client, server, num_pings=10):
     Returns true if server is reachable, false otherwise.
     """
     client.response_handler = cli.echo_handler
-    ping = client.run(('ping', '-c', num_pings, server))
+    ping = client.run(("ping", "-c", num_pings, server))
     return ping.returncode == 0
 
 
@@ -123,7 +123,7 @@ def wait_until_live(servers, timeout=360):
 
     `See rho issue #302 <https://github.com/quipucords/rho/issues/302>`_
     """
-    system = cli.System(hostname='localhost', transport='local')
+    system = cli.System(hostname="localhost", transport="local")
     client = cli.Client(system)
 
     unreached = servers

@@ -15,24 +15,18 @@ from pathlib import Path
 import pytest
 
 from camayoc import api
-from camayoc.qpc_models import (
-    Credential,
-    Source,
-)
-from camayoc.tests.qpc.utils import (
-    assert_matches_server,
-    assert_source_update_fails,
-)
+from camayoc.qpc_models import Credential, Source
+from camayoc.tests.qpc.utils import assert_matches_server, assert_source_update_fails
 from camayoc.utils import uuid4
 
-NETWORK_TYPE = 'network'
-CREATE_DATA = ['localhost', '127.0.0.1', 'example.com']
-HOST_FORMAT_DATA = [['192.0.2.[0:255]', '192.0.3.0/24']]
-RESULTING_HOST_FORMAT_DATA = ['192.0.2.[0:255]', '192.0.3.[0:255]']
+NETWORK_TYPE = "network"
+CREATE_DATA = ["localhost", "127.0.0.1", "example.com"]
+HOST_FORMAT_DATA = [["192.0.2.[0:255]", "192.0.3.0/24"]]
+RESULTING_HOST_FORMAT_DATA = ["192.0.2.[0:255]", "192.0.3.[0:255]"]
 MIXED_DATA = CREATE_DATA + HOST_FORMAT_DATA
 
 
-@pytest.mark.parametrize('scan_host', HOST_FORMAT_DATA)
+@pytest.mark.parametrize("scan_host", HOST_FORMAT_DATA)
 def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     """Create a Network Source using multiple hosts.
 
@@ -45,11 +39,7 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
            (list, IPv4 range, CIDR notation, or other ansible pattern)
     :expectedresults: The source is created.
     """
-    cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        password=uuid4()
-    )
+    cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     cred.create()
     src = Source(
         source_type=NETWORK_TYPE,
@@ -66,12 +56,8 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     assert_matches_server(src)
 
 
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
-def test_create_multiple_creds(
-        shared_client,
-        cleanup,
-        scan_host,
-        isolated_filesystem):
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
+def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_filesystem):
     """Create a Network Source using multiple credentials.
 
     :id: dcf6ea99-c6b1-493d-9db8-3ec0ea09b5e0
@@ -91,9 +77,7 @@ def test_create_multiple_creds(
     )
     ssh_key_cred.create()
     pwd_cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        password=uuid4()
+        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
     )
     pwd_cred.create()
 
@@ -110,12 +94,10 @@ def test_create_multiple_creds(
     assert_matches_server(src)
 
 
-@pytest.mark.parametrize('scan_host', MIXED_DATA)
+@pytest.mark.parametrize("scan_host", MIXED_DATA)
 def test_create_multiple_creds_and_sources(
-        shared_client,
-        cleanup,
-        scan_host,
-        isolated_filesystem):
+    shared_client, cleanup, scan_host, isolated_filesystem
+):
     """Create a Network Source using multiple credentials.
 
     :id: 07f49731-0162-4eb1-b89a-3c95fddad428
@@ -137,9 +119,7 @@ def test_create_multiple_creds_and_sources(
     )
     ssh_key_cred.create()
     pwd_cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        password=uuid4()
+        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
     )
     pwd_cred.create()
 
@@ -162,12 +142,10 @@ def test_create_multiple_creds_and_sources(
     assert_matches_server(src)
 
 
-@pytest.mark.parametrize('scan_host', CREATE_DATA)
+@pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_negative_update_invalid(
-        shared_client,
-        cleanup,
-        isolated_filesystem,
-        scan_host):
+    shared_client, cleanup, isolated_filesystem, scan_host
+):
     """Create a network source and then update it with invalid data.
 
     :id: e0d72f2b-2490-445e-b646-f06ceb4ad23f
@@ -187,11 +165,7 @@ def test_negative_update_invalid(
         ssh_keyfile=str(ssh_keyfile.resolve()),
     )
     net_cred.create()
-    sat_cred = Credential(
-        cred_type='satellite',
-        client=shared_client,
-        password=uuid4()
-    )
+    sat_cred = Credential(cred_type="satellite", client=shared_client, password=uuid4())
     sat_cred.create()
 
     src = Source(
@@ -211,7 +185,7 @@ def test_negative_update_invalid(
     # Try to update with invalid credential type
     src.credentials = [sat_cred._id]
     assert_source_update_fails(original_data, src)
-    src.hosts = ['1**2@33^']
+    src.hosts = ["1**2@33^"]
     assert_source_update_fails(original_data, src)
 
 
@@ -227,13 +201,11 @@ def test_create_empty_str_host_valid(shared_client, cleanup):
     :expectedresults: New source is created with all hosts except the empty
         string filtered out.
     """
-    empty_str_host_data = ['192.0.2.1', '192.0.2.10', '']
-    hosts_without_empty_str = ['192.0.2.1', '192.0.2.10']
+    empty_str_host_data = ["192.0.2.1", "192.0.2.10", ""]
+    hosts_without_empty_str = ["192.0.2.1", "192.0.2.10"]
     # initialize & create original credential & source
     pwd_cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        password=uuid4()
+        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
     )
     pwd_cred.create()
 
@@ -245,7 +217,7 @@ def test_create_empty_str_host_valid(shared_client, cleanup):
     )
     created_data = src.create()
     created_data = created_data.json()
-    assert created_data['hosts'] == hosts_without_empty_str
+    assert created_data["hosts"] == hosts_without_empty_str
     # add the ids to the lists to destroy after the test is done
     cleanup.extend([pwd_cred, src])
 
@@ -262,20 +234,18 @@ def test_update_empty_str_host_valid(shared_client, cleanup):
         3) Assert update is made but with the empty string filtered out.
     :expectedresults: Source is updated with only valid host list.
     """
-    empty_str_host_data = ['192.0.2.1', '192.0.2.10', '']
-    hosts_without_empty_str = ['192.0.2.1', '192.0.2.10']
+    empty_str_host_data = ["192.0.2.1", "192.0.2.10", ""]
+    hosts_without_empty_str = ["192.0.2.1", "192.0.2.10"]
     # initialize & create original credential & source
     pwd_cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        password=uuid4()
+        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
     )
     pwd_cred.create()
 
     src = Source(
         source_type=NETWORK_TYPE,
         client=shared_client,
-        hosts=['127.0.0.1'],
+        hosts=["127.0.0.1"],
         credential_ids=[pwd_cred._id],
     )
     src.create()
@@ -284,4 +254,4 @@ def test_update_empty_str_host_valid(shared_client, cleanup):
     cleanup.extend([pwd_cred, src])
     src.hosts = empty_str_host_data
     updated_data = src.update().json()
-    assert updated_data['hosts'] == hosts_without_empty_str
+    assert updated_data["hosts"] == hosts_without_empty_str

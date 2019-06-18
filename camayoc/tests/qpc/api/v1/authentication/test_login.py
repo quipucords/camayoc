@@ -14,11 +14,7 @@ import pytest
 import requests
 
 from camayoc import api, config
-from camayoc.constants import (
-    QPC_CREDENTIALS_PATH,
-    QPC_SCAN_PATH,
-    QPC_SOURCE_PATH,
-)
+from camayoc.constants import QPC_CREDENTIALS_PATH, QPC_SCAN_PATH, QPC_SOURCE_PATH
 
 
 def test_login():
@@ -36,8 +32,8 @@ def test_login():
 
 
 @pytest.mark.parametrize(
-    'endpoint', [
-        QPC_SOURCE_PATH, QPC_CREDENTIALS_PATH, QPC_SCAN_PATH])
+    "endpoint", [QPC_SOURCE_PATH, QPC_CREDENTIALS_PATH, QPC_SCAN_PATH]
+)
 def test_logout(endpoint):
     """Test that we can't access the server without a token.
 
@@ -69,5 +65,5 @@ def test_user():
     :expectedresults: The server correctly reports our username.
     """
     client = api.Client()
-    qpc_user = config.get_config().get('qpc', {}).get('username')
-    assert client.get_user().json()['username'] == qpc_user
+    qpc_user = config.get_config().get("qpc", {}).get("username")
+    assert client.get_user().json()["username"] == qpc_user

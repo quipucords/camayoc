@@ -18,10 +18,7 @@ import pytest
 from camayoc import api, utils
 from camayoc.qpc_models import Report
 from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
-from camayoc.tests.qpc.api.v1.conftest import (
-    get_scan_result,
-    scan_list,
-)
+from camayoc.tests.qpc.api.v1.conftest import get_scan_result, scan_list
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 
@@ -29,15 +26,15 @@ def get_report_entity_src_ids(entity):
     """Given an entity from a deployment report, find the source ids."""
     entity_src_ids = []
     client = api.Client()
-    for s in entity['sources']:
-        s_info = client.get('sources/?name={}'.format(s['source_name']))
+    for s in entity["sources"]:
+        s_info = client.get("sources/?name={}".format(s["source_name"]))
         # the source is returned in a list, but there should only be one item
         # because names should be unique
-        s_info = s_info.json().get('results', {})
+        s_info = s_info.json().get("results", {})
         assert len(s_info) == 1
         s_info = s_info[0]
-        if s_info.get('id'):
-            entity_src_ids.append(s_info.get('id'))
+        if s_info.get("id"):
+            entity_src_ids.append(s_info.get("id"))
     return entity_src_ids
 
 
@@ -46,10 +43,10 @@ def validate_csv_response(response):
     msg = 'Report is not expected content-type "csv".'
     try:
         csv_text = response.text
-        csv.reader(csv_text, delimiter=',')
-        summary_csv = 'Report\r\n' in csv_text
-        details_csv = 'Report,Number Sources\r\n' in csv_text
-        assert summary_csv or details_csv, msg + ' Incorrect data format.'
+        csv.reader(csv_text, delimiter=",")
+        deployments_csv = "Report\r\n" in csv_text
+        details_csv = "Report,Number Sources\r\n" in csv_text
+        assert deployments_csv or details_csv, msg + " Incorrect data format."
     except csv.Error:
         assert False, msg
 
@@ -80,29 +77,28 @@ def test_report_content_consistency():
         8) Assert that all response codes were successful
     :expectedresults: Reports return the appropriate content type.
     """
-    scan = SCAN_DATA.get('rhel-7')
+    scan = SCAN_DATA.get("rhel-7")
     # if either scan is None, they were not in the config file or the
     # tests have been ran with RUN_SCANS=False and there are no scan results
     if scan is None:
-        pytest.xfail(reason='Config file does not have '
-                     'dependent scan "rhel-7".')
-    scan_job_id = scan.get('scan_job_id')
+        pytest.xfail(reason="Config file does not have " 'dependent scan "rhel-7".')
+    scan_job_id = scan.get("scan_job_id")
     report = Report()
     response = report.retrieve_from_scan_job(scan_job_id)
-    if response.json().get('report_id') is None:
+    if response.json().get("report_id") is None:
         pytest.xfail(reason='Scan Job does not have "report_id".')
-    accept_json = {'Accept': 'application/json'}
-    accept_csv = {'Accept': 'text/csv'}
+    accept_json = {"Accept": "application/json"}
+    accept_csv = {"Accept": "text/csv"}
 
     validate_csv_response(report.details(headers=accept_csv))
     validate_json_response(report.details(headers=accept_json))
     validate_csv_response(report.details(headers=accept_csv))
     validate_json_response(report.details(headers=accept_json))
 
-    validate_csv_response(report.summary(headers=accept_csv))
-    validate_json_response(report.summary(headers=accept_json))
-    validate_csv_response(report.summary(headers=accept_csv))
-    validate_json_response(report.summary(headers=accept_json))
+    validate_csv_response(report.deployments(headers=accept_csv))
+    validate_json_response(report.deployments(headers=accept_json))
+    validate_csv_response(report.deployments(headers=accept_csv))
+    validate_json_response(report.deployments(headers=accept_json))
 
 
 def assert_merge_fails(ids, errors_found, report):
@@ -120,11 +116,11 @@ def assert_merge_fails(ids, errors_found, report):
     merge_response = report.create_from_merge(ids)
     if merge_response.status_code != 400:
         errors_found.append(
-            'Merging scan job identifiers {ids} resulted in a response'
-            'status code of {response_status} when it should have resulted'
-            'in a status code of 400.'.format(
-                ids=ids,
-                response_status=merge_response.status_code)
+            "Merging scan job identifiers {ids} resulted in a response"
+            "status code of {response_status} when it should have resulted"
+            "in a status code of 400.".format(
+                ids=ids, response_status=merge_response.status_code
+            )
         )
     # give the report its original client back
     report.client = orig_client
@@ -148,43 +144,45 @@ def test_merge_reports_from_scanjob():
     :expectedresults: Scan job results are merged into a report.
     """
     errors_found = []
-    scan1 = SCAN_DATA.get('non-rhel')
-    scan2 = SCAN_DATA.get('rhel-7')
+    scan1 = SCAN_DATA.get("non-rhel")
+    scan2 = SCAN_DATA.get("rhel-7")
     # if either scan is None, they were not in the config file or the
     # tests have been ran with RUN_SCANS=False and there are no scan results
     if scan1 is None or scan2 is None:
-        pytest.xfail(reason='Config file does not have dependent scans '
-                            '"non-rhel" or "rhel-7".')
-    id1 = scan1.get('scan_job_id')
-    id2 = scan2.get('scan_job_id')
+        pytest.xfail(
+            reason="Config file does not have dependent scans "
+            '"non-rhel" or "rhel-7".'
+        )
+    id1 = scan1.get("scan_job_id")
+    id2 = scan2.get("scan_job_id")
     report = Report()
     response = report.create_from_merge([id1, id2])
-    summary = report.summary()
+    deployments = report.deployments()
     details = report.details()
-    status_codes = [response.status_code, summary.status_code,
-                    details.status_code]
+    status_codes = [response.status_code, deployments.status_code, details.status_code]
     error = False
     for code in status_codes:
         if code not in range(200, 203):
             error = True
     if error:
         errors_found.append(
-            'Merging scan jobs with identifiers: {scan1_id}, {scan2_id}'
-            'resulted in a failed merge report. The report returned a status\n'
-            'code of {report_status}. The summary endpoint returned a status\n'
-            'code of {summary_status}. The details endpoint returned a '
-            'status code of {details_status}.\n'
-            'The full results from the first scan were: {s1}\n'
-            'The full results from the second scan were: {s2}\n'.format(
+            "Merging scan jobs with identifiers: {scan1_id}, {scan2_id}"
+            "resulted in a failed merge report. The report returned a status\n"
+            "code of {report_status}. The deployments endpoint returned a"
+            "status code of {deployments_status}. The details endpoint"
+            "returned a status code of {details_status}.\n"
+            "The full results from the first scan were: {s1}\n"
+            "The full results from the second scan were: {s2}\n".format(
                 scan1_id=id1,
                 scan2_id=id2,
                 report_status=response.status_code,
-                summary_status=summary.status_code,
+                deployments_status=deployments.status_code,
                 details_status=details.status_code,
                 s1=pformat(scan1),
                 s2=pformat(scan2),
-            ))
-    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+            )
+        )
+    assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
 @mark_runs_scans
@@ -206,26 +204,25 @@ def test_merge_reports_negative():
     """
     errors_found = []
     # create a list of invalid options for merging scan job identifiers
-    invalid_ids = [[1], [1, 1], ['one', 'one'], []]
+    invalid_ids = [[1], [1, 1], ["one", "one"], []]
     # attempt to grab the connection_scan & unreachable scan from data
-    connection_scan = SCAN_DATA.get('Connection')
-    unreachable_scan = SCAN_DATA.get('Unreachable')
+    connection_scan = SCAN_DATA.get("Connection")
+    unreachable_scan = SCAN_DATA.get("Unreachable")
     if connection_scan and unreachable_scan:
         # if the info was found, grab the ids from the data and add them
         # to the list of invalid identifiers
-        connection_id = connection_scan.get('scan_job_id')
-        unreachable_id = unreachable_scan.get('scan_job_id')
+        connection_id = connection_scan.get("scan_job_id")
+        unreachable_id = unreachable_scan.get("scan_job_id")
         invalid_ids.append([connection_id, unreachable_id])
     report = Report()
     # Loop through the invalid ids and assert that the merge fails
     for ids in invalid_ids:
         errors_found = assert_merge_fails(ids, errors_found, report)
-    assert len(errors_found) == 0, '\n================\n'.join(errors_found)
+    assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
 @mark_runs_scans
-@pytest.mark.parametrize(
-    'scan_info', scan_list(), ids=utils.name_getter)
+@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_products_found_deployment_report(scan_info):
     """Test that products reported as present are correct for the source.
 
@@ -239,33 +236,34 @@ def test_products_found_deployment_report(scan_info):
     :expectedresults: There are inspection results for each source we scanned
         and any products found are correctly identified.
     """
-    result = get_scan_result(scan_info['name'])
-    report_id = result['report_id']
+    result = get_scan_result(scan_info["name"])
+    report_id = result["report_id"]
     if not report_id:
         pytest.xfail(
-            reason='No report id was returned from scan '
-                   'named {scan_name}'.format(scan_name=scan_info['name']))
-    report = api.Client().get(
-        'reports/{}/deployments'.format(report_id)).json()
-    assert report.get('status') == 'completed', report
-    report = report.get('system_fingerprints')
+            reason="No report id was returned from scan "
+            "named {scan_name}".format(scan_name=scan_info["name"])
+        )
+    report = api.Client().get("reports/{}/deployments".format(report_id)).json()
+    assert report.get("status") == "completed", report
+    report = report.get("system_fingerprints")
     errors_found = []
     for entity in report:
         all_found_products = []
         present_products = []
-        for product in entity.get('products'):
-            name = ''.join(product['name'].lower().split())
-            if product['presence'] == 'present':
+        for product in entity.get("products"):
+            name = "".join(product["name"].lower().split())
+            if product["presence"] == "present":
                 present_products.append(name)
-            if product['presence'] in ['present', 'potential']:
+            if product["presence"] in ["present", "potential"]:
                 all_found_products.append(name)
-        for source_to_product_map in result['expected_products']:
+        for source_to_product_map in result["expected_products"]:
             src_id = list(source_to_product_map.keys())[0]
             entity_src_ids = get_report_entity_src_ids(entity)
-            hostname = result['source_id_to_hostname'][src_id]
+            hostname = result["source_id_to_hostname"][src_id]
             ex_products = source_to_product_map[src_id]
             expected_product_names = [
-                prod for prod in ex_products.keys() if prod != 'distribution']
+                prod for prod in ex_products.keys() if prod != "distribution"
+            ]
             if src_id in entity_src_ids:
                 # We assert that products marked as present are expected
                 # We do not assert that products marked as potential must
@@ -280,33 +278,29 @@ def test_products_found_deployment_report(scan_info):
                 # raise assertion error for all unexpected products
                 if len(unexpected_products) > 0:
                     errors_found.append(
-                        'Found {found_products} but only expected to find\n'
-                        '{expected_products} on {host_found_on}.\n'
-                        'All information about the entity was as follows\n'
-                        '{entity_info}'
-                        .format(
+                        "Found {found_products} but only expected to find\n"
+                        "{expected_products} on {host_found_on}.\n"
+                        "All information about the entity was as follows\n"
+                        "{entity_info}".format(
                             found_products=unexpected_products,
                             expected_products=expected_product_names,
                             host_found_on=hostname,
-                            entity_info=pformat(entity)
+                            entity_info=pformat(entity),
                         )
                     )
     assert len(errors_found) == 0, (
-        'Found {num} unexpected products!\n'
-        'Errors are listed below: \n {errors}.\n'
-        'Full results for this scan were: {scan_results}'.format(
+        "Found {num} unexpected products!\n"
+        "Errors are listed below: \n {errors}.\n"
+        "Full results for this scan were: {scan_results}".format(
             num=len(errors_found),
-            errors='\n\n======================================\n\n'.join(
-                errors_found
-            ),
+            errors="\n\n======================================\n\n".join(errors_found),
             scan_results=pformat(result),
         )
     )
 
 
 @mark_runs_scans
-@pytest.mark.parametrize(
-    'scan_info', scan_list(), ids=utils.name_getter)
+@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_OS_found_deployment_report(scan_info):
     """Test that OS identified are correct for the source.
 
@@ -320,37 +314,35 @@ def test_OS_found_deployment_report(scan_info):
     :expectedresults: There are inspection results for each source we scanned
         and the operating system is correctly identified.
     """
-    result = get_scan_result(scan_info['name'])
-    report_id = result['report_id']
+    result = get_scan_result(scan_info["name"])
+    report_id = result["report_id"]
     if not report_id:
         pytest.xfail(
-            reason='No report id was returned from scan '
-                   'named {scan_name}'.format(scan_name=scan_info['name']))
-    report = api.Client().get(
-        'reports/{}/deployments'.format(report_id)).json()
-    assert report.get('status') == 'completed', report
-    report = report.get('system_fingerprints')
+            reason="No report id was returned from scan "
+            "named {scan_name}".format(scan_name=scan_info["name"])
+        )
+    report = api.Client().get("reports/{}/deployments".format(report_id)).json()
+    assert report.get("status") == "completed", report
+    report = report.get("system_fingerprints")
     errors_found = []
     for entity in report:
-        for source_to_product_map in result['expected_products']:
+        for source_to_product_map in result["expected_products"]:
             src_id = list(source_to_product_map.keys())[0]
             entity_src_ids = get_report_entity_src_ids(entity)
-            hostname = result['source_id_to_hostname'][src_id]
+            hostname = result["source_id_to_hostname"][src_id]
             ex_products = source_to_product_map[src_id]
-            expected_distro = ex_products['distribution'].get(
-                'name', '').lower()
-            expected_version = ex_products['distribution'].get(
-                'version', '').lower()
+            expected_distro = ex_products["distribution"].get("name", "").lower()
+            expected_version = ex_products["distribution"].get("version", "").lower()
             # The key may exist but the value be None
-            if entity.get('os_name') is None:
-                found_distro = ''
+            if entity.get("os_name") is None:
+                found_distro = ""
             else:
-                found_distro = entity.get('os_name').lower()
+                found_distro = entity.get("os_name").lower()
 
-            if entity.get('os_version') is None:
-                found_version = ''
+            if entity.get("os_version") is None:
+                found_version = ""
             else:
-                found_version = entity.get('os_version').lower()
+                found_version = entity.get("os_version").lower()
 
             if src_id in entity_src_ids:
                 # We assert that the expected distro's name is at least
@@ -359,11 +351,9 @@ def test_OS_found_deployment_report(scan_info):
                 # It will pass if "Red Hat Enterprise Linux Server" is found
                 if expected_distro not in found_distro:
                     errors_found.append(
-                        'Expected OS named {0} for source {1} but'
-                        'found OS named {2}'.format(
-                            expected_distro,
-                            hostname,
-                            found_distro,
+                        "Expected OS named {0} for source {1} but"
+                        "found OS named {2}".format(
+                            expected_distro, hostname, found_distro
                         )
                     )
                 # We assert that the expected distro's version is at least
@@ -372,22 +362,18 @@ def test_OS_found_deployment_report(scan_info):
                 # It will pass if "6.9 (Santiago)" is found
                 if expected_version not in found_version:
                     errors_found.append(
-                        'Expected OS version {0} for source {1} but'
-                        'found OS version {2}'.format(
-                            expected_version,
-                            hostname,
-                            found_version,
+                        "Expected OS version {0} for source {1} but"
+                        "found OS version {2}".format(
+                            expected_version, hostname, found_version
                         )
                     )
 
     assert len(errors_found) == 0, (
-        'Found {num} unexpected OS names and/or versions!\n'
-        'Errors are listed below: \n {errors}.\n'
-        'Full results for this scan were: {scan_results}'.format(
+        "Found {num} unexpected OS names and/or versions!\n"
+        "Errors are listed below: \n {errors}.\n"
+        "Full results for this scan were: {scan_results}".format(
             num=len(errors_found),
-            errors='\n\n======================================\n\n'.join(
-                errors_found
-            ),
+            errors="\n\n======================================\n\n".join(errors_found),
             scan_results=pformat(result),
         )
     )

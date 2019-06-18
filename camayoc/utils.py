@@ -12,38 +12,38 @@ from camayoc import exceptions
 from camayoc.config import get_config
 
 
-_XDG_ENV_VARS = ('XDG_DATA_HOME', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME')
+_XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
 """Environment variables related to the XDG Base Directory specification."""
 
 
-name_getter = operator.itemgetter('name')
+name_getter = operator.itemgetter("name")
 """Generate test IDs by fetching the ``name`` item."""
 
 
 def run_scans():
     """Check for run scans environment variable."""
     result = True
-    run_scans = os.environ.get('RUN_SCANS', 'true')
-    if run_scans.lower() == 'false':
+    run_scans = os.environ.get("RUN_SCANS", "true")
+    if run_scans.lower() == "false":
         result = False
     return result
 
 
 def get_qpc_url():
     """Return the base url for the qpc server."""
-    cfg = get_config().get('qpc', {})
-    hostname = cfg.get('hostname')
+    cfg = get_config().get("qpc", {})
+    hostname = cfg.get("hostname")
 
     if not hostname:
         raise exceptions.QPCBaseUrlNotFound(
             'Make sure you have a "qpc" section and `hostname`is specified in '
-            'the camayoc config file'
+            "the camayoc config file"
         )
 
-    scheme = 'https' if cfg.get('https', False) else 'http'
-    port = str(cfg.get('port', ''))
-    netloc = hostname + ':{}'.format(port) if port else hostname
-    return urlunparse((scheme, netloc, '', '', '', ''))
+    scheme = "https" if cfg.get("https", False) else "http"
+    port = str(cfg.get("port", ""))
+    netloc = hostname + ":{}".format(port) if port else hostname
+    return urlunparse((scheme, netloc, "", "", "", ""))
 
 
 def uuid4():

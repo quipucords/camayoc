@@ -55,7 +55,7 @@ def get_config():
     except ConfigFileNotFoundError:
         cfg = yaml.load(BASE_CONFIG)
 
-    return cfg, os.path.join(os.getcwd(), 'config.yaml')
+    return cfg, os.path.join(os.getcwd(), "config.yaml")
 
 
 def gen_hosts(profilepath, reportpath):
@@ -82,28 +82,30 @@ def gen_hosts(profilepath, reportpath):
     with open(profilepath) as csvfile:
         hostdata = csv.DictReader(csvfile)
         for row in hostdata:
-            hosts.append({
-                'hostname': row.get('name', ''),
-                'ip': row.get('ip', ''),
-                'provider': 'vcenter' if 'vc' in row.get('name', '') else '',
-                'facts': {},
-                'profile': row.get('profile', uuid.uuid4()),
-                'auth': row.get('auth', ''),
-                'privileged': row.get('privileged')
-            })
+            hosts.append(
+                {
+                    "hostname": row.get("name", ""),
+                    "ip": row.get("ip", ""),
+                    "provider": "vcenter" if "vc" in row.get("name", "") else "",
+                    "facts": {},
+                    "profile": row.get("profile", uuid.uuid4()),
+                    "auth": row.get("auth", ""),
+                    "privileged": row.get("privileged"),
+                }
+            )
     with open(reportpath) as csvfile:
         scan_results = csv.DictReader(csvfile)
         for row in scan_results:
             for host in hosts:
-                if host['ip'] == row.get('connection.host'):
+                if host["ip"] == row.get("connection.host"):
                     for k, v in row.items():
-                        if 'date' not in k:
-                            if k in [
-                                'cpu.bogomips',
-                                    'dmi.bios-version'] and is_float(v):
-                                host['facts'][k] = '%.2f' % float(v)
+                        if "date" not in k:
+                            if k in ["cpu.bogomips", "dmi.bios-version"] and is_float(
+                                v
+                            ):
+                                host["facts"][k] = "%.2f" % float(v)
                             else:
-                                host['facts'][k] = v
+                                host["facts"][k] = v
 
     return hosts
 
@@ -140,27 +142,28 @@ def gen_profiles(cfg, hosts):
         This is "constructive", as in it adds profiles and modifies profiles,
         but does not delete existing profiles.
     """
-    profiles = cfg.get('profiles', [])
+    profiles = cfg.get("profiles", [])
     for host in hosts:
         # first append hosts to any existing profiles
         profile_found = False
         for profile in profiles:
-            if host.get('profile', '') == \
-                    profile.get('name', uuid.uuid4()):
+            if host.get("profile", "") == profile.get("name", uuid.uuid4()):
                 profile_found = True
-                if host.get('ip', '') not in profile.get('hosts', []):
-                    if host['ip'] != '':
-                        profile['hosts'].append(host['ip'])
-                if host['auth'] not in profile.get('auths', []):
-                    if host['auth'] != '':
-                        profile['auths'].append(host['auth'])
+                if host.get("ip", "") not in profile.get("hosts", []):
+                    if host["ip"] != "":
+                        profile["hosts"].append(host["ip"])
+                if host["auth"] not in profile.get("auths", []):
+                    if host["auth"] != "":
+                        profile["auths"].append(host["auth"])
         if not profile_found:
-            profiles.append({
-                'name': host['profile'],
-                'hosts': [host['ip']],
-                'auths': [host['auth']],
-                'privileged': host.get('privileged')
-            })
+            profiles.append(
+                {
+                    "name": host["profile"],
+                    "hosts": [host["ip"]],
+                    "auths": [host["auth"]],
+                    "privileged": host.get("privileged"),
+                }
+            )
 
     return profiles
 
@@ -180,37 +183,40 @@ def write_config(cfg, hosts, profiles, configfile):
     Given an existing config, hosts, profiles, and the path to the new config
     file, form the new config and write it to the file.
     """
-    cfg['rho']['hosts'] = hosts
-    cfg['rho']['profiles'] = profiles
-    with open(configfile, 'w') as outfile:
+    cfg["rho"]["hosts"] = hosts
+    cfg["rho"]["profiles"] = profiles
+    with open(configfile, "w") as outfile:
         yaml.dump(cfg, outfile, default_style="'", default_flow_style=False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Generate facts to test in config file from scan file.')
+        description="Generate facts to test in config file from scan file."
+    )
     parser.add_argument(
-        '--profiles ',
+        "--profiles ",
         required=True,
-        action='store',
-        dest='profilecsv',
+        action="store",
+        dest="profilecsv",
         type=str,
-        default='profiles.csv',
-        help='absolute path to csv containing profile to ip to auth mapping')
+        default="profiles.csv",
+        help="absolute path to csv containing profile to ip to auth mapping",
+    )
     parser.add_argument(
-        '--report ',
+        "--report ",
         required=True,
-        action='store',
-        dest='reportcsv',
+        action="store",
+        dest="reportcsv",
         type=str,
-        default='report.csv',
-        help='absolute path to csv containing rho scan with facts to test')
+        default="report.csv",
+        help="absolute path to csv containing rho scan with facts to test",
+    )
     args = parser.parse_args()
     for arg in [args.profilecsv, args.reportcsv]:
         if not os.path.isfile(arg):
             raise IOError(
-                '{} not found. Provide absolute path to existing file.'
-                .format(arg))
+                "{} not found. Provide absolute path to existing file.".format(arg)
+            )
     cfg, configfile = get_config()
     hosts = gen_hosts(args.profilecsv, args.reportcsv)
     profiles = gen_profiles(cfg, hosts)
