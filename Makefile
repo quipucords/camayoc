@@ -26,6 +26,7 @@ help:
 	@echo "  test-qpc-ui       to run all tests for quipucords UI"
 	@echo "  test-qpc-cli      to run all tests for quipucords CLI"
 	@echo "  test-qpc-api      to run all tests for quipucords API"
+	@echo "  test-qpc-yupana   to run all tests for quipucords yupana"
 
 
 all: test-coverage lint validate-docstrings docs-html
@@ -79,7 +80,7 @@ test-rho-remote:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/remote/rho
 
 test-qpc-no-scans:
-	RUN_SCANS=False py.test $(PYTEST_OPTIONS) camayoc/tests/qpc 
+	RUN_SCANS=False py.test $(PYTEST_OPTIONS) camayoc/tests/qpc
 
 test-qpc:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc
@@ -92,6 +93,9 @@ test-qpc-ui:
 
 test-qpc-cli:
 	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/cli
+
+test-qpc-yupana:
+	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/yupana
 
 validate-docstrings:
 	@./scripts/validate_docstrings.sh
