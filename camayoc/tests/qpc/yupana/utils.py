@@ -7,7 +7,7 @@ import json
 import requests
 
 from camayoc.config import get_config
-from camayoc.exceptions import ConfigFileNotFoundError, WaitTimeError
+from camayoc.exceptions import ConfigFileNotFoundError
 
 
 def yupana_configs():

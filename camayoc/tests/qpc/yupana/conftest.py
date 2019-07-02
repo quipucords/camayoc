@@ -1,12 +1,12 @@
 """Test utilities for quipucords' ``yupana`` tests."""
 
-import pytest
+# import pytest
 
-import requests
+# import requests
 
 
-from camayoc.config import get_config
-from camayoc.exceptions import ConfigFileNotFoundError, WaitTimeError
+# from camayoc.config import get_config
+# from camayoc.exceptions import ConfigFileNotFoundError, WaitTimeError
 
 
 # def yupana_configs():
