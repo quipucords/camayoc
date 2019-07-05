@@ -66,36 +66,36 @@ package-upload: package
 	twine upload dist/*
 
 test:
-	py.test $(PYTEST_OPTIONS) tests
+	pytest $(PYTEST_OPTIONS) tests
 
 test-coverage:
-	py.test --verbose --cov-report term --cov=camayoc.cli \
+	pytest --verbose --cov-report term --cov=camayoc.cli \
 	--cov=camayoc.config --cov=camayoc.exceptions --cov=camayoc.utils \
 	--cov=camayoc.api tests
 
 test-rho:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/rho
+	pytest $(PYTEST_OPTIONS) camayoc/tests/rho
 
 test-rho-remote:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/remote/rho
+	pytest $(PYTEST_OPTIONS) camayoc/tests/remote/rho
 
 test-qpc-no-scans:
-	RUN_SCANS=False py.test $(PYTEST_OPTIONS) camayoc/tests/qpc
+	RUN_SCANS=False pytest $(PYTEST_OPTIONS) camayoc/tests/qpc
 
 test-qpc:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc
+	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc
 
 test-qpc-api:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/api
+	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc/api
 
 test-qpc-ui:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/ui
+	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc/ui
 
 test-qpc-cli:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/cli
+	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc/cli
 
 test-qpc-yupana:
-	py.test $(PYTEST_OPTIONS) camayoc/tests/qpc/yupana
+	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc/yupana
 
 validate-docstrings:
 	@./scripts/validate_docstrings.sh
