@@ -24,9 +24,7 @@ def get_x_rh_identity(account_num, org_id):
     login_data = {
         "identity": {"account_number": account_num, "internal": {"org_id": org_id}}
     }
-    print(login_data)
     json_str = json.dumps(login_data)
-    print(json_str)
     return base64.b64encode(json_str.encode("ascii"))
 
 
