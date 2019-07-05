@@ -33,7 +33,7 @@ def get_config():
     global _CONFIG  # pylint:disable=global-statement
     if _CONFIG is None:
         with open(_get_config_file_path("camayoc", "config.yaml")) as f:
-            _CONFIG = yaml.load(f)
+            _CONFIG = yaml.load(f, Loader=yaml.FullLoader)
     return deepcopy(_CONFIG)
 
 
