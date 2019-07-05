@@ -40,4 +40,4 @@ def test_get_qpc_url_no_hostname():
         assert (
             'Make sure you have a "qpc" section and `hostname`is specified in '
             "the camayoc config file"
-        ) in str(err)
+        ) in str(err.value)
