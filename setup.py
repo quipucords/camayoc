@@ -45,6 +45,8 @@ setup(
             "wheel",
             # For `make package-upload`
             "twine",
+            # pydocstyle specific version till bug fixed
+            "pydocstyle==3.0.0",
             # For `make test-coverage`
             "pytest-cov",
             # For `make validate-docstrings`
