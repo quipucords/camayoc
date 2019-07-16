@@ -4,7 +4,12 @@
 
 import base64
 import json
+import re
 import requests
+
+from datetime import datetime
+
+from oc import login, get_pods
 
 from camayoc.config import get_config
 from camayoc.exceptions import ConfigFileNotFoundError
@@ -79,3 +84,89 @@ def post_file(
         verify=False,
     )
     return response
+
+
+def oc_setup():
+    """Login to the cluster with oc."""
+    yupana_config = yupana_configs()
+    oc_config = yupana_config["oc"]
+    response = login(oc_config["url"], oc_config["token"])
+    return response
+
+
+def get_pod_data(name, include_builders=False):
+    """Get the pod name from oc_get_pod output."""
+    exp = re.compile(f"({name})-(\d+)-(\w+)")
+    pod_list = get_pods()
+    pod_data = []
+    for pod_line in pod_list:
+        pod_info = pod_line.split()
+        name_match = re.search(exp, pod_info[0])
+        if name_match and (include_builders or name_match.group(3) != 'build'):
+            pod_data.append(pod_info)
+    return pod_data
+
+
+def get_timestamp(string, regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
+    """Matches and grabs the timestmp from a string."""
+    exp = re.compile(regex)
+    match = re.match(exp, string)
+    print(match)
+    if match:
+        year = int(match.groups()[0])
+        month = int(match.groups()[1])
+        day = int(match.groups()[2])
+        hour = int(match.groups()[3])
+        min = int(match.groups()[4])
+        sec = int(match.groups()[5])
+        return datetime(year, month, day, hour=hour, minute=min,
+                        second=sec)
+    else:
+        return None
+
+
+def filter_log(log_list, date_min=None, date_max=None, filter_regex=None,
+               date_regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
+    """Filters log by date range and/or regex matching."""
+    if filter_regex:
+        filter = re.compile(filter_regex)
+    filtered_log = []
+    for log_line in log_list:
+        date_check = True
+        filter_check = True
+        if date_min or date_max:
+            print('date check')
+            date_match = get_timestamp(log_line, regex=date_regex)
+            if date_match:
+                date_check = check_date_range(date_match, date_min, date_max)
+            else:
+                date_check = False
+        if filter_regex:
+            print('filter check')
+            match = re.mach(filter, log_line)
+            if not match:
+                filter_check: False
+        if date_check and filter_check:
+            print("Adding: " + log_line)
+            filtered_log.append(log_line)
+
+    return(filtered_log)
+
+
+def check_date_range(date, date_min, date_max):
+    """Checks for a date match, and does a comparison to see if the date fits
+    inside the range."""
+    if date_min and date_max:
+        assert date_min <= date_max, "Min date is not less than max date."
+    min_check = True
+    max_check = True
+    if date_min and date < date_min:
+        min_check = False
+    if date_max and date > date_max:
+        max_check = False
+    if min_check and max_check:
+        return(True)
+    else:
+        return(False)
+
+
