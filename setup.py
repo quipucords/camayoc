@@ -52,6 +52,7 @@ setup(
         ]
     },
     install_requires=[
+        "oc",
         "pexpect",
         "plumbum",
         "pytest>=3.6",
