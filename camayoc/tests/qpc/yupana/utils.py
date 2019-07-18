@@ -37,9 +37,8 @@ def get_x_rh_identity(account_num, org_id):
     return base64.b64encode(json_str.encode("ascii"))
 
 
-def get_app_url(protocol="http://"):
+def get_app_url(yupana_config, protocol="http://"):
     """Build and return the URI from the config to access the yupana API"""
-    yupana_config = yupana_configs()
     config = yupana_config["yupana-app"]
     required_configs = (
         "app_name",
@@ -134,7 +133,7 @@ def search_log(log_list, search_string):
     return [log_line for log_line in log_list if search_string in log_line]
 
 
-def search_pods_logs(pods_logs, search_string, pool_size=4):
+def search_mult_pod_logs(pods_logs, search_string, pool_size=4):
     """Search through the logs of each pod, and return the combined list."""
     search_func = partial(search_log, search_string=search_string)
     with mp.Pool(pool_size) as p:

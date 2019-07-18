@@ -22,7 +22,7 @@ from camayoc.tests.qpc.yupana.utils import (
     search_log,
     search_mult_pod_logs,
     time_diff,
-    yupana_configs,
+#    yupana_configs,
 )
 
 
@@ -43,7 +43,7 @@ EXPECTED_UPLOAD_SERVICE_CONFIGS = (
 )
 
 
-def test_yupana_config():
+def test_yupana_config(yupana_config):
     """Ensure the required yupana app configs are provided.
 
     :id: 94ed56dc-9f65-11e9-aaaf-8c1645a90ee2
@@ -53,17 +53,14 @@ def test_yupana_config():
         section of the camayoc configuration file. Values should be supplied for
         each item defined in 'EXPECTED_APP_CONFIGS'.
     """
-
-    config = yupana_configs()
-    assert config != []
-    assert sorted(set(config["yupana-app"].keys())) == sorted(
+    assert yupana_config != []
+    assert sorted(set(yupana_config["yupana-app"].keys())) == sorted(
         EXPECTED_APP_CONFIGS
     ), "Expected yupana app configs not properly provided."
 
 
-def test_upload_service_config():
+def test_upload_service_config(yupana_config):
     """Ensure the required upload service configs are provided.
-
     :id: f44b7cda-9f65-11e9-8acb-8c1645a90ee2
     :description: Ensure that the required configs to test interacting with the
         upload service are defiend.
@@ -71,13 +68,13 @@ def test_upload_service_config():
         section of the camayoc configuration file. Values should be supplied for
         each key item defined in 'EXPECTED_UPLOAD_SERVICE_CONFIGS'.
     """
-    config = yupana_configs()
-    assert sorted(set(config["upload-service"].keys())) == sorted(
+    assert yupana_config != []
+    assert sorted(set(yupana_config["upload-service"].keys())) == sorted(
         EXPECTED_UPLOAD_SERVICE_CONFIGS
     ), "Expected upload service configs not properly provided."
 
 
-def test_connect(isolated_filesystem, sleep_time=30):
+def test_connect(yupana_config, isolated_filesystem):
     """Test the connection to the desired cluster.
 
     :id: d94f7f5e-9f55-11e9-95da-8c1645a90ee2
@@ -85,21 +82,11 @@ def test_connect(isolated_filesystem, sleep_time=30):
     :expectedresults: At 200 status response should be recieved, indicating a
         successfull connection.
     """
-    config = yupana_configs()
-    pod_names = [pod[0] for pod in
-                 get_app_pods(config['yupana-app']['app_name'])]
-    start_time = time.time()
-    response = requests.get(get_app_url() + "status/")
+    config = yupana_config
+    response = requests.get(get_app_url(yupana_config) + "status/")
     assert response.status_code == 200, response.text
-    ## Optional, give cluster some time to start
-    time.sleep(sleep_time)
-    ## Get recent logs from all pods
-    pod_logs = [oc.logs(pod, since=f"{time_diff(start_time)}s", timestamps=True) for pod in
-                pod_names]
-    log_matches = search_mult_pod_logs(pod_logs, "ASSIGNING REPORT SLICE")
-    assert log_matches is []
 
-def test_upload(isolated_filesystem):
+def test_upload(yupana_config, isolated_filesystem, sleep_time=30):
     """Test uploading a file to the service.
 
     :id: 2bd03a02-9f56-11e9-b9ee-8c1645a90ee2
@@ -108,8 +95,9 @@ def test_upload(isolated_filesystem):
     :expectedresults: At 202 status response should be recieved, indicating a
         successfull transfer.
     """
-    yupana_config = yupana_configs()
     config = yupana_config["upload-service"]
+    pod_names = [pod[0] for pod in get_app_pods(yupana_config['yupana-app']['app_name'])]
+    start_time = time.time()
     response = post_file(
         config["file_upload_src"],
         config["api_url"],
@@ -119,3 +107,11 @@ def test_upload(isolated_filesystem):
         config["rh_insights_request_id"],
     )
     assert response.status_code == 202, response.text
+
+    ## Optional, give cluster some time to start
+    time.sleep(sleep_time)
+    ## Get recent logs from all pods
+    pod_logs = [oc.logs(pod, since=f"{time_diff(start_time)}s", timestamps=True) for pod in
+                pod_names]
+    log_matches = search_mult_pod_logs(pod_logs, "NEW REPORT UPLOAD")
+    assert log_matches is not []
