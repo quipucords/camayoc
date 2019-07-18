@@ -105,7 +105,7 @@ def get_app_pods(name, include_builders=False):
     for pod_line in pod_list:
         pod_info = pod_line.split()
         name_match = re.search(exp, pod_info[0])
-        if name_match and (include_builders or name_match.group(3) != 'build'):
+        if name_match and (include_builders or name_match.group(3) != "build"):
             pod_data.append(pod_info)
     return pod_data
 
@@ -122,10 +122,10 @@ def get_timestamp(string, regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})
         hour = int(match.groups()[3])
         min = int(match.groups()[4])
         sec = int(match.groups()[5])
-        return datetime(year, month, day, hour=hour, minute=min,
-                        second=sec)
+        return datetime(year, month, day, hour=hour, minute=min, second=sec)
     else:
         return None
+
 
 def search_log(log_list, search_string):
     """Search through a log list for lines containing the `search_string`.
@@ -141,8 +141,13 @@ def search_mult_pod_logs(pods_logs, search_string, pool_size=4):
     return list(chain(search_results))
 
 
-def filter_log(log_list, date_min=None, date_max=None, filter_regex=None,
-               date_regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
+def filter_log(
+    log_list,
+    date_min=None,
+    date_max=None,
+    filter_regex=None,
+    date_regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})",
+):
     """Filters log by date range and/or regex matching."""
     if filter_regex:
         match_filter = re.compile(filter_regex)
@@ -151,14 +156,14 @@ def filter_log(log_list, date_min=None, date_max=None, filter_regex=None,
         date_check = True
         filter_check = True
         if date_min or date_max:
-            print('date check')
+            print("date check")
             date_match = get_timestamp(log_line, regex=date_regex)
             if date_match:
                 date_check = check_date_range(date_match, date_min, date_max)
             else:
                 date_check = False
         if filter_regex:
-            print('filter check')
+            print("filter check")
             match = re.mach(match_filter, log_line)
             if not match:
                 filter_check: False
@@ -166,7 +171,7 @@ def filter_log(log_list, date_min=None, date_max=None, filter_regex=None,
             print("Adding: " + log_line)
             filtered_log.append(log_line)
 
-    return(filtered_log)
+    return filtered_log
 
 
 def check_date_range(date, date_min, date_max):
@@ -181,9 +186,10 @@ def check_date_range(date, date_min, date_max):
     if date_max and date > date_max:
         max_check = False
     if min_check and max_check:
-        return(True)
+        return True
     else:
-        return(False)
+        return False
+
 
 def time_diff(start_time):
     """Returns the int of differance (ceiling) in seconds from the start time from NOW."""
