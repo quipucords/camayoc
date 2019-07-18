@@ -4,10 +4,14 @@
 
 import base64
 import json
+import multiprocessing as mp
 import re
 import requests
+import time
 
 from datetime import datetime
+from functools import partial
+from itertools import chain
 
 from oc import login, get_pods
 
@@ -94,8 +98,8 @@ def oc_setup():
     return response
 
 
-def get_pod_data(name, include_builders=False):
-    """Get the pod name from oc_get_pod output."""
+def get_app_pods(name, include_builders=False):
+    """Get the pod names using the oc_get_pod output."""
     exp = re.compile(f"({name})-(\d+)-(\w+)")
     pod_list = get_pods()
     pod_data = []
@@ -124,12 +128,25 @@ def get_timestamp(string, regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})
     else:
         return None
 
+def search_log(log_list, search_string):
+    """Search through a log list for lines containing the `search_string`.
+        Returns a list of the matched lines."""
+    return [log_line for log_line in log_list if search_string in log_line]
+
+
+def search_pods_logs(pods_logs, search_string, pool_size=4):
+    """Search through the logs of each pod, and return the combined list."""
+    search_func = partial(search_log, rch_log(pod_log, }")
+    with mp.Pool(pool_size) as p:
+        search_results = p.map(search_func, pods_logs)
+    return list(chain(search_results))
+
 
 def filter_log(log_list, date_min=None, date_max=None, filter_regex=None,
                date_regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
     """Filters log by date range and/or regex matching."""
     if filter_regex:
-        filter = re.compile(filter_regex)
+        match_filter = re.compile(filter_regex)
     filtered_log = []
     for log_line in log_list:
         date_check = True
@@ -143,7 +160,7 @@ def filter_log(log_list, date_min=None, date_max=None, filter_regex=None,
                 date_check = False
         if filter_regex:
             print('filter check')
-            match = re.mach(filter, log_line)
+            match = re.mach(match_filter, log_line)
             if not match:
                 filter_check: False
         if date_check and filter_check:
@@ -169,4 +186,6 @@ def check_date_range(date, date_min, date_max):
     else:
         return(False)
 
-
+def time_diff(start_time):
+    """Returns the int of differance (ceiling) in seconds from the start time from NOW."""
+    return int(time.time() - start_time) + 1

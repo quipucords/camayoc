@@ -10,13 +10,19 @@
 :upstream: yes
 """
 
+import oc
 import requests
+import time
 
 from camayoc.tests.qpc.yupana.utils import (
-    yupana_configs,
     get_app_url,
-    post_file,
+    get_app_pods,
     get_x_rh_identity,
+    post_file,
+    search_log,
+    search_mult_pod_logs,
+    time_diff,
+    yupana_configs,
 )
 
 
@@ -71,7 +77,7 @@ def test_upload_service_config():
     ), "Expected upload service configs not properly provided."
 
 
-def test_connect(isolated_filesystem):
+def test_connect(isolated_filesystem, sleep_time=30):
     """Test the connection to the desired cluster.
 
     :id: d94f7f5e-9f55-11e9-95da-8c1645a90ee2
@@ -79,9 +85,19 @@ def test_connect(isolated_filesystem):
     :expectedresults: At 200 status response should be recieved, indicating a
         successfull connection.
     """
+    config = yupana_configs()
+    pod_names = [pod[0] for pod in
+                 get_app_pods(config['yupana-app']['app_name'])]
+    start_time = time.time()
     response = requests.get(get_app_url() + "status/")
     assert response.status_code == 200, response.text
-
+    ## Optional, give cluster some time to start
+    time.sleep(sleep_time)
+    ## Get recent logs from all pods
+    pod_logs = [oc.logs(pod, since=f"{time_diff(start_time)}s", timestamps=True) for pod in
+                pod_names]
+    log_matches = search_mult_pod_logs(pod_logs, "ASSIGNING REPORT SLICE")
+    assert log_matches is []
 
 def test_upload(isolated_filesystem):
     """Test uploading a file to the service.
