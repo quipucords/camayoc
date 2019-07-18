@@ -19,13 +19,13 @@ from camayoc.config import get_config
 from camayoc.exceptions import ConfigFileNotFoundError
 
 
-def yupana_configs():
-    """Return all of the yupana config values"""
-    try:
-        yupana_configs = get_config().get("yupana", [])
-    except ConfigFileNotFoundError:
-        yupana_configs = []
-    return yupana_configs
+# def yupana_configs():
+#     """Return all of the yupana config values"""
+#     try:
+#         yupana_configs = get_config().get("yupana", [])
+#     except ConfigFileNotFoundError:
+#         yupana_configs = []
+#     return yupana_configs
 
 
 def get_x_rh_identity(account_num, org_id):
@@ -136,7 +136,7 @@ def search_log(log_list, search_string):
 
 def search_pods_logs(pods_logs, search_string, pool_size=4):
     """Search through the logs of each pod, and return the combined list."""
-    search_func = partial(search_log, rch_log(pod_log, }")
+    search_func = partial(search_log, search_string=search_string)
     with mp.Pool(pool_size) as p:
         search_results = p.map(search_func, pods_logs)
     return list(chain(search_results))
