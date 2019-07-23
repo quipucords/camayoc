@@ -50,6 +50,7 @@ def test_yupana_config(yupana_config):
 
 def test_upload_service_config(yupana_config):
     """Ensure the required upload service configs are provided.
+
     :id: f44b7cda-9f65-11e9-8acb-8c1645a90ee2
     :description: Ensure that the required configs to test interacting with the
         upload service are defiend.
