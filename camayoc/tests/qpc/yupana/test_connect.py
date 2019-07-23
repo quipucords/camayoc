@@ -10,20 +10,9 @@
 :upstream: yes
 """
 
-import oc
 import requests
-import time
 
-from camayoc.tests.qpc.yupana.utils import (
-    get_app_url,
-    get_app_pods,
-    get_x_rh_identity,
-    post_file,
-    search_log,
-    search_mult_pod_logs,
-    time_diff,
-#    yupana_configs,
-)
+from camayoc.tests.qpc.yupana.utils import get_app_url, search_mult_pod_logs
 
 
 EXPECTED_APP_CONFIGS = (
@@ -82,36 +71,20 @@ def test_connect(yupana_config, isolated_filesystem):
     :expectedresults: At 200 status response should be recieved, indicating a
         successfull connection.
     """
-    config = yupana_config
     response = requests.get(get_app_url(yupana_config) + "status/")
     assert response.status_code == 200, response.text
 
-def test_upload(yupana_config, isolated_filesystem, sleep_time=30):
-    """Test uploading a file to the service.
 
-    :id: 2bd03a02-9f56-11e9-b9ee-8c1645a90ee2
-    :description: Test that a sample package can be uploaded to the upload
-        service.
-    :expectedresults: At 202 status response should be recieved, indicating a
-        successfull transfer.
-    """
-    config = yupana_config["upload-service"]
-    pod_names = [pod[0] for pod in get_app_pods(yupana_config['yupana-app']['app_name'])]
-    start_time = time.time()
-    response = post_file(
-        config["file_upload_src"],
-        config["api_url"],
-        config["rh_username"],
-        config["rh_password"],
-        get_x_rh_identity(config["rh_account_number"], config["rh_org_id"]),
-        config["rh_insights_request_id"],
-    )
-    assert response.status_code == 202, response.text
+class Test_Uploads:
+    def test_upload(self, yupana_config, mult_pod_logs, isolated_filesystem):
+        """Test uploading a file to the service.
 
-    ## Optional, give cluster some time to start
-    time.sleep(sleep_time)
-    ## Get recent logs from all pods
-    pod_logs = [oc.logs(pod, since=f"{time_diff(start_time)}s", timestamps=True) for pod in
-                pod_names]
-    log_matches = search_mult_pod_logs(pod_logs, "NEW REPORT UPLOAD")
-    assert log_matches is not []
+        :id: 2bd03a02-9f56-11e9-b9ee-8c1645a90ee2
+        :description: Test that a sample package can be uploaded to the upload
+            service.
+        :expectedresults: At 202 status response should be recieved, indicating a
+            successfull transfer.
+        """
+        pod_logs = mult_pod_logs
+        log_matches = search_mult_pod_logs(pod_logs, "NEW REPORT UPLOAD")
+        assert log_matches is not []

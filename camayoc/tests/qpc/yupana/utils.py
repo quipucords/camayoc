@@ -15,18 +15,6 @@ from itertools import chain
 
 from oc import login, get_pods
 
-from camayoc.config import get_config
-from camayoc.exceptions import ConfigFileNotFoundError
-
-
-# def yupana_configs():
-#     """Return all of the yupana config values"""
-#     try:
-#         yupana_configs = get_config().get("yupana", [])
-#     except ConfigFileNotFoundError:
-#         yupana_configs = []
-#     return yupana_configs
-
 
 def get_x_rh_identity(account_num, org_id):
     """Return the base64 encoded x-rh-identity string from credentials."""
@@ -89,9 +77,8 @@ def post_file(
     return response
 
 
-def oc_setup():
+def oc_setup(yupana_config):
     """Login to the cluster with oc."""
-    yupana_config = yupana_configs()
     oc_config = yupana_config["oc"]
     response = login(oc_config["url"], oc_config["token"])
     return response
