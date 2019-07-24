@@ -45,6 +45,9 @@ setup(
             "wheel",
             # For `make package-upload`
             "twine",
+            # pydocstyle specific version till bug fixed
+            # See here: https://gitlab.com/pycqa/flake8-docstrings/issues/36
+            "pydocstyle==3.0.0",
             # For `make test-coverage`
             "pytest-cov",
             # For `make validate-docstrings`
