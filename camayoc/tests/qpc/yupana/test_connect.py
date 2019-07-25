@@ -10,6 +10,7 @@
 :upstream: yes
 """
 
+import pytest
 import requests
 
 from camayoc.tests.qpc.yupana.utils import get_app_url, search_mult_pod_logs
@@ -76,6 +77,7 @@ def test_connect(yupana_config, isolated_filesystem):
     assert response.status_code == 200, response.text
 
 
+@pytest.mark.usefixtures("oc_setup")
 class Test_Uploads:
     def test_new_report_upload(self, yupana_config, mult_pod_logs, isolated_filesystem):
         """Verifies the application detected a new report upload.

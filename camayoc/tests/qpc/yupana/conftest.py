@@ -15,9 +15,9 @@ from camayoc.config import get_config
 from camayoc.exceptions import ConfigFileNotFoundError
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def yupana_config():
-    """Return all of the yupana config values"""
+    """Return all of the yupana config values."""
     try:
         yupana_configs = get_config().get("yupana", [])
     except ConfigFileNotFoundError:
@@ -25,10 +25,23 @@ def yupana_config():
     return yupana_configs
 
 
+@pytest.fixture(scope="session")
+def oc_setup(yupana_config):
+    """Login to the cluster with oc."""
+    oc_config = yupana_config["oc"]
+    app_config = yupana_config["yupana-app"]
+    login_response = oc.login(oc_config["url"], oc_config["token"])
+    project_response = oc.set_project(app_config['openshift_project'])
+    return (login_response, project_response)
+
+
 @pytest.fixture(scope="class")
 def mult_pod_logs(yupana_config):
-    """Retrieves and returns the concatenated log outputs for multiple pods,
-    within a defined time range."""
+    """Concatenate log outputs for multiple pods.
+
+    Retrieves and returns the concatenated log outputs for multiple pods,
+    within a defined time range.
+    """
     upload_service_config = yupana_config["upload-service"]
     pod_names = [
         pod[0] for pod in get_app_pods(yupana_config["yupana-app"]["app_name"])

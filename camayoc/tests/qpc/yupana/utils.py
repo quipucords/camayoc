@@ -13,9 +13,13 @@ from datetime import datetime
 from functools import partial
 from itertools import chain
 
-from oc import login, get_pods
+from oc import get_pods
+
+# Constants
+PATTERN_DATE_TIME = r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"
 
 
+# Functions
 def get_x_rh_identity(account_num, org_id):
     """Return the base64 encoded x-rh-identity string from credentials."""
     login_data = {
@@ -77,13 +81,6 @@ def post_file(
     return response
 
 
-def oc_setup(yupana_config):
-    """Login to the cluster with oc."""
-    oc_config = yupana_config["oc"]
-    response = login(oc_config["url"], oc_config["token"])
-    return response
-
-
 def get_app_pods(name, include_builders=False):
     """Get the pod names using the oc_get_pod output."""
     exp = re.compile(r"({name})-(\d+)-(\w+)")
@@ -97,7 +94,7 @@ def get_app_pods(name, include_builders=False):
     return pod_data
 
 
-def get_timestamp(string, regex=r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
+def get_timestamp(string, regex=PATTERN_DATE_TIME):
     """Matches and grabs the timestmp from a string."""
     exp = re.compile(regex)
     match = re.match(exp, string)
@@ -133,7 +130,7 @@ def filter_log(
     date_min=None,
     date_max=None,
     filter_regex=None,
-    date_regex=r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})",
+    date_regex=PATTERN_DATE_TIME,
 ):
     """Filters log by date range and/or regex matching."""
     if filter_regex:
