@@ -86,7 +86,7 @@ def oc_setup(yupana_config):
 
 def get_app_pods(name, include_builders=False):
     """Get the pod names using the oc_get_pod output."""
-    exp = re.compile(f"({name})-(\d+)-(\w+)")
+    exp = re.compile(r"({name})-(\d+)-(\w+)")
     pod_list = get_pods()
     pod_data = []
     for pod_line in pod_list:
@@ -97,7 +97,7 @@ def get_app_pods(name, include_builders=False):
     return pod_data
 
 
-def get_timestamp(string, regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
+def get_timestamp(string, regex=r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"):
     """Matches and grabs the timestmp from a string."""
     exp = re.compile(regex)
     match = re.match(exp, string)
@@ -133,7 +133,7 @@ def filter_log(
     date_min=None,
     date_max=None,
     filter_regex=None,
-    date_regex="(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})",
+    date_regex=r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})",
 ):
     """Filters log by date range and/or regex matching."""
     if filter_regex:
