@@ -111,20 +111,6 @@ def get_timestamp(string, regex=PATTERN_DATE_TIME):
         return None
 
 
-def search_log(log_list, search_string):
-    """Search through a log list for lines containing the `search_string`.
-        Returns a list of the matched lines."""
-    return [log_line for log_line in log_list if search_string in log_line]
-
-
-def search_mult_pod_logs(pods_logs, search_string, pool_size=4):
-    """Search through the logs of each pod, and return the combined list."""
-    search_func = partial(search_log, search_string=search_string)
-    with mp.Pool(pool_size) as p:
-        search_results = p.map(search_func, pods_logs)
-    return list(chain(search_results))
-
-
 def filter_log(
     log_list,
     date_min=None,
