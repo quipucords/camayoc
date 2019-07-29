@@ -1,5 +1,6 @@
 .. _quipucords: https://github.com/quipucords/quipucords
 .. _rho: https://github.com/quipucords/rho
+.. _yupana: https://github.com/quipucords/yupana
 .. _qpc: https://copr.fedorainfracloud.org/coprs/g/quipucords/qpc/
 .. _sphinx: http://www.sphinx-doc.org/en/master/
 
@@ -60,10 +61,10 @@ against and the credentials to use with these hosts. It also tells Camayoc
 where the quipucords_ server you want to test is running so the tests can
 execute against the server.
 
-Camayoc contains test suites for both quipucords/rho and quipucords/quipucords
-projects. All portions of the test suite expect the same config file format. 
-Any changes to the test suite that require changes to the config file format
-should be made with this in mind.
+Camayoc contains test suites for both quipucords/rho, quipucords/quipucords,
+and quipucords/yupana projects. All portions of the test suite expect the same
+config file format.  Any changes to the test suite that require changes to the
+config file format should be made with this in mind.
 
 There is an example annotated config file in ``example_config.yaml`` in
 the root directory of the Camayoc repository.
@@ -132,7 +133,7 @@ install the qpc_ executable in such a way that it is available in your
 
 For UI tests, you should set the `SELENIUM_DRIVER` environment variable to either `Chrome`
 or `Firefox` depending on what you want to use. If this is not set, UI tests are skipped. Additionally, you need to set up remote containers for use::
-   
+
    # Chrome Selenium container, run as one line.
    docker run -d -P -p 4444:4444 --net="host" -v /dev/shm:/dev/shm \
    -v /tmp:/tmp:z selenium/standalone-chrome:3.14.0-arsenic
@@ -144,17 +145,17 @@ or `Firefox` depending on what you want to use. If this is not set, UI tests are
 Additionally, you may want to observe the UI tests directly. In order to do so, you
 need to use the debug versions of these remote containers, which provide a VNC server
 on port 5900::
-   
+
    # Chrome debug mode
    docker run -d -P -p 4444:4444 -p 5900:5900 --net="host" -v /dev/shm:/dev/shm \
    -v /tmp:/tmp:z selenium/standalone-chrome-debug:3.14.0-arsenic
-   
+
    # Firefox debug mode
    docker run -d -P -p 4444:4444 -p 5900:5900 --net="host" -v /dev/shm:/dev/shm \
    -v /tmp:/tmp:z selenium/standalone-firefox-debug:3.14.0-arsenic
 
 Ensure that the environment variable `SELENIUM_DEBUG` is set to `True`::
-   
+
    export SELENIUM_DEBUG="True"
 
 To observe tests as they run, use a VNC viewer. On Fedora, `vncviewer` is provided
@@ -189,14 +190,24 @@ variable.
 By default scans defined in the config file are run at the beginning of the test session and results are cached to be used by other tests. This causes there to be some latency between when the test session begins and tests begin reporting results. If you want to run a test quickly without running the scans, you can include the environment variable ``RUN_SCANS=False`` in your ``py.test`` invocation. There is also a make target that provides this functionality::
 
     # Runs all tests except ones that require results of scanjobs
-    
+
     make test-qpc-no-scans
 
     # You can do this manually as well
     # For example, if I just want to run a few login/logout
     # This would just run those without the scans running first.
-    
+
     RUN_SCANS=False py.test camayoc/tests/qpc/api/v1/authentication/
+
+Running Tests For yupana_
+^^^^^^^^^^^^^^^^^^^^^^
+
+To run all the tests for yupana_, first have access to the Openshift cluster
+where the yupana_ build to be tested is running. Next, add the required
+settings to the ['yupana'] section of the configuration file. Lastly, invoke
+the yupana_ test suite from the root directory of Camayoc with::
+
+    make test-qpc-yupana
 
 Testing Camayoc
 ^^^^^^^^^^^^^^^
