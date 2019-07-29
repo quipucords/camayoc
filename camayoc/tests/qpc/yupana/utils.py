@@ -4,14 +4,11 @@
 
 import base64
 import json
-import multiprocessing as mp
 import re
 import requests
 import time
 
 from datetime import datetime
-from functools import partial
-from itertools import chain
 
 from oc import get_pods
 
