@@ -61,7 +61,7 @@ against and the credentials to use with these hosts. It also tells Camayoc
 where the quipucords_ server you want to test is running so the tests can
 execute against the server.
 
-Camayoc contains test suites for both quipucords/rho, quipucords/quipucords,
+Camayoc contains test suites for quipucords/rho, quipucords/quipucords,
 and quipucords/yupana projects. All portions of the test suite expect the same
 config file format.  Any changes to the test suite that require changes to the
 config file format should be made with this in mind.
@@ -200,12 +200,15 @@ By default scans defined in the config file are run at the beginning of the test
     RUN_SCANS=False py.test camayoc/tests/qpc/api/v1/authentication/
 
 Running Tests For yupana_
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To run all the tests for yupana_, first have access to the Openshift cluster
 where the yupana_ build to be tested is running. Next, add the required
-settings to the ['yupana'] section of the configuration file. Lastly, invoke
-the yupana_ test suite from the root directory of Camayoc with::
+settings to the ['yupana'] section of the configuration file. The required
+settings are listed in the example configuration file (`example_config.yaml` in
+the root of this repository).
+
+Lastly, invoke the yupana_ test suite from the root directory of Camayoc with::
 
     make test-qpc-yupana
 
