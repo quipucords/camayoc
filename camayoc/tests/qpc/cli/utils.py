@@ -10,6 +10,7 @@ from pprint import pformat
 import pexpect
 
 from camayoc.config import get_config
+from camayoc.utils import client_cmd
 from camayoc.exceptions import (
     ConfigFileNotFoundError,
     FailedMergeReportException,
@@ -29,7 +30,7 @@ def clear_all_entities():
     output = []
     for command in ("scan", "source", "cred"):
         clear_output = pexpect.run(
-            "qpc {} clear --all".format(command), encoding="utf8"
+            "{} {} clear --all".format(client_cmd, command), encoding="utf8"
         )
         errors.extend(error_finder.findall(clear_output))
         output.append(clear_output)
@@ -175,7 +176,7 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
     if "type" not in options:
         options["type"] = "network"
     options.pop("rho", None)  # need to remove this data that is rho specific
-    command = "qpc cred add"
+    command = "{} cred add".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -209,7 +210,7 @@ def cred_show_and_check(options, output, exitstatus=0):
         network and \d+ respectively.
     :param exitstatus: Expected exit status code.
     """
-    command = "qpc cred show"
+    command = "{} cred show".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -222,16 +223,16 @@ def cred_show_and_check(options, output, exitstatus=0):
     assert qpc_cred_show.exitstatus == exitstatus
 
 
-report_detail = functools.partial(cli_command, "qpc report details")
+report_detail = functools.partial(cli_command, "{} report details".format(client_cmd))
 """Run ``qpc report detail`` with ``options`` and return output."""
 
-report_merge = functools.partial(cli_command, "qpc report merge")
+report_merge = functools.partial(cli_command, "{} report merge".format(client_cmd))
 """Run ``qpc report merge`` with ``options`` and return output."""
 
 
 def report_merge_status(options=None, exitstatus=0):
     """Run ``qpc report merge-status`` with ``options`` and return output."""
-    output = cli_command("qpc report merge-status", options, exitstatus)
+    output = cli_command("{} report merge-status".format(client_cmd), options, exitstatus)
     match = re.match(
         r"Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: "
         r'"(?P<report_id>\d+)")?',
@@ -241,10 +242,10 @@ def report_merge_status(options=None, exitstatus=0):
     return match.groupdict()
 
 
-report_deployments = functools.partial(cli_command, "qpc report deployments")
+report_deployments = functools.partial(cli_command, "{} report deployments".format(client_cmd))
 """Run ``qpc report deployments`` with ``options`` and return output."""
 
-report_download = functools.partial(cli_command, "qpc report download")
+report_download = functools.partial(cli_command, "{} report download".format(client_cmd))
 """Run ``qpc report download`` with ``options`` and return output."""
 
 
@@ -280,7 +281,7 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
         options["exclude-hosts"] = " ".join(options["exclude-hosts"])
     if "type" not in options:
         options["type"] = "network"
-    command = "qpc source add"
+    command = "{} source add".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -315,7 +316,7 @@ def source_edit_and_check(options, inputs=None, exitstatus=0):
         options["hosts"] = " ".join(options["hosts"])
     if "exclude-hosts" in options:
         options["exclude-hosts"] = " ".join(options["exclude-hosts"])
-    command = "qpc source edit"
+    command = "{} source edit".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -344,7 +345,7 @@ def source_show_and_check(options, output, exitstatus=0):
         output. Make sure to escape any regular expression especial character.
     :param exitstatus: Expected exit status code.
     """
-    command = "qpc source show"
+    command = "{}{ source show".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -404,37 +405,37 @@ def scan_show_and_check(scan_name, expected_result=None):
         assert expected_result == scan_show_result
 
 
-scan_cancel = functools.partial(cli_command, "qpc scan cancel")
+scan_cancel = functools.partial(cli_command, "{} scan cancel".format(client_cmd))
 """Run ``qpc scan cancel`` command with ``options`` returning its output."""
 
-scan_pause = functools.partial(cli_command, "qpc scan pause")
+scan_pause = functools.partial(cli_command, "{} scan pause".format(client_cmd))
 """Run ``qpc scan pause`` command with ``options`` returning its output."""
 
-scan_restart = functools.partial(cli_command, "qpc scan restart")
+scan_restart = functools.partial(cli_command, "{} scan restart".format(client_cmd))
 """Run ``qpc scan restart`` command with ``options`` returning its output."""
 
-scan_add = functools.partial(cli_command, "qpc scan add")
+scan_add = functools.partial(cli_command, "{} scan add".format(client_cmd))
 """Run ``qpc scan add`` command with ``options`` returning its output."""
 
-scan_clear = functools.partial(cli_command, "qpc scan clear")
+scan_clear = functools.partial(cli_command, "{} scan clear".format(client_cmd))
 """Run ``qpc scan clear`` returning its output."""
 
-scan_edit = functools.partial(cli_command, "qpc scan edit")
+scan_edit = functools.partial(cli_command, "{} scan edit".format(client_cmd))
 """Run ``qpc scan edit`` command with ``options`` returning its output."""
 
-scan_show = functools.partial(cli_command, "qpc scan show")
+scan_show = functools.partial(cli_command, "{} scan show".format(client_cmd))
 """Run ``qpc scan show`` command with ``options`` returning its output."""
 
-scan_start = functools.partial(cli_command, "qpc scan start")
+scan_start = functools.partial(cli_command, "{} scan start".format(client_cmd))
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
-source_show = functools.partial(cli_command, "qpc source show")
+source_show = functools.partial(cli_command, "{} source show".format(client_cmd))
 """Run ``qpc source show`` command with ``options`` returning its output."""
 
 
 def scan_job(options=None, exitstatus=0):
     """Run ``qpc scan job`` command with ``options`` returning its output."""
-    return json.loads(cli_command("qpc scan job", options, exitstatus))
+    return json.loads(cli_command("{} scan job".format(client_cmd), options, exitstatus))
 
 
 def setup_qpc():
@@ -482,8 +483,8 @@ def setup_qpc():
     else:
         ssl_verify = ""
 
-    command = "qpc server config --host {} --port {}{}{}".format(
-        hostname, port, https, ssl_verify
+    command = "{} server config --host {} --port {}{}{}".format(
+        client_cmd, hostname, port, https, ssl_verify
     )
     output, exitstatus = pexpect.run(command, encoding="utf8", withexitstatus=True)
     assert exitstatus == 0, output
@@ -491,7 +492,7 @@ def setup_qpc():
     # now login to the server
     username = qpc_config.get("username", "admin")
     password = qpc_config.get("password", "pass")
-    command = "qpc server login --username {}".format(username)
+    command = "{} server login --username {}".format(client_cmd, username)
     output, exitstatus = pexpect.run(
         command,
         encoding="utf8",
