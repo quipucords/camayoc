@@ -28,15 +28,3 @@ def shared_client():
     """
     client = api.Client()
     yield client
-
-
-def pytest_addoption(parser):
-    parser.addoption(
-        "--client", action="store", default="qpc", help="CLI Client Command:\
-        qpc or dsc."
-    )
-
-
-@pytest.fixture
-def client_cmd(request):
-    return request.config.getoption("--client")
