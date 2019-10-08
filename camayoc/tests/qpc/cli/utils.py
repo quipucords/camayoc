@@ -345,7 +345,7 @@ def source_show_and_check(options, output, exitstatus=0):
         output. Make sure to escape any regular expression especial character.
     :param exitstatus: Expected exit status code.
     """
-    command = "{}{ source show".format(client_cmd)
+    command = "{} source show".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
