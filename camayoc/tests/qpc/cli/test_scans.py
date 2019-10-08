@@ -14,7 +14,10 @@ import re
 
 import pytest
 
-from camayoc.utils import uuid4
+from camayoc.utils import (
+    client_cmd,
+    uuid4
+)
 
 from .utils import (
     config_sources,
@@ -129,7 +132,7 @@ def test_create_scan_with_disabled_products_negative(
             "sources": source_name,
             "disabled-optional-products": fail_cases,
         },
-        r"usage: qpc scan add(.|[\r\n])*",
+        r"usage: {} scan add(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -156,7 +159,7 @@ def test_create_scan_with_extended_products_negative(
             "sources": source_name,
             "enabled-ext-product-search": fail_cases,
         },
-        r"usage: qpc scan add(.|[\r\n])*",
+        r"usage: {} scan add(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -384,7 +387,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     # Edit scan options
     scan_edit_and_check(
         {"name": scan_name, "sources": ""},
-        r"usage: qpc scan edit(.|[\r\n])*",
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -398,7 +401,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     # Edit scan options
     scan_edit_and_check(
         {"name": scan_name, "sources": source_name, "max-concurrency": "abc"},
-        r"usage: qpc scan edit(.|[\r\n])*",
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -409,7 +412,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
             "sources": "",
             "disabled-optional-products": "not_a_real_product",
         },
-        r"usage: qpc scan edit(.|[\r\n])*",
+        r"usage: {}{ scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -420,14 +423,14 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
             "sources": "",
             "enabled-ext-product-search": "not_a_real_product",
         },
-        r"usage: qpc scan edit(.|[\r\n])*",
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
     # Edit ext-product-search-dirs
     scan_edit_and_check(
         {"name": scan_name, "sources": "", "ext-product-search-dirs": "not-a-dir"},
-        r"usage: qpc scan edit(.|[\r\n])*",
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 

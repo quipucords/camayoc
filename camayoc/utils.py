@@ -20,6 +20,10 @@ name_getter = operator.itemgetter("name")
 """Generate test IDs by fetching the ``name`` item."""
 
 
+client_cmd = os.environ.get("CAMAYOC_CLIENT_CMD", "qpc")
+"""Check for the client command environment variable to use during tests. Defaults to `qpc`."""
+
+
 def run_scans():
     """Check for run scans environment variable."""
     result = True
