@@ -143,3 +143,9 @@ yupana:
     oc:
       url: "OC_API_URL"
       token: "SECRET_TOKEN"
+    inventory:
+      api_url: "https://qa.cloud.com/api/inventory/v1/"
+      rh_username: "USERNAME"
+      rh_password: "PASSWORD"
+      rh_account_number: "000000"
+      rh_org_id: "0000000"
