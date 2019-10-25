@@ -65,7 +65,7 @@ def isolated_filesystem():
     cfg = get_config().get("qpc", {})
     isolated_filesystem_prefix = cfg.get("isolated_filesystem_prefix")
     cwd = os.getcwd()
-    path = tempfile.mkdtemp(prefix=isolated_filesystem_prefix)
+    path = tempfile.mkdtemp(dir=isolated_filesystem_prefix)
     for envvar in _XDG_ENV_VARS:
         os.environ[envvar] = path
     os.chdir(path)
