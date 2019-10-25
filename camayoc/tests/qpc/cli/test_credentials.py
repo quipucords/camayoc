@@ -135,8 +135,9 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
-    sshkeyfile.touch()
+    #sshkeyfile = Path(utils.uuid4())
+    #sshkeyfile.touch()
+    sshkeyfile = '/sshkeys/id_rsa'
     cred_add_and_check(
         {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
     )
