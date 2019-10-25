@@ -62,8 +62,10 @@ def isolated_filesystem():
     Changes the current working directory to the created temporary directory
     for isolated filesystem tests.
     """
+    cfg = get_config().get("qpc", {})
+    isolated_filesystem_prefix = cfg.get("isolated_filesystem_prefix")
     cwd = os.getcwd()
-    path = tempfile.mkdtemp()
+    path = tempfile.mkdtemp(prefix=isolated_filesystem_prefix)
     for envvar in _XDG_ENV_VARS:
         os.environ[envvar] = path
     os.chdir(path)
