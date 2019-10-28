@@ -2,8 +2,6 @@
 """Host Based Inventory (HBI) API."""
 
 import requests
-import json
-import base64
 import urllib3
 
 INVENTORY_HOSTS_PATH = "/hosts"
@@ -79,21 +77,3 @@ def find_hosts(host_id_list, api_url, auth=None, x_rh_identity=None):
                      'get',
                      lambda status: status == 200)
     return results
-
-
-def create_identity(account_number, org_id=None):
-    """Base64-encoded JSON identity."""
-    identity = {'identity': {'account_number': account_number}}
-    if org_id:
-        identity['identity']['internal'] = {'org_id': org_id}
-    identity = json.dumps(identity)
-    identity = base64.standard_b64encode(identity.encode('ascii'))
-    identity = identity.decode('ascii')
-    return identity
-
-
-def create_x_rh_identity(account_number):
-    """"Base64-encoded JSON identity header provided by 3Scale."""
-    identity = create_identity(account_number)
-    x_rh_identity = {'x-rh-identity': identity}
-    return x_rh_identity
