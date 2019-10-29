@@ -6,13 +6,13 @@ import time
 
 from camayoc.tests.qpc.yupana.utils import (
     get_app_pods,
-    get_x_rh_identity,
     post_file,
     time_diff,
 )
 
 from camayoc.config import get_config
 from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.utils import create_identity
 
 
 @pytest.fixture(scope="session")
@@ -46,16 +46,17 @@ def mult_pod_logs(yupana_config):
     pod_names = [
         pod[0] for pod in get_app_pods(yupana_config["yupana-app"]["app_name"])
     ]
+    rh_identity = create_identity(
+        upload_service_config["rh_account_number"],
+        upload_service_config["rh_org_id"]
+    )
     start_time = time.time()
     response = post_file(
         upload_service_config["file_upload_src"],
         upload_service_config["api_url"],
         upload_service_config["rh_username"],
         upload_service_config["rh_password"],
-        get_x_rh_identity(
-            upload_service_config["rh_account_number"],
-            upload_service_config["rh_org_id"],
-        ),
+        rh_identity,
         upload_service_config["rh_insights_request_id"],
     )
     assert response.status_code == 202, response.text
