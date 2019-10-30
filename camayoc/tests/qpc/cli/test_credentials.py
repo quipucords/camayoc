@@ -141,13 +141,13 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
 #    sshkeyfile = '/sshkeys/id_rsa'
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": sshkeyfile_name}
+        {"name": name, "username": username, "sshkeyfile": "/sshkeys/" + sshkeyfile_name}
     )
 
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": sshkeyfile_name, "username": username}
+            {"name": name, "ssh_keyfile": "/sshkeys/" + sshkeyfile_name, "username": username}
         ),
     )
 
