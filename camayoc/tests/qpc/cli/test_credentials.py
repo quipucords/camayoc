@@ -142,7 +142,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
 
     cred_add_and_check(
         {"name": name, "username": username, "sshkeyfile":
-         str(sshkeyfile.reslove())}
+         str(sshkeyfile.resolve())}
     )
 
     cred_show_and_check(
@@ -723,4 +723,4 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
         "{} cred list".format(client_cmd), encoding="utf8", withexitstatus=True
     )
     assert "No credentials exist yet." in output
-    assert exitstatus == 0
+    ssert exitstatus == 0
