@@ -723,4 +723,4 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
         "{} cred list".format(client_cmd), encoding="utf8", withexitstatus=True
     )
     assert "No credentials exist yet." in output
-    ssert exitstatus == 0
+    assert exitstatus == 0
