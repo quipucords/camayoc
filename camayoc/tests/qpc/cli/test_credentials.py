@@ -10,6 +10,7 @@
 :upstream: yes
 """
 import json
+import os
 import random
 from io import BytesIO
 from pathlib import Path
@@ -136,18 +137,19 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     name = utils.uuid4()
     username = utils.uuid4()
     sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
     sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
 #    sshkeyfile = '/sshkeys/id_rsa'
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": "/sshkeys/" + sshkeyfile_name}
+        {"name": name, "username": username, "sshkeyfile": "/sshkeys/" + tmp_dir + "/" + sshkeyfile_name}
     )
 
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": "/sshkeys/" + sshkeyfile_name, "username": username}
+            {"name": name, "ssh_keyfile": "/sshkeys/" + tmp_dir + "/" + sshkeyfile_name, "username": username}
         ),
     )
 
