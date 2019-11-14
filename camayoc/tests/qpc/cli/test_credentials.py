@@ -10,6 +10,7 @@
 :upstream: yes
 """
 import json
+import os
 import random
 from io import BytesIO
 from pathlib import Path
@@ -135,16 +136,20 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
+#    sshkeyfile = '/sshkeys/id_rsa'
+
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": sshkeyfile.resolve(), "username": username}
+            {"name": name, "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}", "username": username}
         ),
     )
 
@@ -164,13 +169,16 @@ def test_add_with_username_sshkeyfile_become_password(
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
+
     cred_add_and_check(
         {
             "name": name,
             "username": username,
-            "sshkeyfile": str(sshkeyfile.resolve()),
+            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
             "become-password": None,
         },
         [(BECOME_PASSWORD_INPUT, utils.uuid4())],
@@ -182,7 +190,7 @@ def test_add_with_username_sshkeyfile_become_password(
             {
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": sshkeyfile.resolve(),
+                "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
                 "username": username,
             }
         ),
@@ -250,10 +258,12 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     name = utils.uuid4()
@@ -331,10 +341,12 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     name = utils.uuid4()
@@ -355,24 +367,29 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
-    new_sshkeyfile = Path(utils.uuid4())
+    new_sshkeyfile_name = utils.uuid4()
+    new_sshkeyfile = Path(new_sshkeyfile_name)
     new_sshkeyfile.touch()
+
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": sshkeyfile.resolve(), "username": username}
+            {"name": name, "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}", "username": username}
         ),
     )
 
     qpc_cred_edit = pexpect.spawn(
         "{} cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, str(new_sshkeyfile.resolve())
+            client_cmd, name, f"/sshkeys/{tmp_dir}/{new_sshkeyfile_name}"
         )
     )
     qpc_cred_edit.logfile = BytesIO()
@@ -386,7 +403,7 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
         generate_show_output(
             {
                 "name": name,
-                "ssh_keyfile": new_sshkeyfile.resolve(),
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{new_sshkeyfile_name}",
                 "username": username,
             }
         ),
@@ -404,18 +421,21 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     name = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
         "{} cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, str(sshkeyfile.resolve())
+            client_cmd, name, f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"
         )
     )
     qpc_cred_edit.logfile = BytesIO()
@@ -435,7 +455,10 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     become_password = utils.uuid4()
     new_become_password = utils.uuid4()
@@ -443,7 +466,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
         {
             "name": name,
             "username": username,
-            "sshkeyfile": str(sshkeyfile.resolve()),
+            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
             "become-password": None,
         },
         [(BECOME_PASSWORD_INPUT, become_password)],
@@ -455,7 +478,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
             {
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": sshkeyfile.resolve(),
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
                 "username": username,
             }
         ),
@@ -477,7 +500,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
             {
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": sshkeyfile.resolve(),
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
                 "username": username,
             }
         ),
@@ -494,10 +517,12 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     name = utils.uuid4()
@@ -521,11 +546,13 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
         "{} cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, str(sshkeyfile.resolve())
+            client_cmd, name, f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"
         )
     )
     qpc_cred_edit.logfile = BytesIO()
@@ -546,16 +573,19 @@ def test_clear(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": str(sshkeyfile.resolve())}
+        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
     )
 
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": sshkeyfile.resolve(), "username": username}
+            {"name": name, "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}", "username": username}
         ),
     )
 
@@ -596,14 +626,17 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     source_name = utils.uuid4()
     hosts = ["127.0.0.1"]
     username = utils.uuid4()
-    sshkeyfile = Path(utils.uuid4())
+
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile_name = utils.uuid4()
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
     cred_add_and_check(
         {
             "name": cred_name,
             "type": cred_type,
             "username": username,
-            "sshkeyfile": str(sshkeyfile.resolve()),
+            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
         }
     )
 
@@ -612,7 +645,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         generate_show_output(
             {
                 "name": cred_name,
-                "ssh_keyfile": sshkeyfile.resolve(),
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
                 "username": username,
             }
         ),
@@ -691,12 +724,15 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
     for _ in range(random.randint(2, 3)):
         name = utils.uuid4()
         username = utils.uuid4()
-        sshkeyfile = Path(utils.uuid4())
+
+        tmp_dir = os.path.basename(os.getcwd())
+        sshkeyfile_name = utils.uuid4()
+        sshkeyfile = Path(sshkeyfile_name)
         sshkeyfile.touch()
         auth = {
             "name": name,
             "password": None,
-            "ssh_keyfile": str(sshkeyfile.resolve()),
+            "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
             "become_password": None,
             "username": username,
         }
@@ -705,7 +741,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
             {
                 "name": name,
                 "username": username,
-                "sshkeyfile": str(sshkeyfile.resolve()),
+                "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
             }
         )
 
