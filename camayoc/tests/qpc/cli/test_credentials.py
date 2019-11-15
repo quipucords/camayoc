@@ -11,6 +11,7 @@
 """
 import json
 import os
+import pytest
 import random
 from io import BytesIO
 from pathlib import Path
@@ -123,6 +124,7 @@ def test_add_with_username_password_become_password(
     )
 
 
+@pytest.mark.ssh_keyfile_path
 def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     """Add an auth with username and sshkeyfile.
 
