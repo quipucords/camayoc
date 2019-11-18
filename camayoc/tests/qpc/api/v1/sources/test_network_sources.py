@@ -59,6 +59,7 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     assert_matches_server(src)
 
 
+@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_filesystem):
     """Create a Network Source using multiple credentials.
@@ -99,6 +100,7 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
     assert_matches_server(src)
 
 
+@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", MIXED_DATA)
 def test_create_multiple_creds_and_sources(
     shared_client, cleanup, scan_host, isolated_filesystem
@@ -149,6 +151,7 @@ def test_create_multiple_creds_and_sources(
     assert_matches_server(src)
 
 
+@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_negative_update_invalid(
     shared_client, cleanup, isolated_filesystem, scan_host
