@@ -64,7 +64,8 @@ def isolated_filesystem(request):
     Changes the current working directory to the created temporary directory
     for isolated filesystem tests.
     """
-    # Setting up marker conditionals
+    # Create isolated filesystem directory in the ssh_keyfile_path
+    # configuration location if marked with `ssh_keyfile_path`.
     mark = request.node.get_closest_marker('ssh_keyfile_path')
     ssh_keyfile_path = None
     if mark:
