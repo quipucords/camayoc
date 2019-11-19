@@ -37,6 +37,7 @@ qpc:
     # credentials for logging into the server
     username: 'admin'
     password: 'pass'
+    ssh_keyfile_path: '/home/user/quipucords/server/volumes/sshkeyfiles/'
         sources:
         - hosts:
               - 'myfavnetwork.com'

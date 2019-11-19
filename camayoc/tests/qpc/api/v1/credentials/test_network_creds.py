@@ -24,6 +24,7 @@ from camayoc.tests.qpc.utils import assert_matches_server
 from camayoc.utils import uuid4
 
 
+@pytest.mark.ssh_keyfile_path
 def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesystem):
     """Create a network credential using password and switch it to use sshkey.
 
@@ -53,6 +54,7 @@ def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesyst
     assert_matches_server(cred)
 
 
+@pytest.mark.ssh_keyfile_path
 def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     """Create a network credential using password and switch it to use sshkey.
 
@@ -83,6 +85,7 @@ def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     assert_matches_server(cred)
 
 
+@pytest.mark.ssh_keyfile_path
 def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem):
     """Attempt to update valid credential with invalid data.
 
@@ -132,6 +135,7 @@ def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem)
     assert_matches_server(cred)
 
 
+@pytest.mark.ssh_keyfile_path
 def test_create_with_sshkey(shared_client, cleanup, isolated_filesystem):
     """Create a network credential with username and sshkey.
 
