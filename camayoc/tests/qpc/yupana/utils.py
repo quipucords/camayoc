@@ -2,8 +2,6 @@
 """Utility functions for yupana tests."""
 
 
-import base64
-import json
 import re
 import requests
 import time
@@ -17,15 +15,6 @@ PATTERN_DATE_TIME = r"(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})"
 
 
 # Functions
-def get_x_rh_identity(account_num, org_id):
-    """Return the base64 encoded x-rh-identity string from credentials."""
-    login_data = {
-        "identity": {"account_number": account_num, "internal": {"org_id": org_id}}
-    }
-    json_str = json.dumps(login_data)
-    return base64.b64encode(json_str.encode("ascii"))
-
-
 def get_app_url(yupana_config, protocol="http://"):
     """Build and return the URI from the config to access the yupana API"""
     config = yupana_config["yupana-app"]
