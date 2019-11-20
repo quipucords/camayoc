@@ -58,14 +58,14 @@ def uuid4():
 
 
 @contextlib.contextmanager
-def isolated_filesystem():
+def isolated_filesystem(filesystem_path=None):
     """Context Manager that creates a temporary directory.
 
     Changes the current working directory to the created temporary directory
     for isolated filesystem tests.
     """
     cwd = os.getcwd()
-    path = tempfile.mkdtemp()
+    path = tempfile.mkdtemp(dir=filesystem_path, prefix="")
     for envvar in _XDG_ENV_VARS:
         os.environ[envvar] = path
     os.chdir(path)

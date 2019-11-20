@@ -10,11 +10,14 @@
 :upstream: yes
 """
 import copy
+import os
+
 from pathlib import Path
 
 import pytest
 
 from camayoc import api
+from camayoc import utils
 from camayoc.qpc_models import Credential, Source
 from camayoc.tests.qpc.utils import assert_matches_server, assert_source_update_fails
 from camayoc.utils import uuid4
@@ -56,6 +59,7 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     assert_matches_server(src)
 
 
+@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_filesystem):
     """Create a Network Source using multiple credentials.
@@ -67,13 +71,15 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
         2) Send POST with data to create network source using the credentials
     :expectedresults: The source is created.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
+    sshkeyfile.touch()
 
     ssh_key_cred = Credential(
         cred_type=NETWORK_TYPE,
         client=shared_client,
-        ssh_keyfile=str(ssh_keyfile.resolve()),
+        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     ssh_key_cred.create()
     pwd_cred = Credential(
@@ -94,6 +100,7 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
     assert_matches_server(src)
 
 
+@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", MIXED_DATA)
 def test_create_multiple_creds_and_sources(
     shared_client, cleanup, scan_host, isolated_filesystem
@@ -109,13 +116,15 @@ def test_create_multiple_creds_and_sources(
            CIDR, individual IPv4 address, etc.)
     :expectedresults: The source is created.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
+    sshkeyfile.touch()
 
     ssh_key_cred = Credential(
         cred_type=NETWORK_TYPE,
         client=shared_client,
-        ssh_keyfile=str(ssh_keyfile.resolve()),
+        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     ssh_key_cred.create()
     pwd_cred = Credential(
@@ -142,6 +151,7 @@ def test_create_multiple_creds_and_sources(
     assert_matches_server(src)
 
 
+@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_negative_update_invalid(
     shared_client, cleanup, isolated_filesystem, scan_host
@@ -156,13 +166,15 @@ def test_negative_update_invalid(
         2) Attempt to update with multiple invalid {hosts, credentials}
     :expectedresults: An error is thrown and no new host is created.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
+    sshkeyfile.touch()
 
     net_cred = Credential(
         cred_type=NETWORK_TYPE,
         client=shared_client,
-        ssh_keyfile=str(ssh_keyfile.resolve()),
+        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     net_cred.create()
     sat_cred = Credential(cred_type="satellite", client=shared_client, password=uuid4())

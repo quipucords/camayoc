@@ -11,17 +11,20 @@
 """
 from pathlib import Path
 
+import os
 import pytest
 
 import requests
 
 from camayoc import api
+from camayoc import utils
 from camayoc.constants import QPC_BECOME_METHODS
 from camayoc.qpc_models import Credential
 from camayoc.tests.qpc.utils import assert_matches_server
 from camayoc.utils import uuid4
 
 
+@pytest.mark.ssh_keyfile_path
 def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesystem):
     """Create a network credential using password and switch it to use sshkey.
 
@@ -40,15 +43,18 @@ def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesyst
     cleanup.append(cred)
     assert_matches_server(cred)
 
-    sshkeyfile = Path(uuid4())
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
 
-    cred.ssh_keyfile = str(sshkeyfile.resolve())
+    cred.ssh_keyfile = f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"
     cred.password = None
     cred.update()
     assert_matches_server(cred)
 
 
+@pytest.mark.ssh_keyfile_path
 def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     """Create a network credential using password and switch it to use sshkey.
 
@@ -62,10 +68,12 @@ def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
         3) Confirm network credential has been updated.
     :expectedresults: The network credential is updated.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
+    sshkeyfile.touch()
 
-    cred = Credential(cred_type="network", ssh_keyfile=str(ssh_keyfile.resolve()))
+    cred = Credential(cred_type="network", ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}")
     cred.create()
     # add the id to the list to destroy after the test is done
     cleanup.append(cred)
@@ -77,6 +85,7 @@ def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     assert_matches_server(cred)
 
 
+@pytest.mark.ssh_keyfile_path
 def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem):
     """Attempt to update valid credential with invalid data.
 
@@ -91,13 +100,15 @@ def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem)
     :expectedresults: Error codes are returned and the network credentials are
         not updated.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
+    sshkeyfile.touch()
 
     cred = Credential(
         cred_type="network",
         client=shared_client,
-        ssh_keyfile=str(ssh_keyfile.resolve()),
+        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     cred.create()
     # add the id to the list to destroy after the test is done
@@ -124,6 +135,7 @@ def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem)
     assert_matches_server(cred)
 
 
+@pytest.mark.ssh_keyfile_path
 def test_create_with_sshkey(shared_client, cleanup, isolated_filesystem):
     """Create a network credential with username and sshkey.
 
@@ -132,13 +144,15 @@ def test_create_with_sshkey(shared_client, cleanup, isolated_filesystem):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new network credential entry is created with the data.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_name = utils.uuid4()
+    tmp_dir = os.path.basename(os.getcwd())
+    sshkeyfile = Path(sshkeyfile_name)
+    sshkeyfile.touch()
 
     cred = Credential(
         cred_type="network",
         client=shared_client,
-        ssh_keyfile=str(ssh_keyfile.resolve()),
+        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     cred.create()
     # add the id to the list to destroy after the test is done
