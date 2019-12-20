@@ -1,0 +1,36 @@
+---
+
+- name: Setup and Configure Quipucords Components
+  hosts: localhost
+  vars:
+      config_template: "./config-template.yaml"
+      config_location: "~/.config/camayoc/config.yaml"
+      server_ip: "127.0.0.1"
+      container_ssh_file: "/sshkeys/id_rsa"
+      isolated_fs: "~/quipucords/server/volumes/sshkeys/"
+
+  tasks:
+    - name: Copy config template to config location
+      copy:
+        src: "{{ config_template }}"
+        dest: "{{ config_location }}"
+
+    - name: Replace server IPs in config file
+      replace:
+        path: "{{ config_location }}"
+        regexp: '{jenkins_slave_ip}'
+        replace: "{{ server_ip }}"
+
+    - name: Set container ssh location in config file
+      replace:
+        path: "{{ config_location }}"
+        regexp: '{jenkins_ssh_file}'
+        replace: "{{ container_ssh_file }}"
+
+    - name: Set user on ssh credentials
+
+    - name: Set isolated_fs_placeholder in config file
+      replace:
+        path: "{{ config_location }}"
+        regexp: '{isolated_fs_placeholder}'
+        replace: "{{ isolated_fs }}"
