@@ -8,8 +8,11 @@
       server_ip: "127.0.0.1"
       container_ssh_file: "/sshkeys/id_rsa"
       isolated_fs: "~/quipucords/server/volumes/sshkeys/"
+      sshkeyfile: "~/quipucords/server/volumes/sshkeys/id_rsa"
+      isolated_fs_user: "ryan"
 
   tasks:
+    ## Need to Ensure/Make dir if does not exist
     - name: Copy config template to config location
       copy:
         src: "{{ config_template }}"
@@ -21,13 +24,22 @@
         regexp: '{jenkins_slave_ip}'
         replace: "{{ server_ip }}"
 
+    - name: Change sshkeys dir ownership
+      file:
+        path: "{{ isolated_fs }}"
+        owner: "{{ isolated_fs_user }}"
+        group: "{{ isolated_fs_user }}"
+
+    - name: Change sshkeyfile permission
+      file:
+        path: "{{ sshkeyfile }}"
+        mode: "0600"
+
     - name: Set container ssh location in config file
       replace:
         path: "{{ config_location }}"
         regexp: '{jenkins_ssh_file}'
         replace: "{{ container_ssh_file }}"
-
-    - name: Set user on ssh credentials
 
     - name: Set isolated_fs_placeholder in config file
       replace:
