@@ -27,6 +27,7 @@
     - name: Change sshkeys dir ownership
       file:
         path: "{{ isolated_fs }}"
+        state: directory
         owner: "{{ isolated_fs_user }}"
         group: "{{ isolated_fs_user }}"
 
