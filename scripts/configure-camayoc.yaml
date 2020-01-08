@@ -8,7 +8,8 @@
       server_ip: "127.0.0.1"
       container_ssh_file: "/sshkeys/id_rsa"
       isolated_fs: "~/quipucords/server/volumes/sshkeys/"
-      sshkeyfile: "~/quipucords/server/volumes/sshkeys/id_rsa"
+      sshkeyfile: "~/.ssh/id_rsa"
+      volume_sshkeyfile: "~/quipucords/server/volumes/sshkeys/id_rsa"
       isolated_fs_user: "ryan"
 
   tasks:
@@ -31,9 +32,14 @@
         owner: "{{ isolated_fs_user }}"
         group: "{{ isolated_fs_user }}"
 
-    - name: Change sshkeyfile permission
+    - name: Copy sshkeyfile to container volume
+      copy:
+        src: "{{ sshkeyfile }}"
+        dest: "{{ volume_sshkeyfile }}"
+
+    - name: Change volume sshkeyfile permission
       file:
-        path: "{{ sshkeyfile }}"
+        path: "{{ volume_sshkeyfile }}"
         mode: "0600"
 
     - name: Set container ssh location in config file
