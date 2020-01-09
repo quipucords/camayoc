@@ -29,6 +29,7 @@
       file:
         path: "{{ isolated_fs }}"
         state: directory
+        recurse: yes
         owner: "{{ isolated_fs_user }}"
         group: "{{ isolated_fs_user }}"
 
