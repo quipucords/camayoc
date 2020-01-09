@@ -43,10 +43,13 @@
         src: "{{ sshkeyfile }}"
         dest: "{{ volume_sshkeyfile }}"
 
+        #    - name: Change volume sshkeyfile permission
+        #      file:
+        #        path: "{{ volume_sshkeyfile }}"
+        #        mode: "0600"
+
     - name: Change volume sshkeyfile permission
-      file:
-        path: "{{ volume_sshkeyfile }}"
-        mode: "0600"
+      shell: "sudo chmod -R 0600 {{ volume_sshkeyfile }}"
 
     - name: Set container ssh location in config file
       replace:
