@@ -33,15 +33,14 @@
         #        owner: "{{ isolated_fs_user }}"
         #        group: "{{ isolated_fs_user }}"
 
-
-    - name: Change sshkeys dir ownership
-      shell: "sudo chown -R {{ isolated_fs_user }}:{{ isolated_fs_user }} {{ isolated_fs }}"
-
-
     - name: Copy sshkeyfile to container volume
       copy:
         src: "{{ sshkeyfile }}"
         dest: "{{ volume_sshkeyfile }}"
+
+    - name: Change sshkeys dir ownership
+      shell: "sudo chown -R {{ isolated_fs_user }}:{{ isolated_fs_user }} {{ isolated_fs }}"
+
 
         #    - name: Change volume sshkeyfile permission
         #      file:
