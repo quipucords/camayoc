@@ -25,13 +25,18 @@
         regexp: '{jenkins_slave_ip}'
         replace: "{{ server_ip }}"
 
+        #    - name: Change sshkeys dir ownership
+        #      file:
+        #        path: "{{ isolated_fs }}"
+        #        state: directory
+        #        recurse: yes
+        #        owner: "{{ isolated_fs_user }}"
+        #        group: "{{ isolated_fs_user }}"
+
+
     - name: Change sshkeys dir ownership
-      file:
-        path: "{{ isolated_fs }}"
-        state: directory
-        recurse: yes
-        owner: "{{ isolated_fs_user }}"
-        group: "{{ isolated_fs_user }}"
+      shell: "sudo chown -R {{ isolated_fs_user }}:{{ isolated_fs_user }} {{ isolated_fs }}"
+
 
     - name: Copy sshkeyfile to container volume
       copy:
