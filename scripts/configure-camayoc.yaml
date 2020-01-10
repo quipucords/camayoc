@@ -4,24 +4,29 @@
   hosts: localhost
   vars:
       config_template: "./config-template.yaml"
-      config_location: "~/.config/camayoc/config.yaml"
+      config_dir: "~/.config/camayoc/"
+      config_file: "config.yaml"
       server_ip: "127.0.0.1"
       container_ssh_file: "/sshkeys/id_rsa"
       isolated_fs: "~/quipucords/server/volumes/sshkeys/"
       sshkeyfile: "~/.ssh/id_rsa"
       volume_sshkeyfile: "~/quipucords/server/volumes/sshkeys/id_rsa"
-      isolated_fs_user: "ryan"
+      isolated_fs_user: "jenkins"
 
   tasks:
-    ## Need to Ensure/Make dir if does not exist
+    - name: Ensure camayoc config dir exists
+      file:
+        path: "{{ config_dir }}"
+        state: directory
+
     - name: Copy config template to config location
       copy:
         src: "{{ config_template }}"
-        dest: "{{ config_location }}"
+        dest: "{{ config_dir }}/{{ config_file }}"
 
     - name: Replace server IPs in config file
       replace:
-        path: "{{ config_location }}"
+        path: "{{ config_dir }}/{{ config_file }}"
         regexp: '{jenkins_slave_ip}'
         replace: "{{ server_ip }}"
 
@@ -39,12 +44,12 @@
 
     - name: Set container ssh location in config file
       replace:
-        path: "{{ config_location }}"
+        path: "{{ config_dir }}/{{ config_file }}"
         regexp: '{jenkins_ssh_file}'
         replace: "{{ container_ssh_file }}"
 
     - name: Set isolated_fs_placeholder in config file
       replace:
-        path: "{{ config_location }}"
+        path: "{{ config_dir }}/{{ config_file }}"
         regexp: '{isolated_fs_placeholder}'
         replace: "{{ isolated_fs }}"
