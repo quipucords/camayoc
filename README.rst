@@ -244,4 +244,4 @@ build, run::
 
 The doc strings of each test case are designed to be digested by sphinx_. It is a good idea when writing new tests to make sure the doc strings are rendering as you expect them to. To make and serve the docs on your local machine::
 
-    ake docs-serve
+    make docs-serve
