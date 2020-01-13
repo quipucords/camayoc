@@ -4,14 +4,14 @@
   hosts: localhost
   vars:
       config_template: "./config-template.yaml"
-      config_dir: "~/.config/camayoc/"
+      config_dir: "/home/user/.config/camayoc/"
       config_file: "config.yaml"
       server_ip: "127.0.0.1"
       container_ssh_file: "/sshkeys/id_rsa"
-      isolated_fs: "~/quipucords/server/volumes/sshkeys/"
-      sshkeyfile: "~/.ssh/id_rsa"
-      volume_sshkeyfile: "~/quipucords/server/volumes/sshkeys/id_rsa"
-      isolated_fs_user: "jenkins"
+      isolated_fs: "/home/user/quipucords/server/volumes/sshkeys/"
+      sshkeyfile: "/home/user/.ssh/id_rsa"
+      volume_sshkeyfile: "/home/user/quipucords/server/volumes/sshkeys/id_rsa"
+      isolated_fs_user: "user"
 
   tasks:
     - name: Ensure camayoc config dir exists

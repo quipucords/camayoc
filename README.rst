@@ -86,7 +86,7 @@ the playbook using ``-e`` flags). Then, assuming the template configuration has
 been downloaded and defined correctly in the playbook, run the playbook::
 
     cd scripts
-    ansible-palybook configure-camayoc.yaml
+    sudo ansible-playbook configure-camayoc.yaml
 
 
 
