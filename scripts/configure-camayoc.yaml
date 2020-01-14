@@ -1,0 +1,55 @@
+---
+
+- name: Setup and Configure Quipucords Components
+  hosts: localhost
+  vars:
+      config_template: "./config-template.yaml"
+      config_dir: "/home/user/.config/camayoc/"
+      config_file: "config.yaml"
+      server_ip: "127.0.0.1"
+      container_ssh_file: "/sshkeys/id_rsa"
+      isolated_fs: "/home/user/quipucords/server/volumes/sshkeys/"
+      sshkeyfile: "/home/user/.ssh/id_rsa"
+      volume_sshkeyfile: "/home/user/quipucords/server/volumes/sshkeys/id_rsa"
+      isolated_fs_user: "user"
+
+  tasks:
+    - name: Ensure camayoc config dir exists
+      file:
+        path: "{{ config_dir }}"
+        state: directory
+
+    - name: Copy config template to config location
+      copy:
+        src: "{{ config_template }}"
+        dest: "{{ config_dir }}/{{ config_file }}"
+
+    - name: Replace server IPs in config file
+      replace:
+        path: "{{ config_dir }}/{{ config_file }}"
+        regexp: '{jenkins_slave_ip}'
+        replace: "{{ server_ip }}"
+
+    - name: Copy sshkeyfile to container volume
+      shell: "sudo cp {{ sshkeyfile }} {{ volume_sshkeyfile }}"
+
+    - name: Change sshkeys dir ownership
+      shell: "sudo chown -R {{ isolated_fs_user }}:{{ isolated_fs_user }} {{ isolated_fs }}"
+
+    - name: Change volume sshkeyfile permission
+      shell: "sudo chmod -R 0600 {{ volume_sshkeyfile }}"
+
+    - name: Change volume sshkeyfile permission
+      shell: "sudo chmod -R 0600 {{ volume_sshkeyfile }}"
+
+    - name: Set container ssh location in config file
+      replace:
+        path: "{{ config_dir }}/{{ config_file }}"
+        regexp: '{jenkins_ssh_file}'
+        replace: "{{ container_ssh_file }}"
+
+    - name: Set isolated_fs_placeholder in config file
+      replace:
+        path: "{{ config_dir }}/{{ config_file }}"
+        regexp: '{isolated_fs_placeholder}'
+        replace: "{{ isolated_fs }}"

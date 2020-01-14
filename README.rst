@@ -69,6 +69,27 @@ config file format should be made with this in mind.
 There is an example annotated config file in ``example_config.yaml`` in
 the root directory of the Camayoc repository.
 
+Configuration Template
+""""""""""""""""""""""
+
+The Jenkins automation jobs often use a template configuration file when
+running camaoyc. This template config has default values (such as
+``${jenkins_ssh_file}``) that are swapped out for values which Jenkins
+provides.  Additionally, ssh key files need to be set with the proper
+permissions.
+
+When working locally or in a dev environment, these steps can be automatically
+configured with a template config using the ``configure-camayoc.yaml`` playbook
+found in the ``camayoc/scripts/`` directory. To use the playbook, first open it
+and set the variables at the top accordingly (or overwrite them when calling
+the playbook using ``-e`` flags). Then, assuming the template configuration has
+been downloaded and defined correctly in the playbook, run the playbook::
+
+    cd scripts
+    sudo ansible-playbook configure-camayoc.yaml
+
+
+
 Configuring py.test
 ^^^^^^^^^^^^^^^^^^^
 
