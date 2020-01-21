@@ -49,7 +49,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
     expected_result = {
         "id": "TO_BE_REPLACED",
         "name": scan_name,
-        "options": {"max_concurrency": 50},
+        "options": {"max_concurrency": 25},
         "scan_type": "inspect",
         "sources": [
             {"id": source_output["id"], "name": source_name, "source_type": "network"}
@@ -216,7 +216,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     expected_result = {
         "id": "TO_BE_REPLACED",
         "name": scan_name,
-        "options": {"max_concurrency": 50},
+        "options": {"max_concurrency": 25},
         "scan_type": "inspect",
         "sources": [
             {"id": source_output["id"], "name": source_name, "source_type": "network"}
@@ -320,7 +320,7 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
     scan_edit_and_check(
         {
             "name": scan_name,
-            "max-concurrency": 50,
+            "max-concurrency": 25,
             "disabled-optional-products": "",
             "enabled-ext-product-search": "",
         },
@@ -343,7 +343,7 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
                 "jboss_fuse": False,
                 "jboss_ws": False,
             },
-            "max_concurrency": 50,
+            "max_concurrency": 25,
         },
         "scan_type": "inspect",
         "sources": [
@@ -375,7 +375,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     expected_result = {
         "id": "TO_BE_REPLACED",
         "name": scan_name,
-        "options": {"max_concurrency": 50},
+        "options": {"max_concurrency": 25},
         "scan_type": "inspect",
         "sources": [
             {"id": source_output["id"], "name": source_name, "source_type": "network"}
@@ -412,7 +412,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
             "sources": "",
             "disabled-optional-products": "not_a_real_product",
         },
-        r"usage: {}{ scan edit(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -457,7 +457,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
     expected_result = {
         "id": "TO_BE_REPLACED",
         "name": scan_name,
-        "options": {"max_concurrency": 50},
+        "options": {"max_concurrency": 25},
         "scan_type": "inspect",
         "sources": [
             {"id": source_output["id"], "name": source_name, "source_type": "network"}
@@ -494,7 +494,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     expected_result = {
         "id": "TO_BE_REPLACED",
         "name": scan_name,
-        "options": {"max_concurrency": 50},
+        "options": {"max_concurrency": 25},
         "scan_type": "inspect",
         "sources": [
             {"id": source_output["id"], "name": source_name, "source_type": "network"}
