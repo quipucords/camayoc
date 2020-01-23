@@ -454,34 +454,28 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
 
     # Test that fails on non-existant path
     missing_output_path = f"/no/such/number/{output_pkg})"
-    with pytest.raises(
-        AssertionError,
-        message="I expected to fail with an\
-    AssertionError due to a missing directory",
-    ) as no_dir_exception_info:
+    with pytest.raises(AssertionError) as no_dir_exception_info:
         report_download(
             {source_option: scan[source_option], "output-file": missing_output_path}
         )
-    expected_msg = "directory /no/such/number does not exist"
-    assert no_dir_exception_info.match(expected_msg), (
-        "Unexpected output from qpc report download! \n"
-        f'Expected to find "{expected_msg}" in output, actual output was: \
-        {str(no_dir_exception_info.value)}'
-    )
+        expected_msg = "directory /no/such/number does not exist"
+        assert no_dir_exception_info.match(expected_msg), (
+            "Unexpected output from qpc report download! \n"
+            f'Expected to find "{expected_msg}" in output, actual output was: \
+            {str(no_dir_exception_info.value)}'
+        )
+        pytest.fail("I expected to fail with an AssertionError due to a missing directory")
 
     # Test that non tar.gz files fail
     non_tar_file = f"{format(uuid4())}"
-    with pytest.raises(
-        AssertionError,
-        message="I expected to fail with an \
-    AssertionError due to a bad output value specified",
-    ) as tar_exception_info:
+    with pytest.raises(AssertionError) as tar_exception_info:
         report_download(
             {source_option: scan[source_option], "output-file": non_tar_file}
         )
-    expected_tar_error = "extension is required to be tar.gz"
-    assert tar_exception_info.match(expected_tar_error), (
-        "Unexpected output from qpc report download!\n"
-        f'Expected to find "{expected_tar_error}" in output, actual output \
-        was: {str(no_dir_exception_info.value)}'
-    )
+        expected_tar_error = "extension is required to be tar.gz"
+        assert tar_exception_info.match(expected_tar_error), (
+            "Unexpected output from qpc report download!\n"
+            f'Expected to find "{expected_tar_error}" in output, actual output \
+            was: {str(no_dir_exception_info.value)}'
+        )
+        pytest.fail("I expected to fail with an AssertionError due to a bad output value specified")
