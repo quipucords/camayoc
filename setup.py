@@ -41,6 +41,8 @@ setup(
             "flake8-docstrings",
             "flake8-import-order",
             "flake8-quotes",
+            # Required for some tests
+            "flaky",
             # For `make package`
             "wheel",
             # For `make package-upload`
