@@ -13,7 +13,6 @@ type in the config file, the test will skip.
 :upstream: yes
 """
 import pytest
-from flaky import flaky
 
 import camayoc.tests.qpc.api.v1.utils as util
 from camayoc.constants import QPC_SOURCE_TYPES
@@ -21,7 +20,6 @@ from camayoc.qpc_models import ScanJob
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 
-@flaky
 @mark_runs_scans
 @pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_pause_cancel(shared_client, cleanup, source_type):
@@ -51,7 +49,6 @@ def test_pause_cancel(shared_client, cleanup, source_type):
     util.wait_until_state(job, state="canceled", timeout=60)
 
 
-@flaky
 @mark_runs_scans
 @pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_restart(shared_client, cleanup, source_type):
