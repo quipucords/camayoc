@@ -191,9 +191,10 @@ def test_add_with_username_sshkeyfile_become_password(
         {"name": name},
         generate_show_output(
             {
+                "cred_type": "network",
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
                 "username": username,
             }
         ),
