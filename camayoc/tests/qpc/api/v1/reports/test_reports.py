@@ -316,8 +316,8 @@ def test_OS_found_deployment_report(scan_info):
     """
     result = get_scan_result(scan_info["name"])
     if result == 'sat6':
-        pytest.skip(reason="Skipping sat6 run until Quipucords Issue #2039 "
-                    "resolved")
+        pytest.mark.skip("Skipping sat6 run until Quipucords Issue #2039 "
+                         "is resolved")
 
     report_id = result["report_id"]
     if not report_id:
