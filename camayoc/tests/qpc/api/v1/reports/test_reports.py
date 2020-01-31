@@ -315,6 +315,10 @@ def test_OS_found_deployment_report(scan_info):
         and the operating system is correctly identified.
     """
     result = get_scan_result(scan_info["name"])
+    if result == 'sat6':
+        pytest.skip(reason="Skipping sat6 run until Quipucords Issue #2039 "
+                    "resolved")
+
     report_id = result["report_id"]
     if not report_id:
         pytest.xfail(
