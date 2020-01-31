@@ -346,7 +346,7 @@ QPC_BRMS_RAW_FACTS = (
 
 QPC_EAP_RAW_FACTS = (
     "jboss_eap_running_paths",
-    "jboss_eap_locate_jbos_modules_jar",
+    "jboss_eap_locate_jboss_modules_jar",
     "eap_home_candidates",
     "eap_home_ls",
     "eap_home_version_txt",
