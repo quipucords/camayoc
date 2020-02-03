@@ -10,9 +10,8 @@
 :upstream: yes
 """
 import json
-import re
-
 import pytest
+import re
 
 from camayoc.constants import (
     QPC_BRMS_EXTENDED_FACTS,
@@ -105,6 +104,7 @@ def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
         assert report.get("sources", []) != []
 
 
+@pytest.mark.skip(reason="Skipped until Quipucords Issue #2038 us resolved")
 @mark_runs_scans
 def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config):
     """Perform a scan with optional products disabled.
@@ -227,6 +227,7 @@ def test_scanjob_with_enabled_extended_products(isolated_filesystem, qpc_server_
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
+@pytest.mark.skip(reason="Skipping until Quipucords Issue #2040 resoloved")
 @mark_runs_scans
 def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be paused and restarted.
@@ -293,6 +294,7 @@ def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     )
 
 
+@pytest.mark.skip(reason="Skipping until Quipucords Issue #2040 resoloved")
 @mark_runs_scans
 def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled even when paused.
