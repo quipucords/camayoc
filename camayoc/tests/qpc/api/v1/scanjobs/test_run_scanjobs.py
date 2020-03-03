@@ -28,6 +28,7 @@ from camayoc.tests.qpc.api.v1.conftest import get_scan_result, scan_list
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 
+@pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
 @mark_runs_scans
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_scan_complete(scan_info):
