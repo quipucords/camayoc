@@ -20,6 +20,7 @@ from camayoc.qpc_models import ScanJob
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 
+@pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
 @mark_runs_scans
 @pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_pause_cancel(shared_client, cleanup, source_type):
@@ -49,6 +50,7 @@ def test_pause_cancel(shared_client, cleanup, source_type):
     util.wait_until_state(job, state="canceled", timeout=60)
 
 
+@pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
 @mark_runs_scans
 @pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_restart(shared_client, cleanup, source_type):
