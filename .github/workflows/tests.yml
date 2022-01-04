@@ -1,4 +1,4 @@
-name: Camayoc Tests
+name: Camayoc Self Tests
 
 on:
   push:
@@ -25,14 +25,16 @@ jobs:
       run: |
         make install-dev
         pip install codecov
-    - name: Lint
+    - name: Lint source
       run: |
         make lint
-    - name: Tests
+    - name: Generate documentation
       run: |
-        make test-coverage
         make docs-html
         make validate-docstrings
+    - name: Test coverage
+      run: |
+        make test-coverage
     - name: Code Coverage
       run: |
         codecov
