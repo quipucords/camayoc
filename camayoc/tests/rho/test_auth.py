@@ -317,7 +317,7 @@ def test_edit_password(isolated_filesystem):
     assert rho_auth_show.exitstatus == 0
 
     rho_auth_edit = pexpect.spawn(
-        "rho auth edit --name={} --password".format(name, new_password)
+        "rho auth edit --name={} --password".format(name)
     )
     input_vault_password(rho_auth_edit)
     assert rho_auth_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
@@ -510,7 +510,7 @@ def test_edit_sudo_password(isolated_filesystem):
     assert rho_auth_show.exitstatus == 0
 
     rho_auth_edit = pexpect.spawn(
-        "rho auth edit --name={} --sudo-password".format(name, new_sudo_password)
+        "rho auth edit --name={} --sudo-password".format(name)
     )
     input_vault_password(rho_auth_edit)
     assert rho_auth_edit.expect(SUDO_PASSWORD_INPUT) == 0

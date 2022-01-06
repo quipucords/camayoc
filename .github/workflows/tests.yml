@@ -1,0 +1,40 @@
+name: Camayoc Self Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.6", "3.9"]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        make install-dev
+        pip install codecov
+    - name: Lint source
+      run: |
+        make lint
+    - name: Generate documentation
+      run: |
+        make docs-html
+        make validate-docstrings
+    - name: Test coverage
+      run: |
+        make test-coverage
+    - name: Code Coverage
+      run: |
+        codecov

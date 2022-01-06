@@ -75,8 +75,8 @@ class APIClientTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
-        cls.config = yaml.load(CAMAYOC_CONFIG)
-        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG)
+        cls.config = yaml.load(CAMAYOC_CONFIG, Loader=yaml.FullLoader)
+        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG, Loader=yaml.FullLoader)
 
     def test_create_with_config(self):
         """If a hostname is specified in the config file, we use it."""
@@ -215,8 +215,8 @@ class CredentialTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
-        cls.config = yaml.load(CAMAYOC_CONFIG)
-        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG)
+        cls.config = yaml.load(CAMAYOC_CONFIG, Loader=yaml.FullLoader)
+        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG, Loader=yaml.FullLoader)
 
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
@@ -241,8 +241,8 @@ class SourceTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
-        cls.config = yaml.load(CAMAYOC_CONFIG)
-        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG)
+        cls.config = yaml.load(CAMAYOC_CONFIG, Loader=yaml.FullLoader)
+        cls.invalid_config = yaml.load(INVALID_HOST_CONFIG, Loader=yaml.FullLoader)
 
     def test_equivalent_network(self):
         """If a hostname is specified in the config file, we use it."""
@@ -287,7 +287,7 @@ class ScanTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
-        cls.config = yaml.load(CAMAYOC_CONFIG)
+        cls.config = yaml.load(CAMAYOC_CONFIG, Loader=yaml.FullLoader)
 
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
@@ -306,7 +306,7 @@ class ScanJobTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
-        cls.config = yaml.load(CAMAYOC_CONFIG)
+        cls.config = yaml.load(CAMAYOC_CONFIG, Loader=yaml.FullLoader)
 
     def test_create(self):
         """If a hostname is specified in the config file, we use it."""

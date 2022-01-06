@@ -53,7 +53,7 @@ def get_config():
     try:
         cfg = config.get_config()
     except ConfigFileNotFoundError:
-        cfg = yaml.load(BASE_CONFIG)
+        cfg = yaml.load(BASE_CONFIG, Loader=yaml.FullLoader)
 
     return cfg, os.path.join(os.getcwd(), "config.yaml")
 

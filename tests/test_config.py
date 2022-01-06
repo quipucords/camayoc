@@ -48,7 +48,7 @@ class GetConfigTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Create a parsed configuraton dictionary."""
-        cls.config = yaml.load(CAMAYOC_CONFIG)
+        cls.config = yaml.load(CAMAYOC_CONFIG, Loader=yaml.FullLoader)
 
     def test_cache_full(self):
         """No config is read from disk if the cache is populated."""

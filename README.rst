@@ -10,8 +10,8 @@ Camayoc
 
 A GPL-licensed Python library that facilitates functional testing of rho_ and quipucords_.
 
-.. image:: https://travis-ci.org/quipucords/camayoc.svg?branch=master
-   :target: https://travis-ci.org/quipucords/camayoc
+.. image:: https://github.com/quipucords/camayoc/actions/workflows/tests.yml/badge.svg?branch=master
+   :target: https://github.com/quipucords/camayoc/actions/workflows/tests.yml?query=branch%3Amaster
 .. image:: https://codecov.io/gh/quipucords/camayoc/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/quipucords/camayoc
 

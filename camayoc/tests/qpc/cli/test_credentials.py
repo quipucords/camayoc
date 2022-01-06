@@ -313,7 +313,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_cred_edit = pexpect.spawn(
-        "{} cred edit --name={} --password".format(client_cmd, name, new_password)
+        "{} cred edit --name={} --password".format(client_cmd, name)
     )
     assert qpc_cred_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_password)
@@ -494,7 +494,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     )
 
     qpc_cred_edit = pexpect.spawn(
-        "{} cred edit --name={} --become-password".format(client_cmd, name, new_become_password)
+        "{} cred edit --name={} --become-password".format(client_cmd, name)
     )
     assert qpc_cred_edit.expect(BECOME_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_become_password)
