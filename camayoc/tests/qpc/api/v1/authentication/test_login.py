@@ -27,21 +27,38 @@ def test_login():
         to build our authentication headers and make authenticated requests.
     """
     client = api.Client(authenticate=False)
-    client.login()
+    response = client.login()
+    data = response.json()
+    assert data.get("token"), "No authentication 'token' received"
     client.get(QPC_SOURCE_PATH)
+
+
+def test_logout():
+    """Test that we can log out to the server.
+
+    :id: c4244b27-bfda-454a-a22f-6fb05b900e09
+    :description: Test that we can logout to the server
+    :steps:
+        1) Log into the server
+        2) Log out of the server
+    :expectedresults: Logged out with success.
+    """
+    client = api.Client(authenticate=False)
+    client.login()
+    client.logout()
 
 
 @pytest.mark.parametrize(
     "endpoint", [QPC_SOURCE_PATH, QPC_CREDENTIALS_PATH, QPC_SCAN_PATH]
 )
-def test_logout(endpoint):
+def test_forbidden(endpoint):
     """Test that we can't access the server without a token.
 
     :id: ca51b2a0-1e33-491d-8bb2-5e81d135424d
-    :description: Test that we can logout of the server
+    :description: Test if we are logged out of the server, then we are forbidden to reach endpoints
     :steps:
         1) Log into the server
-        2) Logout of the server
+        2) Log out of the server
         3) Try an access the server
     :expectedresults: Our request missing a valid auth token is rejected.
     """
