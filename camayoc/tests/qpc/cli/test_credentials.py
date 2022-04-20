@@ -33,9 +33,6 @@ from camayoc.tests.qpc.cli.utils import (
 )
 
 
-SKIP_REASON_LOCAL_SSHKEYS = "Expects the same hardcoded /sshkeys/ locally and at the server"
-
-
 def generate_show_output(data):
     """Generate a regex pattern with the data for a qpc cred show output."""
     cred_type = data.get("cred_type", "network")
@@ -127,7 +124,6 @@ def test_add_with_username_password_become_password(
     )
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     """Add an auth with username and sshkeyfile.
@@ -160,7 +156,6 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     )
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_add_with_username_sshkeyfile_become_password(
     isolated_filesystem, qpc_server_config
@@ -257,7 +252,6 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
     )
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     """Edit the username of a not created auth entry.
@@ -341,7 +335,6 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     )
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     """Edit the password of a not created auth entry.
@@ -370,7 +363,6 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     """Edit an auth's sshkeyfile.
@@ -425,7 +417,6 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     )
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     """Edit the sshkeyfile of a not created auth entry.
@@ -462,7 +453,6 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_edit_become_password(isolated_filesystem, qpc_server_config):
     """Edit an auth's become password.
@@ -526,7 +516,6 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     )
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     """Edit the become password of a not created auth entry.
@@ -584,7 +573,6 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_clear(isolated_filesystem, qpc_server_config):
     """Clear an auth.
@@ -625,7 +613,6 @@ def test_clear(isolated_filesystem, qpc_server_config):
     qpc_cred_show.close()
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_clear_with_source(isolated_filesystem, qpc_server_config):
     """Attempt to clear a credential being used by a source.
@@ -738,7 +725,6 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_clear.exitstatus == 1
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 def test_clear_all(isolated_filesystem, qpc_server_config):
     """Clear all auth entries.
