@@ -27,7 +27,6 @@ CREATE_DATA = ["localhost", "127.0.0.1", "example.com"]
 HOST_FORMAT_DATA = [["192.0.2.[0:255]", "192.0.3.0/24"]]
 RESULTING_HOST_FORMAT_DATA = ["192.0.2.[0:255]", "192.0.3.[0:255]"]
 MIXED_DATA = CREATE_DATA + HOST_FORMAT_DATA
-SKIP_REASON_LOCAL_SSHKEYS = "Expects the same hardcoded /sshkeys/ locally and at the server"
 
 
 @pytest.mark.parametrize("scan_host", HOST_FORMAT_DATA)
@@ -60,7 +59,6 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     assert_matches_server(src)
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_filesystem):
@@ -102,7 +100,6 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
     assert_matches_server(src)
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", MIXED_DATA)
 def test_create_multiple_creds_and_sources(
@@ -154,7 +151,6 @@ def test_create_multiple_creds_and_sources(
     assert_matches_server(src)
 
 
-@pytest.mark.skip(reason=SKIP_REASON_LOCAL_SSHKEYS)
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_negative_update_invalid(
