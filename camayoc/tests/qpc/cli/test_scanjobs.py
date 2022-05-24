@@ -55,7 +55,7 @@ def test_scanjob(isolated_filesystem, qpc_server_config, scan):
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id)
+    wait_for_scan(scan_job_id, timeout=1800)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     report_id = result["report_id"]
