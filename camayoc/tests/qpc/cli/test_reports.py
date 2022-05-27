@@ -200,6 +200,69 @@ FACTS = (
     "virt_virt",
     "virt_what_type",
     "yum_enabled_repolist",
+    "cloud_provider",
+    "date_filesystem_create",
+    "eap5_home_ls_jboss_as",
+    "eap5_home_readme_html",
+    "eap5_home_run_jar_manifest",
+    "eap5_home_run_jar_version",
+    "eap5_home_version_txt",
+    "eap_home_bin",
+    "eap_home_jboss_modules_manifest",
+    "eap_home_jboss_modules_version",
+    "eap_home_layers",
+    "eap_home_layers_conf",
+    "eap_home_ls",
+    "eap_home_readme_txt",
+    "eap_home_version_txt",
+    "host_done",
+    "insights_client_id",
+    "instnum",
+    "jboss_activemq_ver",
+    "jboss_brms_drools_core_ver",
+    "jboss_brms_kie_api_ver",
+    "jboss_brms_kie_in_business_central",
+    "jboss_brms_kie_war_ver",
+    "jboss_brms_locate_kie_api",
+    "jboss_brms_manifest_mf",
+    "jboss_camel_ver",
+    "jboss_cxf_ver",
+    "jboss_eap_find_jboss_modules_jar",
+    "jboss_eap_find_jboss_modules_jar",
+    "jboss_eap_jar_ver",
+    "jboss_eap_jar_ver",
+    "jboss_eap_locate_jboss_modules_jar",
+    "jboss_eap_locate_jboss_modules_jar",
+    "jboss_eap_run_jar_ver",
+    "jboss_eap_run_jar_ver",
+    "jboss_fuse_activemq_ver",
+    "jboss_fuse_activemq_ver",
+    "jboss_fuse_camel_ver",
+    "jboss_fuse_camel_ver",
+    "jboss_fuse_cxf_ver",
+    "jboss_fuse_cxf_ver",
+    "jboss_fuse_on_eap_activemq_ver",
+    "jboss_fuse_on_eap_camel_ver",
+    "jboss_fuse_on_eap_cxf_ver",
+    "jboss_fuse_on_karaf_activemq_ver",
+    "jboss_fuse_on_karaf_camel_ver",
+    "jboss_fuse_on_karaf_cxf_ver",
+    "jws_has_eula_txt_file",
+    "jws_home",
+    "karaf_find_karaf_jar",
+    "karaf_home_bin_fuse",
+    "karaf_home_system_org_jboss",
+    "karaf_locate_karaf_jar",
+    "karaf_running_processes",
+    "last_booted_at",
+    "redhat_release_name",
+    "redhat_release_release",
+    "redhat_release_version",
+    "subman_overall_status",
+    "systemid",
+    "tomcat_is_part_of_redhat_product",
+    "virt_num_guests",
+    "virt_num_running_guests",
 )
 """Common detail report expected facts."""
 
@@ -464,7 +527,9 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
             f'Expected to find "{expected_msg}" in output, actual output was: \
             {str(no_dir_exception_info.value)}'
         )
-        pytest.fail("I expected to fail with an AssertionError due to a missing directory")
+        pytest.fail(
+            "I expected to fail with an AssertionError due to a missing directory"
+        )
 
     # Test that non tar.gz files fail
     non_tar_file = f"{format(uuid4())}"
@@ -478,4 +543,6 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
             f'Expected to find "{expected_tar_error}" in output, actual output \
             was: {str(no_dir_exception_info.value)}'
         )
-        pytest.fail("I expected to fail with an AssertionError due to a bad output value specified")
+        pytest.fail(
+            "I expected to fail with an AssertionError due to a bad output value specified"
+        )
