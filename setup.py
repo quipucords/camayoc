@@ -34,6 +34,7 @@ setup(
         "dev": [
             # For `make docs`
             "sphinx<1.8",
+            "jinja2==3.0.3",
             # For `make docs-serve`
             "sphinx-serve",
             # For `make lint`
