@@ -12,27 +12,6 @@ from camayoc import config, exceptions, utils
 
 
 CAMAYOC_CONFIG = """
-rho:
-  auths:
-    - username: user1
-      password: password1
-      name: name1
-    - username: user2
-      password: password2
-      sshkeyfile: sshkeyfile2
-  hosts:
-    - hostname: host1
-      ip: ip1
-      facts:
-        fact1: value1
-        fact2: value2
-  profiles:
-    - name: profile1
-      auths:
-        - name1
-        - name2
-      hosts:
-        - localhost
 vcenter:
     hostname: example1.com
 qpc:

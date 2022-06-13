@@ -55,16 +55,6 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.ui.utils
     api/camayoc.tests.qpc.ui.views
     api/camayoc.tests.qpc.utils
-    api/camayoc.tests.remote
-    api/camayoc.tests.remote.rho
-    api/camayoc.tests.remote.rho.test_scan
-    api/camayoc.tests.rho
-    api/camayoc.tests.rho.test_auth
-    api/camayoc.tests.rho.test_fact
-    api/camayoc.tests.rho.test_options
-    api/camayoc.tests.rho.test_profile
-    api/camayoc.tests.rho.test_scan
-    api/camayoc.tests.rho.utils
     api/camayoc.tests.utils
     api/camayoc.utils
     api/tests

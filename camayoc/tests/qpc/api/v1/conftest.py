@@ -191,7 +191,6 @@ def run_all_scans(vcenter_client):
                     for credential_name in machine["credentials"]:
                         if credential_name not in credential_ids:
                             credential = config_creds[credential_name].copy()
-                            credential.pop("rho", None)
                             credential["cred_type"] = credential.pop("type")
                             credential["ssh_keyfile"] = credential.pop(
                                 "sshkeyfile", None

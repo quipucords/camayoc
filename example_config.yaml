@@ -12,17 +12,10 @@ credentials:
       type: 'vcenter'
       password: 'example1'
       username: 'username1'
-      rho: false
     - name: 'sat6'
       type: 'satellite'
       password: 'CHANGEME'
       username: 'CHANGEUSERNAME'
-      # When sharing a config file for quipucords and rho
-      # Mark credentials that you do not want to use in the rho
-      # tests with this flag
-      # All non-network sources must have this flag because
-      # rho does not know what to do with non-network credentials
-      rho: false
 
 qpc:
     # this is how you would configure quipucords if running
