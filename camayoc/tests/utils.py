@@ -120,8 +120,6 @@ def wait_until_live(servers, timeout=360):
     host in the profile is unreachable. Otherwise, if there is at least one
     valid host, the scan will go on and only facts about reached hosts will be
     tested.
-
-    `See rho issue #302 <https://github.com/quipucords/rho/issues/302>`_
     """
     system = cli.System(hostname="localhost", transport="local")
     client = cli.Client(system)

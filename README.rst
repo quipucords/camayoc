@@ -1,5 +1,4 @@
 .. _quipucords: https://github.com/quipucords/quipucords
-.. _rho: https://github.com/quipucords/rho
 .. _yupana: https://github.com/quipucords/yupana
 .. _qpc: https://copr.fedorainfracloud.org/coprs/g/quipucords/qpc/
 .. _sphinx: http://www.sphinx-doc.org/en/master/
@@ -8,7 +7,7 @@
 Camayoc
 =======
 
-A GPL-licensed Python library that facilitates functional testing of rho_ and quipucords_.
+A GPL-licensed Python library that facilitates functional testing of quipucords_.
 
 .. image:: https://github.com/quipucords/camayoc/actions/workflows/tests.yml/badge.svg?branch=master
    :target: https://github.com/quipucords/camayoc/actions/workflows/tests.yml?query=branch%3Amaster
@@ -61,8 +60,8 @@ against and the credentials to use with these hosts. It also tells Camayoc
 where the quipucords_ server you want to test is running so the tests can
 execute against the server.
 
-Camayoc contains test suites for quipucords/rho, quipucords/quipucords,
-and quipucords/yupana projects. All portions of the test suite expect the same
+Camayoc contains test suites for quipucords/qpc, quipucords/quipucords and
+quipucords/yupana projects. All portions of the test suite expect the same
 config file format.  Any changes to the test suite that require changes to the
 config file format should be made with this in mind.
 
@@ -107,31 +106,8 @@ be done in the ``pytest.ini`` file.
 Running The Test Suite
 ^^^^^^^^^^^^^^^^^^^^^^
 
-While Camayoc  contains test for rho_ and quipucords_, and these share
-a config file format, testing both rho_ and quipucords_ simultaneously is
-not a supported use case.
-
 Camayoc uses ``py.test`` as its test runner. The pytest project has excellent
 documentation available at https://docs.pytest.org/en/latest/contents.html
-
-Running Tests For rho_
-^^^^^^^^^^^^^^^^^^^^^^
-
-To run all the tests for rho_, first have rho_ installed and available in
-your ``$PATH``. This can be done by either ``rpm`` install to the system or by
-``pip`` installing rho_ from source into your Camayoc virtual
-environment. Then invoke the main test suite from the root directory of
-Camayoc with::
-
-    make test-rho
-
-There are some additional tests for rho located in
-``camayoc/tests/remote/rho`` that scan all machines listed in the
-``inventory`` section of the config file (see ``example_config.yanl``)
-with all available network credentials. To run these, you similarly
-invoke::
-
-    make test-rho-remote
 
 Running Tests For quipucords_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
