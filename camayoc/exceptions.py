@@ -64,3 +64,11 @@ class StoppedScanException(Exception):
     a terminal state from which it could not progress, so this exception has
     been raised instead of continuing to wait.
     """
+
+
+class MisconfiguredWidgetException(Exception):
+    """Raised by UI Widget when expected property is not there."""
+
+
+class PageFactoryException(Exception):
+    """Page factory received invalid value and can't instantiate new class."""
