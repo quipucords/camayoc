@@ -61,9 +61,7 @@ def test_scanjob(isolated_filesystem, qpc_server_config, scan):
     report_id = result["report_id"]
     assert report_id is not None
     output_file = "out.json"
-    report = report_detail(
-        {"json": None, "output-file": output_file, "report": report_id}
-    )
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
     with open(output_file) as report_data:
         report = json.load(report_data)
         assert report.get("sources", []) != []
@@ -96,9 +94,7 @@ def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
     report_id = result["report_id"]
     assert report_id is not None
     output_file = "out.json"
-    report = report_detail(
-        {"json": None, "output-file": output_file, "report": report_id}
-    )
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
     with open(output_file) as report_data:
         report = json.load(report_data)
         assert report.get("sources", []) != []
@@ -144,9 +140,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config):
     report_id = result["report_id"]
     assert report_id is not None
     output_file = "out.json"
-    report = report_detail(
-        {"json": None, "output-file": output_file, "report": report_id}
-    )
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
     with open(output_file) as report_data:
         report = json.load(report_data)
         sources = report.get("sources")
@@ -184,9 +178,7 @@ def test_scanjob_with_enabled_extended_products(isolated_filesystem, qpc_server_
         the report.
     """
     errors_found = []
-    extended_facts = (
-        QPC_EAP_EXTENDED_FACTS + QPC_BRMS_EXTENDED_FACTS + QPC_FUSE_EXTENDED_FACTS
-    )
+    extended_facts = QPC_EAP_EXTENDED_FACTS + QPC_BRMS_EXTENDED_FACTS + QPC_FUSE_EXTENDED_FACTS
     scan_name = uuid4()
     source_name = config_sources()[0]["name"]
     scan_add_and_check(
@@ -206,9 +198,7 @@ def test_scanjob_with_enabled_extended_products(isolated_filesystem, qpc_server_
     report_id = result["report_id"]
     assert report_id is not None
     output_file = "out.json"
-    report = report_detail(
-        {"json": None, "output-file": output_file, "report": report_id}
-    )
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
     with open(output_file) as report_data:
         report = json.load(report_data)
         sources = report.get("sources")
@@ -257,9 +247,7 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     report_id = result["report_id"]
     assert report_id is not None
     output_file = "out.json"
-    report = report_detail(
-        {"json": None, "output-file": output_file, "report": report_id}
-    )
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
     with open(output_file) as report_data:
         report = json.load(report_data)
         assert report.get("sources", []) != []
@@ -289,8 +277,7 @@ def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
     wait_for_scan(scan_job_id, status="canceled", timeout=60)
     result = scan_restart({"id": scan_job_id}, exitstatus=1)
     assert result.startswith(
-        "Error: Scan cannot be restarted. The scan must be paused for it to "
-        "be restarted."
+        "Error: Scan cannot be restarted. The scan must be paused for it to " "be restarted."
     )
 
 
@@ -322,6 +309,5 @@ def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     wait_for_scan(scan_job_id, status="canceled", timeout=60)
     result = scan_restart({"id": scan_job_id}, exitstatus=1)
     assert result.startswith(
-        "Error: Scan cannot be restarted. The scan must be paused for it to "
-        "be restarted."
+        "Error: Scan cannot be restarted. The scan must be paused for it to " "be restarted."
     )

@@ -139,9 +139,7 @@ class APIClientTestCase(unittest.TestCase):
             cl = client()
             u = cl.get_user().json()["username"]
             assert u == config.get_config()["qpc"]["username"]
-            client.request.assert_called_once_with(
-                "GET", urljoin(cl.url, "users/current/")
-            )
+            client.request.assert_called_once_with("GET", urljoin(cl.url, "users/current/"))
 
     def test_logout(self):
         """Test that when we log out, all credentials are cleared."""

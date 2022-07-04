@@ -93,9 +93,7 @@ class Test_Uploads:
         log_matches = search_mult_pod_logs(pod_logs, "NEW REPORT UPLOAD")
         assert log_matches is not []
 
-    def test_report_saving_message(
-        self, yupana_config, mult_pod_logs, isolated_filesystem
-    ):
+    def test_report_saving_message(self, yupana_config, mult_pod_logs, isolated_filesystem):
         """Verifies the application saved the upload service message.
 
         :id: 8e8e57a8-ad86-11e9-a486-8c1645a90ee2
@@ -108,9 +106,7 @@ class Test_Uploads:
         log_matches = search_mult_pod_logs(pod_logs, "NEW REPORT UPLOAD")
         assert log_matches is not []
 
-    def test_start_report_processor(
-        self, yupana_config, mult_pod_logs, isolated_filesystem
-    ):
+    def test_start_report_processor(self, yupana_config, mult_pod_logs, isolated_filesystem):
         """Verifies the application starts the report processor after upload
 
         :id: 3129d14a-ad87-11e9-97a2-8c1645a90ee2
@@ -121,9 +117,7 @@ class Test_Uploads:
             new report.
         """
         pod_logs = mult_pod_logs
-        log_matches = search_mult_pod_logs(
-            pod_logs, 'Starting report processor. State is "new".'
-        )
+        log_matches = search_mult_pod_logs(pod_logs, 'Starting report processor. State is "new".')
         assert log_matches is not []
 
     def test_report_download(self, yupana_config, mult_pod_logs, isolated_filesystem):
@@ -143,9 +137,7 @@ class Test_Uploads:
         )
         assert log_matches is not []
 
-    def test_report_download_success(
-        self, yupana_config, mult_pod_logs, isolated_filesystem
-    ):
+    def test_report_download_success(self, yupana_config, mult_pod_logs, isolated_filesystem):
         """Verifies the application successfully download the report after upload
 
         :id: 2b130e0a-ad89-11e9-97da-8c1645a90ee2
@@ -160,9 +152,7 @@ class Test_Uploads:
         )
         assert log_matches is not []
 
-    def test_decode_report_metadata(
-        self, yupana_config, mult_pod_logs, isolated_filesystem
-    ):
+    def test_decode_report_metadata(self, yupana_config, mult_pod_logs, isolated_filesystem):
         """Verifies the application successfully decoded the metadata from the
             report uploaded.
 

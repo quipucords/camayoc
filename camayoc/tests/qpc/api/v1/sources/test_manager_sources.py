@@ -80,9 +80,7 @@ def test_negative_create_multiple(src_type, shared_client, cleanup, scan_host):
 @pytest.mark.parametrize("invalid_host", INVALID_HOST_DATA)
 @pytest.mark.parametrize("scan_host", VALID_HOST_DATA)
 @pytest.mark.parametrize("src_type", QPC_HOST_MANAGER_TYPES)
-def test_negative_update_invalid(
-    src_type, shared_client, cleanup, scan_host, invalid_host
-):
+def test_negative_update_invalid(src_type, shared_client, cleanup, scan_host, invalid_host):
     """Create a host manager source and then update it with invalid data.
 
     :id: d57d8481-54e3-4d9a-b330-80edc9364f37

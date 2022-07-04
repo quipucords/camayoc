@@ -48,8 +48,9 @@ def test_get_qpc_url_no_hostname():
 def test_isolated_filesystem():
     """Test default ``camayoc.utils.isolated_filesystem``."""
     with utils.isolated_filesystem() as path:
-        assert path.startswith('/tmp/') or path.startswith('/var/folders/'), "Make sure default isolated_filesystem "\
-            "creates the temp dir at '/tmp/'."
+        assert path.startswith("/tmp/") or path.startswith("/var/folders/"), (
+            "Make sure default isolated_filesystem " "creates the temp dir at '/tmp/'."
+        )
 
 
 def test_isolated_filesystem_w_path():
@@ -57,5 +58,7 @@ def test_isolated_filesystem_w_path():
     filesystem_path."""
     test_path = mkdtemp(prefix="")
     with utils.isolated_filesystem(test_path) as path:
-        assert path.startswith(test_path), "Make sure isolated_filesystem "\
+        assert path.startswith(test_path), (
+            "Make sure isolated_filesystem "
             "creates the temp dir under ``filesystem_path``, when provided."
+        )

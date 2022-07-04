@@ -159,9 +159,7 @@ def run_all_scans(vcenter_client):
         # if no scans are defined, no need to go any further
         return
 
-    config_creds = {
-        credential["name"]: credential for credential in config.get("credentials", [])
-    }
+    config_creds = {credential["name"]: credential for credential in config.get("credentials", [])}
     inventory = {machine["hostname"]: machine for machine in config["inventory"]}
     vcenter_inventory = {
         machine["hostname"]: machine
@@ -170,9 +168,7 @@ def run_all_scans(vcenter_client):
     }
 
     if not config_creds or not inventory:
-        raise ValueError(
-            "Make sure to have credentials and inventory" " items in the config file"
-        )
+        raise ValueError("Make sure to have credentials and inventory" " items in the config file")
 
     credential_ids = {}
     source_ids = {}
@@ -192,12 +188,8 @@ def run_all_scans(vcenter_client):
                         if credential_name not in credential_ids:
                             credential = config_creds[credential_name].copy()
                             credential["cred_type"] = credential.pop("type")
-                            credential["ssh_keyfile"] = credential.pop(
-                                "sshkeyfile", None
-                            )
-                            credential_ids[credential_name] = create_cred(
-                                credential, cleanup
-                            )
+                            credential["ssh_keyfile"] = credential.pop("sshkeyfile", None)
+                            credential_ids[credential_name] = create_cred(credential, cleanup)
                     if machine.get("type", "network") == "network":
                         vm = scan_vms[machine["hostname"]]
                         machine["ipv4"] = vm.guest.ipAddress
@@ -205,8 +197,7 @@ def run_all_scans(vcenter_client):
                         "source_type": machine.get("type", "network"),
                         "hosts": [machine.get("ipv4") or machine["hostname"]],
                         "credential_ids": [
-                            credential_ids[credential]
-                            for credential in machine["credentials"]
+                            credential_ids[credential] for credential in machine["credentials"]
                         ],
                     }
                     if "options" in machine:
@@ -225,9 +216,7 @@ def run_all_scans(vcenter_client):
             }
             for source_name in scan["sources"]:
                 source_id = source_ids[source_name]
-                scan_info["expected_products"].append(
-                    {source_id: expected_products[source_name]}
-                )
+                scan_info["expected_products"].append({source_id: expected_products[source_name]})
                 scan_info["source_id_to_hostname"][source_id] = source_name
                 scan_info["source_ids"].append(source_id)
 

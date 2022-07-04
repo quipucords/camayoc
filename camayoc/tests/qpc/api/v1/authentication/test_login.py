@@ -48,9 +48,7 @@ def test_logout():
     client.logout()
 
 
-@pytest.mark.parametrize(
-    "endpoint", [QPC_SOURCE_PATH, QPC_CREDENTIALS_PATH, QPC_SCAN_PATH]
-)
+@pytest.mark.parametrize("endpoint", [QPC_SOURCE_PATH, QPC_CREDENTIALS_PATH, QPC_SCAN_PATH])
 def test_forbidden(endpoint):
     """Test that we can't access the server without a token.
 

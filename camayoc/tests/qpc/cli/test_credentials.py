@@ -38,9 +38,7 @@ def generate_show_output(data):
     cred_type = data.get("cred_type", "network")
     output = "{\r\n"
     if cred_type == "network":
-        output += '    "become_method": "{}",\r\n'.format(
-            data.get("become_method", "sudo")
-        )
+        output += '    "become_method": "{}",\r\n'.format(data.get("become_method", "sudo"))
         if "become_password" in data:
             output += '    "become_password": "{}",\r\n'.format(data["become_password"])
         output += '    "become_user": "{}",\r\n'.format(data.get("become_user", "root"))
@@ -56,9 +54,7 @@ def generate_show_output(data):
     return output
 
 
-def test_add_with_username_password(
-    isolated_filesystem, qpc_server_config, source_type
-):
+def test_add_with_username_password(isolated_filesystem, qpc_server_config, source_type):
     """Add an auth with username and password.
 
     :id: c935d34c-54f6-443f-a85c-344934bc0cfb
@@ -88,9 +84,7 @@ def test_add_with_username_password(
     )
 
 
-def test_add_with_username_password_become_password(
-    isolated_filesystem, qpc_server_config
-):
+def test_add_with_username_password_become_password(isolated_filesystem, qpc_server_config):
     """Add an auth with username, password and become password.
 
     :id: df0d61d5-363f-400a-961c-04146f6089e1
@@ -142,7 +136,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     tmp_dir = os.path.basename(os.getcwd())
     sshkeyfile = Path(sshkeyfile_name)
     sshkeyfile.touch()
-#    sshkeyfile = '/sshkeys/id_rsa'
+    #    sshkeyfile = '/sshkeys/id_rsa'
 
     cred_add_and_check(
         {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
@@ -151,15 +145,17 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}", "username": username}
+            {
+                "name": name,
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "username": username,
+            }
         ),
     )
 
 
 @pytest.mark.ssh_keyfile_path
-def test_add_with_username_sshkeyfile_become_password(
-    isolated_filesystem, qpc_server_config
-):
+def test_add_with_username_sshkeyfile_become_password(isolated_filesystem, qpc_server_config):
     """Add an auth with username, sshkeyfile and become password.
 
     :id: 94a45a9b-cda7-41e7-8be5-caf598917ebb
@@ -312,9 +308,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
         ),
     )
 
-    qpc_cred_edit = pexpect.spawn(
-        "{} cred edit --name={} --password".format(client_cmd, name)
-    )
+    qpc_cred_edit = pexpect.spawn("{} cred edit --name={} --password".format(client_cmd, name))
     assert qpc_cred_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_password)
     assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
@@ -390,7 +384,11 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}", "username": username}
+            {
+                "name": name,
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "username": username,
+            }
         ),
     )
 
@@ -597,7 +595,11 @@ def test_clear(isolated_filesystem, qpc_server_config):
     cred_show_and_check(
         {"name": name},
         generate_show_output(
-            {"name": name, "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}", "username": username}
+            {
+                "name": name,
+                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "username": username,
+            }
         ),
     )
 
@@ -677,8 +679,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         " or more sources.\r\n"
         "sources: {'id': '%s', 'name': '%s'}\r\n"
         'Failed to remove credential "%s". '
-        "For more information, see the server log file."
-        % (output["id"], source_name, cred_name)
+        "For more information, see the server log file." % (output["id"], source_name, cred_name)
     )
     qpc_cred_clear.logfile.close()
     qpc_cred_clear.close()

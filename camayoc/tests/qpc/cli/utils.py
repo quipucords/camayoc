@@ -29,9 +29,7 @@ def clear_all_entities():
     errors = []
     output = []
     for command in ("scan", "source", "cred"):
-        clear_output = pexpect.run(
-            "{} {} clear --all".format(client_cmd, command), encoding="utf8"
-        )
+        clear_output = pexpect.run("{} {} clear --all".format(client_cmd, command), encoding="utf8")
         errors.extend(error_finder.findall(clear_output))
         output.append(clear_output)
     assert errors == [], output
@@ -51,9 +49,7 @@ def config_credentials():
         itertools.chain(*[source["credentials"] for source in config_sources()])
     )
     return [
-        credential
-        for credential in config_credentials
-        if credential["name"] in scan_credentials
+        credential for credential in config_credentials if credential["name"] in scan_credentials
     ]
 
 
@@ -91,9 +87,7 @@ def wait_for_scan(scan_job_id, status="completed", timeout=900):
         if status != "failed" and result["status"] == "failed":
             raise FailedScanException(
                 'The scan with ID "{}" has failed unexpectedly.\n\n'
-                "The information about the scan is:\n{}\n".format(
-                    scan_job_id, pformat(result)
-                )
+                "The information about the scan is:\n{}\n".format(scan_job_id, pformat(result))
             )
         if result["status"] == status:
             return
@@ -101,9 +95,7 @@ def wait_for_scan(scan_job_id, status="completed", timeout=900):
         timeout -= 5
     raise WaitTimeError(
         'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
-        "The information about the scan is:\n{}\n".format(
-            scan_job_id, status, pformat(result)
-        )
+        "The information about the scan is:\n{}\n".format(scan_job_id, status, pformat(result))
     )
 
 
@@ -188,10 +180,7 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
         assert qpc_cred_add.expect(prompt) == 0
         qpc_cred_add.sendline(value)
     if "name" in options:
-        assert (
-            qpc_cred_add.expect('Credential "{}" was added'.format(options["name"]))
-            == 0
-        )
+        assert qpc_cred_add.expect('Credential "{}" was added'.format(options["name"])) == 0
     assert qpc_cred_add.expect(pexpect.EOF) == 0
     qpc_cred_add.close()
     assert qpc_cred_add.exitstatus == exitstatus
@@ -233,8 +222,7 @@ def report_merge_status(options=None, exitstatus=0):
     """Run ``qpc report merge-status`` with ``options`` and return output."""
     output = cli_command("{} report merge-status".format(client_cmd), options, exitstatus)
     match = re.match(
-        r"Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: "
-        r'"(?P<report_id>\d+)")?',
+        r"Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: " r'"(?P<report_id>\d+)")?',
         output,
         flags=re.DOTALL,
     )
@@ -327,9 +315,7 @@ def source_edit_and_check(options, inputs=None, exitstatus=0):
     for prompt, value in inputs:
         assert qpc_source_edit.expect(prompt) == 0
         qpc_source_edit.sendline(value)
-    assert (
-        qpc_source_edit.expect('Source "{}" was updated'.format(options["name"])) == 0
-    )
+    assert qpc_source_edit.expect('Source "{}" was updated'.format(options["name"])) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == exitstatus

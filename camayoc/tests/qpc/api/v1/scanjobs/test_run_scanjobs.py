@@ -84,9 +84,7 @@ def test_scan_task_results(scan_info):
     num_failed = scan.get("systems_failed", 0)
     num_scanned = scan.get("systems_scanned", 0)
     num_unreachable = scan.get("systems_unreachable", 0)
-    assert num_scanned == (
-        sys_count - num_failed - num_unreachable
-    ), assertion_error_message
+    assert num_scanned == (sys_count - num_failed - num_unreachable), assertion_error_message
 
     if not task_results:
         pytest.xfail(
@@ -100,9 +98,7 @@ def test_scan_task_results(scan_info):
         num_failed = task.get("systems_failed", 0)
         num_scanned = task.get("systems_scanned", 0)
         num_unreachable = task.get("systems_unreachable", 0)
-        assert num_scanned == (
-            sys_count - num_failed - num_unreachable
-        ), assertion_error_message
+        assert num_scanned == (sys_count - num_failed - num_unreachable), assertion_error_message
 
 
 @mark_runs_scans
@@ -186,10 +182,7 @@ def test_disabled_optional_products(scan_info):
             scan.get("scan_results").get("options").get("disabled_optional_products")
         )
         for product in specified_optional_products:
-            if (
-                specified_optional_products[product]
-                != returned_optional_products[product]
-            ):
+            if specified_optional_products[product] != returned_optional_products[product]:
                 errors_found.append(
                     "The product {product_name} should have been set to "
                     "{product_status} but was returned with a value of "
@@ -291,15 +284,10 @@ def test_enabled_extended_product_search(scan_info):
     if specified_extended_products:
         # grab extended products from results
         returned_extended_products = (
-            scan.get("scan_results")
-            .get("options")
-            .get("enabled_extended_product_search")
+            scan.get("scan_results").get("options").get("enabled_extended_product_search")
         )
         for product in specified_extended_products:
-            if (
-                specified_extended_products[product]
-                != returned_extended_products[product]
-            ):
+            if specified_extended_products[product] != returned_extended_products[product]:
                 errors_found.append(
                     "The product {product_name} should have been set to "
                     "{product_status} but was returned with a value of "

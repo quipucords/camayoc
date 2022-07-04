@@ -100,9 +100,7 @@ def gen_hosts(profilepath, reportpath):
                 if host["ip"] == row.get("connection.host"):
                     for k, v in row.items():
                         if "date" not in k:
-                            if k in ["cpu.bogomips", "dmi.bios-version"] and is_float(
-                                v
-                            ):
+                            if k in ["cpu.bogomips", "dmi.bios-version"] and is_float(v):
                                 host["facts"][k] = "%.2f" % float(v)
                             else:
                                 host["facts"][k] = v
@@ -214,9 +212,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     for arg in [args.profilecsv, args.reportcsv]:
         if not os.path.isfile(arg):
-            raise IOError(
-                "{} not found. Provide absolute path to existing file.".format(arg)
-            )
+            raise IOError("{} not found. Provide absolute path to existing file.".format(arg))
     cfg, configfile = get_config()
     hosts = gen_hosts(args.profilecsv, args.reportcsv)
     profiles = gen_profiles(cfg, hosts)

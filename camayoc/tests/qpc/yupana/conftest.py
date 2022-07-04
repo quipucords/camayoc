@@ -31,7 +31,7 @@ def oc_setup(yupana_config):
     oc_config = yupana_config["oc"]
     app_config = yupana_config["yupana-app"]
     login_response = oc.login(oc_config["url"], oc_config["token"])
-    project_response = oc.set_project(app_config['openshift_project'])
+    project_response = oc.set_project(app_config["openshift_project"])
     return (login_response, project_response)
 
 
@@ -43,12 +43,9 @@ def mult_pod_logs(yupana_config):
     within a defined time range.
     """
     upload_service_config = yupana_config["upload-service"]
-    pod_names = [
-        pod[0] for pod in get_app_pods(yupana_config["yupana-app"]["app_name"])
-    ]
+    pod_names = [pod[0] for pod in get_app_pods(yupana_config["yupana-app"]["app_name"])]
     rh_identity = create_identity(
-        upload_service_config["rh_account_number"],
-        upload_service_config["rh_org_id"]
+        upload_service_config["rh_account_number"], upload_service_config["rh_org_id"]
     )
     start_time = time.time()
     response = post_file(
@@ -61,11 +58,10 @@ def mult_pod_logs(yupana_config):
     )
     assert response.status_code == 202, response.text
 
-    ## Optional, give cluster some time to start
+    # Optional, give cluster some time to start
     time.sleep(30)
-    ## Get recent logs from all pods
+    # Get recent logs from all pods
     pod_logs = [
-        oc.logs(pod, since=f"{time_diff(start_time)}s", timestamps=True)
-        for pod in pod_names
+        oc.logs(pod, since=f"{time_diff(start_time)}s", timestamps=True) for pod in pod_names
     ]
     return pod_logs

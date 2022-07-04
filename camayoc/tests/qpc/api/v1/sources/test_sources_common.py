@@ -415,9 +415,7 @@ def test_type_mismatch(src_type, cleanup, shared_client):
     """
     src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     other_types = set(QPC_SOURCE_TYPES).difference(set((src_type,)))
-    other_cred = Credential(
-        password=uuid4(), cred_type=random.choice(list(other_types))
-    )
+    other_cred = Credential(password=uuid4(), cred_type=random.choice(list(other_types)))
     other_cred.create()
     cleanup.append(other_cred)
     src.credentials = [other_cred._id]

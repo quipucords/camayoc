@@ -51,11 +51,7 @@ class QPCObject(object):
 
     def payload(self):
         """Return a dictionary for POST or PUT requests."""
-        return {
-            k: v
-            for k, v in vars(self).items()
-            if k not in ["_id", "client", "endpoint"]
-        }
+        return {k: v for k, v in vars(self).items() if k not in ["_id", "client", "endpoint"]}
 
     def update_payload(self):
         """Return a dictionary for POST or PUT requests."""
@@ -310,8 +306,7 @@ class Source(QPCObject):
 
         if not isinstance(other, dict):
             raise TypeError(
-                "Objects of type Source can only be compared to"
-                "Sources objects or dictionaries."
+                "Objects of type Source can only be compared to" "Sources objects or dictionaries."
             )
 
         local_items = self.fields()
@@ -409,9 +404,7 @@ class Scan(QPCObject):
         if disabled_optional_products:
             self.options["disabled_optional_products"] = disabled_optional_products
         if enabled_extended_product_search:
-            self.options[
-                "enabled_extended_product_search"
-            ] = enabled_extended_product_search
+            self.options["enabled_extended_product_search"] = enabled_extended_product_search
 
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.
@@ -453,8 +446,7 @@ class Scan(QPCObject):
 
         if not isinstance(other, dict):
             raise TypeError(
-                "Objects of type Scan can only be compared to"
-                "Scan objects or dictionaries."
+                "Objects of type Scan can only be compared to" "Scan objects or dictionaries."
             )
 
         local_items = self.fields()
