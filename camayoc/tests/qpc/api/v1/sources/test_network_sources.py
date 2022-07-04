@@ -82,9 +82,7 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
         ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     ssh_key_cred.create()
-    pwd_cred = Credential(
-        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
-    )
+    pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
     src = Source(
@@ -102,9 +100,7 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
 
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", MIXED_DATA)
-def test_create_multiple_creds_and_sources(
-    shared_client, cleanup, scan_host, isolated_filesystem
-):
+def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host, isolated_filesystem):
     """Create a Network Source using multiple credentials.
 
     :id: 07f49731-0162-4eb1-b89a-3c95fddad428
@@ -127,9 +123,7 @@ def test_create_multiple_creds_and_sources(
         ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
     )
     ssh_key_cred.create()
-    pwd_cred = Credential(
-        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
-    )
+    pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
     input_hosts = [scan_host]
@@ -153,9 +147,7 @@ def test_create_multiple_creds_and_sources(
 
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
-def test_negative_update_invalid(
-    shared_client, cleanup, isolated_filesystem, scan_host
-):
+def test_negative_update_invalid(shared_client, cleanup, isolated_filesystem, scan_host):
     """Create a network source and then update it with invalid data.
 
     :id: e0d72f2b-2490-445e-b646-f06ceb4ad23f
@@ -216,9 +208,7 @@ def test_create_empty_str_host_valid(shared_client, cleanup):
     empty_str_host_data = ["192.0.2.1", "192.0.2.10", ""]
     hosts_without_empty_str = ["192.0.2.1", "192.0.2.10"]
     # initialize & create original credential & source
-    pwd_cred = Credential(
-        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
-    )
+    pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
     src = Source(
@@ -249,9 +239,7 @@ def test_update_empty_str_host_valid(shared_client, cleanup):
     empty_str_host_data = ["192.0.2.1", "192.0.2.10", ""]
     hosts_without_empty_str = ["192.0.2.1", "192.0.2.10"]
     # initialize & create original credential & source
-    pwd_cred = Credential(
-        cred_type=NETWORK_TYPE, client=shared_client, password=uuid4()
-    )
+    pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
     src = Source(

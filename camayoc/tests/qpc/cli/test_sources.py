@@ -91,9 +91,7 @@ def generate_show_output(data):
             r'        "{}"\r\n'
             r"    \],\r\n".format(data["exclude_hosts"])
         )
-    output += (
-        r'    "hosts": \[\r\n' r'        "{}"\r\n' r"    \],\r\n".format(data["hosts"])
-    )
+    output += r'    "hosts": \[\r\n' r'        "{}"\r\n' r"    \],\r\n".format(data["hosts"])
     output += r'    "id": \d+,\r\n'
     output += r'    "name": "{}",\r\n'.format(data["name"])
     source_type = data["source_type"]
@@ -104,9 +102,7 @@ def generate_show_output(data):
         output += ",\r\n".join(
             [
                 '        "{}": ["]?{}["]?'.format(key, value)
-                for key, value in sorted(
-                    data["options"].items(), key=operator.itemgetter(0)
-                )
+                for key, value in sorted(data["options"].items(), key=operator.itemgetter(0))
             ]
         )
         output += "\r\n    },\r\n"
@@ -117,9 +113,7 @@ def generate_show_output(data):
 
 
 @pytest.mark.parametrize("source_type,hosts", VALID_SOURCE_TYPE_HOSTS)
-def test_add_with_cred_hosts(
-    isolated_filesystem, qpc_server_config, hosts, source_type
-):
+def test_add_with_cred_hosts(isolated_filesystem, qpc_server_config, hosts, source_type):
     """Add a source with cred and hosts.
 
     :id: 665d76d5-db4c-4e2e-869d-3f97fb0ef878
@@ -169,9 +163,7 @@ def test_add_with_cred_hosts(
 
 
 @pytest.mark.parametrize("source_type,hosts", VALID_SOURCE_TYPE_HOSTS)
-def test_add_with_cred_hosts_file(
-    isolated_filesystem, qpc_server_config, hosts, source_type
-):
+def test_add_with_cred_hosts_file(isolated_filesystem, qpc_server_config, hosts, source_type):
     """Add a source with cred and hosts populated on a file.
 
     :id: 93d10834-9e9a-4713-8786-918d3d87a4b0
@@ -366,9 +358,7 @@ def test_add_with_ssl_cert_verify(
     )
 
 
-def test_add_with_ssl_cert_verify_negative(
-    isolated_filesystem, qpc_server_config, source_type
-):
+def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, source_type):
     """Try to add source with cred, hosts and an invalid ssl_cert_verify.
 
     :id: ee108827-9695-4b6f-8c2b-bafb09f9ff85
@@ -389,9 +379,7 @@ def test_add_with_ssl_cert_verify_negative(
     port = default_port_for_source(source_type)
     if source_type == "network":
         ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
-        expected_error = (
-            "Error: Invalid SSL options for network source: ssl_cert_verify"
-        )
+        expected_error = "Error: Invalid SSL options for network source: ssl_cert_verify"
         exitstatus = 1
     else:
         ssl_cert_verify = utils.uuid4()
@@ -425,9 +413,7 @@ def test_add_with_ssl_cert_verify_negative(
 
 @pytest.mark.parametrize("source_type", QPC_HOST_MANAGER_TYPES)
 @pytest.mark.parametrize("ssl_protocol", QPC_SSL_PROTOCOL_VALUES)
-def test_add_with_ssl_protocol(
-    isolated_filesystem, qpc_server_config, source_type, ssl_protocol
-):
+def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_type, ssl_protocol):
     """Add a source with cred, hosts and ssl_protocol.
 
     :id: ea06d16d-cbd3-4b4b-9b12-e29739af998a
@@ -475,9 +461,7 @@ def test_add_with_ssl_protocol(
     )
 
 
-def test_add_with_ssl_protocol_negative(
-    isolated_filesystem, qpc_server_config, source_type
-):
+def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config, source_type):
     """Try to add source with cred, hosts and an invalid ssl_protocol.
 
     :id: 2ccad703-a9b5-46d0-a717-03aa4df23246
@@ -531,9 +515,7 @@ def test_add_with_ssl_protocol_negative(
 
 @pytest.mark.parametrize("source_type", QPC_HOST_MANAGER_TYPES)
 @pytest.mark.parametrize("disable_ssl", QPC_BOOLEAN_VALUES)
-def test_add_with_disable_ssl(
-    isolated_filesystem, qpc_server_config, source_type, disable_ssl
-):
+def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_type, disable_ssl):
     """Add a source with cred, hosts and disable_ssl.
 
     :id: da0c0b52-840d-423b-b3a8-0c5c6ae5c6a5
@@ -581,9 +563,7 @@ def test_add_with_disable_ssl(
     )
 
 
-def test_add_with_disable_ssl_negative(
-    isolated_filesystem, qpc_server_config, source_type
-):
+def test_add_with_disable_ssl_negative(isolated_filesystem, qpc_server_config, source_type):
     """Try to add source with cred, hosts and an invalid disable_ssl.
 
     :id: 466f7736-759d-4b8f-8e49-3520ae645957
@@ -635,9 +615,7 @@ def test_add_with_disable_ssl_negative(
     assert qpc_source_add.exitstatus == exitstatus
 
 
-@pytest.mark.parametrize(
-    "source_type, hosts, exclude_hosts", VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE
-)
+@pytest.mark.parametrize("source_type, hosts, exclude_hosts", VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_add_with_exclude_hosts(
     isolated_filesystem, qpc_server_config, hosts, exclude_hosts, source_type
 ):
@@ -692,9 +670,7 @@ def test_add_with_exclude_hosts(
     )
 
 
-@pytest.mark.parametrize(
-    "source_type, hosts, exclude_hosts", VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE
-)
+@pytest.mark.parametrize("source_type, hosts, exclude_hosts", VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE)
 def test_add_with_cred_hosts_exclude_file(
     isolated_filesystem, qpc_server_config, hosts, exclude_hosts, source_type
 ):
@@ -903,9 +879,7 @@ def test_edit_cred_negative(isolated_filesystem, qpc_server_config, source_type)
         "{} source edit --name {} --cred {}".format(client_cmd, invalid_name, utils.uuid4())
     )
     qpc_source_edit.logfile = BytesIO()
-    assert (
-        qpc_source_edit.expect('Source "{}" does not exist.'.format(invalid_name)) == 0
-    )
+    assert qpc_source_edit.expect('Source "{}" does not exist.'.format(invalid_name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 1
@@ -981,9 +955,7 @@ def test_edit_hosts(isolated_filesystem, qpc_server_config, new_hosts, source_ty
 
 
 @pytest.mark.parametrize("source_type,new_hosts", VALID_SOURCE_TYPE_HOSTS)
-def test_edit_hosts_file(
-    isolated_filesystem, qpc_server_config, new_hosts, source_type
-):
+def test_edit_hosts_file(isolated_filesystem, qpc_server_config, new_hosts, source_type):
     """Edit a source's hosts.
 
     :id: aa759d0d-4f67-42a0-934d-6e99750da113
@@ -1064,9 +1036,7 @@ def test_edit_hosts_file(
         ("vcenter", "192.168.0.[1:100]"),
     ),
 )
-def test_edit_hosts_negative(
-    isolated_filesystem, qpc_server_config, new_hosts, source_type
-):
+def test_edit_hosts_negative(isolated_filesystem, qpc_server_config, new_hosts, source_type):
     """Try to edit the hosts of a source entry with invalid values.
 
     :id: 802d4a66-b0ee-4351-bff4-52469ed023f4
@@ -1102,12 +1072,7 @@ def test_edit_hosts_negative(
         "{} source edit --name {} --hosts {}".format(client_cmd, name, new_hosts)
     )
     qpc_source_edit.logfile = BytesIO()
-    assert (
-        qpc_source_edit.expect(
-            "hosts: Source of type vcenter must have a single hosts."
-        )
-        == 0
-    )
+    assert qpc_source_edit.expect("hosts: Source of type vcenter must have a single hosts.") == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 1
@@ -1346,9 +1311,7 @@ def test_edit_port_negative(isolated_filesystem, qpc_server_config, source_type)
         "{} source edit --name {} --port {}".format(client_cmd, invalid_name, new_port)
     )
     qpc_source_edit.logfile = BytesIO()
-    assert (
-        qpc_source_edit.expect('Source "{}" does not exist.'.format(invalid_name)) == 0
-    )
+    assert qpc_source_edit.expect('Source "{}" does not exist.'.format(invalid_name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 1
@@ -1427,9 +1390,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     )
 
 
-def test_edit_ssl_cert_verify_negative(
-    isolated_filesystem, qpc_server_config, source_type
-):
+def test_edit_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, source_type):
     """Try to edit a source with an invalid ssl-cert-verify option value.
 
     :id: e797e987-6791-4685-9148-3dbd4c81d7ad
@@ -1456,9 +1417,7 @@ def test_edit_ssl_cert_verify_negative(
             client_cmd, name, cred_name, hosts, port, source_type
         )
         new_ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
-        expected_error = (
-            "Error: Invalid SSL options for network source: ssl_cert_verify"
-        )
+        expected_error = "Error: Invalid SSL options for network source: ssl_cert_verify"
         exitstatus = 1
     else:
         ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
@@ -1575,9 +1534,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     )
 
 
-def test_edit_ssl_protocol_negative(
-    isolated_filesystem, qpc_server_config, source_type
-):
+def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, source_type):
     """Try to edit a source with an invalid ssl-protocol option value.
 
     :id: 3cce79a4-9ac2-41b9-b0eb-5e75ef6264d0
@@ -1962,9 +1919,7 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     assert qpc_source_clear.logfile.getvalue().strip() == 'Source "{}" was not found.'.format(
         name
-    ).encode(
-        "utf-8"
-    )
+    ).encode("utf-8")
     qpc_source_clear.logfile.close()
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 1

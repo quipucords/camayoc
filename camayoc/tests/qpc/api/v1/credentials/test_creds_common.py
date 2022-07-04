@@ -237,9 +237,7 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
     cleanup.append(cred)
     srcs = []
     for _ in range(random.randint(3, 6)):
-        src = Source(
-            credential_ids=[cred._id], source_type=obj_type, hosts=["localhost"]
-        )
+        src = Source(credential_ids=[cred._id], source_type=obj_type, hosts=["localhost"])
         src.create()
         cleanup.append(src)
         srcs.append(src)
@@ -256,9 +254,7 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
             src.delete()
             cleanup.remove(src)
         else:
-            new_cred = Credential(
-                cred_type=obj_type, client=shared_client, password=uuid4()
-            )
+            new_cred = Credential(cred_type=obj_type, client=shared_client, password=uuid4())
             new_cred.create()
             cleanup.append(new_cred)
             src.credentials = [new_cred._id]

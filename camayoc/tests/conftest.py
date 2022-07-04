@@ -66,13 +66,12 @@ def isolated_filesystem(request):
     """
     # Create isolated filesystem directory in the ssh_keyfile_path
     # configuration location if marked with `ssh_keyfile_path`.
-    mark = request.node.get_closest_marker('ssh_keyfile_path')
+    mark = request.node.get_closest_marker("ssh_keyfile_path")
     ssh_keyfile_path = None
     if mark:
         cfg = get_config().get("qpc", {})
         ssh_keyfile_path = cfg.get("ssh_keyfile_path")
         if not ssh_keyfile_path:
-            pytest.fail("QPC configuration 'ssh_keyfile_path' not provided or "
-                        "found")
+            pytest.fail("QPC configuration 'ssh_keyfile_path' not provided or " "found")
     with utils.isolated_filesystem(ssh_keyfile_path) as path:
         yield path

@@ -23,11 +23,7 @@ def _parse_response(response, cond=lambda status: 200 <= status < 400):
     return False, response.text
 
 
-def client(url,
-           auth,
-           x_rh_identity=None,
-           method='get',
-           cond=lambda status: 200 <= status < 400):
+def client(url, auth, x_rh_identity=None, method="get", cond=lambda status: 200 <= status < 400):
     """Simple REST API client."""
     headers = {}
     if x_rh_identity:
@@ -37,43 +33,30 @@ def client(url,
     count = 0
     results = []
     while in_pagination:
-        response = _request(method,
-                            url,
-                            auth=auth,
-                            params=params,
-                            headers=headers,
-                            verify=False)
+        response = _request(method, url, auth=auth, params=params, headers=headers, verify=False)
         ok, info = _parse_response(response, cond)
         if not ok:
             raise RuntimeError(info)
-        count += info['count']
-        if info['total'] <= count:
+        count += info["count"]
+        if info["total"] <= count:
             in_pagination = False
         else:
-            page = info['page'] + 1
-            params = {'page': page}
-        results.extend(info['results'])
+            page = info["page"] + 1
+            params = {"page": page}
+        results.extend(info["results"])
     return results
 
 
 def get_hosts(api_url, auth=None, x_rh_identity=None):
     """Read the entire list of hosts."""
-    url = f'{api_url}/{INVENTORY_HOSTS_PATH}'
-    results = client(url,
-                     auth,
-                     x_rh_identity,
-                     'get',
-                     lambda status: status == 200)
+    url = f"{api_url}/{INVENTORY_HOSTS_PATH}"
+    results = client(url, auth, x_rh_identity, "get", lambda status: status == 200)
     return results
 
 
 def find_hosts(host_id_list, api_url, auth=None, x_rh_identity=None):
     """Find one or more hosts by their ID."""
-    hosts = ','.join(host_id_list)
-    url = f'{api_url}/{INVENTORY_HOSTS_PATH}/{hosts}'
-    results = client(url,
-                     auth,
-                     x_rh_identity,
-                     'get',
-                     lambda status: status == 200)
+    hosts = ",".join(host_id_list)
+    url = f"{api_url}/{INVENTORY_HOSTS_PATH}/{hosts}"
+    results = client(url, auth, x_rh_identity, "get", lambda status: status == 200)
     return results

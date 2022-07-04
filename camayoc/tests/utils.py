@@ -71,9 +71,7 @@ def power_off_vms(vms, timeout=300):
             vms_to_wait.append(vm)
 
     while vms_to_wait and timeout > 0:
-        vms_to_wait = [
-            vm for vm in vms_to_wait if vm.runtime.powerState != "poweredOff"
-        ]
+        vms_to_wait = [vm for vm in vms_to_wait if vm.runtime.powerState != "poweredOff"]
         time.sleep(10)
         timeout -= 10
 

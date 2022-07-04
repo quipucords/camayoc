@@ -50,9 +50,7 @@ class CompletedProcessTestCase(unittest.TestCase):
 
     def setUp(self):
         """Generate kwargs that can be used to instantiate a completed proc."""
-        self.kwargs = {
-            key: utils.uuid4() for key in {"args", "returncode", "stdout", "stderr"}
-        }
+        self.kwargs = {key: utils.uuid4() for key in {"args", "returncode", "stdout", "stderr"}}
 
     def test_init(self):
         """Assert all constructor arguments are saved as instance attrs."""

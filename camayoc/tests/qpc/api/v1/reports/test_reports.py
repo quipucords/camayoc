@@ -118,9 +118,7 @@ def assert_merge_fails(ids, errors_found, report):
         errors_found.append(
             "Merging scan job identifiers {ids} resulted in a response"
             "status code of {response_status} when it should have resulted"
-            "in a status code of 400.".format(
-                ids=ids, response_status=merge_response.status_code
-            )
+            "in a status code of 400.".format(ids=ids, response_status=merge_response.status_code)
         )
     # give the report its original client back
     report.client = orig_client
@@ -149,10 +147,7 @@ def test_merge_reports_from_scanjob():
     # if either scan is None, they were not in the config file or the
     # tests have been ran with RUN_SCANS=False and there are no scan results
     if scan1 is None or scan2 is None:
-        pytest.xfail(
-            reason="Config file does not have dependent scans "
-            '"non-rhel" or "rhel-7".'
-        )
+        pytest.xfail(reason="Config file does not have dependent scans " '"non-rhel" or "rhel-7".')
     id1 = scan1.get("scan_job_id")
     id2 = scan2.get("scan_job_id")
     report = Report()
@@ -261,9 +256,7 @@ def test_products_found_deployment_report(scan_info):
             entity_src_ids = get_report_entity_src_ids(entity)
             hostname = result["source_id_to_hostname"][src_id]
             ex_products = source_to_product_map[src_id]
-            expected_product_names = [
-                prod for prod in ex_products.keys() if prod != "distribution"
-            ]
+            expected_product_names = [prod for prod in ex_products.keys() if prod != "distribution"]
             if src_id in entity_src_ids:
                 # We assert that products marked as present are expected
                 # We do not assert that products marked as potential must
@@ -315,9 +308,8 @@ def test_OS_found_deployment_report(scan_info):
         and the operating system is correctly identified.
     """
     result = get_scan_result(scan_info["name"])
-    if scan_info["name"].lower() == 'sat6':
-        pytest.skip("Skipping sat6 run until Quipucords Issue #2039 "
-                    "is resolved")
+    if scan_info["name"].lower() == "sat6":
+        pytest.skip("Skipping sat6 run until Quipucords Issue #2039 " "is resolved")
 
     report_id = result["report_id"]
     if not report_id:
@@ -356,9 +348,7 @@ def test_OS_found_deployment_report(scan_info):
                 if expected_distro not in found_distro:
                     errors_found.append(
                         "Expected OS named {0} for source {1} but"
-                        "found OS named {2}".format(
-                            expected_distro, hostname, found_distro
-                        )
+                        "found OS named {2}".format(expected_distro, hostname, found_distro)
                     )
                 # We assert that the expected distro's version is at least
                 # contained in the found version.
@@ -367,9 +357,7 @@ def test_OS_found_deployment_report(scan_info):
                 if expected_version not in found_version:
                     errors_found.append(
                         "Expected OS version {0} for source {1} but"
-                        "found OS version {2}".format(
-                            expected_version, hostname, found_version
-                        )
+                        "found OS version {2}".format(expected_version, hostname, found_version)
                     )
 
     assert len(errors_found) == 0, (

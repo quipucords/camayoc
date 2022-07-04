@@ -48,9 +48,7 @@ def get_config():
     return cfg
 
 
-def power_control(
-    vcenter_host, vcenter_user, vcenter_password, vcenter_action, pattern
-):
+def power_control(vcenter_host, vcenter_user, vcenter_password, vcenter_action, pattern):
     """Connect to vcenter and perform action on all sonar machines."""
     try:
         c = SmartConnect(host=vcenter_host, user=vcenter_user, pwd=vcenter_password)
@@ -84,9 +82,7 @@ if __name__ == "__main__":
         action="store",
         dest="vcenter_host",
         type=str,
-        help=(
-            "This is the hostname where you would log into vcenter from a" " browser"
-        ),
+        help=("This is the hostname where you would log into vcenter from a" " browser"),
     )
     parser.add_argument(
         "--user ",

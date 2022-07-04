@@ -271,9 +271,7 @@ _SCANS = []
 """Global list of scans to generate reports from."""
 
 
-def assert_json_report_fields(
-    report_fields, expected_fields=JSON_DEPLOYMENTS_REPORT_FIELDS
-):
+def assert_json_report_fields(report_fields, expected_fields=JSON_DEPLOYMENTS_REPORT_FIELDS):
     """Assert that report fields are a subset of expected field."""
     report_fields = set(report_fields)
     expected_fields = set(expected_fields)
@@ -290,9 +288,7 @@ def setup_reports_prerequisites():
     randomly choose two of them. Next, perform a scan for each network source
     and store the information about it on the global ``_SCANS`` list.
     """
-    network_sources = [
-        source for source in config_sources() if source["type"] == "network"
-    ]
+    network_sources = [source for source in config_sources() if source["type"] == "network"]
     random.shuffle(network_sources)
     network_sources = network_sources[:2]
     if len(network_sources) < 2:
@@ -317,9 +313,7 @@ def setup_reports_prerequisites():
         assert report_id is not None
         scan["report"] = report_id
         scan["json-file"] = os.path.abspath("{}.json".format(scan["name"]))
-        report_detail(
-            {"json": None, "output-file": scan["json-file"], "report": scan["report"]}
-        )
+        report_detail({"json": None, "output-file": scan["json-file"], "report": scan["report"]})
         _SCANS.append(scan)
     yield
     for scan in _SCANS:
@@ -328,9 +322,7 @@ def setup_reports_prerequisites():
 
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)
-def test_deployments_report(
-    source_option, output_format, isolated_filesystem, qpc_server_config
-):
+def test_deployments_report(source_option, output_format, isolated_filesystem, qpc_server_config):
     """Ensure a deployments report can be generated and has expected information.
 
     :id: 0ddfdd85-0836-46b5-9541-cf62b5d9c7bc
@@ -373,9 +365,7 @@ def test_deployments_report(
 
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)
-def test_detail_report(
-    source_option, output_format, isolated_filesystem, qpc_server_config
-):
+def test_detail_report(source_option, output_format, isolated_filesystem, qpc_server_config):
     """Ensure a detail report can be generated and has expected information.
 
     :id: 54fcfbb9-2435-4717-8693-8774b5c3643d
@@ -461,9 +451,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     report_id = report_merge_status({"job": job_id})["report_id"]
 
     output_path = "{}.json".format(uuid4())
-    output = report_deployments(
-        {"report": report_id, "json": None, "output-file": output_path}
-    )
+    output = report_deployments({"report": report_id, "json": None, "output-file": output_path})
     assert "Report written successfully." in output
 
     with open(output_path) as f:
@@ -490,9 +478,7 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     scan = random.choice(_SCANS)
     output_path = f"{uuid4()}"
     output_pkg = f"{output_path}.tar.gz"
-    output = report_download(
-        {source_option: scan[source_option], "output-file": output_pkg}
-    )
+    output = report_download({source_option: scan[source_option], "output-file": output_pkg})
     # Test that package downloaded
     assert "successfully written to" in output, (
         "Unexpected output from qpc report download! \n"
@@ -519,31 +505,23 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     # Test that fails on non-existant path
     missing_output_path = f"/no/such/number/{output_pkg})"
     with pytest.raises(AssertionError) as no_dir_exception_info:
-        report_download(
-            {source_option: scan[source_option], "output-file": missing_output_path}
-        )
+        report_download({source_option: scan[source_option], "output-file": missing_output_path})
         expected_msg = "directory /no/such/number does not exist"
         assert no_dir_exception_info.match(expected_msg), (
             "Unexpected output from qpc report download! \n"
             f'Expected to find "{expected_msg}" in output, actual output was: \
             {str(no_dir_exception_info.value)}'
         )
-        pytest.fail(
-            "I expected to fail with an AssertionError due to a missing directory"
-        )
+        pytest.fail("I expected to fail with an AssertionError due to a missing directory")
 
     # Test that non tar.gz files fail
     non_tar_file = f"{format(uuid4())}"
     with pytest.raises(AssertionError) as tar_exception_info:
-        report_download(
-            {source_option: scan[source_option], "output-file": non_tar_file}
-        )
+        report_download({source_option: scan[source_option], "output-file": non_tar_file})
         expected_tar_error = "extension is required to be tar.gz"
         assert tar_exception_info.match(expected_tar_error), (
             "Unexpected output from qpc report download!\n"
             f'Expected to find "{expected_tar_error}" in output, actual output \
             was: {str(no_dir_exception_info.value)}'
         )
-        pytest.fail(
-            "I expected to fail with an AssertionError due to a bad output value specified"
-        )
+        pytest.fail("I expected to fail with an AssertionError due to a bad output value specified")

@@ -38,9 +38,7 @@ def test_pause_cancel(shared_client, cleanup, source_type):
     """
     scn = util.prepare_scan(source_type, cleanup)
     if not scn:
-        pytest.skip(
-            "No {0} type source was found in the config file.".format(source_type)
-        )
+        pytest.skip("No {0} type source was found in the config file.".format(source_type))
     job = ScanJob(scan_id=scn._id)
     job.create()
     util.wait_until_state(job, state="running", timeout=60)
@@ -69,9 +67,7 @@ def test_restart(shared_client, cleanup, source_type):
     """
     scn = util.prepare_scan(source_type, cleanup)
     if not scn:
-        pytest.skip(
-            "No {0} type source was found in the config file.".format(source_type)
-        )
+        pytest.skip("No {0} type source was found in the config file.".format(source_type))
     job = ScanJob(scan_id=scn._id)
     job.create()
     util.wait_until_state(job, state="running", timeout=60)

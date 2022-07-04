@@ -14,10 +14,7 @@ import re
 
 import pytest
 
-from camayoc.utils import (
-    client_cmd,
-    uuid4
-)
+from camayoc.utils import client_cmd, uuid4
 
 from .utils import (
     config_sources,
@@ -51,9 +48,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -102,9 +97,7 @@ def test_create_scan_with_options(isolated_filesystem, qpc_server_config, source
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -188,8 +181,7 @@ def test_create_scan_with_extended_product_directories_negative(
             "enabled-ext-product-search": "jboss_fuse",
             "ext-product-search-dirs": fail_cases,
         },
-        r"Error: {'enabled_extended_product_search': "
-        r"{'search_directories'(.|[\r\n])*",
+        r"Error: {'enabled_extended_product_search': " r"{'search_directories'(.|[\r\n])*",
         exitstatus=1,
     )
 
@@ -218,9 +210,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
@@ -256,9 +246,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
@@ -309,9 +297,7 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -346,9 +332,7 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
@@ -377,9 +361,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -459,9 +441,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -496,9 +476,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [
-            {"id": source_output["id"], "name": source_name, "source_type": "network"}
-        ],
+        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 

@@ -5,9 +5,7 @@ from camayoc import api
 from camayoc.qpc_models import Credential, Scan, Source
 from camayoc.utils import run_scans, uuid4
 
-mark_runs_scans = pytest.mark.skipif(
-    run_scans() is False, reason="RUN_SCANS set to False"
-)
+mark_runs_scans = pytest.mark.skipif(run_scans() is False, reason="RUN_SCANS set to False")
 """Decorator that skips tests if RUN_SCANS environment variable is 'False'."""
 
 
@@ -64,9 +62,7 @@ def assert_source_create_fails(source, source_type=""):
         {"credentials": ["Source of type satellite must have a single credential."]},
         {
             "exclude_hosts": [
-                "The exclude_hosts option is not valid for source of type "
-                + source_type
-                + "."
+                "The exclude_hosts option is not valid for source of type " + source_type + "."
             ]
         },
     ]

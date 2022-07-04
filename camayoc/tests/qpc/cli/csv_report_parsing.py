@@ -10,9 +10,7 @@ EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS = (
     "Report Platform ID",
 )
 
-EXPECTED_DETAIL_REPORT_ID_FIELDS = EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS + (
-    "Number Sources",
-)
+EXPECTED_DETAIL_REPORT_ID_FIELDS = EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS + ("Number Sources",)
 
 
 def normalize_csv_report(f, header_range, header_lines, report_type="deployments"):
@@ -55,9 +53,7 @@ def normalize_deployments_report(header_info, reader):
     report_info = header_info[0]
 
     # Ensure extracted fields match expected
-    expected_keys = [
-        x.lower().replace(" ", "_") for x in EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS
-    ]
+    expected_keys = [x.lower().replace(" ", "_") for x in EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS]
     assert sorted(report_info.keys()) == sorted(
         expected_keys
     ), "Extracted Report Fields didn't match expected list"
@@ -89,9 +85,7 @@ def normalize_detail_report(header_info, reader):
     source_info = header_info[1]
 
     # Ensure extracted fields match expected
-    expected_keys = [
-        x.lower().replace(" ", "_") for x in EXPECTED_DETAIL_REPORT_ID_FIELDS
-    ]
+    expected_keys = [x.lower().replace(" ", "_") for x in EXPECTED_DETAIL_REPORT_ID_FIELDS]
     assert sorted(report_info.keys()) == sorted(
         expected_keys
     ), "Extracted Report Fields didn't match expected list"
@@ -140,7 +134,4 @@ def zip_line_pairs(input_lines, key_ind, value_ind, delim=","):
     header_values = input_lines[value_ind].strip().split(delim)
 
     # Dynamically zip the header items into a dictionary.
-    return {
-        key.lower().replace(" ", "_"): value
-        for key, value in zip(header_keys, header_values)
-    }
+    return {key.lower().replace(" ", "_"): value for key, value in zip(header_keys, header_values)}

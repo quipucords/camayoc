@@ -211,12 +211,8 @@ def create_credential(view, options):
     view.refresh()
     dash.nav.select("Credentials")
     # Assert the row with the credential name exists.
-    view.wait_for_element(
-        locator=Locator(xpath=row_xpath(options["name"])), delay=0.5, timeout=10
-    )
-    assert isinstance(
-        view.element(locator=Locator(xpath=row_xpath(options["name"]))), WebElement
-    )
+    view.wait_for_element(locator=Locator(xpath=row_xpath(options["name"])), delay=0.5, timeout=10)
+    assert isinstance(view.element(locator=Locator(xpath=row_xpath(options["name"]))), WebElement)
 
 
 def delete_credential(view, names):
@@ -267,20 +263,14 @@ def edit_credential(view, original_name, options):
     current_name = original_name
     if "name" in options:
         current_name = options["name"]
-    view.wait_for_element(
-        locator=Locator(xpath=row_xpath(current_name)), delay=0.5, timeout=10
-    )
+    view.wait_for_element(locator=Locator(xpath=row_xpath(current_name)), delay=0.5, timeout=10)
     GenericLocatorWidget(view, locator=Locator(xpath=edit_xpath(current_name))).click()
     modal = CredentialModalView(view, locator=Locator(css=".modal-content"))
 
     # Assert that the changed variables were in fact changed.
     # Passwords are skipped because they aren't accessible.
     for option, data in options.items():
-        if (
-            (option == "password")
-            or (option == "become_pass")
-            or (option == "source_type")
-        ):
+        if (option == "password") or (option == "become_pass") or (option == "source_type"):
             continue
         browser_data = get_field_value(view, CREDENTIAL_FIELD_LABELS[option])
         if option == "sshkeyfile":
@@ -351,6 +341,4 @@ def delete_source(view, source_name):
     wait_for_animation()
     clear_toasts(view=view)
     with pytest.raises(NoSuchElementException):
-        view.wait_for_element(
-            locator=Locator(xpath=delete_xpath(source_name)), timeout=2
-        )
+        view.wait_for_element(locator=Locator(xpath=delete_xpath(source_name)), timeout=2)
