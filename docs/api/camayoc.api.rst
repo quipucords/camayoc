@@ -2,6 +2,6 @@ camayoc.api module
 ==================
 
 .. automodule:: camayoc.api
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -17,7 +17,7 @@ sys.path.insert(0, ROOT_DIR)
 
 project = "Camayoc"
 author = "Quipucords Team"
-copyright = "2017, {}".format(author)
+copyright = "2022, {}".format(author)
 
 # The short X.Y version.
 version = ""
@@ -29,7 +29,7 @@ release = ""
 
 exclude_patterns = ["_build"]
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
-language = None
+language = "en"
 master_doc = "index"
 nitpick_ignore = [
     ("py:class", "Exception"),

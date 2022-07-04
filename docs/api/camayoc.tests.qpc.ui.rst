@@ -2,14 +2,15 @@ camayoc.tests.qpc.ui package
 ============================
 
 .. automodule:: camayoc.tests.qpc.ui
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    camayoc.tests.qpc.ui.conftest
    camayoc.tests.qpc.ui.test_credentials
@@ -17,4 +18,3 @@ Submodules
    camayoc.tests.qpc.ui.test_sources
    camayoc.tests.qpc.ui.utils
    camayoc.tests.qpc.ui.views
-

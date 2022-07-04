@@ -13,6 +13,7 @@ reference for developers, not a gospel.
     api/camayoc.config
     api/camayoc.constants
     api/camayoc.exceptions
+    api/camayoc.inventory
     api/camayoc.qpc_models
     api/camayoc.tests
     api/camayoc.tests.conftest
@@ -40,6 +41,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.api.v1.utils
     api/camayoc.tests.qpc.cli
     api/camayoc.tests.qpc.cli.conftest
+    api/camayoc.tests.qpc.cli.csv_report_parsing
     api/camayoc.tests.qpc.cli.test_credentials
     api/camayoc.tests.qpc.cli.test_reports
     api/camayoc.tests.qpc.cli.test_scanjobs
