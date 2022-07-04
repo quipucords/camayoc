@@ -31,29 +31,29 @@ qpc:
     username: 'admin'
     password: 'pass'
     ssh_keyfile_path: '/home/user/quipucords/server/volumes/sshkeyfiles/'
-        sources:
-        - hosts:
-              - 'myfavnetwork.com'
-          credentials:
-              - root
-          name: 'myfav'
-          type: 'network'
-        - hosts:
-              - 'my_vcenter.com'
-          credentials:
-              - 'vcenter'
-          name: 'vcenter'
-          type: 'vcenter'
-          options:
-              ssl_cert_verify: false
-        - hosts:
-              - 'sat6.com'
-          credentials:
-              - 'sat6'
-          name: 'sat6'
-          type: 'satellite'
-          options:
-              ssl_cert_verify: false
+    sources:
+    - hosts:
+          - 'myfavnetwork.com'
+      credentials:
+          - root
+      name: 'myfav'
+      type: 'network'
+    - hosts:
+          - 'my_vcenter.com'
+      credentials:
+          - 'vcenter'
+      name: 'vcenter'
+      type: 'vcenter'
+      options:
+          ssl_cert_verify: false
+    - hosts:
+          - 'sat6.com'
+      credentials:
+          - 'sat6'
+      name: 'sat6'
+      type: 'satellite'
+      options:
+          ssl_cert_verify: false
     scans:
         - name: ExampleSat6
           sources:
