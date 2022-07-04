@@ -18,7 +18,7 @@ A GPL-licensed Python library that facilitates functional testing of quipucords_
 Installation
 ^^^^^^^^^^^^
 
-Camayoc only supports Python 3.5 and Python 3.6, so it is recommended that you
+Camayoc supports Python 3.9 and above, so it is recommended that you
 install Camayoc into a virtual environment. There are several tools available
 for managing virtual environments.
 
@@ -35,9 +35,9 @@ This is a suggested install method:
     git clone https://github.com/quipucords/camayoc.git
     cd camayoc
 
-2. Create and activate a Python 3.6 virtual environment::
+2. Create and activate a Python3 virtual environment::
 
-    python3.6 -m venv ~/envs/camayoc
+    python3 -m venv ~/envs/camayoc
     source ~/envs/camayoc/bin/activate
 
 3. Install using make targets::
