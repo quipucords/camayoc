@@ -5,14 +5,14 @@ PYTEST_OPTIONS=--verbose
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
 	@echo "  help              to show this message"
-	@echo "  all               to execute test-coverage and lint"
+	@echo "  all               to execute test-coverage and pre-commit and docs stuff"
 	@echo "  clean			   to clean all pycache files"
 	@echo "  docs-clean        to remove documentation"
 	@echo "  docs-html         to generate HTML documentation"
 	@echo "  install           to install in editable mode"
 	@echo "  install-dev       to install in editable mode plus the "
 	@echo "                    dev packages"
-	@echo "  lint              to run flake8"
+	@echo "  pre-commit        to run pre-commit against all the files"
 	@echo "  package           to generate installable Python packages"
 	@echo "  package-clean     to remove generated Python packages"
 	@echo "  package-upload    to upload dist/* to PyPI"
@@ -27,7 +27,7 @@ help:
 	@echo "  test-qpc-yupana   to run all tests for quipucords yupana"
 
 
-all: test-coverage lint validate-docstrings docs-html
+all: test-coverage pre-commit validate-docstrings docs-html
 
 clean:
 	{ \
@@ -50,6 +50,10 @@ install:
 
 install-dev:
 	pip install -e .[dev]
+
+pre-commit:
+	pre-commit autoupdate
+	pre-commit run --all-files
 
 lint:
 	flake8 .
