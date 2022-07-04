@@ -32,7 +32,7 @@ setup(
     extras_require={
         "dev": [
             # For `make docs`
-            "sphinx<1.8",
+            "sphinx",
             "jinja2==3.0.3",
             # For `make docs-serve`
             "sphinx-serve",
@@ -52,6 +52,9 @@ setup(
             "pytest-cov",
             # For `make validate-docstrings`
             "testimony",
+            # For `make pre-commit`
+            "pre-commit",
+            "black",
         ]
     },
     python_requires=">=3.9",
