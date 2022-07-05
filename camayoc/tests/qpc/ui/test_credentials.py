@@ -23,7 +23,7 @@ SOURCE_TYPES = ["Network", "Satellite", "VCenter"]
 
 
 @pytest.mark.parametrize("source_type", SOURCE_TYPES)
-def test_create_delete_credential(browser, qpc_login, source_type):
+def test_create_delete_credential(selenium_browser, qpc_login, source_type):
     """Create and then delete a credential in the quipucords UI.
 
     :id: d9fd61f5-1e8e-4091-b8c5-bc787884c6be
@@ -39,7 +39,7 @@ def test_create_delete_credential(browser, qpc_login, source_type):
     username = utils.uuid4()
     password = utils.uuid4()
     create_credential(
-        browser,
+        selenium_browser,
         {
             "name": name,
             "username": username,
@@ -47,10 +47,10 @@ def test_create_delete_credential(browser, qpc_login, source_type):
             "source_type": source_type,
         },
     )
-    delete_credential(browser, {name})
+    delete_credential(selenium_browser, {name})
 
 
-def test_create_delete_credential_optional(browser, qpc_login):
+def test_create_delete_credential_optional(selenium_browser, qpc_login):
     """Create and then delete a credential with optional parameters.
 
     :id: 37632616-86e9-47d1-b1f6-78dd5dde0774
@@ -70,7 +70,7 @@ def test_create_delete_credential_optional(browser, qpc_login):
     become_user = utils.uuid4()
     become_pass = utils.uuid4()
     create_credential(
-        browser,
+        selenium_browser,
         {
             "name": name,
             "username": username,
@@ -80,10 +80,10 @@ def test_create_delete_credential_optional(browser, qpc_login):
             "become_pass": become_pass,
         },
     )
-    delete_credential(browser, {name})
+    delete_credential(selenium_browser, {name})
 
 
-def test_create_delete_credential_sshkey(isolated_filesystem, browser, qpc_login):
+def test_create_delete_credential_sshkey(isolated_filesystem, selenium_browser, qpc_login):
     """Create and then delete a credential using an sshkey file.
 
     :id: 5ec5847c-6d41-4e4a-9f22-cc433eb11078
@@ -102,7 +102,7 @@ def test_create_delete_credential_sshkey(isolated_filesystem, browser, qpc_login
     sshkeyfile.touch()
     passphrase = utils.uuid4()
     create_credential(
-        browser,
+        selenium_browser,
         {
             "name": name,
             "username": username,
@@ -112,10 +112,10 @@ def test_create_delete_credential_sshkey(isolated_filesystem, browser, qpc_login
         },
     )
     check_auth_type(name, "SSH Key")
-    delete_credential(browser, {name})
+    delete_credential(selenium_browser, {name})
 
 
-def test_credential_sshkey_optional(isolated_filesystem, browser, qpc_login):
+def test_credential_sshkey_optional(isolated_filesystem, selenium_browser, qpc_login):
     """Create/delete a credential that uses an sshkey file and optional parameters.
 
     :id: a602ab9b-ee76-45fd-bbb2-f6f074c66819
@@ -136,7 +136,7 @@ def test_credential_sshkey_optional(isolated_filesystem, browser, qpc_login):
     become_user = utils.uuid4()
     become_pass = utils.uuid4()
     create_credential(
-        browser,
+        selenium_browser,
         {
             "name": name,
             "username": username,
@@ -148,11 +148,11 @@ def test_credential_sshkey_optional(isolated_filesystem, browser, qpc_login):
         },
     )
     check_auth_type(name, "SSH Key")
-    delete_credential(browser, {name})
+    delete_credential(selenium_browser, {name})
 
 
 @pytest.mark.parametrize("source_type", SOURCE_TYPES)
-def test_edit_credential(browser, qpc_login, source_type):
+def test_edit_credential(selenium_browser, qpc_login, source_type):
     """Edit a credential's parameters.
 
     :id: 3a4626ab-c667-41dc-944e-62ac05d51bbe
@@ -173,7 +173,7 @@ def test_edit_credential(browser, qpc_login, source_type):
     }
     if source_type == "Network":
         options["become_user"] = utils.uuid4()
-    create_credential(browser, options)
+    create_credential(selenium_browser, options)
     new_options = {
         "name": utils.uuid4(),
         "username": utils.uuid4(),
@@ -182,11 +182,11 @@ def test_edit_credential(browser, qpc_login, source_type):
     }
     if source_type == "Network":
         new_options["become_user"] = utils.uuid4()
-    edit_credential(browser, options["name"], new_options)
-    delete_credential(browser, {new_options["name"]})
+    edit_credential(selenium_browser, options["name"], new_options)
+    delete_credential(selenium_browser, {new_options["name"]})
 
 
-def test_edit_credential_sshkey(browser, qpc_login, isolated_filesystem):
+def test_edit_credential_sshkey(selenium_browser, qpc_login, isolated_filesystem):
     """Edit the sshkeyfile of a credential.
 
     :id: 77281d4c-de9f-4db9-9a9f-0c78b0d3811e
@@ -207,12 +207,12 @@ def test_edit_credential_sshkey(browser, qpc_login, isolated_filesystem):
         "sshkeyfile": str(sshkeyfile.resolve()),
         "source_type": "Network",
     }
-    create_credential(browser, options)
+    create_credential(selenium_browser, options)
     new_sshkeyfile = Path(utils.uuid4())
     new_sshkeyfile.touch()
     new_options = {
         "sshkeyfile": str(new_sshkeyfile.resolve()),
         "source_type": "Network",
     }
-    edit_credential(browser, options["name"], new_options)
-    delete_credential(browser, {options["name"]})
+    edit_credential(selenium_browser, options["name"], new_options)
+    delete_credential(selenium_browser, {options["name"]})

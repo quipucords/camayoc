@@ -14,7 +14,7 @@ from .views import DashboardView
 from .views import LoginView
 
 
-def test_login_logout(browser):
+def test_login_logout(selenium_browser):
     """Login and logout using the default user.
 
     :id: 88bbf267-d32e-44b1-934f-e69c84e5c99d
@@ -26,14 +26,14 @@ def test_login_logout(browser):
         3) Logout and assert that the login page is shown.
     :expectedresults: Both login and logout must work.
     """
-    login = LoginView(browser)
+    login = LoginView(selenium_browser)
     login.username.fill("admin")
     login.password.fill("pass")
     login.login.click()
 
-    assert browser.selenium.title == "Entitlements Reporting"
+    assert selenium_browser.selenium.title == "Entitlements Reporting"
 
-    dashboard = DashboardView(browser)
+    dashboard = DashboardView(selenium_browser)
     wait_for_animation()
     dashboard.user_dropdown.select_item("Log out")
 
