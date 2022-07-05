@@ -29,7 +29,7 @@ SOURCE_DATA = {
 
 
 @pytest.mark.parametrize("source_type, ", SOURCE_DATA.keys())
-def test_create_delete_source(browser, qpc_login, credentials, source_type):
+def test_create_delete_source(selenium_browser, qpc_login, credentials, source_type):
     """Create and then delete a source through the UI.
 
     :id: b1f64fd6-0421-4650-aa6d-149cb3099012
@@ -49,7 +49,7 @@ def test_create_delete_source(browser, qpc_login, credentials, source_type):
     for addresses in SOURCE_DATA[source_type]:
         source_name = utils.uuid4()
         source_names[addresses] = source_name
-        create_source(browser, credential_name, source_type, source_name, addresses)
+        create_source(selenium_browser, credential_name, source_type, source_name, addresses)
     #  Deletion internally asserts all new sources exist in the UI.
     for addresses in SOURCE_DATA[source_type]:
-        delete_source(browser, source_names[addresses])
+        delete_source(selenium_browser, source_names[addresses])

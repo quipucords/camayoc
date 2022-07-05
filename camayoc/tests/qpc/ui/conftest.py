@@ -21,12 +21,12 @@ def pytest_collection_modifyitems(config, items):
     if not os.environ.get("SELENIUM_DRIVER", None):
         skip_ui = pytest.mark.skip(reason="need --driver option to run UI tests")
         for item in items:
-            if "ui" in item.fspath.strpath:
+            if "selenium_browser" in item.fixturenames:
                 item.add_marker(skip_ui)
 
 
 @pytest.fixture(scope="module")
-def browser(request):
+def selenium_browser(request):
     """Selenium instance.
 
     See README for configuration of remote browser containers.
