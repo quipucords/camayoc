@@ -63,6 +63,7 @@ setup(
     install_requires=[
         "attrs",
         "dynaconf",
+        "factory_boy",
         "oc",
         "pexpect",
         "playwright",
