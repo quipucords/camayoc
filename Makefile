@@ -11,7 +11,7 @@ help:
 	@echo "  docs-html         to generate HTML documentation"
 	@echo "  install           to install in editable mode"
 	@echo "  install-dev       to install in editable mode plus the "
-	@echo "                    dev packages"
+	@echo "                    dev packages and install pre-commit hooks"
 	@echo "  pre-commit        to run pre-commit against all the files"
 	@echo "  package           to generate installable Python packages"
 	@echo "  package-clean     to remove generated Python packages"
@@ -50,6 +50,7 @@ install:
 
 install-dev:
 	pip install -e .[dev]
+	pre-commit install --install-hooks
 
 pre-commit:
 	pre-commit run --all-files
