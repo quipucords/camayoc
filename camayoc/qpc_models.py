@@ -1,20 +1,17 @@
 # coding: utf-8
 """Models for use with the Quipucords API."""
-
 import re
 from pprint import pformat
 from urllib.parse import urljoin
 
 from camayoc import api
-from camayoc.constants import (
-    MASKED_PASSWORD_OUTPUT,
-    QPC_CREDENTIALS_PATH,
-    QPC_HOST_MANAGER_TYPES,
-    QPC_REPORTS_PATH,
-    QPC_SCANJOB_PATH,
-    QPC_SCAN_PATH,
-    QPC_SOURCE_PATH,
-)
+from camayoc.constants import MASKED_PASSWORD_OUTPUT
+from camayoc.constants import QPC_CREDENTIALS_PATH
+from camayoc.constants import QPC_HOST_MANAGER_TYPES
+from camayoc.constants import QPC_REPORTS_PATH
+from camayoc.constants import QPC_SCAN_PATH
+from camayoc.constants import QPC_SCANJOB_PATH
+from camayoc.constants import QPC_SOURCE_PATH
 from camayoc.utils import uuid4
 
 OPTIONAL_PROD_KEY = "disabled_optional_products"

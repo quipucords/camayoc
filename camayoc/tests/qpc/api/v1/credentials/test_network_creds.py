@@ -9,11 +9,10 @@
 :testtype: functional
 :upstream: yes
 """
+import os
 from pathlib import Path
 
-import os
 import pytest
-
 import requests
 
 from camayoc import api

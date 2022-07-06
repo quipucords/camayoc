@@ -8,14 +8,16 @@ on the context.
 """
 from json import JSONDecodeError
 from pprint import pformat
-from urllib.parse import urljoin, urlunparse
+from urllib.parse import urljoin
+from urllib.parse import urlunparse
 
 import requests
 from requests.exceptions import HTTPError
 
 from camayoc import config
 from camayoc import exceptions
-from camayoc.constants import QPC_API_VERSION, QPC_TOKEN_PATH
+from camayoc.constants import QPC_API_VERSION
+from camayoc.constants import QPC_TOKEN_PATH
 
 
 def raise_error_for_status(response):

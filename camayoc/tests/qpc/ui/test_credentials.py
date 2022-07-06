@@ -13,14 +13,11 @@ from pathlib import Path
 
 import pytest
 
+from .utils import check_auth_type
+from .utils import create_credential
+from .utils import delete_credential
+from .utils import edit_credential
 from camayoc import utils
-
-from .utils import (
-    check_auth_type,
-    create_credential,
-    delete_credential,
-    edit_credential,
-)
 
 SOURCE_TYPES = ["Network", "Satellite", "VCenter"]
 

@@ -18,22 +18,19 @@ import tarfile
 
 import pytest
 
+from .utils import config_sources
+from .utils import report_deployments
+from .utils import report_detail
+from .utils import report_download
+from .utils import report_merge
+from .utils import report_merge_status
+from .utils import scan_add_and_check
+from .utils import scan_job
+from .utils import scan_start
+from .utils import wait_for_report_merge
+from .utils import wait_for_scan
 from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
 from camayoc.utils import uuid4
-
-from .utils import (
-    config_sources,
-    report_deployments,
-    report_detail,
-    report_download,
-    report_merge,
-    report_merge_status,
-    scan_add_and_check,
-    scan_job,
-    scan_start,
-    wait_for_report_merge,
-    wait_for_scan,
-)
 
 # from csv_report_parsing import normalize_csv_report
 

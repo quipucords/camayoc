@@ -10,13 +10,11 @@ from pprint import pformat
 import pexpect
 
 from camayoc.config import get_config
+from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.exceptions import FailedMergeReportException
+from camayoc.exceptions import FailedScanException
+from camayoc.exceptions import WaitTimeError
 from camayoc.utils import client_cmd
-from camayoc.exceptions import (
-    ConfigFileNotFoundError,
-    FailedMergeReportException,
-    FailedScanException,
-    WaitTimeError,
-)
 
 
 def clear_all_entities():

@@ -10,7 +10,8 @@
 :upstream: yes
 """
 from .utils import wait_for_animation
-from .views import DashboardView, LoginView
+from .views import DashboardView
+from .views import LoginView
 
 
 def test_login_logout(browser):

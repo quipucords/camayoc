@@ -9,12 +9,11 @@
 :testtype: functional
 :upstream: yes
 """
-
 import pytest
 import requests
+from oc.utils import search_mult_pod_logs
 
 from camayoc.tests.qpc.yupana.utils import get_app_url
-from oc.utils import search_mult_pod_logs
 
 
 EXPECTED_APP_CONFIGS = (

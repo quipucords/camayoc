@@ -12,14 +12,13 @@ Example of a valid 'vcenter' section of a camayoc config file:
         password: 'password'
         hostname: 'vcenter.example.com'
 """
-
 import argparse
 import re
 import ssl
 
-from pyVim.connect import Disconnect, SmartConnect
-
 import yaml
+from pyVim.connect import Disconnect
+from pyVim.connect import SmartConnect
 
 from camayoc import config
 from camayoc.exceptions import ConfigFileNotFoundError

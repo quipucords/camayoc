@@ -17,13 +17,13 @@ import pytest
 
 from camayoc import api
 from camayoc.constants import QPC_SOURCE_TYPES
-from camayoc.qpc_models import Credential, Scan, Source
-from camayoc.tests.qpc.utils import (
-    assert_matches_server,
-    assert_source_create_fails,
-    assert_source_update_fails,
-    gen_valid_source,
-)
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Scan
+from camayoc.qpc_models import Source
+from camayoc.tests.qpc.utils import assert_matches_server
+from camayoc.tests.qpc.utils import assert_source_create_fails
+from camayoc.tests.qpc.utils import assert_source_update_fails
+from camayoc.tests.qpc.utils import gen_valid_source
 from camayoc.utils import uuid4
 
 CREATE_DATA = ["localhost", "127.0.0.1", "example.com"]

@@ -11,26 +11,22 @@
 """
 import json
 import os
-import pytest
 import random
 from io import BytesIO
 from pathlib import Path
 
 import pexpect
+import pytest
 
 from camayoc import utils
+from camayoc.constants import BECOME_PASSWORD_INPUT
+from camayoc.constants import CONNECTION_PASSWORD_INPUT
+from camayoc.constants import MASKED_PASSWORD_OUTPUT
+from camayoc.tests.qpc.cli.utils import cred_add_and_check
+from camayoc.tests.qpc.cli.utils import cred_show_and_check
+from camayoc.tests.qpc.cli.utils import source_add_and_check
+from camayoc.tests.qpc.cli.utils import source_show
 from camayoc.utils import client_cmd
-from camayoc.constants import (
-    BECOME_PASSWORD_INPUT,
-    CONNECTION_PASSWORD_INPUT,
-    MASKED_PASSWORD_OUTPUT,
-)
-from camayoc.tests.qpc.cli.utils import (
-    cred_add_and_check,
-    cred_show_and_check,
-    source_add_and_check,
-    source_show,
-)
 
 
 def generate_show_output(data):

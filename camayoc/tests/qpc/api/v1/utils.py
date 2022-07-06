@@ -1,13 +1,16 @@
 # coding=utf-8
 """Shared utility functions for v1 tests."""
-
 import pprint
 import time
 
 from camayoc import config
-from camayoc.constants import QPC_SCAN_STATES, QPC_SCAN_TERMINAL_STATES
-from camayoc.exceptions import StoppedScanException, WaitTimeError
-from camayoc.qpc_models import Credential, Scan, Source
+from camayoc.constants import QPC_SCAN_STATES
+from camayoc.constants import QPC_SCAN_TERMINAL_STATES
+from camayoc.exceptions import StoppedScanException
+from camayoc.exceptions import WaitTimeError
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Scan
+from camayoc.qpc_models import Source
 
 
 def get_source(source_type, cleanup):

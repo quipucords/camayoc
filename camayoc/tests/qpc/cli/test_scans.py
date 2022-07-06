@@ -14,16 +14,14 @@ import re
 
 import pytest
 
-from camayoc.utils import client_cmd, uuid4
-
-from .utils import (
-    config_sources,
-    scan_add_and_check,
-    scan_clear,
-    scan_edit_and_check,
-    scan_show_and_check,
-    source_show,
-)
+from .utils import config_sources
+from .utils import scan_add_and_check
+from .utils import scan_clear
+from .utils import scan_edit_and_check
+from .utils import scan_show_and_check
+from .utils import source_show
+from camayoc.utils import client_cmd
+from camayoc.utils import uuid4
 
 NEGATIVE_CASES = [1, -100, "redhat_packages", "ifconfig", {}, [], ["/foo/bar/"]]
 

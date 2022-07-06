@@ -15,21 +15,19 @@ import random
 from io import BytesIO
 
 import pexpect
-
 import pytest
 
 from camayoc import utils
+from camayoc.constants import CONNECTION_PASSWORD_INPUT
+from camayoc.constants import QPC_HOST_MANAGER_TYPES
+from camayoc.tests.qpc.cli.utils import convert_ip_format
+from camayoc.tests.qpc.cli.utils import cred_add_and_check
+from camayoc.tests.qpc.cli.utils import scan_add_and_check
+from camayoc.tests.qpc.cli.utils import scan_show
+from camayoc.tests.qpc.cli.utils import source_add_and_check
+from camayoc.tests.qpc.cli.utils import source_edit_and_check
+from camayoc.tests.qpc.cli.utils import source_show_and_check
 from camayoc.utils import client_cmd
-from camayoc.constants import CONNECTION_PASSWORD_INPUT, QPC_HOST_MANAGER_TYPES
-from camayoc.tests.qpc.cli.utils import (
-    convert_ip_format,
-    cred_add_and_check,
-    scan_add_and_check,
-    scan_show,
-    source_add_and_check,
-    source_edit_and_check,
-    source_show_and_check,
-)
 
 
 ISSUE_449_MARK = pytest.mark.xfail(

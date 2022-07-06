@@ -3,22 +3,22 @@
 import time
 
 import pytest
-
-from selenium.common.exceptions import (
-    MoveTargetOutOfBoundsException,
-    NoSuchElementException,
-    StaleElementReferenceException,
-)
+from selenium.common.exceptions import MoveTargetOutOfBoundsException
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.remote.webelement import WebElement
-
 from smartloc import Locator
-
 from widgetastic.exceptions import WidgetOperationFailed
-from widgetastic.widget import Checkbox, GenericLocatorWidget, TextInput
+from widgetastic.widget import Checkbox
+from widgetastic.widget import GenericLocatorWidget
+from widgetastic.widget import TextInput
+from widgetastic_patternfly import Button
+from widgetastic_patternfly import Dropdown
 
-from widgetastic_patternfly import Button, Dropdown
-
-from .views import CredentialModalView, DashboardView, DeleteModalView, SourceModalView
+from .views import CredentialModalView
+from .views import DashboardView
+from .views import DeleteModalView
+from .views import SourceModalView
 
 
 SOURCE_TYPE_RADIO_LABELS = {

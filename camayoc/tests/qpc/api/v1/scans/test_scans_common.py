@@ -15,7 +15,8 @@ from itertools import combinations
 import pytest
 
 from camayoc import api
-from camayoc.constants import QPC_OPTIONAL_PRODUCTS, QPC_SOURCE_TYPES
+from camayoc.constants import QPC_OPTIONAL_PRODUCTS
+from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import gen_valid_source
 from camayoc.utils import uuid4

@@ -1,9 +1,10 @@
 """Quipucords views."""
 from smartloc import Locator
-
-from widgetastic.widget import TextInput, View
-
-from widgetastic_patternfly import Button, NavDropdown, VerticalNavigation
+from widgetastic.widget import TextInput
+from widgetastic.widget import View
+from widgetastic_patternfly import Button
+from widgetastic_patternfly import NavDropdown
+from widgetastic_patternfly import VerticalNavigation
 
 
 class LoginView(View):

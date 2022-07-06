@@ -15,10 +15,12 @@ from pprint import pformat
 
 import pytest
 
-from camayoc import api, utils
+from camayoc import api
+from camayoc import utils
 from camayoc.qpc_models import Report
+from camayoc.tests.qpc.api.v1.conftest import get_scan_result
 from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
-from camayoc.tests.qpc.api.v1.conftest import get_scan_result, scan_list
+from camayoc.tests.qpc.api.v1.conftest import scan_list
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 

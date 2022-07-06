@@ -7,11 +7,15 @@ from unittest.mock import MagicMock
 from urllib.parse import urljoin
 
 import requests
-
 import yaml
 
-from camayoc import api, config, exceptions
-from camayoc.qpc_models import Credential, Scan, ScanJob, Source
+from camayoc import api
+from camayoc import config
+from camayoc import exceptions
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Scan
+from camayoc.qpc_models import ScanJob
+from camayoc.qpc_models import Source
 from camayoc.utils import uuid4
 
 

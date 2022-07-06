@@ -15,11 +15,10 @@ import pytest
 
 from camayoc import api
 from camayoc.constants import QPC_HOST_MANAGER_TYPES
-from camayoc.qpc_models import Credential, Source
-from camayoc.tests.qpc.utils import (
-    assert_source_create_fails,
-    assert_source_update_fails,
-)
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Source
+from camayoc.tests.qpc.utils import assert_source_create_fails
+from camayoc.tests.qpc.utils import assert_source_update_fails
 from camayoc.utils import uuid4
 
 INVALID_HOST_DATA = [["192.0.2.[0:255]"], ["192.0.3.0/24"]]
