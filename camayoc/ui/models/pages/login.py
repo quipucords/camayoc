@@ -17,13 +17,6 @@ class Login(AbstractPage):
         password_input = "input[name=password]"
         submit_button = "button[type=submit]"
 
-        # FIXME: switch to factory
-        if data.username is None and data.password is None:
-            data = LoginFormDTO(
-                username=self._client._camayoc_config.get("qpc", {}).get("username"),
-                password=self._client._camayoc_config.get("qpc", {}).get("password"),
-            )
-
         if self._driver.locator(login_page_indicator).is_visible():
             self._driver.fill(username_input, data.username)
             self._driver.fill(password_input, data.password)

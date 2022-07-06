@@ -72,3 +72,22 @@ class MisconfiguredWidgetException(Exception):
 
 class PageFactoryException(Exception):
     """Page factory received invalid value and can't instantiate new class."""
+
+
+class DataProviderException(Exception):
+    """Generic problem raised by DataProvider class"""
+
+
+class APIResultsEmpty(DataProviderException):
+    """API request response results is empty.
+
+    This DataProvider is unable to yield any values.
+    """
+
+
+class FilteredAPIResultsEmpty(DataProviderException):
+    """There are no objects in API request response results matching
+    provided criteria.
+
+    This configuration of DataProvider is unable to yield any values.
+    """

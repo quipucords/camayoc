@@ -9,19 +9,13 @@
 :upstream: yes
 """
 from camayoc.ui import Client
+from camayoc.ui import data_factories
+from camayoc.ui.data_factories import AddCredentialDTOFactory
+from camayoc.ui.data_factories import AddSourceDTOFactory
+from camayoc.ui.data_factories import TriggerScanDTOFactory
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
-from camayoc.ui.enums import NetworkCredentialBecomeMethods
 from camayoc.ui.enums import SourceTypes
-from camayoc.ui.types import AddCredentialDTO
-from camayoc.ui.types import AddSourceDTO
-from camayoc.ui.types import LoginFormDTO
-from camayoc.ui.types import NetworkSourceFormDTO
-from camayoc.ui.types import NewScanFormDTO
-from camayoc.ui.types import SelectSourceDTO
-from camayoc.ui.types import SSHNetworkCredentialFormDTO
-from camayoc.ui.types import TriggerScanDTO
-from camayoc.utils import uuid4
 
 
 def test_demo_endtoend(ui_client: Client):
@@ -40,42 +34,28 @@ def test_demo_endtoend(ui_client: Client):
         4) Trigger scan for newly created source.
     :expectedresults: Credential and Source are created
     """
-    credential_name = "my credential name " + uuid4()
-    source_name = "my source name " + uuid4()
-    scan_name = "my scan name " + uuid4()
-    credential_data = AddCredentialDTO(
-        credential_type=CredentialTypes.NETWORK,
-        credential_form_dto=SSHNetworkCredentialFormDTO(
-            credential_name=credential_name,
-            username="my user name" + uuid4(),
-            ssh_key_file="/root/.bashrc",
-            passphrase="mypassphrase" + uuid4(),
-            become_method=NetworkCredentialBecomeMethods.PFEXEC,
-            become_user=uuid4().translate({ord(c): None for c in "0123456789-"}),
-            become_password="mybecomepassword" + uuid4(),
-        ),
+    import random
+
+    matching_types = [
+        (CredentialTypes.NETWORK, SourceTypes.NETWORK_RANGE),
+        (CredentialTypes.SATELLITE, SourceTypes.SATELLITE),
+        (CredentialTypes.VCENTER, SourceTypes.VCENTER_SERVER),
+    ]
+    credential_type, source_type = random.choice(matching_types)
+    # FIXME: above should be somewhere else
+
+    credential_data = AddCredentialDTOFactory(credential_type=credential_type)
+    source_data = AddSourceDTOFactory(
+        select_source_type__source_type=source_type,
+        source_form__credentials=[credential_data.credential_form_dto.credential_name],
     )
-    source_data = AddSourceDTO(
-        select_source_type=SelectSourceDTO(
-            source_type=SourceTypes.NETWORK_RANGE,
-        ),
-        source_form=NetworkSourceFormDTO(
-            name=source_name,
-            addresses="192.168.0.1/24",
-            credentials=[credential_name],
-        ),
-    )
-    trigger_scan_data = TriggerScanDTO(
-        source_name=source_name,
-        scan_form=NewScanFormDTO(
-            name=scan_name,
-            fuse=True,
-        ),
+    trigger_scan_data = TriggerScanDTOFactory(
+        source_name=source_data.source_form.source_name,
     )
 
     (
         ui_client.begin()
-        .login(LoginFormDTO())
+        .login(data_factories.LoginFormDTOFactory())
         .navigate_to(MainMenuPages.CREDENTIALS)
         .add_credential(credential_data)
         .navigate_to(MainMenuPages.SOURCES)
@@ -101,7 +81,7 @@ def test_demo_download(ui_client: Client):
 
     (
         ui_client.begin()
-        .login(LoginFormDTO())
+        .login(data_factories.LoginFormDTOFactory())
         .navigate_to(MainMenuPages.SCANS)
         .download_scan(scan_name)
     )
