@@ -52,7 +52,6 @@ install-dev:
 	pip install -e .[dev]
 
 pre-commit:
-	pre-commit autoupdate
 	pre-commit run --all-files
 
 lint:
