@@ -1,6 +1,5 @@
 # coding=utf-8
 """Utility functions."""
-
 import contextlib
 import time
 

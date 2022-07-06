@@ -23,7 +23,6 @@ Example:
 
         python gen_config.py --profiles profiles.csv --report report.csv
 """
-
 import argparse
 import csv
 import os

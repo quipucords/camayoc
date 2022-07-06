@@ -10,10 +10,10 @@
 :upstream: yes
 """
 import pytest
-
 import requests
 
-from camayoc.constants import QPC_BECOME_METHODS, QPC_HOST_MANAGER_TYPES
+from camayoc.constants import QPC_BECOME_METHODS
+from camayoc.constants import QPC_HOST_MANAGER_TYPES
 from camayoc.qpc_models import Credential
 from camayoc.utils import uuid4
 

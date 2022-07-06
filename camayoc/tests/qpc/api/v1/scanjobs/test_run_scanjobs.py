@@ -16,15 +16,14 @@ from pprint import pformat
 import pytest
 
 from camayoc import utils
-from camayoc.constants import (
-    QPC_BRMS_EXTENDED_FACTS,
-    QPC_BRMS_RAW_FACTS,
-    QPC_EAP_EXTENDED_FACTS,
-    QPC_EAP_RAW_FACTS,
-    QPC_FUSE_EXTENDED_FACTS,
-    QPC_FUSE_RAW_FACTS,
-)
-from camayoc.tests.qpc.api.v1.conftest import get_scan_result, scan_list
+from camayoc.constants import QPC_BRMS_EXTENDED_FACTS
+from camayoc.constants import QPC_BRMS_RAW_FACTS
+from camayoc.constants import QPC_EAP_EXTENDED_FACTS
+from camayoc.constants import QPC_EAP_RAW_FACTS
+from camayoc.constants import QPC_FUSE_EXTENDED_FACTS
+from camayoc.constants import QPC_FUSE_RAW_FACTS
+from camayoc.tests.qpc.api.v1.conftest import get_scan_result
+from camayoc.tests.qpc.api.v1.conftest import scan_list
 from camayoc.tests.qpc.utils import mark_runs_scans
 
 

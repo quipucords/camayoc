@@ -8,9 +8,8 @@ system in order to SSH into it.
 import os
 from copy import deepcopy
 
-from xdg import BaseDirectory
-
 import yaml
+from xdg import BaseDirectory
 
 from camayoc import exceptions
 

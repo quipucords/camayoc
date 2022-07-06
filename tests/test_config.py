@@ -5,10 +5,11 @@ import unittest
 from unittest import mock
 
 import xdg
-
 import yaml
 
-from camayoc import config, exceptions, utils
+from camayoc import config
+from camayoc import exceptions
+from camayoc import utils
 
 
 CAMAYOC_CONFIG = """

@@ -16,7 +16,8 @@ import pytest
 
 from camayoc import api
 from camayoc.constants import QPC_SOURCE_TYPES
-from camayoc.qpc_models import Credential, Source
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Source
 from camayoc.tests.qpc.utils import assert_matches_server
 from camayoc.utils import uuid4
 

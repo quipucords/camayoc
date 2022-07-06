@@ -11,15 +11,16 @@
 """
 import copy
 import os
-
 from pathlib import Path
 
 import pytest
 
 from camayoc import api
 from camayoc import utils
-from camayoc.qpc_models import Credential, Source
-from camayoc.tests.qpc.utils import assert_matches_server, assert_source_update_fails
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Source
+from camayoc.tests.qpc.utils import assert_matches_server
+from camayoc.tests.qpc.utils import assert_source_update_fails
 from camayoc.utils import uuid4
 
 NETWORK_TYPE = "network"

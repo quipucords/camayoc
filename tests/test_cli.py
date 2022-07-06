@@ -6,7 +6,9 @@ from unittest import mock
 
 from plumbum.machines.local import LocalMachine
 
-from camayoc import cli, exceptions, utils
+from camayoc import cli
+from camayoc import exceptions
+from camayoc import utils
 
 
 class EchoHandlerTestCase(unittest.TestCase):

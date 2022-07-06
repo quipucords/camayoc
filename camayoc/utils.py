@@ -1,13 +1,13 @@
 # coding=utf-8
 """Utility functions."""
+import base64
 import contextlib
+import json
 import operator
 import os
 import shutil
 import tempfile
 import uuid
-import json
-import base64
 from urllib.parse import urlunparse
 
 from camayoc import exceptions

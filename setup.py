@@ -3,7 +3,8 @@
 """A setuptools-based script for installing camayoc."""
 import os
 
-from setuptools import find_packages, setup
+from setuptools import find_packages
+from setuptools import setup
 
 _project_root = os.path.abspath(os.path.dirname(__file__))
 

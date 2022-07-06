@@ -10,11 +10,13 @@
 :upstream: yes
 """
 import pytest
-
 import requests
 
-from camayoc import api, config
-from camayoc.constants import QPC_CREDENTIALS_PATH, QPC_SCAN_PATH, QPC_SOURCE_PATH
+from camayoc import api
+from camayoc import config
+from camayoc.constants import QPC_CREDENTIALS_PATH
+from camayoc.constants import QPC_SCAN_PATH
+from camayoc.constants import QPC_SOURCE_PATH
 
 
 def test_login():

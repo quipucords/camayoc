@@ -1,13 +1,10 @@
 # coding=utf-8
 """Utility functions for yupana tests."""
-
-
 import re
-import requests
 import time
-
 from datetime import datetime
 
+import requests
 from oc import get_pods
 
 # Constants

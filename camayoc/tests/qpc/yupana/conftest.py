@@ -1,17 +1,14 @@
 """Pytest customizations and fixtures for yupana tests."""
-import pytest
-
-import oc
 import time
 
-from camayoc.tests.qpc.yupana.utils import (
-    get_app_pods,
-    post_file,
-    time_diff,
-)
+import oc
+import pytest
 
 from camayoc.config import get_config
 from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.tests.qpc.yupana.utils import get_app_pods
+from camayoc.tests.qpc.yupana.utils import post_file
+from camayoc.tests.qpc.yupana.utils import time_diff
 from camayoc.utils import create_identity
 
 

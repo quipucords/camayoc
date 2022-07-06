@@ -2,14 +2,18 @@
 from pprint import pformat
 
 import pytest
-
 import requests
 
 from camayoc.config import get_config
-from camayoc.exceptions import ConfigFileNotFoundError, WaitTimeError
-from camayoc.qpc_models import Credential, Scan, ScanJob, Source
+from camayoc.exceptions import ConfigFileNotFoundError
+from camayoc.exceptions import WaitTimeError
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Scan
+from camayoc.qpc_models import ScanJob
+from camayoc.qpc_models import Source
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
-from camayoc.tests.utils import get_vcenter_vms, vcenter_vms
+from camayoc.tests.utils import get_vcenter_vms
+from camayoc.tests.utils import vcenter_vms
 from camayoc.utils import run_scans
 
 

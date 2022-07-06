@@ -1,24 +1,18 @@
 """Test utilities for quipucords' ``qpc`` tests."""
-
 import pytest
 
-from camayoc.constants import (
-    BECOME_PASSWORD_INPUT,
-    CONNECTION_PASSWORD_INPUT,
-    QPC_SCAN_TYPES,
-    QPC_SOURCE_TYPES,
-)
+from .utils import clear_all_entities
+from .utils import config_credentials
+from .utils import config_scans
+from .utils import config_sources
+from .utils import cred_add_and_check
+from .utils import setup_qpc
+from .utils import source_add_and_check
+from camayoc.constants import BECOME_PASSWORD_INPUT
+from camayoc.constants import CONNECTION_PASSWORD_INPUT
+from camayoc.constants import QPC_SCAN_TYPES
+from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.utils import name_getter
-
-from .utils import (
-    clear_all_entities,
-    config_credentials,
-    config_scans,
-    config_sources,
-    cred_add_and_check,
-    setup_qpc,
-    source_add_and_check,
-)
 
 
 @pytest.fixture(autouse=True, scope="module")

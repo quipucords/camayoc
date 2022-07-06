@@ -11,9 +11,9 @@
 """
 import pytest
 
+from .utils import create_source
+from .utils import delete_source
 from camayoc import utils
-
-from .utils import create_source, delete_source
 
 SOURCE_DATA = {
     "Network": [

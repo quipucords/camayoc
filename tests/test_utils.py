@@ -1,13 +1,13 @@
 # coding=utf-8
 """Unit tests for :mod:`camayoc.utils`."""
 import os
-
 from tempfile import mkdtemp
 from unittest import mock
 
 import pytest
 
-from camayoc import exceptions, utils
+from camayoc import exceptions
+from camayoc import utils
 
 
 def test_run_scans():

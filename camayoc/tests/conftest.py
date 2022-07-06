@@ -3,9 +3,9 @@
 import os
 import ssl
 
-from pyVim.connect import Disconnect, SmartConnect
-
 import pytest
+from pyVim.connect import Disconnect
+from pyVim.connect import SmartConnect
 
 from camayoc import utils
 from camayoc.config import get_config

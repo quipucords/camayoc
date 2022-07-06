@@ -10,32 +10,28 @@
 :upstream: yes
 """
 import json
-import pytest
 import re
 
-from camayoc.constants import (
-    QPC_BRMS_EXTENDED_FACTS,
-    QPC_BRMS_RAW_FACTS,
-    QPC_EAP_EXTENDED_FACTS,
-    QPC_EAP_RAW_FACTS,
-    QPC_FUSE_EXTENDED_FACTS,
-    QPC_FUSE_RAW_FACTS,
-    QPC_OPTIONAL_PRODUCTS,
-)
+import pytest
+
+from .utils import config_sources
+from .utils import report_detail
+from .utils import scan_add_and_check
+from .utils import scan_cancel
+from .utils import scan_job
+from .utils import scan_pause
+from .utils import scan_restart
+from .utils import scan_start
+from .utils import wait_for_scan
+from camayoc.constants import QPC_BRMS_EXTENDED_FACTS
+from camayoc.constants import QPC_BRMS_RAW_FACTS
+from camayoc.constants import QPC_EAP_EXTENDED_FACTS
+from camayoc.constants import QPC_EAP_RAW_FACTS
+from camayoc.constants import QPC_FUSE_EXTENDED_FACTS
+from camayoc.constants import QPC_FUSE_RAW_FACTS
+from camayoc.constants import QPC_OPTIONAL_PRODUCTS
 from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import uuid4
-
-from .utils import (
-    config_sources,
-    report_detail,
-    scan_add_and_check,
-    scan_cancel,
-    scan_job,
-    scan_pause,
-    scan_restart,
-    scan_start,
-    wait_for_scan,
-)
 
 
 @mark_runs_scans

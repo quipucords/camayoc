@@ -1,6 +1,5 @@
 # coding=utf-8
 """Host Based Inventory (HBI) API."""
-
 import requests
 import urllib3
 
