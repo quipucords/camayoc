@@ -105,6 +105,7 @@ JSON_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
     "cpu_core_per_socket",
     "id",
     "deployment_report",
+    "system_purpose",
 )
 """Deployments report expected fields for JSON output."""
 
