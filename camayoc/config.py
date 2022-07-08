@@ -6,62 +6,57 @@ systems. For example, it needs to know the username, hostname and password of a
 system in order to SSH into it.
 """
 import os
-from copy import deepcopy
+import warnings
 
-import yaml
+from dynaconf import Dynaconf
 from xdg import BaseDirectory
 
 from camayoc import exceptions
 
 
-# `get_config` uses this as a cache. It is intentionally a global. This design
-# lets us do interesting things like flush the cache at run time or completely
-# avoid a config file by fetching values from the UI.
-_CONFIG = None
-
-
-def get_config():
-    """Return a copy of the global config dictionary.
-
-    This method makes use of a cache. If the cache is empty, the configuration
-    file is parsed and the cache is populated. Otherwise, a copy of the cached
-    configuration object is returned.
-
-    :returns: A copy of the global server configuration object.
-    """
-    global _CONFIG  # pylint:disable=global-statement
-    if _CONFIG is None:
-        with open(_get_config_file_path("camayoc", "config.yaml")) as f:
-            _CONFIG = yaml.load(f, Loader=yaml.FullLoader)
-    return deepcopy(_CONFIG)
-
-
-def _get_config_file_path(xdg_config_dir, xdg_config_file):
-    """Search ``XDG_CONFIG_DIRS`` for a config file and return the first found.
+def get_settings_files(xdg_config_dir, xdg_config_file):
+    """Search ``XDG_CONFIG_DIRS`` for a config file and return all found.
 
     Search each of the standard XDG configuration directories for a
-    configuration file. Return as soon as a configuration file is found. Beware
-    that by the time client code attempts to open the file, it may be gone or
-    otherwise inaccessible.
+    configuration file. Return a list of all that have been found.
+    The list is ordered from system-wide to user-specific. That's because
+    result of this function is fed to Dynaconf, and Dynaconf reads all
+    provided files in order, with values in latter file shadowing values
+    from earlier file.
+
+    May issue the warning if none of the paths exist. Dynaconf will still
+    read configuration from environment variables, so missing files are
+    generally not fatal.
 
     :param xdg_config_dir: A string. The name of the directory that is suffixed
         to the end of each of the ``XDG_CONFIG_DIRS`` paths.
     :param xdg_config_file: A string. The name of the configuration file that
         is being searched for.
-    :returns: A string. A path to a configuration file.
-    :raises camayoc.exceptions.ConfigFileNotFoundError: If the requested
-        configuration file cannot be found.
+    :returns: A list of strings. Each item is a path to existing configuration
+        file.
     """
-    path = BaseDirectory.load_first_config(xdg_config_dir, xdg_config_file)
-    if path and os.path.isfile(path):
-        return path
-    raise exceptions.ConfigFileNotFoundError(
-        "Camayoc is unable to find a configuration file. The following "
-        "(XDG compliant) paths have been searched: "
-        + ", ".join(
+    settings_files = list(BaseDirectory.load_config_paths(xdg_config_dir, xdg_config_file))[::-1]
+
+    if not settings_files:
+        searched_paths = reversed(
             [
                 os.path.join(config_dir, xdg_config_dir, xdg_config_file)
                 for config_dir in BaseDirectory.xdg_config_dirs
             ]
         )
-    )
+        msg = (
+            "Camayoc is unable to find a configuration file. The following "
+            "(XDG compliant) paths have been searched: {}\n"
+            "This is generally not a problem, as Camayoc can read configuration "
+            "from environment variables. But you might encounter exceptions later."
+        ).format(", ".join(searched_paths))
+        warnings.warn(msg, exceptions.ConfigFileNotFoundError)
+    return settings_files
+
+
+_CONFIG = Dynaconf(settings_files=get_settings_files("camayoc", "config.yaml"))
+
+
+def get_config():
+    """Backwards compatibility shim. Returns global config object."""
+    return _CONFIG
