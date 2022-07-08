@@ -13,6 +13,7 @@ Subpackages
    :maxdepth: 4
 
    camayoc.tests
+   camayoc.ui
 
 Submodules
 ----------
