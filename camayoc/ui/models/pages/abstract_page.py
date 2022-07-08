@@ -9,13 +9,13 @@ from camayoc.ui.enums import Pages
 from camayoc.ui.types import UIPage
 
 if TYPE_CHECKING:
-    from camayoc.ui import Client
+    import camayoc
 
     ClassOrPage = Union[Pages, "AbstractPage"]
 
 
 class AbstractPage(UIPage):
-    def __init__(self, client: Client):
+    def __init__(self, client: camayoc.ui.client.Client):
         self._client = client
         self._driver = client.driver
 

@@ -30,12 +30,18 @@ exclude_patterns = ["_build"]
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
 language = "en"
 master_doc = "index"
-nitpick_ignore = [
+nitpick_ignore_regex = [
     ("py:class", "Exception"),
     ("py:class", "object"),
     ("py:class", "tuple"),
     ("py:class", "unittest.case.TestCase"),
     ("py:class", "widgetastic.widget.base.View"),
+    ("py:class", "Locator"),
+    ("py:class", "Page"),
+    ("py:class", r"playwright.*"),
+    ("py:class", "enum.Enum"),
+    ("py:class", r"camayoc\.ui\.models.*"),
+    ("py:class", r"camayoc\.ui\.types.*"),
 ]
 nitpicky = True
 pygments_style = "sphinx"

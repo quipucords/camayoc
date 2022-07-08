@@ -5,6 +5,7 @@ Camayoc
    :maxdepth: 2
    :caption: Contents:
 
+   development
    api
 
 Indices and tables
