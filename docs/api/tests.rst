@@ -14,5 +14,4 @@ Submodules
 
    tests.test_api
    tests.test_cli
-   tests.test_config
    tests.test_utils
