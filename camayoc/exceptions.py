@@ -15,7 +15,7 @@ class CalledProcessError(Exception):
         ).format(*self.args)
 
 
-class ConfigFileNotFoundError(Exception):
+class ConfigFileNotFoundError(UserWarning):
     """We cannot find the requested Camayoc configuration file.
 
     See :mod:`camayoc.config` for more information on how configuration files
