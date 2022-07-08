@@ -58,9 +58,23 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.ui.views
     api/camayoc.tests.qpc.utils
     api/camayoc.tests.utils
+    api/camayoc.ui
+    api/camayoc.ui.client
+    api/camayoc.ui.decorators
+    api/camayoc.ui.enums
+    api/camayoc.ui.models
+    api/camayoc.ui.models.fields
+    api/camayoc.ui.models.mixins
+    api/camayoc.ui.models.pages
+    api/camayoc.ui.models.pages.abstract_page
+    api/camayoc.ui.models.pages.credentials
+    api/camayoc.ui.models.pages.login
+    api/camayoc.ui.models.pages.scans
+    api/camayoc.ui.models.pages.sources
+    api/camayoc.ui.session
+    api/camayoc.ui.types
     api/camayoc.utils
     api/tests
     api/tests.test_api
     api/tests.test_cli
-    api/tests.test_config
     api/tests.test_utils

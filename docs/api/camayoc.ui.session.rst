@@ -1,7 +1,7 @@
-tests.test\_config module
+camayoc.ui.session module
 =========================
 
-.. automodule:: tests.test_config
+.. automodule:: camayoc.ui.session
    :members:
    :undoc-members:
    :show-inheritance:
