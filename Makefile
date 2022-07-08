@@ -59,7 +59,7 @@ lint:
 	flake8 .
 
 package: package-clean
-	python setup.py --quiet sdist bdist_wheel
+	python3 setup.py --quiet sdist bdist_wheel
 
 package-clean:
 	rm -rf build dist camayoc.egg-info
