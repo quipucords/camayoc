@@ -14,7 +14,7 @@ with open(os.path.join(_project_root, "README.rst"), encoding="utf-8") as f:
 
 setup(
     name="camayoc",
-    version="0.9.0",
+    version="0.9.5",
     author="Quipucords Team",
     author_email="quipucords@redhat.com",
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
