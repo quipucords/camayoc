@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlunparse
 
 from .models.pages.login import Login
+from .session import DummySession
 from .types import Session
 from camayoc import config
 from camayoc import exceptions
@@ -28,6 +29,7 @@ class Client:
         self._set_url()
         self._auto_dismiss_notification = auto_dismiss_notification
 
+        self.session = session or DummySession()
         self.downloaded_files: list[Download] = []
         self.driver = driver
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .abstract_page import AbstractPage
+from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import Pages
 from camayoc.ui.types import LoginFormDTO
 
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class Login(AbstractPage):
+    @record_action
     def login(self, data: LoginFormDTO) -> SourcesMainPage:
         login_page_indicator = "html.login-pf"
         username_input = "input[name=username]"

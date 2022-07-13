@@ -36,7 +36,7 @@ class HistoryRecord:
 class Session(Protocol):
     history: list[HistoryRecord]
 
-    def last_record(self) -> HistoryRecord:
+    def last_record(self) -> Optional[HistoryRecord]:
         pass
 
     def add_record(self, record: HistoryRecord) -> None:

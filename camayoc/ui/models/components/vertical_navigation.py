@@ -5,6 +5,7 @@ from typing import overload
 from typing import TYPE_CHECKING
 from typing import Union
 
+from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import Pages
 from camayoc.ui.types import UIPage
@@ -36,6 +37,7 @@ class VerticalNavigation(UIPage):
     def navigate_to(self, page_name: MainMenuPages) -> NavigateToPage:
         ...
 
+    @record_action
     def navigate_to(self, page_name: MainMenuPages) -> NavigateToPage:
         selector = f"text={page_name.value}"
         menu = self._driver.locator(LEFT_NAV)
