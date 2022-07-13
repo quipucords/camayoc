@@ -91,3 +91,7 @@ class FilteredAPIResultsEmpty(DataProviderException):
 
     This configuration of DataProvider is unable to yield any values.
     """
+
+
+class IncorrectDecoratorUsageWarning(UserWarning):
+    """Decorator was used incorrectly, but error is salvageable."""

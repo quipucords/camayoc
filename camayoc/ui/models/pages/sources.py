@@ -13,6 +13,7 @@ from ..fields import RadioGroupField
 from ..fields import SelectField
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
+from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import Pages
 from camayoc.ui.enums import SourceTypes
 from camayoc.ui.types import AddSourceDTO
@@ -64,8 +65,10 @@ class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
     def fill(self, data: NetworkSourceFormDTO):
         ...
 
+    @record_action
     def fill(self, data: NetworkSourceFormDTO):
         super().fill(data)
+        return self
 
 
 class SatelliteSourceCredentialsForm(SourceCredentialsForm):
@@ -80,8 +83,10 @@ class SatelliteSourceCredentialsForm(SourceCredentialsForm):
     def fill(self, data: SatelliteSourceFormDTO):
         ...
 
+    @record_action
     def fill(self, data: SatelliteSourceFormDTO):
         super().fill(data)
+        return self
 
 
 class VCenterSourceCredentialsForm(SourceCredentialsForm):
@@ -96,8 +101,10 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
     def fill(self, data: VCenterSourceFormDTO):
         ...
 
+    @record_action
     def fill(self, data: VCenterSourceFormDTO):
         super().fill(data)
+        return self
 
 
 class ResultForm(WizardStep, AbstractPage):
@@ -122,8 +129,10 @@ class ScanForm(Form, PopUp, AbstractPage):
     def fill(self, data: NewScanFormDTO):
         ...
 
+    @record_action
     def fill(self, data: NewScanFormDTO):
         super().fill(data)
+        return self
 
 
 class SourceListElem(AbstractListItem):
@@ -147,11 +156,13 @@ class SourcesMainPage(MainPageMixin):
         # page 3 - summary / confirmation
         return add_source_wizard.confirm()
 
+    @record_action
     def open_add_source(self) -> SelectSourceTypeForm:
         create_source_button = 'button.btn-primary:has-text("Add")'
         self._driver.click(create_source_button)
         return self._new_page(SelectSourceTypeForm)
 
+    @record_action
     def trigger_scan(self, data: TriggerScanDTO) -> SourcesMainPage:
         item: SourceListElem = self._get_item(data.source_name)
         popup = item.open_scan()

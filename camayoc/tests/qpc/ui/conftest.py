@@ -10,6 +10,7 @@ from .views import LoginView
 from camayoc import config
 from camayoc.tests.qpc.cli.utils import clear_all_entities
 from camayoc.ui import Client as UIClient
+from camayoc.ui.session import BasicSession
 from camayoc.utils import get_qpc_url
 from camayoc.utils import uuid4
 
@@ -25,6 +26,17 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "selenium_browser" in item.fixturenames:
                 item.add_marker(skip_ui)
+
+
+def pytest_exception_interact(node, call, report):
+    ui_client = node.funcargs.get("ui_client", None)
+    if not ui_client:
+        return
+    print("List of previous successfull actions:")
+    zeroes = len(str(len(ui_client.session.history)))
+    for step, record in enumerate(ui_client.session.history):
+        step_num = str(step).zfill(zeroes)
+        print(f"{step_num}: {record}")
 
 
 @pytest.fixture(scope="module")
@@ -129,5 +141,6 @@ def browser_context_args(browser_context_args):
 
 @pytest.fixture
 def ui_client(page):
-    client = UIClient(driver=page)
+    client_session = BasicSession()
+    client = UIClient(driver=page, session=client_session)
     yield client

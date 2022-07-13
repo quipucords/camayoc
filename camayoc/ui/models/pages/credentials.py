@@ -9,6 +9,7 @@ from ..fields import SelectField
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 from camayoc.ui.decorators import creates_toast
+from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import Pages
 from camayoc.ui.types import AddCredentialDTO
@@ -21,10 +22,12 @@ class CredentialForm(Form, PopUp, AbstractPage):
     SAVE_RESULT_CLASS = Pages.CREDENTIALS
     CANCEL_RESULT_CLASS = Pages.CREDENTIALS
 
+    @record_action
     def cancel(self) -> CredentialsMainPage:
         return super().cancel()
 
     @creates_toast
+    @record_action
     def confirm(self) -> CredentialsMainPage:
         return super().confirm()
 
@@ -45,8 +48,10 @@ class NetworkCredentialForm(CredentialForm):
     def fill(self, data: NetworkCredentialFormDTO):
         ...
 
+    @record_action
     def fill(self, data: NetworkCredentialFormDTO):
         super().fill(data)
+        return self
 
 
 class SatelliteCredentialForm(CredentialForm):
@@ -59,8 +64,10 @@ class SatelliteCredentialForm(CredentialForm):
     def fill(self, data: SatelliteCredentialFormDTO):
         ...
 
+    @record_action
     def fill(self, data: SatelliteCredentialFormDTO):
         super().fill(data)
+        return self
 
 
 class VCenterCredentialForm(CredentialForm):
@@ -73,8 +80,10 @@ class VCenterCredentialForm(CredentialForm):
     def fill(self, data: VCenterCredentialFormDTO):
         ...
 
+    @record_action
     def fill(self, data: VCenterCredentialFormDTO):
         super().fill(data)
+        return self
 
 
 class CredentialsMainPage(MainPageMixin):
@@ -83,6 +92,7 @@ class CredentialsMainPage(MainPageMixin):
         add_credential_popup.fill(data.credential_form_dto)
         return add_credential_popup.confirm()
 
+    @record_action
     def open_add_credential(self, source_type: CredentialTypes) -> CredentialForm:
         create_credential_button = "#createCredentialButton"
         source_type_map = {
