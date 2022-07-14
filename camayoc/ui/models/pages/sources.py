@@ -13,6 +13,7 @@ from ..fields import RadioGroupField
 from ..fields import SelectField
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
+from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import Pages
 from camayoc.ui.enums import SourceTypes
@@ -25,13 +26,29 @@ from camayoc.ui.types import TriggerScanDTO
 from camayoc.ui.types import VCenterSourceFormDTO
 
 
+class CancelWizardPopup(PopUp, AbstractPage):
+    SAVE_LOCATOR = ".modal-footer button.btn-primary:text-is('Yes')"
+    CANCEL_LOCATOR = ".modal-footer button.btn-cancel:text-is('No')"
+    SAVE_RESULT_CLASS = Pages.SOURCES
+    CANCEL_RESULT_CLASS = None
+
+
 class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
     NEXT_STEP_RESULT_CLASS = None
     PREV_STEP_RESULT_CLASS = None
-    CANCEL_RESULT_CLASS = None
+    CANCEL_RESULT_CLASS = CancelWizardPopup
 
     class FormDefinition:
         source_type = RadioGroupField("div.wizard-pf-contents:not(.hidden)")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        setattr(self, "NEXT_STEP_RESULT_CLASS", NetworkRangeSourceCredentialsForm)
+
+    def cancel(self) -> CancelWizardPopup:
+        popup = super().cancel()
+        setattr(popup, "CANCEL_RESULT_CLASS", type(self))
+        return popup
 
     def fill(self, data: SelectSourceDTO):
         source_type_map = {
@@ -42,12 +59,19 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
         next_step_class = source_type_map.get(data.source_type)
         setattr(self, "NEXT_STEP_RESULT_CLASS", next_step_class)
         super().fill(data)
+        return self
 
 
 class SourceCredentialsForm(Form, WizardStep, AbstractPage):
     NEXT_STEP_LOCATOR = '.modal-footer button:has-text("Save")'
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES_RESULTS_PAGE
     PREV_STEP_RESULT_CLASS = SelectSourceTypeForm
+    CANCEL_RESULT_CLASS = CancelWizardPopup
+
+    def cancel(self) -> CancelWizardPopup:
+        popup = super().cancel()
+        setattr(popup, "CANCEL_RESULT_CLASS", type(self))
+        return popup
 
 
 class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
@@ -162,6 +186,7 @@ class SourcesMainPage(MainPageMixin):
         self._driver.click(create_source_button)
         return self._new_page(SelectSourceTypeForm)
 
+    @creates_toast
     @record_action
     def trigger_scan(self, data: TriggerScanDTO) -> SourcesMainPage:
         item: SourceListElem = self._get_item(data.source_name)
