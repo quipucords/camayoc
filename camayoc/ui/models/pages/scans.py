@@ -6,6 +6,7 @@ from ..components.items_list import AbstractListItem
 from ..mixins import MainPageMixin
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
+from camayoc.ui.decorators import service
 
 
 class ScanListElem(AbstractListItem):
@@ -24,6 +25,7 @@ class ScansMainPage(MainPageMixin):
     ITEM_CLASS = ScanListElem
 
     @creates_toast
+    @service
     @record_action
     def download_scan(self, scan_name: str) -> ScansMainPage:
         scan: ScanListElem = self._get_item(scan_name)

@@ -10,6 +10,7 @@ from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
+from camayoc.ui.decorators import service
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import Pages
 from camayoc.ui.types import AddCredentialDTO
@@ -87,6 +88,7 @@ class VCenterCredentialForm(CredentialForm):
 
 
 class CredentialsMainPage(MainPageMixin):
+    @service
     def add_credential(self, data: AddCredentialDTO) -> CredentialsMainPage:
         add_credential_popup = self.open_add_credential(data.credential_type)
         add_credential_popup.fill(data.credential_form_dto)
