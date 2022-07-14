@@ -15,6 +15,7 @@ from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
+from camayoc.ui.decorators import service
 from camayoc.ui.enums import Pages
 from camayoc.ui.enums import SourceTypes
 from camayoc.ui.types import AddSourceDTO
@@ -169,6 +170,7 @@ class SourceListElem(AbstractListItem):
 class SourcesMainPage(MainPageMixin):
     ITEM_CLASS = SourceListElem
 
+    @service
     def add_source(self, data: AddSourceDTO) -> SourcesMainPage:
         add_source_wizard = self.open_add_source()
         # page 1 - Select source type

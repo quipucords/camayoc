@@ -312,25 +312,15 @@ Here's the overview of framework goals, and brief explanation behind certain des
    Instead of having specific goal, they run for specified amount of time.
    They perform actions that should succeed, and inform the team when they encounter exceptions.
 
-   HVAT are intended to find issues that become apparent only when using system for extended period of time - memory leaks, gradually worsening performance, unoptimized data access, assumptions about stored data size etc.
+   HiVAT are intended to find issues that become apparent only when using system for extended period of time - memory leaks, gradually worsening performance, unoptimized data access, assumptions about stored data size etc.
 
-   We don't have HVAT machinery yet, but framework is designed to make HVAT possible.
+   Framework is designed to make HiVAT possible.
    That's why we use a special form of Page Object Model, called Fluent Page Object Model.
    In Fluent POM, each method should return a page object.
-   This makes it possible to chain methods to model user journey through the system.
-   The most basic HVAT system would look a little like that:
-
-   .. sourcecode:: text
-
-      page = setup_browser_and_page()
-      while True:
-          available_methods = get_public_methods_of(page)
-          next_method = random.choice(available_methods)
-          try:
-              page = next_method()
-          except Exception:
-              # Could be a bug!
+   This makes it possible to chain method calls to model user journey through the system.
 
    Some methods may require arguments.
-   That's why framework expects all methods arguments to be type-hinted - so HVAT could inspect method signature and use factories to generate required data.
+   That's why framework expects all methods arguments to be type-hinted - so HiVAT could inspect method signature and use factories to generate required data.
    That's also why factories should generate data that is valid.
+
+   Proof of concept of HiVAT is implemented in ``camayoc/tests/qpc/ui/test_long_running.py``.

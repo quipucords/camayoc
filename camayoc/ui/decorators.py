@@ -6,7 +6,7 @@ from .types import Session
 from camayoc.exceptions import IncorrectDecoratorUsageWarning
 
 
-def service():
+def service(func):
     """Marks method as a service
 
     Service is user-facing API that makes tests more concise and faster to develop.
@@ -18,6 +18,14 @@ def service():
     We want to mark functions as services, so long-running tester can skip and focus
     on finer-granular actions.
     """
+
+    func.__hvat_hide_method__ = True
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return inner
 
 
 def autofill():
