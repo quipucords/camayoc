@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from camayoc.ui.enums import Pages
 from camayoc.ui.types import UIPage
 
 if TYPE_CHECKING:
@@ -16,4 +17,4 @@ class LoggedIn(UIPage):
         self._driver.click(app_user_dropdown)
         self._driver.click(logout_link)
 
-        return self._new_page("Login")
+        return self._new_page(Pages.LOGIN)
