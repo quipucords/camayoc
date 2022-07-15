@@ -16,7 +16,7 @@ clean-api-docs:
 	@rm -rf api/*
 
 gen-api-docs: clean-api-docs
-	@sphinx-apidoc -efMT -o api ../camayoc '../*/ui/data*' '../*/ui/test_endtoend*'
+	@sphinx-apidoc -efMT -o api ../camayoc '../*/ui/data*' '../*/ui/test_endtoend*' '../*/ui/test_playwright_demo*'
 	@sphinx-apidoc -efMT -o api ../tests
 	@../scripts/gen_api_docs.sh
 

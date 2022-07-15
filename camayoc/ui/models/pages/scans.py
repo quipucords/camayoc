@@ -10,8 +10,10 @@ from camayoc.ui.decorators import creates_toast
 class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
         scan_locator = "div.list-view-pf-actions button[title=Download]"
+        # timeout argument below is in milliseconds; this is how long
+        # script will wait for download button to appear
         with self.locator.page.expect_download() as download_info:
-            self.locator.locator(scan_locator).click()
+            self.locator.locator(scan_locator).click(timeout=30_000)
         download = download_info.value
         download.path()  # blocks the script while file is downloaded
         return download
