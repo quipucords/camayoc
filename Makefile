@@ -24,7 +24,6 @@ help:
 	@echo "  test-qpc-ui       to run all tests for quipucords UI"
 	@echo "  test-qpc-cli      to run all tests for quipucords CLI"
 	@echo "  test-qpc-api      to run all tests for quipucords API"
-	@echo "  test-qpc-yupana   to run all tests for quipucords yupana"
 
 
 all: test-coverage pre-commit validate-docstrings docs-html
@@ -89,9 +88,6 @@ test-qpc-ui:
 
 test-qpc-cli:
 	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc/cli
-
-test-qpc-yupana:
-	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc/yupana
 
 validate-docstrings:
 	@./scripts/validate_docstrings.sh
