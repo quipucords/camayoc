@@ -119,27 +119,3 @@ inventory:
               version: '7.0.2'
           openjdk:
               version: '1.8'
-
-yupana:
-    yupana-app:
-        app_name: "yupana"
-        openshift_project: "PROJECT_NAME"
-        openshift_app_domain: "APPLICATION_DOMAIN"
-        api_path: "/api/PROJECT_NAME/v1/"
-    upload-service:
-      api_url: "https://qa.cloud.com/api/ingress/v1/"
-      rh_username: "USERNAME"
-      rh_password: "PASSWORD"
-      rh_account_number: "000000"
-      rh_org_id: "0000000"
-      file_upload_src: "/home/code/yupana/sample.tar.gz"
-      rh_insights_request_id: "REQUEST_ID"
-    oc:
-      url: "OC_API_URL"
-      token: "SECRET_TOKEN"
-    inventory:
-      api_url: "https://qa.cloud.com/api/inventory/v1/"
-      rh_username: "USERNAME"
-      rh_password: "PASSWORD"
-      rh_account_number: "000000"
-      rh_org_id: "0000000"

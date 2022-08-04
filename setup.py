@@ -64,7 +64,6 @@ setup(
         "attrs",
         "dynaconf",
         "factory_boy",
-        "oc",
         "pexpect",
         "playwright",
         "plumbum",
