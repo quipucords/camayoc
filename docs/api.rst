@@ -53,6 +53,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.ui.conftest
     api/camayoc.tests.qpc.ui.test_credentials
     api/camayoc.tests.qpc.ui.test_login
+    api/camayoc.tests.qpc.ui.test_long_running
     api/camayoc.tests.qpc.ui.test_sources
     api/camayoc.tests.qpc.ui.utils
     api/camayoc.tests.qpc.ui.views
