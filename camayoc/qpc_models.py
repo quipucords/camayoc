@@ -146,7 +146,7 @@ class Credential(QPCObject):
     """A class to aid in CRUD tests of Host Credentials on the QPC server.
 
     Host credentials can be created by instantiating a Credential
-    object. A unique name and username are provided by default.
+    object. A unique name and username or auth_token are provided by default.
     In order to create a valid host credential you must specify either a
     password or ssh_keyfile.
 
@@ -168,6 +168,7 @@ class Credential(QPCObject):
         username=None,
         password=None,
         ssh_keyfile=None,
+        auth_token=None,
         cred_type=None,
         become_method=None,
         become_password=None,
@@ -185,9 +186,10 @@ class Credential(QPCObject):
         super().__init__(client=client, _id=_id)
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_CREDENTIALS_PATH
-        self.username = uuid4() if username is None else username
+        self.username = uuid4() if username is None and auth_token is None else username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
+        self.auth_token = uuid4() if auth_token is None and self.username is None else auth_token
         self.cred_type = cred_type
         if become_method is not None:
             self.become_method = become_method

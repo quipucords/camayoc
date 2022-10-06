@@ -47,13 +47,13 @@ QPC_SCAN_STATES = QPC_SCAN_TERMINAL_STATES + ("running",)
 QPC_TOKEN_PATH = "token/"
 """The path to the endpoint used for obtaining an authentication token."""
 
-QPC_SOURCE_TYPES = ("vcenter", "network", "satellite")
+QPC_SOURCE_TYPES = ("vcenter", "network", "satellite", "openshift")
 """Types of sources that the quipucords server supports."""
 
 QPC_SCAN_TYPES = ("inspect", "connect")
 """Types of scans that the quipucords server supports."""
 
-QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite")
+QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite", "openshift")
 """Types of host managers that the quipucords server supports."""
 
 QPC_BECOME_METHODS = ("doas", "dzdo", "ksu", "pbrun", "pfexec", "runas", "su", "sudo")
