@@ -31,6 +31,8 @@ def test_create_with_password(cred_type, shared_client, cleanup):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new credential entry is created with the data.
     """
+    if cred_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
     cred.create()
     # add the credential to the list to destroy after the test is done
@@ -52,6 +54,8 @@ def test_update(cred_type, field, shared_client, cleanup):
         3) Confirm credential has been updated.
     :expectedresults: The credential is updated.
     """
+    if cred_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
     cred.create()
     # add the id to the list to destroy after the test is done
@@ -124,6 +128,8 @@ def test_list(cred_type, shared_client, cleanup):
     :expectedresults: All creds are present in the list returned from the
         credentials endpoint when a GET request is sent.
     """
+    if cred_type == "openshift":
+        pytest.skip("Requires OpenShift")
     local_creds = []
     for _ in range(random.randint(2, 7)):
         cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
@@ -166,6 +172,8 @@ def test_read(cred_type, shared_client, cleanup):
     :expectedresults: Each credential can be read individually and has correct
         data returned when it is queried.
     """
+    if cred_type == "openshift":
+        pytest.skip("Requires OpenShift")
     creds = []
     for _ in range(random.randint(2, 5)):
         cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
@@ -195,6 +203,8 @@ def test_delete_basic(cred_type, shared_client, cleanup):
     :expectedresults: All credentials are present in data returned by API
         except the deleted credential.
     """
+    if cred_type == "openshift":
+        pytest.skip("Requires OpenShift")
     creds = []
     for _ in range(random.randint(2, 5)):
         cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
@@ -233,6 +243,8 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
     :expectedresults: We cannot delete a credential until no sources depend
         on it.
     """
+    if obj_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=obj_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
@@ -266,6 +278,7 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
     cleanup.remove(cred)
 
 
+@pytest.mark.skip(reason="Not implemented yet")
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
 def test_negative_update_to_other_type(shared_client, cleanup, cred_type):
     """Attempt to update valid credential to be another type.
