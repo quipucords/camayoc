@@ -46,6 +46,8 @@ def test_create(shared_client, cleanup, scan_host, src_type):
            the source endpoint.
     :expectedresults: A new  source entry is created with the data.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     src = Source(
@@ -120,6 +122,8 @@ def test_update(shared_client, cleanup, scan_host, src_type):
            the data
     :expectedresults: The source entry is created and updated.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
@@ -154,6 +158,8 @@ def test_update_bad_credential(src_type, scan_host, cleanup):
         2) Update the source with invalid credentials
     :expectedresults: Error codes are returned and the source is not updated.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, scan_host)
     original_data = copy.deepcopy(src.fields())
 
@@ -176,6 +182,8 @@ def test_update_remove_field(src_type, cleanup, field):
         2) Update the source with no credentials or no hosts
     :expectedresults: Error codes are returned and the source is not updated.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, "localhost")
     # we have to use deep copy because these are nested dictionaries
     original_data = copy.deepcopy(src.fields())
@@ -196,6 +204,8 @@ def test_update_with_bad_host(src_type, scan_host, cleanup):
         2) Update the source with an invalid host
     :expectedresults: Error codes are returned and the source is not updated.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, scan_host)
     original_data = copy.deepcopy(src.fields())
     # Test updating source with bad host
@@ -216,6 +226,8 @@ def test_update_with_bad_exclude_host(src_type, scan_host, cleanup):
         2) Update the source with an invalid excluded host
     :expectedresults: Error codes are returned and the source is not updated.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, scan_host)
     original_data = src.fields()
     # Test updating source with bad excluded host
@@ -259,6 +271,8 @@ def test_negative_create_missing_data(src_type, cleanup, shared_client, field):
             c) credential id's
     :expectedresults: Error is thrown and no new source is created.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
@@ -302,6 +316,8 @@ def test_negative_create_invalid_data(src_type, cleanup, shared_client, data):
         c) name
     :expectedresults: Error is thrown and no new source is created.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred.create()
     cleanup.append(cred)
@@ -332,6 +348,8 @@ def test_read_all(src_type, cleanup, shared_client):
         3) Confirm that all sources are in the list.
     :expectedresults: All sources are present in data returned by API.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     created_src_ids = set()
     # having a list of the sources locally will be helpful
     # for understanding failures as pytest will display the
@@ -381,6 +399,8 @@ def test_delete(src_type, cleanup, shared_client):
     :expectedresults: All sources are present on the server except the
         deleted source.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     created_srcs = []
     num_srcs = random.randint(2, 20)
     echo_client = api.Client(response_handler=api.echo_handler)
@@ -413,8 +433,12 @@ def test_type_mismatch(src_type, cleanup, shared_client):
     :expectedresults: An error is thrown and no new source is created.
     :caseautomation: notautomated
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, "localhost", create=False)
-    other_types = set(QPC_SOURCE_TYPES).difference(set((src_type,)))
+    qpc_src_types_minus_openshift = set(QPC_SOURCE_TYPES)
+    qpc_src_types_minus_openshift.discard("openshift")
+    other_types = qpc_src_types_minus_openshift.difference(set((src_type,)))
     other_cred = Credential(password=uuid4(), cred_type=random.choice(list(other_types)))
     other_cred.create()
     cleanup.append(other_cred)
@@ -440,6 +464,8 @@ def test_port_default(src_type, cleanup, shared_client):
     :expectedresults: A source is created with sensible default port.
     :caseautomation: notautomated
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     src.port = None
     src.create()
@@ -461,6 +487,8 @@ def test_create_with_port(src_type, cleanup, shared_client):
     :expectedresults: A source is created with user specified data.
     :caseautomation: notautomated
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     src.port = random.randint(20, 9000)
     src.create()
@@ -484,6 +512,8 @@ def test_negative_invalid_port(src_type, bad_port, cleanup, shared_client):
     :expectedresults: The source is not created
     :caseautomation: notautomated
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src = gen_valid_source(cleanup, src_type, "localhost", create=False)
     src.port = bad_port
     src.client = api.Client(api.echo_handler)
@@ -510,6 +540,8 @@ def test_delete_with_dependencies(src_type, cleanup, shared_client):
     :expectedresults: The source is not created
     :caseautomation: notautomated
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     src1 = gen_valid_source(cleanup, src_type, "localhost")
     src2 = gen_valid_source(cleanup, src_type, "localhost")
     scns = []

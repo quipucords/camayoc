@@ -40,6 +40,8 @@ def test_negative_create_multiple(src_type, shared_client, cleanup, scan_host):
             or ansible pattern like example[1-10].com)
     :expectedresults: An error is thrown and no new host is created.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     # initialize & create multiple credentials
     cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     cred2 = Credential(cred_type=src_type, client=shared_client, password=uuid4())
@@ -90,6 +92,8 @@ def test_negative_update_invalid(src_type, shared_client, cleanup, scan_host, in
         2) Attempt to update with multiple {hosts, credentials}
     :expectedresults: An error is thrown and no new host is created.
     """
+    if src_type == "openshift":
+        pytest.skip("Requires OpenShift")
     # initialize & create original credential & source
     pwd_cred = Credential(cred_type=src_type, client=shared_client, password=uuid4())
     pwd_cred.create()
