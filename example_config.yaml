@@ -119,3 +119,6 @@ inventory:
               version: '7.0.2'
           openjdk:
               version: '1.8'
+ocp:
+  token: "ha256~PA0VKgOhCJ3EIs-lYPK5iW88qLl6T1pZXYMqF_gzoRg"
+  server: "https://api.ci-ln-z2kjytb-76ef8.origin-ci-int-aws.dev.rhcloud.com:6443"

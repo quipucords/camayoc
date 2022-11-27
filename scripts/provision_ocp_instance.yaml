@@ -1,0 +1,20 @@
+---
+- name: Login and Provision OCP instance
+  hosts: localhost
+  vars:
+      config_dir: "/home/user/.config/camayoc/"
+      config_file: "config.yaml"
+
+  tasks:
+  - name: Retrieve variables dictionary
+    ansible.builtin.set_fact:
+      dict_vars : "{{ lookup('file', '{{config_dir}}{{config_file}}')|from_yaml }}"
+  - name: Login to cluster using kubeadmin
+    shell:
+      cmd: oc login --token "{{ dict_vars.ocp.token }}" --server "{{ dict_vars.ocp.server }}" --insecure-skip-tls-verify=true
+  - name: Create new project
+    shell:
+      cmd: oc new-project discovery --description="discovery" --display-name="discovery"
+  - name: Deploy new application
+    shell:
+      cmd: oc new-app --image registry.redhat.io/discovery/discovery-server-rhel8 -l name=discovery
