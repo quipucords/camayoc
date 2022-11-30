@@ -5,11 +5,17 @@ from camayoc import utils
 MASKED_PASSWORD_OUTPUT = r"\*{8}"
 """Regex that matches password on outputs."""
 
+MASKED_TOKEN_OUTPUT = r"\*{8}"
+"""Regex that matches token on outputs."""
+
 BECOME_PASSWORD_INPUT = (
     "Provide a privilege escalation password to be used when running a "
     "network scan.\r\nPassword:"
 )
 """Become password input prompt."""
+
+TOKEN_INPUT = "Provide( a)? token for OpenShift authentication.\r\nToken:"
+"""Connection token input prompt."""
 
 CONNECTION_PASSWORD_INPUT = "Provide( a)? connection password.\r\nPassword:"
 """Connection password input prompt."""
@@ -53,7 +59,7 @@ QPC_SOURCE_TYPES = ("vcenter", "network", "satellite")
 QPC_SCAN_TYPES = ("inspect", "connect")
 """Types of scans that the quipucords server supports."""
 
-QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite")
+QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite", "openshift")
 """Types of host managers that the quipucords server supports."""
 
 QPC_BECOME_METHODS = ("doas", "dzdo", "ksu", "pbrun", "pfexec", "runas", "su", "sudo")

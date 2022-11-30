@@ -38,14 +38,20 @@ def generate_show_output(data):
         if "become_password" in data:
             output += '    "become_password": "{}",\r\n'.format(data["become_password"])
         output += '    "become_user": "{}",\r\n'.format(data.get("become_user", "root"))
+    if "auth_token" in data:
+        output += '    "auth_token": "{}",\r\n'.format(data["auth_token"])
     output += '    "cred_type": "{}",\r\n'.format(cred_type)
     output += '    "id": {},\r\n'.format(data.get("id", "\\d+"))
-    output += '    "name": "{}",\r\n'.format(data["name"])
+    if cred_type == "openshift":
+        output += '    "name": "{}"\r\n'.format(data["name"])
+    else:
+        output += '    "name": "{}",\r\n'.format(data["name"])
     if "password" in data:
         output += '    "password": "{}",\r\n'.format(data["password"])
     if "ssh_keyfile" in data:
         output += '    "ssh_keyfile": "{}",\r\n'.format(data["ssh_keyfile"])
-    output += '    "username": "{}"\r\n'.format(data["username"])
+    if "username" in data:
+        output += '    "username": "{}"\r\n'.format(data["username"])
     output += "}\r\n"
     return output
 
