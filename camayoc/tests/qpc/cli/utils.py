@@ -33,6 +33,17 @@ def clear_all_entities():
     assert errors == [], output
 
 
+def get_ocp_config_info():
+    """Return all config info related to openshift cred/source."""
+    try:
+        config_credentials = get_config().get("ocp", [])
+    except ConfigFileNotFoundError:
+        config_credentials = []
+    if not config_credentials:
+        return []
+    return config_credentials
+
+
 def config_credentials():
     """Return all credentials available on configuration file for CLI scans."""
     try:
