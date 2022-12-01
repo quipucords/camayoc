@@ -1,5 +1,5 @@
 ---
-- name: Login and Provision OCP instance
+- name: Login and Provision OpenShift instance
   hosts: localhost
   vars:
       config_dir: "/home/user/.config/camayoc/"
@@ -17,4 +17,4 @@
       cmd: oc new-project discovery --description="discovery" --display-name="discovery"
   - name: Deploy new application
     shell:
-      cmd: oc new-app --image registry.redhat.io/discovery/discovery-server-rhel8 -l name=discovery
+      cmd: oc new-app --image "{{ dict_vars.ocp.image }}" -l name=discovery
