@@ -8,3 +8,4 @@ While still not a gospel, it allows to focus on things that would be easy to mis
 .. toctree::
 
     development/ui
+    development/openshift
