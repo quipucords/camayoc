@@ -1,0 +1,25 @@
+---
+- name: Login and Provision OpenShift instance
+  hosts: localhost
+  vars:
+    config_dir: "/home/user/.config/camayoc/"
+    config_file: "config.yaml"
+    project: "discovery"
+    project_description: "Discovery project for the team."
+    project_display_name: "Discovery Project"
+    app_image: "registry.redhat.io/discovery/discovery-server-rhel8"
+
+  tasks:
+    - name: Retrieve variables dictionary
+      ansible.builtin.set_fact:
+        dict_vars: "{{ lookup('file', '{{config_dir}}/{{config_file}}')|from_yaml }}"
+    - name: Login to cluster using token
+      shell:
+        cmd: oc login --token "{{ dict_vars.openshift.token }}" --server "{{ dict_vars.openshift.hostname }}" --insecure-skip-tls-verify={{ dict_vars.openshift.skip_tls_verify }}
+    - name: Create new project
+      shell:
+        cmd: oc new-project "{{ project }}" --description="{{ project_description }}" --display-name="{{ project_display_name }}"
+    - name: Deploy new application
+      shell:
+        cmd: oc new-app --image "{{ app_image }}" -l name={{ project }}
+...
