@@ -62,15 +62,9 @@ def assert_source_create_fails(source, source_type=""):
     create_response = source.create()
     assert create_response.status_code == 400
     expected_errors = [
-        {"hosts": ["Source of type vcenter must have a single hosts."]},
-        {"credentials": ["Source of type vcenter must have a single credential."]},
-        {"hosts": ["Source of type satellite must have a single hosts."]},
-        {"credentials": ["Source of type satellite must have a single credential."]},
-        {
-            "exclude_hosts": [
-                "The exclude_hosts option is not valid for source of type " + source_type + "."
-            ]
-        },
+        {"hosts": ["This source must have a single host."]},
+        {"credentials": ["This source must have a single credential."]},
+        {"exclude_hosts": ["The exclude_hosts option is not valid for this source."]},
     ]
     response = create_response.json()
     assert response in expected_errors
