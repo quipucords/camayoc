@@ -765,8 +765,7 @@ def test_add_exclude_hosts_negative(
     )
     assert (
         qpc_source_add.expect(
-            "exclude_hosts: The exclude_hosts option "
-            + "is not valid for source of type {}.".format(source_type)
+            "exclude_hosts: The exclude_hosts option is not valid for this source."
         )
         == 0
     )
