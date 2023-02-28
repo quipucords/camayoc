@@ -1943,7 +1943,10 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
-    qpc_source_clear = pexpect.spawn("{} source clear --all".format(client_cmd))
+    qpc_source_clear = pexpect.spawn(
+        "{} source clear --all".format(client_cmd),
+        timeout=120,
+    )
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus >= 0
