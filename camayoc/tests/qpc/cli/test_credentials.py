@@ -244,7 +244,6 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
     )
 
 
-@pytest.mark.ssh_keyfile_path
 def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     """Edit the username of a not created auth entry.
 
@@ -255,12 +254,9 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
+    password = utils.uuid4()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {"name": name, "username": username, "password": None}, [("Password:", password)]
     )
 
     name = utils.uuid4()
@@ -325,7 +321,6 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     )
 
 
-@pytest.mark.ssh_keyfile_path
 def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     """Edit the password of a not created auth entry.
 
@@ -337,12 +332,9 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
+    password = utils.uuid4()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {"name": name, "username": username, "password": None}, [("Password:", password)]
     )
 
     name = utils.uuid4()
@@ -447,7 +439,6 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.ssh_keyfile_path
 def test_edit_become_password(isolated_filesystem, qpc_server_config):
     """Edit an auth's become password.
 
@@ -458,21 +449,18 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
+    password = utils.uuid4()
 
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
     become_password = utils.uuid4()
     new_become_password = utils.uuid4()
     cred_add_and_check(
         {
             "name": name,
             "username": username,
-            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+            "password": None,
             "become-password": None,
         },
-        [(BECOME_PASSWORD_INPUT, become_password)],
+        [("Password:", password), (BECOME_PASSWORD_INPUT, become_password)],
     )
 
     cred_show_and_check(
@@ -481,7 +469,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
             {
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
             }
         ),
@@ -503,14 +491,13 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
             {
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
             }
         ),
     )
 
 
-@pytest.mark.ssh_keyfile_path
 def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     """Edit the become password of a not created auth entry.
 
@@ -521,12 +508,9 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
+    password = utils.uuid4()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {"name": name, "username": username, "password": None}, [("Password:", password)]
     )
 
     name = utils.uuid4()
@@ -539,7 +523,6 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.ssh_keyfile_path
 def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     """Edit with no credentials created.
 
@@ -551,15 +534,8 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-    qpc_cred_edit = pexpect.spawn(
-        "{} cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"
-        )
-    )
+
+    qpc_cred_edit = pexpect.spawn("{} cred edit --name={} --password".format(client_cmd, name))
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
@@ -567,7 +543,6 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.exitstatus != 0
 
 
-@pytest.mark.ssh_keyfile_path
 def test_clear(isolated_filesystem, qpc_server_config):
     """Clear an auth.
 
@@ -579,13 +554,10 @@ def test_clear(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
+    password = utils.uuid4()
 
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {"name": name, "username": username, "password": None}, [("Password", password)]
     )
 
     cred_show_and_check(
@@ -593,7 +565,7 @@ def test_clear(isolated_filesystem, qpc_server_config):
         generate_show_output(
             {
                 "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
             }
         ),
@@ -611,7 +583,6 @@ def test_clear(isolated_filesystem, qpc_server_config):
     qpc_cred_show.close()
 
 
-@pytest.mark.ssh_keyfile_path
 def test_clear_with_source(isolated_filesystem, qpc_server_config):
     """Attempt to clear a credential being used by a source.
 
@@ -637,18 +608,16 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     source_name = utils.uuid4()
     hosts = ["127.0.0.1"]
     username = utils.uuid4()
+    password = utils.uuid4()
 
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
     cred_add_and_check(
         {
             "name": cred_name,
             "type": cred_type,
             "username": username,
-            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
-        }
+            "password": None,
+        },
+        [("Password:", password)],
     )
 
     cred_show_and_check(
@@ -656,7 +625,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
         generate_show_output(
             {
                 "name": cred_name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
             }
         ),
@@ -722,7 +691,6 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_clear.exitstatus == 1
 
 
-@pytest.mark.ssh_keyfile_path
 def test_clear_all(isolated_filesystem, qpc_server_config):
     """Clear all auth entries.
 
@@ -731,30 +699,16 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
     :steps: Run ``qpc cred clear --all``
     :expectedresults: All auth entries are removed.
     """
-    auths = []
     for _ in range(random.randint(2, 3)):
-        name = utils.uuid4()
-        username = utils.uuid4()
-
-        tmp_dir = os.path.basename(os.getcwd())
-        sshkeyfile_name = utils.uuid4()
-        sshkeyfile = Path(sshkeyfile_name)
-        sshkeyfile.touch()
-        auth = {
-            "name": name,
+        options = {
+            "name": utils.uuid4(),
+            "username": utils.uuid4(),
             "password": None,
-            "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
-            "become_password": None,
-            "username": username,
         }
-        auths.append(auth)
-        cred_add_and_check(
-            {
-                "name": name,
-                "username": username,
-                "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
-            }
-        )
+        inputs = [
+            ("Password:", utils.uuid4()),
+        ]
+        cred_add_and_check(options, inputs)
 
     output, exitstatus = pexpect.run(
         "{} cred clear --all".format(client_cmd), encoding="utf-8", withexitstatus=True
