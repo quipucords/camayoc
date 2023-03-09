@@ -84,7 +84,6 @@ def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     assert_matches_server(cred)
 
 
-@pytest.mark.ssh_keyfile_path
 def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem):
     """Attempt to update valid credential with invalid data.
 
@@ -100,14 +99,11 @@ def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem)
         not updated.
     """
     sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
 
     cred = Credential(
         cred_type="network",
         client=shared_client,
-        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+        password=uuid4(),
     )
     cred.create()
     # add the id to the list to destroy after the test is done
@@ -117,20 +113,20 @@ def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem)
     cred.client = api.Client(api.echo_handler)
 
     # Try to update with both sshkeyfile and password
-    cred.password = uuid4()
+    cred.ssh_keyfile = f"/sshkeys/{sshkeyfile_name}"
     response = cred.update()
     assert response.status_code == 400
     assert "either a password or an ssh_keyfile, not both" in response.text
-    cred.password = None
+    cred.ssh_keyfile = None
     assert_matches_server(cred)
 
     # Try to update with both sshkeyfile and password missing
-    old = cred.ssh_keyfile
-    del cred.ssh_keyfile
+    old = cred.password
+    del cred.password
     response = cred.update()
     assert response.status_code == 400
     assert "must have either a password or an ssh_keyfile" in response.text
-    cred.ssh_keyfile = old
+    cred.password = old
     assert_matches_server(cred)
 
 
