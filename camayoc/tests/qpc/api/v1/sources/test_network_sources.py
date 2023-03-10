@@ -146,7 +146,6 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host, is
     assert_matches_server(src)
 
 
-@pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
 def test_negative_update_invalid(shared_client, cleanup, isolated_filesystem, scan_host):
     """Create a network source and then update it with invalid data.
@@ -159,15 +158,10 @@ def test_negative_update_invalid(shared_client, cleanup, isolated_filesystem, sc
         2) Attempt to update with multiple invalid {hosts, credentials}
     :expectedresults: An error is thrown and no new host is created.
     """
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-
     net_cred = Credential(
         cred_type=NETWORK_TYPE,
         client=shared_client,
-        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+        password=uuid4(),
     )
     net_cred.create()
     sat_cred = Credential(cred_type="satellite", client=shared_client, password=uuid4())
