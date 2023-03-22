@@ -5,6 +5,9 @@ from camayoc import utils
 MASKED_PASSWORD_OUTPUT = r"\*{8}"
 """Regex that matches password on outputs."""
 
+TOKEN_INPUT = "Provide a token for authentication.\r\nToken:"
+"""Connection token input prompt."""
+
 BECOME_PASSWORD_INPUT = (
     "Provide a privilege escalation password to be used when running a "
     "network scan.\r\nPassword:"
