@@ -9,9 +9,31 @@ import os
 import warnings
 
 from dynaconf import Dynaconf
+from dynaconf import Validator
 from xdg import BaseDirectory
 
 from camayoc import exceptions
+from camayoc.types.settings import Configuration
+
+
+default_dynaconf_validators = [
+    Validator("quipucords_server.hostname", default=""),
+    Validator("quipucords_server.https", default=False),
+    Validator("quipucords_server.port", default=8000),
+    Validator("quipucords_server.ssl_verify", default=False),
+    Validator("quipucords_server.username", default=""),
+    Validator("quipucords_server.password", default=""),
+    Validator("quipucords_server.ssh_keyfile_path", default=""),
+    Validator("openshift.hostname", default=""),
+    Validator("openshift.token", default=""),
+    Validator("openshift.skip_tls_verify", default=True),
+    Validator("vcenter.hostname", default=""),
+    Validator("vcenter.username", default=""),
+    Validator("vcenter.password", default=""),
+    Validator("credentials", default=[]),
+    Validator("sources", default=[]),
+    Validator("scans", default=[]),
+]
 
 
 def get_settings_files(xdg_config_dir, xdg_config_file):
@@ -54,9 +76,32 @@ def get_settings_files(xdg_config_dir, xdg_config_file):
     return settings_files
 
 
-_CONFIG = Dynaconf(settings_files=get_settings_files("camayoc", "config.yaml"))
+def get_settings(path=None) -> Configuration:
+    if not path:
+        settings_files = get_settings_files("camayoc", "config.yaml")
+        dynaconf_validators = default_dynaconf_validators
+    else:
+        settings_files = [path]
+        dynaconf_validators = []
+
+    raw_settings = Dynaconf(
+        settings_files=settings_files,
+        validators=dynaconf_validators,
+    )
+
+    to_validate_settings = {key.lower(): value for key, value in raw_settings.as_dict().items()}
+
+    validated_settings = Configuration(**to_validate_settings)
+
+    return validated_settings
+
+
+settings = get_settings()
 
 
 def get_config():
     """Backwards compatibility shim. Returns global config object."""
-    return _CONFIG
+    shim_settings = settings.dict(by_alias=True)
+    qpc_options = shim_settings.pop("quipucords_server")
+    shim_settings["qpc"] = qpc_options
+    return shim_settings
