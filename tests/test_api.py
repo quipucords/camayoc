@@ -84,14 +84,14 @@ class APIClientTestCase(unittest.TestCase):
 
     def test_create_with_config(self):
         """If a hostname is specified in the config file, we use it."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             self.assertEqual(config.get_config(), self.config)
             client = api.Client(authenticate=False)
             self.assertEqual(client.url, "http://example.com/api/v1/")
 
     def test_create_no_config(self):
         """If a base url is specified we use it."""
-        with mock.patch.object(config, "_CONFIG", {}):
+        with mock.patch.object(config, "get_config", return_value={}):
             self.assertEqual(config.get_config(), {})
             other_host = "http://hostname.com"
             client = api.Client(url=other_host, authenticate=False)
@@ -100,7 +100,7 @@ class APIClientTestCase(unittest.TestCase):
 
     def test_create_override_config(self):
         """If a base url is specified, we use that instead of config file."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             other_host = "http://hostname.com"
             client = api.Client(url=other_host, authenticate=False)
             cfg_host = self.config["qpc"]["hostname"]
@@ -109,21 +109,21 @@ class APIClientTestCase(unittest.TestCase):
 
     def test_negative_create(self):
         """Raise an error if no config entry is found and no url specified."""
-        with mock.patch.object(config, "_CONFIG", {}):
+        with mock.patch.object(config, "get_config", return_value={}):
             self.assertEqual(config.get_config(), {})
             with self.assertRaises(exceptions.QPCBaseUrlNotFound):
                 api.Client(authenticate=False)
 
     def test_invalid_hostname(self):
         """Raise an error if no config entry is found and no url specified."""
-        with mock.patch.object(config, "_CONFIG", self.invalid_config):
+        with mock.patch.object(config, "get_config", return_value=self.invalid_config):
             self.assertEqual(config.get_config(), self.invalid_config)
             with self.assertRaises(exceptions.QPCBaseUrlNotFound):
                 api.Client(authenticate=False)
 
     def test_login(self):
         """Test that when a client is created, it logs in just once."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             self.assertEqual(config.get_config(), self.config)
             client = api.Client
             client.login = MagicMock()
@@ -134,7 +134,7 @@ class APIClientTestCase(unittest.TestCase):
 
     def test_get_user(self):
         """Test that when a client is created, it logs in just once."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             self.assertEqual(config.get_config(), self.config)
             client = api.Client
             client.login = MagicMock()
@@ -147,7 +147,7 @@ class APIClientTestCase(unittest.TestCase):
 
     def test_logout(self):
         """Test that when we log out, all credentials are cleared."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             self.assertEqual(config.get_config(), self.config)
             client = api.Client
             client.login = MagicMock()
@@ -163,7 +163,7 @@ class APIClientTestCase(unittest.TestCase):
 
     def test_response_handler(self):
         """Test that when we get a 4xx or 5xx response, an error is raised."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             self.assertEqual(config.get_config(), self.config)
             client = api.Client(authenticate=False)
             mock_request = mock.Mock(
@@ -222,7 +222,7 @@ class CredentialTestCase(unittest.TestCase):
 
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             client = api.Client(authenticate=False)
             h = Credential(
                 cred_type="network",
@@ -248,7 +248,7 @@ class SourceTestCase(unittest.TestCase):
 
     def test_equivalent_network(self):
         """If a hostname is specified in the config file, we use it."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             client = api.Client(authenticate=False)
             src = Source(
                 source_type="network",
@@ -265,7 +265,7 @@ class SourceTestCase(unittest.TestCase):
 
     def test_equivalent_satellite(self):
         """If a hostname is specified in the config file, we use it."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             client = api.Client(authenticate=False)
             p = Source(
                 source_type="satellite",
@@ -293,7 +293,7 @@ class ScanTestCase(unittest.TestCase):
 
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             scn = Scan(source_ids=[153], scan_type="connect", name=MOCK_SCAN["name"])
             scn._id = MOCK_SCAN["id"]
             self.assertTrue(scn.equivalent(MOCK_SCAN))
@@ -312,7 +312,7 @@ class ScanJobTestCase(unittest.TestCase):
 
     def test_create(self):
         """If a hostname is specified in the config file, we use it."""
-        with mock.patch.object(config, "_CONFIG", self.config):
+        with mock.patch.object(config, "get_config", return_value=self.config):
             job = ScanJob(scan_id=1)
             job._id = 1
             correct_payload = {"scan_id": 1}
