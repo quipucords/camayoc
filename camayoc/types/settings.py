@@ -8,6 +8,10 @@ from pydantic import root_validator
 from typing_extensions import Annotated
 
 
+class CamayocOptions(BaseModel):
+    run_scans: Optional[bool] = False
+
+
 class QuipucordsServerOptions(BaseModel):
     hostname: str
     https: Optional[bool] = False
@@ -16,6 +20,10 @@ class QuipucordsServerOptions(BaseModel):
     username: str
     password: str
     ssh_keyfile_path: str
+
+
+class QuipucordsCLIOptions(BaseModel):
+    executable: Optional[str] = "qpc"
 
 
 class OpenShiftOptions(BaseModel):
@@ -104,7 +112,9 @@ class ScanOptions(BaseModel):
 
 
 class Configuration(BaseModel):
+    camayoc: CamayocOptions
     quipucords_server: QuipucordsServerOptions
+    quipucords_cli: QuipucordsCLIOptions
     openshift: OpenShiftOptions
     vcenter: VCenterOptions
     credentials: list[CredentialOptions]
