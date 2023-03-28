@@ -1,6 +1,5 @@
 # coding=utf-8
 """Pytest customizations and fixtures for the quipucords tests."""
-import os
 import ssl
 from pathlib import Path
 
@@ -15,6 +14,7 @@ except ImportError:
     ibutsu_plugin_key = None
 
 from camayoc import utils
+from camayoc.config import settings
 from camayoc.config import get_config
 
 
@@ -52,13 +52,6 @@ def pytest_collection_modifyitems(
 def vcenter_client():
     """Create a vCenter client.
 
-    Get the client confifuration from environment variables and Camayoc's
-    configuration file in this order. Raise a KeyError if can't find the
-    expecting configuration.
-
-    The expected environment variables are VCHOSTNAME, VCUSER and VCPASS for
-    vcenter's hostname, username and password respectively.
-
     The configuration in the Camayoc's configuration file should be as the
     following::
 
@@ -67,13 +60,12 @@ def vcenter_client():
           username: gandalf
           password: YouShallNotPass
 
-    The vcenter config can be mixed by using both environement variables and
-    the configuration file but environment variable takes precedence.
+    Use standard dynaconf environment variable handling system to specify these
+    settings through environment variables.
     """
-    config = get_config()
-    vcenter_host = os.getenv("VCHOSTNAME", config["vcenter"]["hostname"])
-    vcenter_user = os.getenv("VCUSER", config["vcenter"]["username"])
-    vcenter_pwd = os.getenv("VCPASS", config["vcenter"]["password"])
+    vcenter_host = settings.vcenter.hostname
+    vcenter_user = settings.vcenter.username
+    vcenter_pwd = settings.vcenter.password
 
     try:
         c = SmartConnect(

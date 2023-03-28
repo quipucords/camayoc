@@ -2,6 +2,9 @@
 # General settings. They cover main infrastructure that camayoc interacts
 # with and camayoc itself.
 
+# Camayoc test framework settings
+camayoc:
+  run_scans: false
 
 # Quipucords / Discovery server
 # Settings below allow you to connect to quipucords development server
@@ -18,6 +21,10 @@ quipucords_server:
     username: 'admin'
     password: 'qpcpassw0rd'
     ssh_keyfile_path: '/home/user/quipucords/server/volumes/sshkeyfiles/'
+
+# Quipucords / Discovery CLI
+quipucords_cli:
+  executable: qpc
 
 # OpenShift (OCP) cluster
 openshift:

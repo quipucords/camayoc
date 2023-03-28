@@ -12,6 +12,7 @@ from urllib.parse import urlunparse
 
 from camayoc import exceptions
 from camayoc.config import get_config
+from camayoc.config import settings
 
 
 _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
@@ -22,17 +23,13 @@ name_getter = operator.itemgetter("name")
 """Generate test IDs by fetching the ``name`` item."""
 
 
-client_cmd = os.environ.get("CAMAYOC_CLIENT_CMD", "qpc")
-"""Check for the client command environment variable to use during tests. Defaults to `qpc`."""
+client_cmd = settings.quipucords_cli.executable
+"""Client command to use during tests. Defaults to `qpc`."""
 
 
 def run_scans():
-    """Check for run scans environment variable."""
-    result = True
-    run_scans = os.environ.get("RUN_SCANS", "true")
-    if run_scans.lower() == "false":
-        result = False
-    return result
+    """Check if scans should be run."""
+    return bool(settings.camayoc.run_scans)
 
 
 def get_qpc_url():

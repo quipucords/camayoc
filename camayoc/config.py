@@ -17,6 +17,7 @@ from camayoc.types.settings import Configuration
 
 
 default_dynaconf_validators = [
+    Validator("camayoc.run_scans", default=False),
     Validator("quipucords_server.hostname", default=""),
     Validator("quipucords_server.https", default=False),
     Validator("quipucords_server.port", default=8000),
@@ -24,6 +25,7 @@ default_dynaconf_validators = [
     Validator("quipucords_server.username", default=""),
     Validator("quipucords_server.password", default=""),
     Validator("quipucords_server.ssh_keyfile_path", default=""),
+    Validator("quipucords_cli.executable", default="qpc"),
     Validator("openshift.hostname", default=""),
     Validator("openshift.token", default=""),
     Validator("openshift.skip_tls_verify", default=True),
