@@ -54,7 +54,7 @@ def config_credentials():
 def config_sources():
     """Return all sources available on configuration file for CLI scans."""
     try:
-        config_sources = get_config().get("qpc", {}).get("sources", [])
+        config_sources = get_config().get("sources", [])
     except ConfigFileNotFoundError:
         config_sources = []
 
@@ -68,7 +68,7 @@ def config_sources():
 def config_scans():
     """Return all CLI scans available on the configuration file."""
     try:
-        return get_config().get("qpc", {}).get("cli-scans", [])
+        return get_config().get("scans", [])
     except ConfigFileNotFoundError:
         return []
 

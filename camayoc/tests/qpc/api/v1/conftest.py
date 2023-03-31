@@ -236,7 +236,7 @@ def run_all_scans(vcenter_client):
 def scan_list():
     """Generate list of scan dict objects found in config file."""
     try:
-        return get_config().get("qpc", {}).get("scans", [])
+        return get_config().get("scans", [])
     except (ConfigFileNotFoundError, KeyError):
         return []
 
