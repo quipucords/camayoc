@@ -29,7 +29,8 @@ def setup_scan_prerequisites(request):
     setup_qpc()
 
     # Create new creds
-    for credential in config_credentials():
+    for credential_data in config_credentials():
+        credential = {key: value for key, value in credential_data.items() if value is not None}
         inputs = []
         # Both password and become-password are options to the cred add
         # command. Update the credentials dictionary to mark them as flag
@@ -38,7 +39,7 @@ def setup_scan_prerequisites(request):
         if "password" in credential:
             inputs.append((CONNECTION_PASSWORD_INPUT, credential["password"]))
             credential["password"] = None
-        if "become-password" in credential:
+        if "become_password" in credential:
             inputs.append((BECOME_PASSWORD_INPUT, credential["become-password"]))
             credential["become-password"] = None
         cred_add_and_check(credential, inputs)
@@ -47,6 +48,8 @@ def setup_scan_prerequisites(request):
     for source in config_sources():
         source["cred"] = source.pop("credentials")
         options = source.pop("options", {})
+        if options is None:
+            options = {}
         for k, v in options.items():
             source[k.replace("_", "-")] = v
         source_add_and_check(source)
