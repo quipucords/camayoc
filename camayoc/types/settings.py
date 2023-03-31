@@ -115,7 +115,7 @@ class Configuration(BaseModel):
     camayoc: CamayocOptions
     quipucords_server: QuipucordsServerOptions
     quipucords_cli: QuipucordsCLIOptions
-    openshift: OpenShiftOptions
+    openshift: list[OpenShiftOptions]
     vcenter: VCenterOptions
     credentials: list[CredentialOptions]
     sources: list[SourceOptions]

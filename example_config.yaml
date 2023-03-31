@@ -28,7 +28,7 @@ quipucords_cli:
 
 # OpenShift (OCP) cluster
 openshift:
-    hostname: api.example.com:6443
+  - hostname: api.example.com:6443
     token: sha256~...
     skip_tls_verify: true
 
