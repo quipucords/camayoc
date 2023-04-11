@@ -4,7 +4,7 @@
 
 # Camayoc test framework settings
 camayoc:
-  run_scans: false
+    run_scans: false
 
 # Quipucords / Discovery server
 # Settings below allow you to connect to quipucords development server
@@ -24,13 +24,13 @@ quipucords_server:
 
 # Quipucords / Discovery CLI
 quipucords_cli:
-  executable: qpc
+    executable: qpc
 
 # OpenShift (OCP) cluster
 openshift:
-  - hostname: api.example.com:6443
-    token: sha256~...
-    skip_tls_verify: true
+    - hostname: api.example.com:6443
+      token: sha256~...
+      skip_tls_verify: true
 
 # We host most of our test machines on a VCenter instance
 # and this section contains its URL and the credentials
@@ -62,71 +62,72 @@ credentials:
       password: 'CHANGEME'
       username: 'CHANGEUSERNAME'
 
-# Values in "credentials" field can use names present in "credentials" section above
+# Values in "credentials" field can use names present in "credentials" section
+# above
 sources:
-  - hosts:
-        - 'myfavnetwork.com'
-    credentials:
-        - root
-    name: 'myfav'
-    type: 'network'
-  - hosts:
-        - 'my_vcenter.com'
-    credentials:
-        - 'vcenter'
-    name: 'vcenter'
-    type: 'vcenter'
-    options:
-        ssl_cert_verify: false
-  - hosts:
-        - 'sat6.com'
-    credentials:
-        - 'sat6'
-    name: 'sat6'
-    type: 'satellite'
-    options:
-        ssl_cert_verify: false
+    - hosts:
+          - 'myfavnetwork.com'
+      credentials:
+          - root
+      name: 'myfav'
+      type: 'network'
+    - hosts:
+          - 'my_vcenter.com'
+      credentials:
+          - 'vcenter'
+      name: 'vcenter'
+      type: 'vcenter'
+      options:
+          ssl_cert_verify: false
+    - hosts:
+          - 'sat6.com'
+      credentials:
+          - 'sat6'
+      name: 'sat6'
+      type: 'satellite'
+      options:
+          ssl_cert_verify: false
 
 # Values in "sources" field can use names present in "sources" section above
 scans:
-  - name: ExampleSat6
-    sources:
-        # these refer to the hostnames in the inventory section
-        - 'sat6'
-  - name: ExampleWithProducts
-    sources:
-      - 'myfav'
-      - 'vcenter'
-    expected_data:
-      - hostname: jbossamq-rhel-5-vc
-        credentials:
-            - root
-        ipv4: 10.10.181.14
-        hypervisor: vcenter
-        distribution:
-            name: 'Red Hat Enterprise Linux'
-            version: '5.9'
-        products:
-            jbossamq:
-                install-process: zip
-                version: '6.2.0'
-            openjdk:
-                version: '1.7'
-      - hostname: jbossamq-rhel-6-vc
-        credentials:
-            - root
-        ipv4: 10.10.181.132
-        hypervisor: vcenter
-        distribution:
-            # Name of OS should be substring of name found
-            # with quipucords
-            name: 'Red Hat Enterprise Linux'
-            # version should be substring of version found
-            # in /etc/redhat-release
-            version: '6.9'
-        products:
-            jbossamq:
-                install-process: zip
-                version: '7.0.2'
-            openjdk:
-                version: '1.8'
+    - name: ExampleSat6
+      sources:
+          # these refer to the hostnames in the inventory section
+          - 'sat6'
+    - name: ExampleWithProducts
+      sources:
+          - 'myfav'
+          - 'vcenter'
+      expected_data:
+          - hostname: jbossamq-rhel-5-vc
+            credentials:
+                - root
+            ipv4: 10.10.181.14
+            hypervisor: vcenter
+            distribution:
+                name: 'Red Hat Enterprise Linux'
+                version: '5.9'
+            products:
+                jbossamq:
+                    install-process: zip
+                    version: '6.2.0'
+                openjdk:
+                    version: '1.7'
+          - hostname: jbossamq-rhel-6-vc
+            credentials:
+                - root
+            ipv4: 10.10.181.132
+            hypervisor: vcenter
+            distribution:
+                # Name of OS should be substring of name found
+                # with quipucords
+                name: 'Red Hat Enterprise Linux'
+                # version should be substring of version found
+                # in /etc/redhat-release
+                version: '6.9'
+            products:
+                jbossamq:
+                    install-process: zip
+                    version: '7.0.2'
+                openjdk:
+                    version: '1.8'

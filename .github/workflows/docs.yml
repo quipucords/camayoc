@@ -1,3 +1,4 @@
+---
 name: Documentation
 
 on:
@@ -14,18 +15,18 @@ jobs:
         python-version: ["3.9", "3.10"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        make install-dev
-        pip install codecov
-    - name: Validate docstrings
-      run: |
-        make validate-docstrings
-    - name: Generate HTML documentation
-      run: |
-        make docs-html
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          make install-dev
+          pip install codecov
+      - name: Validate docstrings
+        run: |
+          make validate-docstrings
+      - name: Generate HTML documentation
+        run: |
+          make docs-html
