@@ -2,6 +2,7 @@
 """Models for use with the Quipucords API."""
 import re
 from pprint import pformat
+from typing import Optional
 from urllib.parse import urljoin
 
 from camayoc import api
@@ -12,6 +13,9 @@ from camayoc.constants import QPC_REPORTS_PATH
 from camayoc.constants import QPC_SCAN_PATH
 from camayoc.constants import QPC_SCANJOB_PATH
 from camayoc.constants import QPC_SOURCE_PATH
+from camayoc.types.settings import CredentialOptions
+from camayoc.types.settings import ScanOptions
+from camayoc.types.settings import SourceOptions
 from camayoc.utils import uuid4
 
 OPTIONAL_PROD_KEY = "disabled_optional_products"
@@ -196,6 +200,23 @@ class Credential(QPCObject):
         if become_user is not None:
             self.become_user = become_user
 
+    @classmethod
+    def from_definition(
+        cls, definition: CredentialOptions, dependencies: Optional[list[int]] = None
+    ):
+        attrs_translation_map = {
+            "sshkeyfile": "ssh_keyfile",
+            "type": "cred_type",
+        }
+        definition_data = {}
+        for definition_key, definition_value in definition.dict().items():
+            if definition_value is None:
+                continue
+            if new_definition_key := attrs_translation_map.get(definition_key):
+                definition_key = new_definition_key
+            definition_data[definition_key] = definition_value
+        return cls(**definition_data)
+
     def equivalent(self, other):
         """Return true if both objects are equal.
 
@@ -287,6 +308,23 @@ class Source(QPCObject):
             self.options = options
         self.credentials = credential_ids
         self.source_type = source_type
+
+    @classmethod
+    def from_definition(cls, definition: SourceOptions, dependencies: Optional[list[int]] = None):
+        attrs_translation_map = {
+            "type": "source_type",
+        }
+        definition_data = {}
+        for definition_key, definition_value in definition.dict().items():
+            if definition_value is None:
+                continue
+            if new_definition_key := attrs_translation_map.get(definition_key):
+                definition_key = new_definition_key
+            if definition_key == "credentials":
+                definition_key = "credential_ids"
+                definition_value = dependencies
+            definition_data[definition_key] = definition_value
+        return cls(**definition_data)
 
     def equivalent(self, other):
         """Return true if both objects are equivalent.
@@ -402,6 +440,18 @@ class Scan(QPCObject):
             self.options["disabled_optional_products"] = disabled_optional_products
         if enabled_extended_product_search:
             self.options["enabled_extended_product_search"] = enabled_extended_product_search
+
+    @classmethod
+    def from_definition(cls, definition: ScanOptions, dependencies: Optional[list[int]] = None):
+        definition_data = {}
+        for definition_key, definition_value in definition.dict().items():
+            if definition_value is None:
+                continue
+            if definition_key == "sources":
+                definition_key = "source_ids"
+                definition_value = dependencies
+            definition_data[definition_key] = definition_value
+        return cls(**definition_data)
 
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.

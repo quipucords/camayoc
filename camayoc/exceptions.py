@@ -85,6 +85,12 @@ class APIResultsEmpty(DataProviderException):
     """
 
 
+class NoMatchingDataDefinitionException(DataProviderException):
+    """Requested match_criteria do not match anything in DataProvider
+    instance configuration.
+    """
+
+
 class FilteredAPIResultsEmpty(DataProviderException):
     """There are no objects in API request response results matching
     provided criteria.
