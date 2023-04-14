@@ -1026,13 +1026,9 @@ def test_edit_hosts_file(isolated_filesystem, qpc_server_config, new_hosts, sour
 
 
 @pytest.mark.parametrize(
-    ("source_type,new_hosts"),
-    (
-        ("vcenter", "192.168.0.1 192.168.0.2"),
-        ("vcenter", "192.168.0.0/24"),
-        ("vcenter", "192.168.0.[1:100]"),
-    ),
+    "new_hosts", ("192.168.0.1 192.168.0.2", "192.168.0.0/24", "192.168.0.[1:100]")
 )
+@pytest.mark.parametrize("source_type", ("vcenter", "satellite"))
 def test_edit_hosts_negative(isolated_filesystem, qpc_server_config, new_hosts, source_type):
     """Try to edit the hosts of a source entry with invalid values.
 
@@ -1069,7 +1065,7 @@ def test_edit_hosts_negative(isolated_filesystem, qpc_server_config, new_hosts, 
         "{} source edit --name {} --hosts {}".format(client_cmd, name, new_hosts)
     )
     qpc_source_edit.logfile = BytesIO()
-    assert qpc_source_edit.expect("hosts: Source of type vcenter must have a single hosts.") == 0
+    assert qpc_source_edit.expect("hosts: This source must have a single host.") == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == 1
