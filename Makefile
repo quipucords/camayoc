@@ -70,9 +70,13 @@ test:
 	pytest $(PYTEST_OPTIONS) tests
 
 test-coverage:
-	pytest --verbose --cov-report term --cov=camayoc.cli \
-	--cov=camayoc.config --cov=camayoc.exceptions --cov=camayoc.utils \
-	--cov=camayoc.api tests
+	pytest --verbose --cov-report term --cov-report xml:coverage.xml \
+	--cov=camayoc.cli \
+	--cov=camayoc.config \
+	--cov=camayoc.exceptions \
+	--cov=camayoc.utils \
+	--cov=camayoc.api \
+	tests
 
 test-qpc-no-scans:
 	RUN_SCANS=False pytest $(PYTEST_OPTIONS) camayoc/tests/qpc

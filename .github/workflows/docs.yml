@@ -23,7 +23,6 @@ jobs:
       - name: Install dependencies
         run: |
           make install-dev
-          pip install codecov
       - name: Validate docstrings
         run: |
           make validate-docstrings
