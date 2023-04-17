@@ -174,7 +174,7 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
     """
     if "type" not in options:
         options["type"] = "network"
-    command = "{} cred add".format(client_cmd)
+    command = "{} -v cred add".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -205,7 +205,7 @@ def cred_show_and_check(options, output, exitstatus=0):
         network and \d+ respectively.
     :param exitstatus: Expected exit status code.
     """
-    command = "{} cred show".format(client_cmd)
+    command = "{} -v cred show".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -218,16 +218,16 @@ def cred_show_and_check(options, output, exitstatus=0):
     assert qpc_cred_show.exitstatus == exitstatus
 
 
-report_detail = functools.partial(cli_command, "{} report details".format(client_cmd))
+report_detail = functools.partial(cli_command, "{} -v report details".format(client_cmd))
 """Run ``qpc report detail`` with ``options`` and return output."""
 
-report_merge = functools.partial(cli_command, "{} report merge".format(client_cmd))
+report_merge = functools.partial(cli_command, "{} -v report merge".format(client_cmd))
 """Run ``qpc report merge`` with ``options`` and return output."""
 
 
 def report_merge_status(options=None, exitstatus=0):
     """Run ``qpc report merge-status`` with ``options`` and return output."""
-    output = cli_command("{} report merge-status".format(client_cmd), options, exitstatus)
+    output = cli_command("{} -v report merge-status".format(client_cmd), options, exitstatus)
     match = re.match(
         r"Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: " r'"(?P<report_id>\d+)")?',
         output,
@@ -236,10 +236,10 @@ def report_merge_status(options=None, exitstatus=0):
     return match.groupdict()
 
 
-report_deployments = functools.partial(cli_command, "{} report deployments".format(client_cmd))
+report_deployments = functools.partial(cli_command, "{} -v report deployments".format(client_cmd))
 """Run ``qpc report deployments`` with ``options`` and return output."""
 
-report_download = functools.partial(cli_command, "{} report download".format(client_cmd))
+report_download = functools.partial(cli_command, "{} -v report download".format(client_cmd))
 """Run ``qpc report download`` with ``options`` and return output."""
 
 
@@ -275,7 +275,7 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
         options["exclude-hosts"] = " ".join(options["exclude-hosts"])
     if "type" not in options:
         options["type"] = "network"
-    command = "{} source add".format(client_cmd)
+    command = "{} -v source add".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -310,7 +310,7 @@ def source_edit_and_check(options, inputs=None, exitstatus=0):
         options["hosts"] = " ".join(options["hosts"])
     if "exclude-hosts" in options:
         options["exclude-hosts"] = " ".join(options["exclude-hosts"])
-    command = "{} source edit".format(client_cmd)
+    command = "{} -v source edit".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -337,7 +337,7 @@ def source_show_and_check(options, output, exitstatus=0):
         output. Make sure to escape any regular expression especial character.
     :param exitstatus: Expected exit status code.
     """
-    command = "{} source show".format(client_cmd)
+    command = "{} -v source show".format(client_cmd)
     for key, value in options.items():
         if value is None:
             command += " --{}".format(key)
@@ -397,28 +397,28 @@ def scan_show_and_check(scan_name, expected_result=None):
         assert expected_result == scan_show_result
 
 
-scan_cancel = functools.partial(cli_command, "{} scan cancel".format(client_cmd))
+scan_cancel = functools.partial(cli_command, "{} -v scan cancel".format(client_cmd))
 """Run ``qpc scan cancel`` command with ``options`` returning its output."""
 
-scan_pause = functools.partial(cli_command, "{} scan pause".format(client_cmd))
+scan_pause = functools.partial(cli_command, "{} -v scan pause".format(client_cmd))
 """Run ``qpc scan pause`` command with ``options`` returning its output."""
 
-scan_restart = functools.partial(cli_command, "{} scan restart".format(client_cmd))
+scan_restart = functools.partial(cli_command, "{} -v scan restart".format(client_cmd))
 """Run ``qpc scan restart`` command with ``options`` returning its output."""
 
-scan_add = functools.partial(cli_command, "{} scan add".format(client_cmd))
+scan_add = functools.partial(cli_command, "{} -v scan add".format(client_cmd))
 """Run ``qpc scan add`` command with ``options`` returning its output."""
 
-scan_clear = functools.partial(cli_command, "{} scan clear".format(client_cmd))
+scan_clear = functools.partial(cli_command, "{} -v scan clear".format(client_cmd))
 """Run ``qpc scan clear`` returning its output."""
 
-scan_edit = functools.partial(cli_command, "{} scan edit".format(client_cmd))
+scan_edit = functools.partial(cli_command, "{} -v scan edit".format(client_cmd))
 """Run ``qpc scan edit`` command with ``options`` returning its output."""
 
-scan_show = functools.partial(cli_command, "{} scan show".format(client_cmd))
+scan_show = functools.partial(cli_command, "{} -v scan show".format(client_cmd))
 """Run ``qpc scan show`` command with ``options`` returning its output."""
 
-scan_start = functools.partial(cli_command, "{} scan start".format(client_cmd))
+scan_start = functools.partial(cli_command, "{} -v scan start".format(client_cmd))
 """Run ``qpc scan start`` command with ``options`` returning its output."""
 
 source_show = functools.partial(cli_command, "{} source show".format(client_cmd))
@@ -427,7 +427,7 @@ source_show = functools.partial(cli_command, "{} source show".format(client_cmd)
 
 def scan_job(options=None, exitstatus=0):
     """Run ``qpc scan job`` command with ``options`` returning its output."""
-    return json.loads(cli_command("{} scan job".format(client_cmd), options, exitstatus))
+    return json.loads(cli_command("{} -v scan job".format(client_cmd), options, exitstatus))
 
 
 def setup_qpc():
