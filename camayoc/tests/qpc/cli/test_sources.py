@@ -137,7 +137,7 @@ def test_add_with_cred_hosts(isolated_filesystem, qpc_server_config, hosts, sour
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -191,7 +191,7 @@ def test_add_with_cred_hosts_file(isolated_filesystem, qpc_server_config, hosts,
         handler.write(hosts.replace(" ", "\n") + "\n")
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, "hosts_file", source_type
         )
     )
@@ -241,7 +241,7 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --port {} "
+        "{} -v source add --name {} --cred {} --hosts {} --port {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, port, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -289,7 +289,7 @@ def test_add_with_port_negative(isolated_filesystem, qpc_server_config, source_t
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --port {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
     )
@@ -334,7 +334,7 @@ def test_add_with_ssl_cert_verify(
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --ssl-cert-verify {} "
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -437,7 +437,7 @@ def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_ty
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --ssl-protocol {} "
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, ssl_protocol, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -501,7 +501,7 @@ def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config, 
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --port {} "
+        "{} -v source add --name {} --cred {} --hosts {} --port {} "
         "--ssl-protocol {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, ssl_protocol, source_type
         )
@@ -539,7 +539,7 @@ def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --disable-ssl {} "
+        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, disable_ssl, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -603,7 +603,7 @@ def test_add_with_disable_ssl_negative(isolated_filesystem, qpc_server_config, s
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --port {} "
+        "{} -v source add --name {} --cred {} --hosts {} --port {} "
         "--disable-ssl {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, disable_ssl, source_type
         )
@@ -642,7 +642,7 @@ def test_add_with_exclude_hosts(
     )
 
     qpc_source_add = pexpect.spawn(
-        """{} source add --name {} --cred {} --hosts {} --exclude-hosts {}
+        """{} -v source add --name {} --cred {} --hosts {} --exclude-hosts {}
         --type {}""".format(
             client_cmd, name, cred_name, hosts, exclude_hosts, source_type
         )
@@ -701,7 +701,7 @@ def test_add_with_cred_hosts_exclude_file(
         handler.write(exclude_hosts.replace(" ", "\n") + "\n")
 
     qpc_source_add = pexpect.spawn(
-        """{} source add --name {} --cred {} --hosts {} --exclude-hosts={}
+        """{} -v source add --name {} --cred {} --hosts {} --exclude-hosts={}
         --type {}""".format(
             client_cmd, name, cred_name, hosts, "exclude_hosts_file", source_type
         )
@@ -759,7 +759,7 @@ def test_add_exclude_hosts_negative(
     )
 
     qpc_source_add = pexpect.spawn(
-        """{} source add --name {} --cred {} --hosts {} --exclude-hosts {}
+        """{} -v source add --name {} --cred {} --hosts {} --exclude-hosts {}
         --type {}""".format(
             client_cmd, name, cred_name, hosts, exclude_hosts, source_type
         )
@@ -797,7 +797,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
         )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -820,7 +820,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --cred {}".format(client_cmd, name, new_cred_name)
+        "{} -v source edit --name {} --cred {}".format(client_cmd, name, new_cred_name)
     )
     assert qpc_source_edit.expect('Source "{}" was updated'.format(name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -864,7 +864,7 @@ def test_edit_cred_negative(isolated_filesystem, qpc_server_config, source_type)
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -874,7 +874,7 @@ def test_edit_cred_negative(isolated_filesystem, qpc_server_config, source_type)
     assert qpc_source_add.exitstatus == 0
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --cred {}".format(client_cmd, invalid_name, utils.uuid4())
+        "{} -v source edit --name {} --cred {}".format(client_cmd, invalid_name, utils.uuid4())
     )
     qpc_source_edit.logfile = BytesIO()
     assert qpc_source_edit.expect('Source "{}" does not exist.'.format(invalid_name)) == 0
@@ -907,7 +907,7 @@ def test_edit_hosts(isolated_filesystem, qpc_server_config, new_hosts, source_ty
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -930,7 +930,7 @@ def test_edit_hosts(isolated_filesystem, qpc_server_config, new_hosts, source_ty
     )
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --hosts {}".format(client_cmd, name, new_hosts)
+        "{} -v source edit --name {} --hosts {}".format(client_cmd, name, new_hosts)
     )
     assert qpc_source_edit.expect('Source "{}" was updated'.format(name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -976,7 +976,7 @@ def test_edit_hosts_file(isolated_filesystem, qpc_server_config, new_hosts, sour
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -1003,7 +1003,7 @@ def test_edit_hosts_file(isolated_filesystem, qpc_server_config, new_hosts, sour
         handler.write(new_hosts.replace(" ", "\n") + "\n")
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --hosts {}".format(client_cmd, name, "hosts_file")
+        "{} -v source edit --name {} --hosts {}".format(client_cmd, name, "hosts_file")
     )
     qpc_source_edit.logfile = BytesIO()
     assert qpc_source_edit.expect('Source "{}" was updated'.format(name)) == 0
@@ -1053,7 +1053,7 @@ def test_edit_hosts_negative(isolated_filesystem, qpc_server_config, new_hosts, 
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -1063,7 +1063,7 @@ def test_edit_hosts_negative(isolated_filesystem, qpc_server_config, new_hosts, 
     assert qpc_source_add.exitstatus == 0
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --hosts {}".format(client_cmd, name, new_hosts)
+        "{} -v source edit --name {} --hosts {}".format(client_cmd, name, new_hosts)
     )
     qpc_source_edit.logfile = BytesIO()
     assert qpc_source_edit.expect("hosts: This source must have a single host.") == 0
@@ -1221,7 +1221,7 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --port {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
     )
@@ -1244,7 +1244,7 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --port {}".format(client_cmd, name, new_port)
+        "{} -v source edit --name {} --port {}".format(client_cmd, name, new_port)
     )
     assert qpc_source_edit.expect('Source "{}" was updated'.format(name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -1292,7 +1292,7 @@ def test_edit_port_negative(isolated_filesystem, qpc_server_config, source_type)
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --port {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
     )
@@ -1302,7 +1302,7 @@ def test_edit_port_negative(isolated_filesystem, qpc_server_config, source_type)
     assert qpc_source_add.exitstatus == 0
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --port {}".format(client_cmd, invalid_name, new_port)
+        "{} -v source edit --name {} --port {}".format(client_cmd, invalid_name, new_port)
     )
     qpc_source_edit.logfile = BytesIO()
     assert qpc_source_edit.expect('Source "{}" does not exist.'.format(invalid_name)) == 0
@@ -1337,7 +1337,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --ssl-cert-verify {} "
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -1360,7 +1360,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --ssl-cert-verify {}".format(
+        "{} -v source edit --name {} --ssl-cert-verify {}".format(
             client_cmd, name, new_ssl_cert_verify
         )
     )
@@ -1407,7 +1407,7 @@ def test_edit_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, s
         "source_type": source_type,
     }
     if source_type == "network":
-        add_command = "{} source add --name {} --cred {} --hosts {} --port {} --type {}".format(
+        add_command = "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
         new_ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
@@ -1416,7 +1416,7 @@ def test_edit_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, s
     else:
         ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
         add_command = (
-            "{} source add --name {} --cred {} --hosts {} --port {} "
+            "{} -v source add --name {} --cred {} --hosts {} --port {} "
             "--ssl-cert-verify {} --type {}".format(
                 client_cmd, name, cred_name, hosts, port, ssl_cert_verify, source_type
             )
@@ -1483,7 +1483,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --ssl-protocol {} "
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, ssl_protocol, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -1506,7 +1506,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --ssl-protocol {}".format(client_cmd, name, new_ssl_protocol)
+        "{} -v source edit --name {} --ssl-protocol {}".format(client_cmd, name, new_ssl_protocol)
     )
     assert qpc_source_edit.expect('Source "{}" was updated'.format(name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -1551,7 +1551,7 @@ def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, sour
         "source_type": source_type,
     }
     if source_type == "network":
-        add_command = "{} source add --name {} --cred {} --hosts {} --port {} --type {}".format(
+        add_command = "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
         new_ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
@@ -1560,7 +1560,7 @@ def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, sour
     else:
         ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
         add_command = (
-            "{} source add --name {} --cred {} --hosts {} --port {} "
+            "{} -v source add --name {} --cred {} --hosts {} --port {} "
             "--ssl-protocol {} --type {}".format(
                 client_cmd, name, cred_name, hosts, port, ssl_protocol, source_type
             )
@@ -1589,7 +1589,7 @@ def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, sour
     assert qpc_source_add.exitstatus == 0
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --ssl-protocol {}".format(client_cmd, name, new_ssl_protocol)
+        "{} -v source edit --name {} --ssl-protocol {}".format(client_cmd, name, new_ssl_protocol)
     )
     assert qpc_source_edit.expect(expected_error) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -1625,7 +1625,7 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --disable-ssl {} "
+        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} "
         "--type {}".format(client_cmd, name, cred_name, hosts, disable_ssl, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
@@ -1648,7 +1648,7 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --disable-ssl {}".format(client_cmd, name, new_disable_ssl)
+        "{} -v source edit --name {} --disable-ssl {}".format(client_cmd, name, new_disable_ssl)
     )
     assert qpc_source_edit.expect('Source "{}" was updated'.format(name)) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -1693,7 +1693,7 @@ def test_edit_disable_ssl_negative(isolated_filesystem, qpc_server_config, sourc
         "source_type": source_type,
     }
     if source_type == "network":
-        add_command = "{} source add --name {} --cred {} --hosts {} --port {} --type {}".format(
+        add_command = "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
         new_disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
@@ -1702,7 +1702,7 @@ def test_edit_disable_ssl_negative(isolated_filesystem, qpc_server_config, sourc
     else:
         disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
         add_command = (
-            "{} source add --name {} --cred {} --hosts {} --port {} "
+            "{} -v source add --name {} --cred {} --hosts {} --port {} "
             "--disable-ssl {} --type {}".format(
                 client_cmd, name, cred_name, hosts, port, disable_ssl, source_type
             )
@@ -1731,7 +1731,7 @@ def test_edit_disable_ssl_negative(isolated_filesystem, qpc_server_config, sourc
     assert qpc_source_add.exitstatus == 0
 
     qpc_source_edit = pexpect.spawn(
-        "{} source edit --name {} --disable-ssl {}".format(client_cmd, name, new_disable_ssl)
+        "{} -v source edit --name {} --disable-ssl {}".format(client_cmd, name, new_disable_ssl)
     )
     assert qpc_source_edit.expect(expected_error) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
@@ -1765,7 +1765,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -1787,19 +1787,19 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
         ),
     )
 
-    qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, name))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, name))
     assert qpc_source_clear.expect('Source "{}" was removed'.format(name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
 
-    qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, name))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, name))
     assert qpc_source_clear.expect('Source "{}" was not found.'.format(name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 1
 
-    qpc_source_show = pexpect.spawn("{} source show --name={}".format(client_cmd, name))
+    qpc_source_show = pexpect.spawn("{} -v source show --name={}".format(client_cmd, name))
     assert qpc_source_show.expect('Source "{}" does not exist.'.format(name)) == 0
     assert qpc_source_show.expect(pexpect.EOF) == 0
     qpc_source_show.close()
@@ -1835,7 +1835,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} source add --name {} --cred {} --hosts {} --type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
             client_cmd, name, cred_name, hosts, source_type
         )
     )
@@ -1863,7 +1863,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     scan_show_result = scan_show({"name": scan_name})
     scan_show_result = json.loads(scan_show_result)
 
-    qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, name))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, name))
 
     qpc_source_clear.logfile = BytesIO()
     assert qpc_source_clear.expect(pexpect.EOF) == 0
@@ -1874,24 +1874,24 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
         'Failed to remove source "%s".' % (scan_show_result["id"], scan_name, name)
     ).encode("utf-8")
 
-    qpc_scan_clear = pexpect.spawn("{} scan clear --name={}".format(client_cmd, scan_name))
+    qpc_scan_clear = pexpect.spawn("{} -v scan clear --name={}".format(client_cmd, scan_name))
 
     assert qpc_scan_clear.expect('Scan "{}" was removed'.format(scan_name)) == 0
 
-    qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, name))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, name))
 
     assert qpc_source_clear.expect('Source "{}" was removed'.format(name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
 
-    qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, name))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, name))
     assert qpc_source_clear.expect('Source "{}" was not found.'.format(name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 1
 
-    qpc_source_show = pexpect.spawn("{} source show --name={}".format(client_cmd, name))
+    qpc_source_show = pexpect.spawn("{} -v source show --name={}".format(client_cmd, name))
     assert qpc_source_show.expect('Source "{}" does not exist.'.format(name)) == 0
     assert qpc_source_show.expect(pexpect.EOF) == 0
     qpc_source_show.close()
@@ -1908,7 +1908,7 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
         can't be removed.
     """
     name = utils.uuid4()
-    qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, name))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, name))
     qpc_source_clear.logfile = BytesIO()
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     assert qpc_source_clear.logfile.getvalue().strip() == 'Source "{}" was not found.'.format(
@@ -1964,7 +1964,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
             source["options"] = {"ssl_cert_verify": True}
         sources.append(source)
         qpc_source_add = pexpect.spawn(
-            "{} source add --name {} --cred {} --hosts {} --type {}".format(
+            "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
                 client_cmd, name, cred_name, hosts, source_type
             )
         )
@@ -1989,13 +1989,13 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
     name = operator.itemgetter("name")
     assert sorted(sources, key=name) == sorted(output, key=name)
 
-    qpc_source_clear = pexpect.spawn("{} source clear --all".format(client_cmd))
+    qpc_source_clear = pexpect.spawn("{} -v source clear --all".format(client_cmd))
     assert qpc_source_clear.expect("All sources were removed") == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
 
-    qpc_source_list = pexpect.spawn("{} source list".format(client_cmd))
+    qpc_source_list = pexpect.spawn("{} -v source list".format(client_cmd))
     assert qpc_source_list.expect("No sources exist yet.") == 0
     assert qpc_source_list.expect(pexpect.EOF) == 0
     qpc_source_list.close()
