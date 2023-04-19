@@ -20,7 +20,6 @@ from .utils import scan_clear
 from .utils import scan_edit_and_check
 from .utils import scan_show_and_check
 from .utils import source_show
-from camayoc.utils import client_cmd
 from camayoc.utils import client_cmd_name
 from camayoc.utils import uuid4
 
@@ -151,7 +150,7 @@ def test_create_scan_with_extended_products_negative(
             "sources": source_name,
             "enabled-ext-product-search": fail_cases,
         },
-        r"usage: {} scan add(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan add(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 
