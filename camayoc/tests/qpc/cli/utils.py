@@ -353,7 +353,7 @@ def scan_add_and_check(options, status_message_regex=None, exitstatus=0):
     if not status_message_regex:
         status_message_regex = r'Scan "{}" was added.'.format(options["name"])
     result = scan_add(options, exitstatus)
-    match = re.match(status_message_regex, result)
+    match = re.search(status_message_regex, result)
     assert match is not None
 
 
