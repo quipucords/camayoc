@@ -26,6 +26,11 @@ name_getter = operator.itemgetter("name")
 client_cmd = settings.quipucords_cli.executable
 """Client command to use during tests. Defaults to `qpc`."""
 
+client_cmd_name = settings.quipucords_cli.display_name
+"""Client name displayed on help texts. Defaults to `qpc`."""
+# this is useful when client_cmd is set to an absolute path, has extra arguments like -v
+# or even when we finally support running tests with proper dsc.
+
 
 def run_scans():
     """Check if scans should be run."""

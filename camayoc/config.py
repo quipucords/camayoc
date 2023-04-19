@@ -26,6 +26,7 @@ default_dynaconf_validators = [
     Validator("quipucords_server.password", default=""),
     Validator("quipucords_server.ssh_keyfile_path", default=""),
     Validator("quipucords_cli.executable", default="qpc"),
+    Validator("quipucords_cli.display_name", default="qpc"),
     Validator("openshift", default=[]),
     Validator("vcenter.hostname", default=""),
     Validator("vcenter.username", default=""),

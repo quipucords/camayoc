@@ -21,6 +21,7 @@ from .utils import scan_edit_and_check
 from .utils import scan_show_and_check
 from .utils import source_show
 from camayoc.utils import client_cmd
+from camayoc.utils import client_cmd_name
 from camayoc.utils import uuid4
 
 NEGATIVE_CASES = [1, -100, "redhat_packages", "ifconfig", {}, [], ["/foo/bar/"]]
@@ -123,7 +124,7 @@ def test_create_scan_with_disabled_products_negative(
             "sources": source_name,
             "disabled-optional-products": fail_cases,
         },
-        r"usage: {} scan add(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan add(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 
@@ -367,7 +368,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     # Edit scan options
     scan_edit_and_check(
         {"name": scan_name, "sources": ""},
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 
@@ -381,7 +382,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     # Edit scan options
     scan_edit_and_check(
         {"name": scan_name, "sources": source_name, "max-concurrency": "abc"},
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 
@@ -392,7 +393,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
             "sources": "",
             "disabled-optional-products": "not_a_real_product",
         },
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 
@@ -403,14 +404,14 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
             "sources": "",
             "enabled-ext-product-search": "not_a_real_product",
         },
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 
     # Edit ext-product-search-dirs
     scan_edit_and_check(
         {"name": scan_name, "sources": "", "ext-product-search-dirs": "not-a-dir"},
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
 

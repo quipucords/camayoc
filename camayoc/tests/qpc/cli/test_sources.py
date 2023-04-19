@@ -28,6 +28,7 @@ from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import source_edit_and_check
 from camayoc.tests.qpc.cli.utils import source_show_and_check
 from camayoc.utils import client_cmd
+from camayoc.utils import client_cmd_name
 
 
 ISSUE_449_MARK = pytest.mark.xfail(
@@ -384,7 +385,7 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
         expected_error = (
             "{} source add: error: argument --ssl-cert-verify: invalid "
             "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd, ssl_cert_verify)
+            "'false'\\)".format(client_cmd_name, ssl_cert_verify)
         )
         exitstatus = 2
     cred_add_and_check(
@@ -400,7 +401,7 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
     qpc_source_add = pexpect.spawn(
         "{} source add --name {} --cred {} --hosts {} --port {} "
         "--ssl-cert-verify {} --type {}".format(
-            client_cmd, name, cred_name, hosts, port, ssl_cert_verify, source_type
+            client_cmd_name, name, cred_name, hosts, port, ssl_cert_verify, source_type
         )
     )
     assert qpc_source_add.expect(expected_error) == 0
@@ -486,7 +487,7 @@ def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config, 
         expected_error = (
             "{} source add: error: argument --ssl-protocol: invalid choice: "
             "'{}' \\(choose from 'SSLv23', 'TLSv1', 'TLSv1_1', "
-            "'TLSv1_2'\\)".format(client_cmd, ssl_protocol)
+            "'TLSv1_2'\\)".format(client_cmd_name, ssl_protocol)
         )
         exitstatus = 2
     cred_add_and_check(
@@ -588,7 +589,7 @@ def test_add_with_disable_ssl_negative(isolated_filesystem, qpc_server_config, s
         expected_error = (
             "{} source add: error: argument --disable-ssl: invalid "
             "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd, disable_ssl)
+            "'false'\\)".format(client_cmd_name, disable_ssl)
         )
         exitstatus = 2
     cred_add_and_check(
@@ -1424,7 +1425,7 @@ def test_edit_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, s
         expected_error = (
             "{} source edit: error: argument --ssl-cert-verify: invalid "
             "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd, new_ssl_cert_verify)
+            "'false'\\)".format(client_cmd_name, new_ssl_cert_verify)
         )
         exitstatus = 2
         show_output_dict["options"] = {"ssl_cert_verify": ssl_cert_verify.lower()}
@@ -1568,7 +1569,7 @@ def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, sour
         expected_error = (
             "{} source edit: error: argument --ssl-protocol: invalid "
             "choice: '{}' \\(choose from 'SSLv23', 'TLSv1', "
-            "'TLSv1_1', 'TLSv1_2'\\)".format(client_cmd, new_ssl_protocol)
+            "'TLSv1_1', 'TLSv1_2'\\)".format(client_cmd_name, new_ssl_protocol)
         )
         exitstatus = 2
         show_output_dict["options"] = {"ssl_protocol": ssl_protocol}
@@ -1710,7 +1711,7 @@ def test_edit_disable_ssl_negative(isolated_filesystem, qpc_server_config, sourc
         expected_error = (
             "{} source edit: error: argument --disable-ssl: invalid "
             "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd, new_disable_ssl)
+            "'false'\\)".format(client_cmd_name, new_disable_ssl)
         )
         exitstatus = 2
         show_output_dict["options"] = {"disable_ssl": disable_ssl.lower()}
