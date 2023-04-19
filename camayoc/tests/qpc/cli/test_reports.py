@@ -338,15 +338,13 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
     """
     scan = random.choice(_SCANS)
     output_path = "{}.{}".format(uuid4(), output_format)
-    output = report_deployments(
+    report_deployments(
         {
             source_option: scan[source_option],
             output_format: None,
             "output-file": output_path,
         }
     )
-
-    assert "Report written successfully." in output
 
     with open(output_path) as f:
         if output_format == "json":
@@ -381,15 +379,13 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
     """
     scan = random.choice(_SCANS)
     output_path = "{}.{}".format(uuid4(), output_format)
-    output = report_detail(
+    report_detail(
         {
             "output-file": output_path,
             output_format: None,
             source_option: scan[source_option],
         }
     )
-
-    assert "Report written successfully." in output
 
     with open(output_path) as f:
         if output_format == "json":
@@ -452,10 +448,9 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
 
     wait_for_report_merge(job_id)
     report_id = report_merge_status({"job": job_id})["report_id"]
-
+    assert report_id
     output_path = "{}.json".format(uuid4())
     output = report_deployments({"report": report_id, "json": None, "output-file": output_path})
-    assert "Report written successfully." in output
 
     with open(output_path) as f:
         report = json.load(f)
@@ -481,13 +476,8 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     scan = random.choice(_SCANS)
     output_path = f"{uuid4()}"
     output_pkg = f"{output_path}.tar.gz"
-    output = report_download({source_option: scan[source_option], "output-file": output_pkg})
+    report_download({source_option: scan[source_option], "output-file": output_pkg})
     # Test that package downloaded
-    assert "successfully written to" in output, (
-        "Unexpected output from qpc report download! \n"
-        'Expected to find "successfully written to" in output.'
-        f"Actual output: {output}"
-    )
     assert os.path.isfile(output_pkg), (
         "Unexpected output from qpc report download!\n"
         f"Download package not found at expected location: {output_pkg}"

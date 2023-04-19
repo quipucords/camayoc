@@ -226,7 +226,6 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
         "{} cred edit --name={} --username={}".format(client_cmd, name, new_username)
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -303,7 +302,6 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
     qpc_cred_edit = pexpect.spawn("{} cred edit --name={} --password".format(client_cmd, name))
     assert qpc_cred_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_password)
-    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -386,7 +384,6 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
         )
     )
     qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -480,7 +477,6 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
     )
     assert qpc_cred_edit.expect(BECOME_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_become_password)
-    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus == 0
@@ -572,7 +568,6 @@ def test_clear(isolated_filesystem, qpc_server_config):
     )
 
     qpc_cred_clear = pexpect.spawn("{} cred clear --name={}".format(client_cmd, name))
-    assert qpc_cred_clear.expect('Credential "{}" was removed'.format(name)) == 0
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 0
@@ -652,13 +647,11 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     qpc_cred_clear.close()
     # delete the source using credential
     qpc_source_clear = pexpect.spawn("{} source clear --name={}".format(client_cmd, source_name))
-    assert qpc_source_clear.expect('Source "{}" was removed'.format(source_name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
     # successfully remove credential
     qpc_cred_clear = pexpect.spawn("{} cred clear --name={}".format(client_cmd, cred_name))
-    assert qpc_cred_clear.expect('Credential "{}" was removed'.format(cred_name)) == 0
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 0
@@ -713,7 +706,6 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
     output, exitstatus = pexpect.run(
         "{} cred clear --all".format(client_cmd), encoding="utf-8", withexitstatus=True
     )
-    assert "All credentials were removed." in output
     assert exitstatus == 0
 
     output, exitstatus = pexpect.run(

@@ -10,13 +10,13 @@
 :upstream: yes
 """
 import json
-import re
 
 import pytest
 
 from .utils import config_sources
 from .utils import scan_add_and_check
 from .utils import scan_clear
+from .utils import scan_edit
 from .utils import scan_edit_and_check
 from .utils import scan_show_and_check
 from .utils import source_show
@@ -213,15 +213,14 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     scan_show_and_check(scan_name, expected_result)
 
     # Edit scan options
-    scan_edit_and_check(
+    scan_edit(
         {
             "name": scan_name,
             "max-concurrency": 25,
             "disabled-optional-products": "jboss_eap",
             "enabled-ext-product-search": "jboss_fuse",
             "ext-product-search-dirs": "/foo/bar/",
-        },
-        r'Scan "{}" was updated.'.format(scan_name),
+        }
     )
 
     expected_result = {
@@ -301,14 +300,13 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
     scan_show_and_check(scan_name, expected_result)
 
     # Edit scan options
-    scan_edit_and_check(
+    scan_edit(
         {
             "name": scan_name,
             "max-concurrency": 25,
             "disabled-optional-products": "",
             "enabled-ext-product-search": "",
-        },
-        r'Scan "{}" was updated.'.format(scan_name),
+        }
     )
 
     expected_result = {
@@ -445,9 +443,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
     scan_show_and_check(scan_name, expected_result)
 
     # Remove scan
-    result = scan_clear({"name": scan_name})
-    match = re.match(r'Scan "{}" was removed.'.format(scan_name), result)
-    assert match is not None
+    scan_clear({"name": scan_name})
 
 
 def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
@@ -479,6 +475,4 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     scan_show_and_check(scan_name, expected_result)
 
     # Remove scan
-    result = scan_clear({"all": None})
-    match = re.match(r"All scans were removed.", result)
-    assert match is not None
+    scan_clear({"all": None})

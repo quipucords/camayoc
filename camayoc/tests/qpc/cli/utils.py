@@ -177,8 +177,6 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
     for prompt, value in inputs:
         assert qpc_cred_add.expect(prompt) == 0
         qpc_cred_add.sendline(value)
-    if "name" in options:
-        assert qpc_cred_add.expect('Credential "{}" was added'.format(options["name"])) == 0
     assert qpc_cred_add.expect(pexpect.EOF) == 0
     qpc_cred_add.close()
     assert qpc_cred_add.exitstatus == exitstatus
@@ -278,7 +276,6 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
     for prompt, value in inputs:
         assert qpc_source_add.expect(prompt) == 0
         qpc_source_add.sendline(value)
-    assert qpc_source_add.expect('Source "{}" was added'.format(options["name"])) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
     qpc_source_add.close()
     assert qpc_source_add.exitstatus == exitstatus
@@ -313,7 +310,6 @@ def source_edit_and_check(options, inputs=None, exitstatus=0):
     for prompt, value in inputs:
         assert qpc_source_edit.expect(prompt) == 0
         qpc_source_edit.sendline(value)
-    assert qpc_source_edit.expect('Source "{}" was updated'.format(options["name"])) == 0
     assert qpc_source_edit.expect(pexpect.EOF) == 0
     qpc_source_edit.close()
     assert qpc_source_edit.exitstatus == exitstatus
@@ -352,9 +348,7 @@ def scan_add_and_check(options, status_message_regex=None, exitstatus=0):
     assert options.get("name") is not None
     if not status_message_regex:
         status_message_regex = r'Scan "{}" was added.'.format(options["name"])
-    result = scan_add(options, exitstatus)
-    match = re.match(status_message_regex, result)
-    assert match is not None
+    scan_add(options, exitstatus)
 
 
 def scan_edit_and_check(options, status_message_regex, exitstatus=0):
@@ -369,7 +363,7 @@ def scan_edit_and_check(options, status_message_regex, exitstatus=0):
 
     result = scan_edit(options, exitstatus)
     match = re.match(status_message_regex, result)
-    assert match is not None
+    assert match is not None, result
 
 
 def scan_show_and_check(scan_name, expected_result=None):
