@@ -28,7 +28,7 @@ from camayoc.utils import uuid4
 
 CREATE_DATA = ["localhost", "127.0.0.1", "example.com"]
 DEFAULT_PORT = {"network": 22, "vcenter": 443, "satellite": 443}
-INCOMPATIBLE_SRC_TYPES = {"vcenter", "satellite"}
+INCOMPATIBLE_SRC_TYPES = ("vcenter", "satellite")
 
 
 @pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
