@@ -89,6 +89,8 @@ CSV_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
     "detection-network",
     "detection-satellite",
     "detection-vcenter",
+    "detection-openshift",
+    "detection-ansible",
     "jboss brms",
     "jboss eap",
     "jboss fuse",
@@ -263,6 +265,8 @@ FACTS = (
     "tomcat_is_part_of_redhat_product",
     "virt_num_guests",
     "virt_num_running_guests",
+    "subscription_manager_id",
+    "installed_products",
 )
 """Common detail report expected facts."""
 
