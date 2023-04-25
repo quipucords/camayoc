@@ -32,6 +32,9 @@ class OpenShiftOptions(BaseModel):
     port: int
     token: str
     skip_tls_verify: bool
+    cluster_id: str
+    version: str
+    nodes: list[str]
 
 
 class VCenterOptions(BaseModel):
