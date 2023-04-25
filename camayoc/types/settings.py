@@ -29,6 +29,7 @@ class QuipucordsCLIOptions(BaseModel):
 
 class OpenShiftOptions(BaseModel):
     hostname: str
+    port: int
     token: str
     skip_tls_verify: bool
 
