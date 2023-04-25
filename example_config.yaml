@@ -32,6 +32,16 @@ openshift:
       port: 6443
       token: sha256~...
       skip_tls_verify: true
+      cluster_id: '00000000-1111-2222-3333-123456789abc'
+      version: '4.11.32'
+      nodes:
+          - 'master-0.example.com'
+          - 'master-1.example.com'
+          - 'master-2.example.com'
+          - 'worker-0.example.com'
+          - 'worker-1.example.com'
+          - 'worker-2.example.com'
+          - 'worker-3.example.com'
 
 # We host most of our test machines on a VCenter instance
 # and this section contains its URL and the credentials
