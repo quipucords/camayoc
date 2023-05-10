@@ -43,6 +43,7 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.cli.conftest
     api/camayoc.tests.qpc.cli.csv_report_parsing
     api/camayoc.tests.qpc.cli.test_credentials
+    api/camayoc.tests.qpc.cli.test_openshift
     api/camayoc.tests.qpc.cli.test_reports
     api/camayoc.tests.qpc.cli.test_scanjobs
     api/camayoc.tests.qpc.cli.test_scans
@@ -59,6 +60,8 @@ reference for developers, not a gospel.
     api/camayoc.tests.qpc.ui.views
     api/camayoc.tests.qpc.utils
     api/camayoc.tests.utils
+    api/camayoc.types
+    api/camayoc.types.settings
     api/camayoc.ui
     api/camayoc.ui.client
     api/camayoc.ui.decorators

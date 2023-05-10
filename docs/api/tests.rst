@@ -13,5 +13,6 @@ Submodules
    :maxdepth: 4
 
    tests.test_api
-   tests.test_cli
+   tests.test_command
+   tests.test_settings
    tests.test_utils

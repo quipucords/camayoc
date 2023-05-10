@@ -15,6 +15,7 @@ Submodules
    camayoc.tests.qpc.cli.conftest
    camayoc.tests.qpc.cli.csv_report_parsing
    camayoc.tests.qpc.cli.test_credentials
+   camayoc.tests.qpc.cli.test_openshift
    camayoc.tests.qpc.cli.test_reports
    camayoc.tests.qpc.cli.test_scanjobs
    camayoc.tests.qpc.cli.test_scans

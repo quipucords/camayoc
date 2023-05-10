@@ -13,6 +13,7 @@ Subpackages
    :maxdepth: 4
 
    camayoc.tests
+   camayoc.types
    camayoc.ui
 
 Submodules
@@ -22,7 +23,7 @@ Submodules
    :maxdepth: 4
 
    camayoc.api
-   camayoc.cli
+   camayoc.command
    camayoc.config
    camayoc.constants
    camayoc.exceptions
