@@ -3,9 +3,9 @@
 
 
 class CalledProcessError(Exception):
-    """Indicates a CLI process has a non-zero return code.
+    """Indicates a command process has a non-zero return code.
 
-    See :meth:`camayoc.cli.CompletedProcess` for more information.
+    See :meth:`camayoc.command.CompletedProcess` for more information.
     """
 
     def __str__(self):

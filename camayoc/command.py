@@ -1,5 +1,5 @@
 # coding=utf-8
-"""A client for running local or remote commands."""
+"""Execute local or remote commands."""
 import socket
 from collections import namedtuple
 
@@ -21,7 +21,7 @@ def code_handler(completed_proc):
     """Check the process for a non-zero return code. Return the process.
 
     Check the return code by calling ``completed_proc.check_returncode()``.
-    See: :meth:`camayoc.cli.CompletedProcess.check_returncode`.
+    See: :meth:`camayoc.command.CompletedProcess.check_returncode`.
     """
     completed_proc.check_returncode()
     return completed_proc
@@ -41,7 +41,7 @@ class CompletedProcess(object):
     All constructor arguments are stored as instance attributes.
 
     :param args: A string or a sequence. The arguments passed to
-        :meth:`camayoc.cli.Client.run`.
+        :meth:`camayoc.command.Command.run`.
     :param returncode: The integer exit code of the executed process. Negative
         for signals.
     :param stdout: The standard output of the executed process.
@@ -100,16 +100,16 @@ class CompletedProcess(object):
             )
 
 
-class Client(object):
-    """A convenience object for working with a CLI.
+class Command(object):
+    """A convenience class for working with local or remote commands.
 
     This class provides the ability to execute shell commands on either the
     local system or a remote system. Here is a pedagogic usage example:
 
-    >>> from camayoc import cli
-    >>> system = cli.System(hostname='localhost', transport='local')
-    >>> client = cli.Client(system)
-    >>> response = client.run(('echo', '-n', 'foo'))
+    >>> from camayoc import command
+    >>> system = command.System(hostname='localhost', transport='local')
+    >>> cmd = command.Command(system)
+    >>> response = cmd.run(('echo', '-n', 'foo'))
     >>> response.returncode == 0
     True
     >>> response.stdout == 'foo'
@@ -121,7 +121,7 @@ class Client(object):
     verbose: smartly chosen defaults mean that most real code is much more
     concise.
 
-    You can customize how ``Client`` objects execute commands and handle
+    You can customize how ``Command`` objects execute commands and handle
     responses by fiddling with the two public instance attributes:
 
     ``machine``
@@ -139,10 +139,10 @@ class Client(object):
     against the current system's hostname.  If they match, ``machine`` is set
     to execute commands locally; and vice versa.
 
-    :param camayoc.cli.System system: Information about the system on which
+    :param camayoc.command.System system: Information about the system on which
         commands will be executed.
     :param response_handler: A callback function. Defaults to
-        :func:`camayoc.cli.code_handler`.
+        :func:`camayoc.command.code_handler`.
 
     .. _Plumbum: http://plumbum.readthedocs.io/en/latest/index.html
     """
@@ -173,7 +173,7 @@ class Client(object):
         This method is a thin wrapper around Plumbum's `BaseCommand.run`_
         method, which is itself a thin wrapper around the standard library's
         `subprocess.Popen`_ class. See their documentation for detailed usage
-        instructions. See :class:`camayoc.cli.Client` for a usage example.
+        instructions. See :class:`camayoc.command.Command` for a usage example.
 
         .. _BaseCommand.run:
            http://plumbum.readthedocs.io/en/latest/api/commands.html#plumbum.commands.base.BaseCommand.run

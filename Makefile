@@ -71,7 +71,7 @@ test:
 
 test-coverage:
 	pytest --verbose --cov-report term --cov-report xml:coverage.xml \
-	--cov=camayoc.cli \
+	--cov=camayoc.command \
 	--cov=camayoc.config \
 	--cov=camayoc.exceptions \
 	--cov=camayoc.utils \
