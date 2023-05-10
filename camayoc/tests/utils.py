@@ -5,7 +5,7 @@ import time
 
 from pyVmomi import vim
 
-from camayoc import cli
+from camayoc import command
 
 
 def get_vcenter_vms(vcenter_client):
@@ -95,13 +95,13 @@ def vcenter_vms(vms):
         power_off_vms(vms)
 
 
-def is_live(client, server, num_pings=10):
+def is_live(cmd, server, num_pings=10):
     """Test if server responds to ping.
 
     Returns true if server is reachable, false otherwise.
     """
-    client.response_handler = cli.echo_handler
-    ping = client.run(("ping", "-c", num_pings, server))
+    cmd.response_handler = command.echo_handler
+    ping = cmd.run(("ping", "-c", num_pings, server))
     return ping.returncode == 0
 
 
@@ -118,11 +118,11 @@ def wait_until_live(servers, timeout=360):
     valid host, the scan will go on and only facts about reached hosts will be
     tested.
     """
-    system = cli.System(hostname="localhost", transport="local")
-    client = cli.Client(system)
+    system = command.System(hostname="localhost", transport="local")
+    cmd = command.Command(system)
 
     unreached = servers
     while unreached and timeout > 0:
-        unreached = [host for host in unreached if not is_live(client, host)]
+        unreached = [host for host in unreached if not is_live(cmd, host)]
         time.sleep(10)
         timeout -= 10
