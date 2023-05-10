@@ -9,7 +9,7 @@ reference for developers, not a gospel.
 
     api/camayoc
     api/camayoc.api
-    api/camayoc.cli
+    api/camayoc.command
     api/camayoc.config
     api/camayoc.constants
     api/camayoc.exceptions
@@ -77,5 +77,6 @@ reference for developers, not a gospel.
     api/camayoc.utils
     api/tests
     api/tests.test_api
-    api/tests.test_cli
+    api/tests.test_command
+    api/tests.test_settings
     api/tests.test_utils

@@ -1,7 +1,7 @@
-tests.test\_cli module
+camayoc.command module
 ======================
 
-.. automodule:: tests.test_cli
+.. automodule:: camayoc.command
    :members:
    :undoc-members:
    :show-inheritance:
