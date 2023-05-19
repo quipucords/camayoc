@@ -38,6 +38,20 @@ def test_create_with_password(cred_type, shared_client, cleanup):
     assert_matches_server(cred)
 
 
+def test_create_with_token(shared_client, cleanup):
+    """Create a credential with token.
+
+    :id: 525096c3-d492-4231-988b-4491009c23b2
+    :description: Create a credential with an authentication token
+    :steps: Send POST with necessary data to documented api endpoint.
+    :expectedresults: A new credential entry is created with the data.
+    """
+    cred = Credential(cred_type="openshift", client=shared_client, token=uuid4())
+    cred.create()
+    cleanup.append(cred)
+    assert_matches_server(cred)
+
+
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
 @pytest.mark.parametrize("field", ["name", "username", "password"])
 def test_update(cred_type, field, shared_client, cleanup):
