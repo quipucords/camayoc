@@ -20,6 +20,7 @@ import pytest
 from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.constants import QPC_HOST_MANAGER_TYPES
+from camayoc.constants import QPC_SOURCES_DEFAULT_PORT
 from camayoc.tests.qpc.cli.utils import convert_ip_format
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
 from camayoc.tests.qpc.cli.utils import scan_add_and_check
@@ -46,6 +47,8 @@ VALID_SOURCE_TYPE_HOSTS = (
     ("network", "host.example.com"),
     ("vcenter", "192.168.0.42"),
     ("vcenter", "vcenter.example.com"),
+    ("openshift", "192.168.0.42"),
+    ("openshift", "openshift.example.com"),
 )
 
 VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
@@ -62,15 +65,8 @@ VALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
 INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
     ("vcenter", "192.168.0.42", "192.168.0.43"),
     ("satellite", "192.168.0.42", "192.168.0.43"),
+    ("openshift", "192.168.0.42", "192.168.0.43"),
 )
-
-
-def default_port_for_source(source_type):
-    """Resolve the default port for a given source type."""
-    if source_type in QPC_HOST_MANAGER_TYPES:
-        return 443
-    else:
-        return 22
 
 
 def generate_show_output(data):
@@ -125,7 +121,7 @@ def test_add_with_cred_hosts(isolated_filesystem, qpc_server_config, hosts, sour
     """
     cred_name = utils.uuid4()
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -176,7 +172,7 @@ def test_add_with_cred_hosts_file(isolated_filesystem, qpc_server_config, hosts,
     """
     cred_name = utils.uuid4()
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -350,7 +346,7 @@ def test_add_with_ssl_cert_verify(
                 "hosts": hosts,
                 "name": name,
                 "options": {"ssl_cert_verify": ssl_cert_verify.lower()},
-                "port": default_port_for_source(source_type),
+                "port": QPC_SOURCES_DEFAULT_PORT[source_type],
                 "source_type": source_type,
             }
         ),
@@ -375,7 +371,7 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
     cred_name = utils.uuid4()
     hosts = "127.0.0.1"
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     if source_type == "network":
         ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
         expected_error = "Error: Invalid SSL options for network source: ssl_cert_verify"
@@ -453,7 +449,7 @@ def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_ty
                 "hosts": hosts,
                 "name": name,
                 "options": {"ssl_protocol": ssl_protocol},
-                "port": default_port_for_source(source_type),
+                "port": QPC_SOURCES_DEFAULT_PORT[source_type],
                 "source_type": source_type,
             }
         ),
@@ -477,7 +473,7 @@ def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config, 
     cred_name = utils.uuid4()
     hosts = "127.0.0.1"
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     if source_type == "network":
         ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
         expected_error = "Error: Invalid SSL options for network source: ssl_protocol"
@@ -555,7 +551,7 @@ def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_typ
                 "hosts": hosts,
                 "name": name,
                 "options": {"disable_ssl": disable_ssl.lower()},
-                "port": default_port_for_source(source_type),
+                "port": QPC_SOURCES_DEFAULT_PORT[source_type],
                 "source_type": source_type,
             }
         ),
@@ -579,7 +575,7 @@ def test_add_with_disable_ssl_negative(isolated_filesystem, qpc_server_config, s
     cred_name = utils.uuid4()
     hosts = "127.0.0.1"
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     if source_type == "network":
         disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
         expected_error = "Error: Invalid SSL options for network source: disable_ssl"
@@ -630,7 +626,7 @@ def test_add_with_exclude_hosts(
     """
     cred_name = utils.uuid4()
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -686,7 +682,7 @@ def test_add_with_cred_hosts_exclude_file(
     """
     cred_name = utils.uuid4()
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -784,7 +780,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     hosts = "127.0.0.1"
     new_cred_name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     for cred_name in (cred_name, new_cred_name):
         cred_add_and_check(
             {
@@ -895,7 +891,7 @@ def test_edit_hosts(isolated_filesystem, qpc_server_config, new_hosts, source_ty
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -964,7 +960,7 @@ def test_edit_hosts_file(isolated_filesystem, qpc_server_config, new_hosts, sour
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1092,7 +1088,7 @@ def test_edit_exclude_hosts(
     cred_name = utils.uuid4()
     name = utils.uuid4()
     exclude_hosts = "10.10.10.10"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1153,7 +1149,7 @@ def test_edit_exclude_hosts_file(
     cred_name = utils.uuid4()
     name = utils.uuid4()
     exclude_hosts = "10.10.10.10"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1324,7 +1320,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     ssl_cert_verify, new_ssl_cert_verify = random.sample(QPC_BOOLEAN_VALUES, 2)
     cred_add_and_check(
         {
@@ -1398,7 +1394,7 @@ def test_edit_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, s
     cred_name = utils.uuid4()
     hosts = "127.0.0.1"
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     show_output_dict = {
         "cred_name": cred_name,
         "hosts": hosts,
@@ -1470,7 +1466,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     ssl_protocol, new_ssl_protocol = random.sample(QPC_SSL_PROTOCOL_VALUES, 2)
     cred_add_and_check(
         {
@@ -1542,7 +1538,7 @@ def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, sour
     cred_name = utils.uuid4()
     hosts = "127.0.0.1"
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     show_output_dict = {
         "cred_name": cred_name,
         "hosts": hosts,
@@ -1612,7 +1608,7 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     disable_ssl, new_disable_ssl = random.sample(QPC_BOOLEAN_VALUES, 2)
     cred_add_and_check(
         {
@@ -1684,7 +1680,7 @@ def test_edit_disable_ssl_negative(isolated_filesystem, qpc_server_config, sourc
     cred_name = utils.uuid4()
     hosts = "127.0.0.1"
     name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     show_output_dict = {
         "cred_name": cred_name,
         "hosts": hosts,
@@ -1753,7 +1749,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1823,7 +1819,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1928,7 +1924,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
     :expectedresults: All source entries are removed.
     """
     cred_name = utils.uuid4()
-    port = default_port_for_source(source_type)
+    port = QPC_SOURCES_DEFAULT_PORT[source_type]
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1958,9 +1954,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
             "port": port,
             "source_type": source_type,
         }
-        if source_type == "satellite":
-            source["options"] = {"ssl_cert_verify": True}
-        if source_type == "vcenter":
+        if source_type != "network":
             source["options"] = {"ssl_cert_verify": True}
         sources.append(source)
         qpc_source_add = pexpect.spawn(
