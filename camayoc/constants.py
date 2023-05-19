@@ -5,6 +5,9 @@ from camayoc import utils
 MASKED_PASSWORD_OUTPUT = r"\*{8}"
 """Regex that matches password on outputs."""
 
+MASKED_TOKEN_OUTPUT = r"\*{8}"
+"""Regex that matches token on outputs."""
+
 TOKEN_INPUT = "Provide a token for authentication.\r\nToken:"
 """Connection token input prompt."""
 

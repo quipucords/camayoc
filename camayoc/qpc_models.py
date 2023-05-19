@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 
 from camayoc import api
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
+from camayoc.constants import MASKED_TOKEN_OUTPUT
 from camayoc.constants import QPC_CREDENTIALS_PATH
 from camayoc.constants import QPC_HOST_MANAGER_TYPES
 from camayoc.constants import QPC_REPORTS_PATH
@@ -152,7 +153,7 @@ class Credential(QPCObject):
     Host credentials can be created by instantiating a Credential
     object. A unique name and username are provided by default.
     In order to create a valid host credential you must specify either a
-    password or ssh_keyfile.
+    password or ssh_keyfile or token (auth_token).
 
     Example::
         >>> from camayoc import api
@@ -172,6 +173,7 @@ class Credential(QPCObject):
         username=None,
         password=None,
         ssh_keyfile=None,
+        token=None,
         cred_type=None,
         become_method=None,
         become_password=None,
@@ -184,14 +186,15 @@ class Credential(QPCObject):
         uuid4 generated for the name and username.
 
         For a Credential to be successfully created on the QPC server,
-        a password XOR a ssh_keyfile must be provided.
+        a password XOR a ssh_keyfile XOR a token must be provided.
         """
         super().__init__(client=client, _id=_id)
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_CREDENTIALS_PATH
-        self.username = uuid4() if username is None else username
+        self.username = uuid4() if (username is None) and (token is None) else username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
+        self.auth_token = token
         self.cred_type = cred_type
         if become_method is not None:
             self.become_method = become_method
@@ -236,6 +239,7 @@ class Credential(QPCObject):
             )
 
         password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
+        token_matcher = re.compile(MASKED_TOKEN_OUTPUT)
         local_items = self.fields()
         local_keys = local_items.keys()
         other_keys = other.keys()
@@ -243,6 +247,7 @@ class Credential(QPCObject):
         for key in all_keys:
             if key not in [
                 "password",
+                "auth_token",
                 "become_method",
                 "become_user",
                 "become_password",
@@ -251,6 +256,9 @@ class Credential(QPCObject):
                     return False
             if "password" in key and local_items.get(key) is not None:
                 if not password_matcher.match(other.get(key)):
+                    return False
+            if "auth_token" in key and local_items.get(key) is not None:
+                if not token_matcher.match(other.get(key)):
                     return False
             if key == "become_method":
                 if not other.get(key) == local_items.get(key, "sudo"):
