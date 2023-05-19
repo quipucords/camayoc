@@ -17,6 +17,7 @@ import pytest
 
 from camayoc import api
 from camayoc.constants import QPC_SOURCE_TYPES
+from camayoc.constants import QPC_SOURCES_DEFAULT_PORT
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
@@ -27,8 +28,7 @@ from camayoc.tests.qpc.utils import gen_valid_source
 from camayoc.utils import uuid4
 
 CREATE_DATA = ["localhost", "127.0.0.1", "example.com"]
-DEFAULT_PORT = {"network": 22, "vcenter": 443, "satellite": 443}
-INCOMPATIBLE_SRC_TYPES = ("vcenter", "satellite")
+INCOMPATIBLE_SRC_TYPES = ("vcenter", "satellite", "openshift")
 
 
 @pytest.mark.parametrize("src_type", QPC_SOURCE_TYPES)
@@ -445,7 +445,7 @@ def test_port_default(src_type, cleanup, shared_client):
     src.create()
     cleanup.append(src)
     server_src = src.read().json()
-    assert server_src.get("port") == DEFAULT_PORT[src_type]
+    assert server_src.get("port") == QPC_SOURCES_DEFAULT_PORT[src_type]
     assert src.equivalent(server_src)
 
 
