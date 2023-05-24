@@ -2,7 +2,17 @@
 import pytest
 
 from camayoc import api
+from camayoc.data_provider import DataProvider
 from camayoc.tests.qpc.utils import sort_and_delete
+
+
+@pytest.fixture(scope="session")
+def data_provider():
+    dp = DataProvider()
+
+    yield dp
+
+    dp.cleanup()
 
 
 @pytest.fixture(scope="function")
