@@ -64,6 +64,10 @@ credentials:
       # must be the path that exists in the container.
       sshkeyfile: ~/.ssh/id_rsa
       username: root
+    - name: root2
+      type: 'network'
+      username: root
+      password: "mysecretpassword"
     - name: 'vcenter'
       type: 'vcenter'
       password: 'example1'

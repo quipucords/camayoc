@@ -78,14 +78,19 @@ class VCenterCredentialOptions(BaseModel):
     password: str
 
 
-CredentialOptions = Annotated[
+VCenterSatelliteCredentialOptions = Annotated[
     Union[
-        PlainNetworkCredentialOptions,
-        SSHNetworkCredentialOptions,
-        SatelliteCredentialOptions,
         VCenterCredentialOptions,
+        SatelliteCredentialOptions,
     ],
     Field(discriminator="type"),
+]
+
+
+CredentialOptions = Union[
+    PlainNetworkCredentialOptions,
+    SSHNetworkCredentialOptions,
+    VCenterSatelliteCredentialOptions,
 ]
 
 
