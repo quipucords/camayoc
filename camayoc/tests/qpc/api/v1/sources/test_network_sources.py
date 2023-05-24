@@ -29,7 +29,7 @@ MIXED_DATA = CREATE_DATA + HOST_FORMAT_DATA
 
 
 @pytest.mark.parametrize("scan_host", HOST_FORMAT_DATA)
-def test_create_multiple_hosts(shared_client, cleanup, scan_host):
+def test_create_multiple_hosts(shared_client, data_provider, scan_host):
     """Create a Network Source using multiple hosts.
 
     :id: 248f701c-b4d4-408a-80b0-c4863a8007e1
@@ -52,7 +52,7 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
     src.create()
 
     # add the ids to the lists to destroy after the test is done
-    cleanup.extend([cred, src])
+    data_provider.mark_for_cleanup(cred, src)
 
     src.hosts = RESULTING_HOST_FORMAT_DATA
     assert_matches_server(src)
@@ -130,7 +130,7 @@ def test_create_multiple_creds_and_sources(shared_client, data_provider, scan_ho
 
 
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
-def test_negative_update_invalid(shared_client, cleanup, isolated_filesystem, scan_host):
+def test_negative_update_invalid(shared_client, data_provider, scan_host):
     """Create a network source and then update it with invalid data.
 
     :id: e0d72f2b-2490-445e-b646-f06ceb4ad23f
@@ -158,8 +158,7 @@ def test_negative_update_invalid(shared_client, cleanup, isolated_filesystem, sc
     )
     src.create()
 
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([net_cred, sat_cred, src])
+    data_provider.mark_for_cleanup(net_cred, sat_cred, src)
 
     original_data = copy.deepcopy(src.fields())
     src.client = api.Client(api.echo_handler)
@@ -171,7 +170,7 @@ def test_negative_update_invalid(shared_client, cleanup, isolated_filesystem, sc
     assert_source_update_fails(original_data, src)
 
 
-def test_create_empty_str_host_valid(shared_client, cleanup):
+def test_create_empty_str_host_valid(shared_client, data_provider):
     """Create a host manager source and then add host data with empty string.
 
     :id: 4bfbf5b0-81bd-48a3-8C57-bae55590285d
@@ -198,11 +197,10 @@ def test_create_empty_str_host_valid(shared_client, cleanup):
     created_data = src.create()
     created_data = created_data.json()
     assert created_data["hosts"] == hosts_without_empty_str
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([pwd_cred, src])
+    data_provider.mark_for_cleanup(pwd_cred, src)
 
 
-def test_update_empty_str_host_valid(shared_client, cleanup):
+def test_update_empty_str_host_valid(shared_client, data_provider):
     """Create a host manager source and then add host data with empty string.
 
     :id: 850b06ba-8e3f-4699-b24b-e75aad20a63a
@@ -228,8 +226,7 @@ def test_update_empty_str_host_valid(shared_client, cleanup):
     )
     src.create()
 
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([pwd_cred, src])
+    data_provider.mark_for_cleanup(pwd_cred, src)
     src.hosts = empty_str_host_data
     updated_data = src.update().json()
     assert updated_data["hosts"] == hosts_without_empty_str
