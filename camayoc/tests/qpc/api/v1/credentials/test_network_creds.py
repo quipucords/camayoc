@@ -160,7 +160,7 @@ def test_negative_create_key_and_pass(data_provider):
 
 
 @pytest.mark.parametrize("method", QPC_BECOME_METHODS)
-def test_create_become_method(cleanup, shared_client, method):
+def test_create_become_method(data_provider, shared_client, method):
     """Create a network credential that uses become options.
 
     :id: e49e497d-abb7-4d6a-8366-3409e297062a
@@ -179,7 +179,7 @@ def test_create_become_method(cleanup, shared_client, method):
     )
     cred.create()
     # add the id to the list to destroy after the test is done
-    cleanup.append(cred)
+    data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)
 
 
