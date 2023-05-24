@@ -131,12 +131,13 @@ class DataProvider:
         self.scans = ModelWorker(data_provider=self, definitions=scans, model_class=Scan)
         self._stores = ("credentials", "sources", "scans")
 
-    def mark_for_cleanup(self, obj):
-        obj_name = f"manually-added-{obj.name}"
-        for store in self._stores:
-            worker = getattr(self, store)
-            if isinstance(obj, worker._model_class):
-                worker._created_models[obj_name] = obj
+    def mark_for_cleanup(self, *objects):
+        for obj in objects:
+            obj_name = f"manually-added-{obj.name}"
+            for store in self._stores:
+                worker = getattr(self, store)
+                if isinstance(obj, worker._model_class):
+                    worker._created_models[obj_name] = obj
 
     def cleanup(self):
         trash = chain.from_iterable(
