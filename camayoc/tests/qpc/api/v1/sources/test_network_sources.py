@@ -10,13 +10,11 @@
 :upstream: yes
 """
 import copy
-import os
-from pathlib import Path
 
 import pytest
+from littletable import Table
 
 from camayoc import api
-from camayoc import utils
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Source
 from camayoc.tests.qpc.utils import assert_matches_server
@@ -62,7 +60,7 @@ def test_create_multiple_hosts(shared_client, cleanup, scan_host):
 
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", CREATE_DATA)
-def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_filesystem):
+def test_create_multiple_creds(shared_client, data_provider, scan_host):
     """Create a Network Source using multiple credentials.
 
     :id: dcf6ea99-c6b1-493d-9db8-3ec0ea09b5e0
@@ -72,17 +70,10 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
         2) Send POST with data to create network source using the credentials
     :expectedresults: The source is created.
     """
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-
-    ssh_key_cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+    ssh_key_cred = data_provider.credentials.new_one(
+        {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
+        data_only=False,
     )
-    ssh_key_cred.create()
     pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
@@ -93,15 +84,14 @@ def test_create_multiple_creds(shared_client, cleanup, scan_host, isolated_files
         credential_ids=[ssh_key_cred._id, pwd_cred._id],
     )
     src.create()
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([ssh_key_cred, pwd_cred, src])
+    data_provider.mark_for_cleanup(pwd_cred, src)
 
     assert_matches_server(src)
 
 
 @pytest.mark.ssh_keyfile_path
 @pytest.mark.parametrize("scan_host", MIXED_DATA)
-def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host, isolated_filesystem):
+def test_create_multiple_creds_and_sources(shared_client, data_provider, scan_host):
     """Create a Network Source using multiple credentials.
 
     :id: 07f49731-0162-4eb1-b89a-3c95fddad428
@@ -113,17 +103,11 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host, is
            CIDR, individual IPv4 address, etc.)
     :expectedresults: The source is created.
     """
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
 
-    ssh_key_cred = Credential(
-        cred_type=NETWORK_TYPE,
-        client=shared_client,
-        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+    ssh_key_cred = data_provider.credentials.new_one(
+        {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
+        data_only=False,
     )
-    ssh_key_cred.create()
     pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
@@ -138,8 +122,7 @@ def test_create_multiple_creds_and_sources(shared_client, cleanup, scan_host, is
     )
     src.create()
 
-    # add the ids to the lists to destroy after the test is done
-    cleanup.extend([ssh_key_cred, pwd_cred, src])
+    data_provider.mark_for_cleanup(pwd_cred, src)
 
     if isinstance(scan_host, list):
         src.hosts = RESULTING_HOST_FORMAT_DATA

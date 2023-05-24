@@ -9,14 +9,11 @@
 :testtype: functional
 :upstream: yes
 """
-import os
-from pathlib import Path
-
 import pytest
 import requests
+from littletable import Table
 
 from camayoc import api
-from camayoc import utils
 from camayoc.constants import QPC_BECOME_METHODS
 from camayoc.qpc_models import Credential
 from camayoc.tests.qpc.utils import assert_matches_server
@@ -24,7 +21,7 @@ from camayoc.utils import uuid4
 
 
 @pytest.mark.ssh_keyfile_path
-def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesystem):
+def test_update_password_to_sshkeyfile(shared_client, data_provider):
     """Create a network credential using password and switch it to use sshkey.
 
     :id: 6e557092-192b-4f75-babc-abc5774fe965
@@ -38,23 +35,21 @@ def test_update_password_to_sshkeyfile(shared_client, cleanup, isolated_filesyst
     """
     cred = Credential(cred_type="network", client=shared_client, password=uuid4())
     cred.create()
-    # add the id to the list to destroy after the test is done
-    cleanup.append(cred)
+    data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)
+    sshkeyfile_cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=True,
+    )
 
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-
-    cred.ssh_keyfile = f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"
+    cred.ssh_keyfile = sshkeyfile_cred.ssh_keyfile
     cred.password = None
     cred.update()
     assert_matches_server(cred)
 
 
 @pytest.mark.ssh_keyfile_path
-def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
+def test_update_sshkey_to_password(data_provider):
     """Create a network credential using password and switch it to use sshkey.
 
     :id: d24a54b5-3d8c-44e4-a0ae-61584a15b127
@@ -67,15 +62,10 @@ def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
         3) Confirm network credential has been updated.
     :expectedresults: The network credential is updated.
     """
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-
-    cred = Credential(cred_type="network", ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}")
-    cred.create()
-    # add the id to the list to destroy after the test is done
-    cleanup.append(cred)
+    cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=False,
+    )
     assert_matches_server(cred)
     cred.client.response_handler = api.echo_handler
     cred.password = uuid4()
@@ -84,7 +74,7 @@ def test_update_sshkey_to_password(shared_client, cleanup, isolated_filesystem):
     assert_matches_server(cred)
 
 
-def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem):
+def test_negative_update_to_invalid(data_provider):
     """Attempt to update valid credential with invalid data.
 
     :id: c34ea917-ee36-4b93-8907-24a5f87bbed3
@@ -98,40 +88,34 @@ def test_negative_update_to_invalid(shared_client, cleanup, isolated_filesystem)
     :expectedresults: Error codes are returned and the network credentials are
         not updated.
     """
-    sshkeyfile_name = utils.uuid4()
-
-    cred = Credential(
-        cred_type="network",
-        client=shared_client,
-        password=uuid4(),
+    cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=False,
     )
-    cred.create()
-    # add the id to the list to destroy after the test is done
-    cleanup.append(cred)
     assert_matches_server(cred)
 
     cred.client = api.Client(api.echo_handler)
 
+    cred.password = uuid4()
     # Try to update with both sshkeyfile and password
-    cred.ssh_keyfile = f"/sshkeys/{sshkeyfile_name}"
     response = cred.update()
     assert response.status_code == 400
     assert "either a password or an ssh_keyfile, not both" in response.text
-    cred.ssh_keyfile = None
+    cred.password = None
     assert_matches_server(cred)
 
     # Try to update with both sshkeyfile and password missing
-    old = cred.password
-    del cred.password
+    old = cred.ssh_keyfile
+    del cred.ssh_keyfile
     response = cred.update()
     assert response.status_code == 400
     assert "must have either a password or an ssh_keyfile" in response.text
-    cred.password = old
+    cred.ssh_keyfile = old
     assert_matches_server(cred)
 
 
 @pytest.mark.ssh_keyfile_path
-def test_create_with_sshkey(shared_client, cleanup, isolated_filesystem):
+def test_create_with_sshkey(data_provider):
     """Create a network credential with username and sshkey.
 
     :id: ab6fd574-2e9f-46b8-847d-17b23c19fdd2
@@ -139,23 +123,14 @@ def test_create_with_sshkey(shared_client, cleanup, isolated_filesystem):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new network credential entry is created with the data.
     """
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-
-    cred = Credential(
-        cred_type="network",
-        client=shared_client,
-        ssh_keyfile=f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+    cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=False,
     )
-    cred.create()
-    # add the id to the list to destroy after the test is done
-    cleanup.append(cred)
     assert_matches_server(cred)
 
 
-def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
+def test_negative_create_key_and_pass(data_provider):
     """Attempt to create a network credential with sshkey and password.
 
     The request should be met with a 4XX response.
@@ -166,14 +141,16 @@ def test_negative_create_key_and_pass(cleanup, isolated_filesystem):
     :steps: Send POST with necessary data to the credential api endpoint.
     :expectedresults: Error is thrown and no new network credential is created.
     """
-    ssh_keyfile = Path(uuid4())
-    ssh_keyfile.touch()
+    sshkeyfile_cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=True,
+    )
 
     client = api.Client(api.echo_handler)
     cred = Credential(
         cred_type="network",
         client=client,
-        ssh_keyfile=str(ssh_keyfile.resolve()),
+        ssh_keyfile=sshkeyfile_cred.ssh_keyfile,
         password=uuid4(),
     )
     response = cred.create()
