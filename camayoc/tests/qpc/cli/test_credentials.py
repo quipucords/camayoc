@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pexpect
 import pytest
+from littletable import Table
 
 from camayoc import utils
 from camayoc.constants import BECOME_PASSWORD_INPUT
@@ -115,7 +116,7 @@ def test_add_with_username_password_become_password(isolated_filesystem, qpc_ser
 
 
 @pytest.mark.ssh_keyfile_path
-def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
+def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
     """Add an auth with username and sshkeyfile.
 
     :id: 9bfb16a2-5a10-4a01-9f9d-b29445c1f4bf
@@ -128,14 +129,13 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-    #    sshkeyfile = '/sshkeys/id_rsa'
+    sshkeyfile_cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=True,
+    )
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {"name": name, "username": username, "sshkeyfile": sshkeyfile_cred.ssh_keyfile}
     )
 
     cred_show_and_check(
@@ -143,7 +143,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
         generate_show_output(
             {
                 "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
                 "username": username,
             }
         ),
@@ -151,7 +151,7 @@ def test_add_with_username_sshkeyfile(isolated_filesystem, qpc_server_config):
 
 
 @pytest.mark.ssh_keyfile_path
-def test_add_with_username_sshkeyfile_become_password(isolated_filesystem, qpc_server_config):
+def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_config):
     """Add an auth with username, sshkeyfile and become password.
 
     :id: 94a45a9b-cda7-41e7-8be5-caf598917ebb
@@ -164,16 +164,16 @@ def test_add_with_username_sshkeyfile_become_password(isolated_filesystem, qpc_s
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_name = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
+    sshkeyfile_cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=True,
+    )
 
     cred_add_and_check(
         {
             "name": name,
             "username": username,
-            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+            "sshkeyfile": sshkeyfile_cred.ssh_keyfile,
             "become-password": None,
         },
         [(BECOME_PASSWORD_INPUT, utils.uuid4())],
@@ -186,7 +186,7 @@ def test_add_with_username_sshkeyfile_become_password(isolated_filesystem, qpc_s
                 "cred_type": "network",
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+                "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
                 "username": username,
             }
         ),
@@ -404,7 +404,7 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
 
 
 @pytest.mark.ssh_keyfile_path
-def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
+def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
     """Edit the sshkeyfile of a not created auth entry.
 
     :id: 97734b67-3d5e-4add-9282-22844fd436d1
@@ -415,21 +415,18 @@ def test_edit_sshkeyfile_negative(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
+    sshkeyfile_cred = data_provider.credentials.new_one(
+        {"type": "network", "sshkeyfile": Table.is_not_null()},
+        data_only=True,
+    )
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {"name": name, "username": username, "sshkeyfile": sshkeyfile_cred.ssh_keyfile}
     )
 
     name = utils.uuid4()
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
     qpc_cred_edit = pexpect.spawn(
         "{} -v cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"
+            client_cmd, name, sshkeyfile_cred.ssh_keyfile
         )
     )
     qpc_cred_edit.logfile = BytesIO()
