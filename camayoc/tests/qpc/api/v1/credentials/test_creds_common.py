@@ -23,7 +23,7 @@ from camayoc.utils import uuid4
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_create_with_password(cred_type, shared_client, cleanup):
+def test_create_with_password(cred_type, shared_client, data_provider):
     """Create a credential with username and password.
 
     :id: bcc6a15f-a5b5-4939-9602-e5bccf4a75ca
@@ -34,11 +34,11 @@ def test_create_with_password(cred_type, shared_client, cleanup):
     cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
     cred.create()
     # add the credential to the list to destroy after the test is done
-    cleanup.append(cred)
+    data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)
 
 
-def test_create_with_token(shared_client, cleanup):
+def test_create_with_token(shared_client, data_provider):
     """Create a credential with token.
 
     :id: 525096c3-d492-4231-988b-4491009c23b2
@@ -48,13 +48,13 @@ def test_create_with_token(shared_client, cleanup):
     """
     cred = Credential(cred_type="openshift", client=shared_client, token=uuid4())
     cred.create()
-    cleanup.append(cred)
+    data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
 @pytest.mark.parametrize("field", ["name", "username", "password"])
-def test_update(cred_type, field, shared_client, cleanup):
+def test_update(cred_type, field, shared_client, data_provider):
     """Create a credential and then update its name, username or password.
 
     :id: 73ed2ed5-e623-48ec-9ea6-153017464d9c
@@ -69,7 +69,7 @@ def test_update(cred_type, field, shared_client, cleanup):
     cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
     cred.create()
     # add the id to the list to destroy after the test is done
-    cleanup.append(cred)
+    data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)
 
     # give the cred a new value for the field
@@ -79,7 +79,7 @@ def test_update(cred_type, field, shared_client, cleanup):
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_negative_update_to_invalid(cred_type, shared_client, cleanup):
+def test_negative_update_to_invalid(cred_type, shared_client, data_provider):
     """Attempt to update valid credential with invalid data.
 
     :id: d3002d47-daee-4fcc-ac7c-477738ffc447
@@ -99,7 +99,7 @@ def test_negative_update_to_invalid(cred_type, shared_client, cleanup):
 
 @pytest.mark.parametrize("field", ["name", "username", "password"])
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_negative_create_missing_field(cred_type, field, cleanup):
+def test_negative_create_missing_field(cred_type, field, data_provider):
     """Attempt to create a credential missing a name.
 
     The request should be met with a 4XX response.
@@ -124,7 +124,7 @@ def test_negative_create_missing_field(cred_type, field, cleanup):
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_list(cred_type, shared_client, cleanup):
+def test_list(cred_type, shared_client, data_provider):
     """After created, retrieve all credentials with GET to api.
 
     :id: fa05b857-5b01-4388-9226-8dfb5639c815
@@ -142,7 +142,7 @@ def test_list(cred_type, shared_client, cleanup):
     for _ in range(random.randint(2, 7)):
         cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
         cred.create()
-        cleanup.append(cred)
+        data_provider.mark_for_cleanup(cred)
         assert_matches_server(cred)
         local_creds.append(cred)
 
@@ -166,7 +166,7 @@ def test_list(cred_type, shared_client, cleanup):
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_read(cred_type, shared_client, cleanup):
+def test_read(cred_type, shared_client, data_provider):
     """After created, retrieve each credential with GET to api.
 
     :id: 4d381119-2dc3-42b6-9b41-e27307d61fcc
@@ -185,7 +185,7 @@ def test_read(cred_type, shared_client, cleanup):
         cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
         cred.create()
         # add the credential to the list to destroy after the test is done
-        cleanup.append(cred)
+        data_provider.mark_for_cleanup(cred)
 
         # assert_matches_server reads the credential on the server
         assert_matches_server(cred)
@@ -193,7 +193,7 @@ def test_read(cred_type, shared_client, cleanup):
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_delete_basic(cred_type, shared_client, cleanup):
+def test_delete_basic(cred_type, shared_client, data_provider):
     """After creating several credentials, delete one.
 
     :id: e71b521c-59f9-483a-9063-1fbd5087c667
@@ -214,13 +214,12 @@ def test_delete_basic(cred_type, shared_client, cleanup):
         cred = Credential(cred_type=cred_type, client=shared_client, password=uuid4())
         cred.create()
         # add the credential to the list to destroy after the test is done
-        cleanup.append(cred)
+        data_provider.mark_for_cleanup(cred)
         assert_matches_server(cred)
         creds.append(cred)
 
     while creds:
         selected = random.choice(creds)
-        cleanup.remove(selected)
         creds.remove(selected)
         selected.delete()
 
@@ -230,7 +229,7 @@ def test_delete_basic(cred_type, shared_client, cleanup):
 
 
 @pytest.mark.parametrize("obj_type", QPC_SOURCE_TYPES)
-def test_delete__with_dependencies(obj_type, shared_client, cleanup):
+def test_delete_with_dependencies(obj_type, shared_client, data_provider):
     """We should not be allowed to delete a credential if souces depend on it.
 
     :id: cd88325e-d3e3-49a8-b39b-e0e7dffb0d92
@@ -249,12 +248,12 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
     """
     cred = Credential(cred_type=obj_type, client=shared_client, password=uuid4())
     cred.create()
-    cleanup.append(cred)
+    data_provider.mark_for_cleanup(cred)
     srcs = []
     for _ in range(random.randint(3, 6)):
         src = Source(credential_ids=[cred._id], source_type=obj_type, hosts=["localhost"])
         src.create()
-        cleanup.append(src)
+        data_provider.mark_for_cleanup(src)
         srcs.append(src)
 
     echo_client = api.Client(api.echo_handler)
@@ -267,21 +266,19 @@ def test_delete__with_dependencies(obj_type, shared_client, cleanup):
     for i, src in enumerate(srcs):
         if i % 2 == 0:
             src.delete()
-            cleanup.remove(src)
         else:
             new_cred = Credential(cred_type=obj_type, client=shared_client, password=uuid4())
             new_cred.create()
-            cleanup.append(new_cred)
+            data_provider.mark_for_cleanup(new_cred)
             src.credentials = [new_cred._id]
             src.update()
 
     # now we should be able to delete the credential
     cred.delete()
-    cleanup.remove(cred)
 
 
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_negative_update_to_other_type(shared_client, cleanup, cred_type):
+def test_negative_update_to_other_type(shared_client, data_provider, cred_type):
     """Attempt to update valid credential to be another type.
 
     :id: 6ad285a0-7aa9-4ff7-8749-de73b33090c4
