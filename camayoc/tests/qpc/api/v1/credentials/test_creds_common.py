@@ -46,7 +46,7 @@ def test_create_with_token(shared_client, data_provider):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new credential entry is created with the data.
     """
-    cred = Credential(cred_type="openshift", client=shared_client, token=uuid4())
+    cred = Credential(cred_type="openshift", client=shared_client, auth_token=uuid4())
     cred.create()
     data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)

@@ -6,8 +6,8 @@ from typing import Optional
 from urllib.parse import urljoin
 
 from camayoc import api
+from camayoc.constants import MASKED_AUTH_TOKEN_OUTPUT
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
-from camayoc.constants import MASKED_TOKEN_OUTPUT
 from camayoc.constants import QPC_CREDENTIALS_PATH
 from camayoc.constants import QPC_HOST_MANAGER_TYPES
 from camayoc.constants import QPC_REPORTS_PATH
@@ -153,7 +153,7 @@ class Credential(QPCObject):
     Host credentials can be created by instantiating a Credential
     object. A unique name and username are provided by default.
     In order to create a valid host credential you must specify either a
-    password or ssh_keyfile or token (auth_token).
+    password or ssh_keyfile or auth_token.
 
     Example::
         >>> from camayoc import api
@@ -173,7 +173,7 @@ class Credential(QPCObject):
         username=None,
         password=None,
         ssh_keyfile=None,
-        token=None,
+        auth_token=None,
         cred_type=None,
         become_method=None,
         become_password=None,
@@ -191,10 +191,10 @@ class Credential(QPCObject):
         super().__init__(client=client, _id=_id)
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_CREDENTIALS_PATH
-        self.username = uuid4() if (username is None) and (token is None) else username
+        self.username = uuid4() if (username is None) and (auth_token is None) else username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
-        self.auth_token = token
+        self.auth_token = auth_token
         self.cred_type = cred_type
         if become_method is not None:
             self.become_method = become_method
@@ -239,7 +239,7 @@ class Credential(QPCObject):
             )
 
         password_matcher = re.compile(MASKED_PASSWORD_OUTPUT)
-        token_matcher = re.compile(MASKED_TOKEN_OUTPUT)
+        token_matcher = re.compile(MASKED_AUTH_TOKEN_OUTPUT)
         local_items = self.fields()
         local_keys = local_items.keys()
         other_keys = other.keys()
