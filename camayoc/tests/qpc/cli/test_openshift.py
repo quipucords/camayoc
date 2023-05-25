@@ -16,7 +16,7 @@ import tarfile
 import pytest
 
 from camayoc import utils
-from camayoc.constants import TOKEN_INPUT
+from camayoc.constants import AUTH_TOKEN_INPUT
 from camayoc.tests.qpc.cli.utils import config_openshift
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
 from camayoc.tests.qpc.cli.utils import report_download
@@ -98,7 +98,7 @@ def test_openshift_clusters(cluster, qpc_server_config):
     cred_name = utils.uuid4()
     cred_add_and_check(
         {"name": cred_name, "token": None, "type": "openshift"},
-        [(TOKEN_INPUT, cluster["token"])],
+        [(AUTH_TOKEN_INPUT, cluster["token"])],
     )
     source_name = utils.uuid4()
     hostname = cluster["hostname"]

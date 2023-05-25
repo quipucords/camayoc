@@ -5,11 +5,11 @@ from camayoc import utils
 MASKED_PASSWORD_OUTPUT = r"\*{8}"
 """Regex that matches password on outputs."""
 
-MASKED_TOKEN_OUTPUT = r"\*{8}"
-"""Regex that matches token on outputs."""
+MASKED_AUTH_TOKEN_OUTPUT = r"\*{8}"
+"""Regex that matches auth_token on outputs."""
 
-TOKEN_INPUT = "Provide a token for authentication.\r\nToken:"
-"""Connection token input prompt."""
+AUTH_TOKEN_INPUT = "Provide a token for authentication.\r\nToken:"
+"""Connection auth_token input prompt."""
 
 BECOME_PASSWORD_INPUT = (
     "Provide a privilege escalation password to be used when running a "
