@@ -1,4 +1,3 @@
-# coding: utf-8
 """Models for use with the Quipucords API."""
 import re
 from pprint import pformat
@@ -184,14 +183,14 @@ class Credential(QPCObject):
 
         If no arguments are passed, then a api.Client will be initialized and a
         uuid4 generated for the name and username.
-
-        For a Credential to be successfully created on the QPC server,
-        a password XOR a ssh_keyfile XOR a token must be provided.
         """
         super().__init__(client=client, _id=_id)
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_CREDENTIALS_PATH
-        self.username = uuid4() if (username is None) and (auth_token is None) else username
+        if auth_token is None:
+            if username is None:
+                username = uuid4()
+        self.username = username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
         self.auth_token = auth_token
