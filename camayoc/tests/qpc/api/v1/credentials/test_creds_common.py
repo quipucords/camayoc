@@ -78,25 +78,6 @@ def test_update(cred_type, field, shared_client, data_provider):
     assert_matches_server(cred)
 
 
-@pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_negative_update_to_invalid(cred_type, shared_client, data_provider):
-    """Attempt to update valid credential with invalid data.
-
-    :id: d3002d47-daee-4fcc-ac7c-477738ffc447
-    :description: Create valid credentials, then attempt to update to be
-        invalid.
-    :steps:
-        1) Create valid credentials with passwords.
-        2) Update the credentials:
-            a) missing username
-            c) missing password
-    :expectedresults: Error codes are returned and the credentials are
-        not updated.
-    :caseautomation: notautomated
-    """
-    pass
-
-
 @pytest.mark.parametrize("field", ["name", "username", "password"])
 @pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
 def test_negative_create_missing_field(cred_type, field, data_provider):
@@ -275,20 +256,3 @@ def test_delete_with_dependencies(obj_type, shared_client, data_provider):
 
     # now we should be able to delete the credential
     cred.delete()
-
-
-@pytest.mark.parametrize("cred_type", QPC_SOURCE_TYPES)
-def test_negative_update_to_other_type(shared_client, data_provider, cred_type):
-    """Attempt to update valid credential to be another type.
-
-    :id: 6ad285a0-7aa9-4ff7-8749-de73b33090c4
-    :description: Create a valid credential of one type, then attempt to update
-        to be another type.
-    :steps:
-        1) Create valid credential with password
-        2) Update the credential with another type.
-    :expectedresults: Error codes are returned and the credential is
-        not updated.
-    :caseautomation: notautomated
-    """
-    pass
