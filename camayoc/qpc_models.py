@@ -187,9 +187,8 @@ class Credential(QPCObject):
         super().__init__(client=client, _id=_id)
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_CREDENTIALS_PATH
-        if auth_token is None:
-            if username is None:
-                username = uuid4()
+        if auth_token is None and username is None:
+            username = uuid4()
         self.username = username
         self.password = password
         self.ssh_keyfile = ssh_keyfile
