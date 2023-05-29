@@ -64,6 +64,7 @@ QPC_SOURCE_TYPES = (
     "network",
     "satellite",
     "openshift",
+    "ansible",
 )
 """Types of sources that the quipucords server supports."""
 
@@ -72,13 +73,14 @@ QPC_SOURCES_DEFAULT_PORT = {
     "vcenter": 443,
     "satellite": 443,
     "openshift": 6443,
+    "ansible": 443,
 }
 """Default sources port that the quipucords server supports."""
 
 QPC_SCAN_TYPES = ("inspect", "connect")
 """Types of scans that the quipucords server supports."""
 
-QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite", "openshift")
+QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite", "openshift", "ansible")
 """Types of host managers that the quipucords server supports."""
 
 QPC_BECOME_METHODS = ("doas", "dzdo", "ksu", "pbrun", "pfexec", "runas", "su", "sudo")
