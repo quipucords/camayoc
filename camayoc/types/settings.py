@@ -78,10 +78,18 @@ class VCenterCredentialOptions(BaseModel):
     password: str
 
 
-VCenterSatelliteCredentialOptions = Annotated[
+class AnsibleCredentialOptions(BaseModel):
+    name: str
+    type: Literal["ansible"]
+    username: str
+    password: str
+
+
+ServicesCredentialOptions = Annotated[
     Union[
         VCenterCredentialOptions,
         SatelliteCredentialOptions,
+        AnsibleCredentialOptions,
     ],
     Field(discriminator="type"),
 ]
@@ -90,7 +98,7 @@ VCenterSatelliteCredentialOptions = Annotated[
 CredentialOptions = Union[
     PlainNetworkCredentialOptions,
     SSHNetworkCredentialOptions,
-    VCenterSatelliteCredentialOptions,
+    ServicesCredentialOptions,
 ]
 
 
