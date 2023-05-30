@@ -28,13 +28,14 @@ from camayoc.constants import QPC_EAP_RAW_FACTS
 from camayoc.constants import QPC_FUSE_EXTENDED_FACTS
 from camayoc.constants import QPC_FUSE_RAW_FACTS
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
+from camayoc.exceptions import NoMatchingDataDefinitionException
+from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import uuid4
 
 
 @mark_runs_scans
-@pytest.mark.troubleshoot
-def test_scanjob(isolated_filesystem, qpc_server_config, scan):
+def test_scanjob(qpc_server_config, data_provider):
     """Scan a single source type.
 
     :id: 49ae6fef-ea41-4b91-b310-6054678bfbb4
@@ -43,9 +44,25 @@ def test_scanjob(isolated_filesystem, qpc_server_config, scan):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
-    scan_add_and_check({"name": scan["name"], "sources": " ".join(scan["sources"])})
 
-    result = scan_start({"name": scan["name"]})
+    def has_single_source(sources_in_scan):
+        return len(sources_in_scan) == 1
+
+    try:
+        scan = data_provider.scans.defined_one({"sources": has_single_source})
+    except NoMatchingDataDefinitionException:
+        source = data_provider.sources.defined_one({})
+        scan = Scan(name=uuid4())
+        scan_add_and_check(
+            {
+                "name": scan.name,
+                "sources": source.name,
+            }
+        )
+        data_provider.mark_for_cleanup(scan)
+
+    scan_name = scan.name
+    result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
@@ -62,7 +79,7 @@ def test_scanjob(isolated_filesystem, qpc_server_config, scan):
 
 
 @mark_runs_scans
-def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
+def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
     """Scan multiple source types.
 
     :id: 58fde39c-52d8-42ee-af4c-1d75a6dc80b0
@@ -71,13 +88,26 @@ def test_scanjob_with_multiple_sources(isolated_filesystem, qpc_server_config):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
-    scan_name = uuid4()
-    scan_add_and_check(
-        {
-            "name": scan_name,
-            "sources": " ".join([source["name"] for source in config_sources()]),
-        }
-    )
+
+    def has_two_sources(sources_in_scan):
+        return len(sources_in_scan) >= 2
+
+    try:
+        scan = data_provider.scans.defined_one({"sources": has_two_sources})
+    except NoMatchingDataDefinitionException:
+        source_generator = data_provider.sources.defined_many({})
+        source1 = next(source_generator)
+        source2 = next(source_generator)
+        scan = Scan(name=uuid4())
+        scan_add_and_check(
+            {
+                "name": scan.name,
+                "sources": f"{source1.name} {source2.name}",
+            }
+        )
+        data_provider.mark_for_cleanup(scan)
+
+    scan_name = scan.name
     result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
@@ -154,7 +184,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config):
 
 
 @mark_runs_scans
-def test_scanjob_with_enabled_extended_products(isolated_filesystem, qpc_server_config):
+def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider):
     """Perform a scan with extended products enabled.
 
     :id: 2294649e-3833-11e8-b467-0ed5f89f718b
@@ -174,14 +204,15 @@ def test_scanjob_with_enabled_extended_products(isolated_filesystem, qpc_server_
     errors_found = []
     extended_facts = QPC_EAP_EXTENDED_FACTS + QPC_BRMS_EXTENDED_FACTS + QPC_FUSE_EXTENDED_FACTS
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
+    source = data_provider.sources.new_one({"type": "network"}, data_only=False)
     scan_add_and_check(
         {
             "name": scan_name,
-            "sources": source_name,
+            "sources": source.name,
             "enabled-ext-product-search": "jboss_fuse jboss_brms jboss_eap",
         }
     )
+    data_provider.mark_for_cleanup(Scan(name=scan_name))
     result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
@@ -248,7 +279,7 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
 
 
 @mark_runs_scans
-def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
+def test_scanjob_cancel(qpc_server_config, data_provider):
     """Perform a scan and ensure it can be canceled.
 
     :id: b5c11b82-e86e-478b-b885-89a577f81b13
@@ -260,8 +291,10 @@ def test_scanjob_cancel(isolated_filesystem, qpc_server_config):
         3) Try to restart the scan by running ``qpc scan restart --id <id>``
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
+    source = data_provider.sources.new_one({}, data_only=False)
     scan_name = uuid4()
-    scan_add_and_check({"name": scan_name, "sources": config_sources()[0]["name"]})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
+    data_provider.mark_for_cleanup(Scan(name=scan_name))
     result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
