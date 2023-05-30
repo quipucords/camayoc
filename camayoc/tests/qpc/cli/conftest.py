@@ -3,7 +3,6 @@ import pytest
 
 from .utils import clear_all_entities
 from .utils import config_credentials
-from .utils import config_scans
 from .utils import config_sources
 from .utils import cred_add_and_check
 from .utils import setup_qpc
@@ -88,10 +87,4 @@ def credential(request):
 @pytest.fixture(params=config_sources(), ids=name_getter)
 def source(request):
     """Return each source available on the config file."""
-    return request.param
-
-
-@pytest.fixture(params=config_scans(), ids=name_getter)
-def scan(request):
-    """Return each scan available on the config file."""
     return request.param
