@@ -51,7 +51,9 @@ def raise_error_for_status(response):
             ]
         )
         error_msgs += "\n============================================================\n"
-        raise HTTPError(error_msgs)
+        exception = HTTPError(error_msgs)
+        exception.api_error_message = response_message
+        raise exception
 
 
 def echo_handler(response):

@@ -4,11 +4,13 @@ from itertools import cycle
 
 from littletable import Table
 
+from camayoc.api import HTTPError
 from camayoc.config import settings
 from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
+from camayoc.tests.qpc.utils import get_object_id
 from camayoc.tests.qpc.utils import sort_and_delete
 from camayoc.utils import uuid4
 
@@ -41,8 +43,15 @@ class ModelWorker:
         return list(matching)
 
     def _create_model(self, model):
-        # FIXME: what should we do with possible HTTPError ?
-        model.create()
+        try:
+            model.create()
+        except HTTPError as e:
+            if "already exists" not in e.api_error_message:
+                raise
+
+            if not model._id and model.name:
+                model._id = get_object_id(model)
+
         self._created_models[model.name] = model
 
     def _create_dependencies(self, definition, new):
