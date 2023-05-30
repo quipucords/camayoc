@@ -2,6 +2,12 @@
 """Values usable by multiple test modules."""
 from camayoc import utils
 
+VALID_BOOLEAN_CHOICES = ["true", "false"]
+"""Valid qpc/dsc CLI boolean choices."""
+
+VALID_SSL_PROTOCOLS = ["SSLv23", "TLSv1", "TLSv1_1", "TLSv1_2"]
+"""Valid qpc/dsc CLI SSL protocol choices."""
+
 MASKED_PASSWORD_OUTPUT = r"\*{8}"
 """Regex that matches password on outputs."""
 
