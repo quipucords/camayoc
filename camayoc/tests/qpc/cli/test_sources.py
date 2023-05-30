@@ -21,6 +21,8 @@ from camayoc import utils
 from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.constants import QPC_HOST_MANAGER_TYPES
 from camayoc.constants import QPC_SOURCES_DEFAULT_PORT
+from camayoc.constants import VALID_BOOLEAN_CHOICES
+from camayoc.constants import VALID_SSL_PROTOCOLS
 from camayoc.tests.qpc.cli.utils import convert_ip_format
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
 from camayoc.tests.qpc.cli.utils import scan_add_and_check
@@ -35,9 +37,6 @@ from camayoc.utils import client_cmd_name
 ISSUE_449_MARK = pytest.mark.xfail(
     reason="https://github.com/quipucords/quipucords/issues/449", strict=True
 )
-
-QPC_BOOLEAN_VALUES = ("True", "False", "true", "false")
-QPC_SSL_PROTOCOL_VALUES = ("SSLv23", "TLSv1", "TLSv1_1", "TLSv1_2")
 
 VALID_SOURCE_TYPE_HOSTS = (
     ("network", "192.168.0.42"),
@@ -302,7 +301,7 @@ def test_add_with_port_negative(isolated_filesystem, qpc_server_config, source_t
 
 
 @pytest.mark.parametrize("source_type", QPC_HOST_MANAGER_TYPES)
-@pytest.mark.parametrize("ssl_cert_verify", QPC_BOOLEAN_VALUES)
+@pytest.mark.parametrize("ssl_cert_verify", VALID_BOOLEAN_CHOICES)
 def test_add_with_ssl_cert_verify(
     isolated_filesystem, qpc_server_config, source_type, ssl_cert_verify
 ):
@@ -373,15 +372,16 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
     name = utils.uuid4()
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
     if source_type == "network":
-        ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
+        ssl_cert_verify = random.choice(VALID_BOOLEAN_CHOICES)
         expected_error = "Error: Invalid SSL options for network source: ssl_cert_verify"
         exitstatus = 1
     else:
-        ssl_cert_verify = utils.uuid4()
+        ssl_cert_verify = "maybe"
         expected_error = (
             "{} source add: error: argument --ssl-cert-verify: invalid "
-            "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd_name, ssl_cert_verify)
+            "choice: '{}' \\(choose from 'true', 'false'\\)".format(
+                client_cmd_name, ssl_cert_verify
+            )
         )
         exitstatus = 2
     cred_add_and_check(
@@ -407,7 +407,7 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
 
 
 @pytest.mark.parametrize("source_type", QPC_HOST_MANAGER_TYPES)
-@pytest.mark.parametrize("ssl_protocol", QPC_SSL_PROTOCOL_VALUES)
+@pytest.mark.parametrize("ssl_protocol", VALID_SSL_PROTOCOLS)
 def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_type, ssl_protocol):
     """Add a source with cred, hosts and ssl_protocol.
 
@@ -475,7 +475,7 @@ def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config, 
     name = utils.uuid4()
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
     if source_type == "network":
-        ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
+        ssl_protocol = random.choice(VALID_SSL_PROTOCOLS)
         expected_error = "Error: Invalid SSL options for network source: ssl_protocol"
         exitstatus = 1
     else:
@@ -509,7 +509,7 @@ def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config, 
 
 
 @pytest.mark.parametrize("source_type", QPC_HOST_MANAGER_TYPES)
-@pytest.mark.parametrize("disable_ssl", QPC_BOOLEAN_VALUES)
+@pytest.mark.parametrize("disable_ssl", VALID_BOOLEAN_CHOICES)
 def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_type, disable_ssl):
     """Add a source with cred, hosts and disable_ssl.
 
@@ -577,15 +577,14 @@ def test_add_with_disable_ssl_negative(isolated_filesystem, qpc_server_config, s
     name = utils.uuid4()
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
     if source_type == "network":
-        disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
+        disable_ssl = random.choice(VALID_BOOLEAN_CHOICES)
         expected_error = "Error: Invalid SSL options for network source: disable_ssl"
         exitstatus = 1
     else:
-        disable_ssl = utils.uuid4()
+        disable_ssl = "maybe"
         expected_error = (
             "{} source add: error: argument --disable-ssl: invalid "
-            "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd_name, disable_ssl)
+            "choice: '{}' \\(choose from 'true', 'false'\\)".format(client_cmd_name, disable_ssl)
         )
         exitstatus = 2
     cred_add_and_check(
@@ -1321,7 +1320,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     name = utils.uuid4()
     hosts = "127.0.0.1"
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
-    ssl_cert_verify, new_ssl_cert_verify = random.sample(QPC_BOOLEAN_VALUES, 2)
+    ssl_cert_verify, new_ssl_cert_verify = random.sample(VALID_BOOLEAN_CHOICES, 2)
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1406,22 +1405,23 @@ def test_edit_ssl_cert_verify_negative(isolated_filesystem, qpc_server_config, s
         add_command = "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
-        new_ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
+        new_ssl_cert_verify = random.choice(VALID_BOOLEAN_CHOICES)
         expected_error = "Error: Invalid SSL options for network source: ssl_cert_verify"
         exitstatus = 1
     else:
-        ssl_cert_verify = random.choice(QPC_BOOLEAN_VALUES)
+        ssl_cert_verify = random.choice(VALID_BOOLEAN_CHOICES)
         add_command = (
             "{} -v source add --name {} --cred {} --hosts {} --port {} "
             "--ssl-cert-verify {} --type {}".format(
                 client_cmd, name, cred_name, hosts, port, ssl_cert_verify, source_type
             )
         )
-        new_ssl_cert_verify = utils.uuid4()
+        new_ssl_cert_verify = "maybe"
         expected_error = (
             "{} source edit: error: argument --ssl-cert-verify: invalid "
-            "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd_name, new_ssl_cert_verify)
+            "choice: '{}' \\(choose from 'true', 'false'\\)".format(
+                client_cmd_name, new_ssl_cert_verify
+            )
         )
         exitstatus = 2
         show_output_dict["options"] = {"ssl_cert_verify": ssl_cert_verify.lower()}
@@ -1467,7 +1467,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     hosts = "127.0.0.1"
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
-    ssl_protocol, new_ssl_protocol = random.sample(QPC_SSL_PROTOCOL_VALUES, 2)
+    ssl_protocol, new_ssl_protocol = random.sample(VALID_SSL_PROTOCOLS, 2)
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1550,11 +1550,11 @@ def test_edit_ssl_protocol_negative(isolated_filesystem, qpc_server_config, sour
         add_command = "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
-        new_ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
+        new_ssl_protocol = random.choice(VALID_SSL_PROTOCOLS)
         expected_error = "Error: Invalid SSL options for network source: ssl_protocol"
         exitstatus = 1
     else:
-        ssl_protocol = random.choice(QPC_SSL_PROTOCOL_VALUES)
+        ssl_protocol = random.choice(VALID_SSL_PROTOCOLS)
         add_command = (
             "{} -v source add --name {} --cred {} --hosts {} --port {} "
             "--ssl-protocol {} --type {}".format(
@@ -1609,7 +1609,7 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
     name = utils.uuid4()
     hosts = "127.0.0.1"
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
-    disable_ssl, new_disable_ssl = random.sample(QPC_BOOLEAN_VALUES, 2)
+    disable_ssl, new_disable_ssl = random.sample(VALID_BOOLEAN_CHOICES, 2)
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1692,22 +1692,23 @@ def test_edit_disable_ssl_negative(isolated_filesystem, qpc_server_config, sourc
         add_command = "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
-        new_disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
+        new_disable_ssl = random.choice(VALID_BOOLEAN_CHOICES)
         expected_error = "Error: Invalid SSL options for network source: disable_ssl"
         exitstatus = 1
     else:
-        disable_ssl = random.choice(QPC_BOOLEAN_VALUES)
+        disable_ssl = random.choice(VALID_BOOLEAN_CHOICES)
         add_command = (
             "{} -v source add --name {} --cred {} --hosts {} --port {} "
             "--disable-ssl {} --type {}".format(
                 client_cmd, name, cred_name, hosts, port, disable_ssl, source_type
             )
         )
-        new_disable_ssl = utils.uuid4()
+        new_disable_ssl = "maybe"
         expected_error = (
             "{} source edit: error: argument --disable-ssl: invalid "
-            "choice: '{}' \\(choose from 'True', 'False', 'true', "
-            "'false'\\)".format(client_cmd_name, new_disable_ssl)
+            "choice: '{}' \\(choose from 'true', 'false'\\)".format(
+                client_cmd_name, new_disable_ssl
+            )
         )
         exitstatus = 2
         show_output_dict["options"] = {"disable_ssl": disable_ssl.lower()}
