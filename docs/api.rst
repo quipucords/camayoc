@@ -13,7 +13,6 @@ reference for developers, not a gospel.
     api/camayoc.config
     api/camayoc.constants
     api/camayoc.exceptions
-    api/camayoc.inventory
     api/camayoc.qpc_models
     api/camayoc.tests
     api/camayoc.tests.conftest

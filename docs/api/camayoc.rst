@@ -27,6 +27,5 @@ Submodules
    camayoc.config
    camayoc.constants
    camayoc.exceptions
-   camayoc.inventory
    camayoc.qpc_models
    camayoc.utils
