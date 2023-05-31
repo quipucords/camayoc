@@ -1,5 +1,5 @@
-TESTIMONY_TOKENS="caseautomation, casecomponent, caseimportance, caselevel, caseposneg, description, expectedresults, id, requirement, setup, subtype1, subtype2, steps, teardown, testtype, title"
-TESTIMONY_MINIMUM_TOKENS="id, requirement, caseautomation, caselevel, casecomponent, testtype, caseimportance"
+TESTIMONY_TOKENS="caseautomation, casecomponent, caseimportance, caselevel, description, expectedresults, id, steps, testtype"
+TESTIMONY_MINIMUM_TOKENS="id, description, steps, expectedresults"
 PYTEST_OPTIONS=--verbose
 
 help:
