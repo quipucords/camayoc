@@ -8,7 +8,6 @@ type in the config file, the test will skip.
 :casecomponent: api
 :caseimportance: high
 :caselevel: integration
-:requirement: quipucords
 :testtype: functional
 """
 import pytest

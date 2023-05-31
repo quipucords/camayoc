@@ -7,7 +7,6 @@ These tests are parametrized on the inventory listed in the config file.
 :casecomponent: api
 :caseimportance: high
 :caselevel: integration
-:requirement: quipucords
 :testtype: functional
 """
 from pprint import pformat
