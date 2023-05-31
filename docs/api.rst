@@ -12,6 +12,7 @@ reference for developers, not a gospel.
     api/camayoc.command
     api/camayoc.config
     api/camayoc.constants
+    api/camayoc.data_provider
     api/camayoc.exceptions
     api/camayoc.qpc_models
     api/camayoc.tests
@@ -80,5 +81,6 @@ reference for developers, not a gospel.
     api/tests
     api/tests.test_api
     api/tests.test_command
+    api/tests.test_data_provider
     api/tests.test_settings
     api/tests.test_utils
