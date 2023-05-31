@@ -5,7 +5,6 @@
 :casecomponent: cli
 :caseimportance: high
 :caselevel: integration
-:requirement: Sonar
 :testtype: functional
 :upstream: yes
 """
