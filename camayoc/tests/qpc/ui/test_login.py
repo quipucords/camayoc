@@ -6,7 +6,6 @@
 :caseimportance: high
 :caselevel: integration
 :testtype: functional
-:upstream: yes
 """
 from camayoc.ui import Client
 from camayoc.ui import data_factories

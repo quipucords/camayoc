@@ -6,7 +6,6 @@
 :caselevel: integration
 :requirement: OCP
 :testtype: functional
-:upstream: yes
 """
 import json
 import pathlib
