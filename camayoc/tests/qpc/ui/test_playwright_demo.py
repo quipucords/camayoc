@@ -4,7 +4,6 @@
 :casecomponent: ui
 :caseimportance: medium
 :caselevel: integration
-:requirement: Sonar
 :testtype: functional
 :upstream: yes
 """
