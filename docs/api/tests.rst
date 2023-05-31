@@ -14,5 +14,6 @@ Submodules
 
    tests.test_api
    tests.test_command
+   tests.test_data_provider
    tests.test_settings
    tests.test_utils
