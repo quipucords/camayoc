@@ -4,7 +4,6 @@
 :casecomponent: cli
 :caseimportance: high
 :caselevel: integration
-:requirement: OCP
 :testtype: functional
 """
 import json
