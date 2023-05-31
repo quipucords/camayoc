@@ -6,7 +6,6 @@
 :caseimportance: high
 :caselevel: integration
 :testtype: functional
-:upstream: yes
 """
 import pytest
 

@@ -9,7 +9,6 @@ These tests are parametrized on the inventory listed in the config file.
 :caselevel: integration
 :requirement: quipucords
 :testtype: functional
-:upstream: yes
 """
 from pprint import pformat
 

@@ -5,7 +5,6 @@
 :caseimportance: medium
 :caselevel: integration
 :testtype: functional
-:upstream: yes
 """
 import shutil
 import tarfile

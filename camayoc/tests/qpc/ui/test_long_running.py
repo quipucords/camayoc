@@ -5,7 +5,6 @@
 :caseimportance: low
 :caselevel: system
 :testtype: functional
-:upstream: yes
 """
 import inspect
 import random

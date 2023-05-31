@@ -10,7 +10,6 @@ type in the config file, the test will skip.
 :caselevel: integration
 :requirement: quipucords
 :testtype: functional
-:upstream: yes
 """
 import pytest
 
