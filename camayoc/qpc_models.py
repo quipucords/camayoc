@@ -457,6 +457,7 @@ class Scan(QPCObject):
                 definition_key = "source_ids"
                 definition_value = dependencies
             definition_data[definition_key] = definition_value
+        definition_data.pop("expected_data")
         return cls(**definition_data)
 
     def delete(self, **kwargs):
@@ -687,10 +688,10 @@ class Report(QPCObject):
             `request.request()` method.
         """
         path = urljoin(self.endpoint, "merge/")
-        payload = {"jobs": ids}
+        payload = {"reports": ids}
         response = self.client.put(path, payload, **kwargs)
         if response.status_code in range(200, 203):
-            self._id = response.json().get("id")
+            self._id = response.json().get("report_id")
         return response
 
     def details(self, **kwargs):
