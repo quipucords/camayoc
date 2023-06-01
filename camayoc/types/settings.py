@@ -106,19 +106,20 @@ class SourceOptions(BaseModel):
     options: Optional[SourceOptionsOptions]
 
 
+class ExpectedDistributionData(BaseModel):
+    name: str
+    version: str
+    release: str
+
+
 class ExpectedScanData(BaseModel):
-    hostname: str
-    credentials: list[str]
-    ipv4: str
-    hypervisor: str  # FIXME: should be enum
-    distribution: dict[str, str]  # FIXME: should be strongly-types
-    products: dict[str, dict[str, str]]  # FIXME: should be strongly-types
+    distribution: Optional[ExpectedDistributionData]
 
 
 class ScanOptions(BaseModel):
     name: str
     sources: list[str]
-    expected_data: Optional[list[ExpectedScanData]]
+    expected_data: Optional[dict[str, ExpectedScanData]]
 
 
 class Configuration(BaseModel):

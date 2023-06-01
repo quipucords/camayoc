@@ -114,35 +114,17 @@ scans:
           - 'myfav'
           - 'vcenter'
       expected_data:
-          - hostname: jbossamq-rhel-5-vc
-            credentials:
-                - root
-            ipv4: 10.10.181.14
-            hypervisor: vcenter
-            distribution:
-                name: 'Red Hat Enterprise Linux'
-                version: '5.9'
-            products:
-                jbossamq:
-                    install-process: zip
-                    version: '6.2.0'
-                openjdk:
-                    version: '1.7'
-          - hostname: jbossamq-rhel-6-vc
-            credentials:
-                - root
-            ipv4: 10.10.181.132
-            hypervisor: vcenter
-            distribution:
-                # Name of OS should be substring of name found
-                # with quipucords
-                name: 'Red Hat Enterprise Linux'
-                # version should be substring of version found
-                # in /etc/redhat-release
-                version: '6.9'
-            products:
-                jbossamq:
-                    install-process: zip
-                    version: '7.0.2'
-                openjdk:
-                    version: '1.8'
+          jbossamq-rhel-5-vc:
+              distribution:
+                  # Name of OS should be substring of name found
+                  # with quipucords
+                  name: 'Red Hat Enterprise Linux'
+                  # version should be substring of version found
+                  # in /etc/redhat-release
+                  version: '5.9'
+                  release: ''
+          jbossamq-rhel-6-vc:
+              distribution:
+                  name: 'Red Hat Enterprise Linux'
+                  version: '6.9'
+                  release: ''

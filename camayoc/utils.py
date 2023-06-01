@@ -3,7 +3,6 @@
 import base64
 import contextlib
 import json
-import operator
 import os
 import shutil
 import tempfile
@@ -19,8 +18,14 @@ _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
 """Environment variables related to the XDG Base Directory specification."""
 
 
-name_getter = operator.itemgetter("name")
-"""Generate test IDs by fetching the ``name`` item."""
+def name_getter(obj):
+    """Generate test IDs by fetching the ``name`` item."""
+    try:
+        name = obj.get("name")
+        if not name:
+            raise KeyError
+    except (AttributeError, KeyError):
+        return obj.name
 
 
 client_cmd = settings.quipucords_cli.executable
