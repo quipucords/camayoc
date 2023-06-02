@@ -15,11 +15,10 @@ import pytest
 import camayoc.tests.qpc.api.v1.utils as util
 from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.qpc_models import ScanJob
-from camayoc.tests.qpc.utils import mark_runs_scans
 
 
 @pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
-@mark_runs_scans
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_pause_cancel(shared_client, cleanup, source_type):
     """Run a scan on a system and confirm we can pause and cancel it.
@@ -47,7 +46,7 @@ def test_pause_cancel(shared_client, cleanup, source_type):
 
 
 @pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
-@mark_runs_scans
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_type", QPC_SOURCE_TYPES)
 def test_restart(shared_client, cleanup, source_type):
     """Run a scan on a system and confirm we can pause and restart it.

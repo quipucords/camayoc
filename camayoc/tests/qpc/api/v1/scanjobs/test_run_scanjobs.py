@@ -26,12 +26,11 @@ from camayoc.qpc_models import Scan
 from camayoc.qpc_models import ScanJob
 from camayoc.tests.qpc.api.v1.conftest import scan_list
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
-from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.types.settings import ScanOptions
 
 
 @pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
-@mark_runs_scans
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_scan_complete(scan_info: ScanOptions):
     """Test that each scan completed without failures.
@@ -66,7 +65,7 @@ def test_scan_complete(scan_info: ScanOptions):
         )
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_scan_task_results(data_provider, scan_info: ScanOptions):
     """Test the scan task results of each scan.
@@ -111,7 +110,7 @@ def test_scan_task_results(data_provider, scan_info: ScanOptions):
         assert num_scanned == (sys_count - num_failed - num_unreachable), assertion_error_message
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_disabled_optional_products_facts(data_provider):
     """Test scan jobs from scans with disabled optional products.
 
@@ -174,7 +173,7 @@ def test_disabled_optional_products_facts(data_provider):
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_disabled_optional_products(data_provider):
     """Test scan jobs from scans with disabled_optional_products.
 
@@ -223,7 +222,7 @@ def test_disabled_optional_products(data_provider):
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_enabled_extended_product_search_facts(data_provider):
     """Test scan jobs from scans with enabled extended products search.
 
@@ -296,7 +295,7 @@ def test_enabled_extended_product_search_facts(data_provider):
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_enabled_extended_product_search(data_provider):
     """Test scan jobs from scans with enabled extended product search.
 
