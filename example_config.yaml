@@ -3,8 +3,7 @@
 # with and camayoc itself.
 
 # Camayoc test framework settings
-camayoc:
-    run_scans: false
+camayoc: {}
 
 # Quipucords / Discovery server
 # Settings below allow you to connect to quipucords development server

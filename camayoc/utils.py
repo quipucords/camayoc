@@ -37,11 +37,6 @@ client_cmd_name = settings.quipucords_cli.display_name
 # or even when we finally support running tests with proper dsc.
 
 
-def run_scans():
-    """Check if scans should be run."""
-    return bool(settings.camayoc.run_scans)
-
-
 def get_qpc_url():
     """Return the base url for the qpc server."""
     cfg = get_config().get("qpc", {})

@@ -145,8 +145,6 @@ def test_merge_reports_from_scanjob(data_provider):
     scan_generator = data_provider.scans.new_many({}, new_dependencies=False, data_only=False)
     scan1 = next(scan_generator)
     scan2 = next(scan_generator)
-    # if either scan is None, they were not in the config file or the
-    # tests have been ran with RUN_SCANS=False and there are no scan results
     if scan1.equivalent(scan2):
         pytest.xfail(reason="Config file does not have two different scans.")
 
