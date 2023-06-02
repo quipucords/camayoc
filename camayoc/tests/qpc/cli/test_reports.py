@@ -25,8 +25,10 @@ from .utils import report_merge_status
 from .utils import scan_add_and_check
 from .utils import scan_job
 from .utils import scan_start
+from .utils import setup_qpc
 from .utils import wait_for_report_merge
 from .utils import wait_for_scan
+from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
 from camayoc.utils import uuid4
 
@@ -282,13 +284,14 @@ def assert_json_report_fields(report_fields, expected_fields=JSON_DEPLOYMENTS_RE
 
 
 @pytest.fixture(autouse=True, scope="module")
-def setup_reports_prerequisites():
+def setup_reports_prerequisites(data_provider):
     """Perform a couple of scans to generate reports from.
 
     Make sure there are two or more network sources on the config file and
     randomly choose two of them. Next, perform a scan for each network source
     and store the information about it on the global ``_SCANS`` list.
     """
+    setup_qpc()
     network_sources = [source for source in config_sources() if source["type"] == "network"]
     random.shuffle(network_sources)
     network_sources = network_sources[:2]
@@ -299,8 +302,10 @@ def setup_reports_prerequisites():
         )
 
     for source in network_sources:
-        scan = {"name": uuid4(), "sources": [source]}
-        scan_add_and_check({"name": scan["name"], "sources": source["name"]})
+        real_source = data_provider.sources.new_one({"name": source["name"]}, data_only=False)
+        scan = {"name": uuid4(), "sources": [real_source]}
+        scan_add_and_check({"name": scan["name"], "sources": real_source.name})
+        data_provider.mark_for_cleanup(Scan(name=scan["name"]))
 
         result = scan_start({"name": scan["name"]})
         match = re.match(r'Scan "(\d+)" started.', result)
@@ -402,8 +407,8 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
     assert len(report["sources"]) == len(scan["sources"])
     for report_source, scan_source in zip(report["sources"], scan["sources"]):
         assert "server_id" in report_source
-        assert report_source["source_name"] == scan_source["name"]
-        assert report_source["source_type"] == scan_source["type"]
+        assert report_source["source_name"] == scan_source.name
+        assert report_source["source_type"] == scan_source.source_type
         for facts in report_source["facts"]:
             report_facts = set(facts.keys())
             expected_facts = set(FACTS)
