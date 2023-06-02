@@ -30,11 +30,10 @@ from camayoc.constants import QPC_FUSE_RAW_FACTS
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
 from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Scan
-from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.utils import uuid4
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob(qpc_server_config, data_provider):
     """Scan a single source type.
 
@@ -78,7 +77,7 @@ def test_scanjob(qpc_server_config, data_provider):
         assert report.get("sources", []) != []
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
     """Scan multiple source types.
 
@@ -125,7 +124,7 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
 
 
 @pytest.mark.skip(reason="Skipped until Quipucords Issue #2038 us resolved")
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config):
     """Perform a scan with optional products disabled.
 
@@ -183,7 +182,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config):
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider):
     """Perform a scan with extended products enabled.
 
@@ -243,7 +242,7 @@ def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider
 
 
 @pytest.mark.skip(reason="Skipping until Quipucords Issue #2040 resoloved")
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob_restart(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be paused and restarted.
 
@@ -278,7 +277,7 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
         assert report.get("sources", []) != []
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob_cancel(qpc_server_config, data_provider):
     """Perform a scan and ensure it can be canceled.
 
@@ -309,7 +308,7 @@ def test_scanjob_cancel(qpc_server_config, data_provider):
 
 
 @pytest.mark.skip(reason="Skipping until Quipucords Issue #2040 resoloved")
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     """Perform a scan and ensure it can be canceled even when paused.
 

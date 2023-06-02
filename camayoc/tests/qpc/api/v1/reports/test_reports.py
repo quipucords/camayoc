@@ -21,7 +21,6 @@ from camayoc.qpc_models import ScanJob
 from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
 from camayoc.tests.qpc.api.v1.conftest import scan_list
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
-from camayoc.tests.qpc.utils import mark_runs_scans
 from camayoc.types.settings import ScanOptions
 
 
@@ -61,7 +60,7 @@ def validate_json_response(response):
         assert False, 'Report is not expected content-type "json".'
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_report_content_consistency(data_provider):
     """Confirm that a report is created with the correct content type.
 
@@ -125,7 +124,7 @@ def assert_merge_fails(ids, errors_found, report):
     return errors_found
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_merge_reports_from_scanjob(data_provider):
     """Confirm that a report is created from valid scan job identifiers.
 
@@ -186,7 +185,7 @@ def test_merge_reports_from_scanjob(data_provider):
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 def test_merge_reports_negative():
     """Confirm that merging invalid scan job ids does not result in a report.
 
@@ -223,7 +222,7 @@ def test_merge_reports_negative():
 
 
 @pytest.mark.skip("Skipped until Middleware are handled by Camayoc")
-@mark_runs_scans
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_products_found_deployment_report(data_provider, scan_info):
     """Test that products reported as present are correct for the source.
@@ -306,7 +305,7 @@ def test_products_found_deployment_report(data_provider, scan_info):
     )
 
 
-@mark_runs_scans
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
 def test_OS_found_deployment_report(data_provider, scan_info: ScanOptions):
     """Test that OS identified are correct for the source.

@@ -2,15 +2,11 @@
 import hashlib
 from pathlib import Path
 
-import pytest
-
 from camayoc import api
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
 from camayoc.utils import uuid4
-
-mark_runs_scans = pytest.mark.skipif(False, reason="We are always running scans now")
 
 
 def assert_matches_server(qpcobject):
