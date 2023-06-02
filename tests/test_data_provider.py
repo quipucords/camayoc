@@ -157,7 +157,8 @@ def test_automatic_cleanup():
     dp = DataProvider(credentials=CREDENTIALS, sources=SOURCES, scans=SCANS)
     with mock.patch("camayoc.api.Client"):
         with mock.patch.object(dp.credentials._model_class, "delete") as mock_delete:
-            dp.credentials.new_one({"type": "network"}, data_only=False)
+            cred = dp.credentials.new_one({"type": "network"}, data_only=False)
+            cred._id = 123
             mock_delete.return_value = mock.Mock
             mock_delete.return_value.status_code = mock.PropertyMock(return_value=200)
             dp.cleanup()
@@ -169,6 +170,7 @@ def test_mark_for_cleanup():
     with mock.patch("camayoc.api.Client"):
         with mock.patch.object(dp.credentials._model_class, "delete") as mock_delete:
             cred = dp.credentials.new_one({"type": "network"}, data_only=True)
+            cred._id = 123
             mock_delete.return_value = mock.Mock
             mock_delete.return_value.status_code = mock.PropertyMock(return_value=200)
             dp.cleanup()

@@ -168,8 +168,11 @@ def sort_and_delete(trash):
             obj.client = client
             # Get object id based on the name.
             # This allows us to clean up objects created from UI and CLI.
+            # If object id could not be found, assume object was already deleted.
             if not obj._id and obj.name:
                 obj._id = get_object_id(obj)
+            if obj._id is None:
+                continue
             # Only assert that we do not hit an internal server error, in case
             # for some reason the object was already cleaned up by the test
             response = obj.delete()
