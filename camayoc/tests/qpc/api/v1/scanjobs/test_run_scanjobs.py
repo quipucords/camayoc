@@ -9,6 +9,7 @@ These tests are parametrized on the inventory listed in the config file.
 :caselevel: integration
 :testtype: functional
 """
+import random
 from pprint import pformat
 
 import pytest
@@ -20,15 +21,19 @@ from camayoc.constants import QPC_EAP_EXTENDED_FACTS
 from camayoc.constants import QPC_EAP_RAW_FACTS
 from camayoc.constants import QPC_FUSE_EXTENDED_FACTS
 from camayoc.constants import QPC_FUSE_RAW_FACTS
-from camayoc.tests.qpc.api.v1.conftest import get_scan_result
+from camayoc.constants import QPC_OPTIONAL_PRODUCTS
+from camayoc.qpc_models import Scan
+from camayoc.qpc_models import ScanJob
 from camayoc.tests.qpc.api.v1.conftest import scan_list
+from camayoc.tests.qpc.api.v1.utils import wait_until_state
 from camayoc.tests.qpc.utils import mark_runs_scans
+from camayoc.types.settings import ScanOptions
 
 
 @pytest.mark.skip(reason="Test is flaky. Skipping until Quipucords Issue #2040 resoloved")
 @mark_runs_scans
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_scan_complete(scan_info):
+def test_scan_complete(scan_info: ScanOptions):
     """Test that each scan completed without failures.
 
     :id: 4e7a608e-a18d-48db-b263-a0d5474385dd
@@ -36,7 +41,11 @@ def test_scan_complete(scan_info):
     :steps: Check the final status of the scan.
     :expectedresults: Scans should complete and report their finished status.
     """
-    result = get_scan_result(scan_info["name"])
+
+    def get_scan_result(scan_name):
+        return {}
+
+    result = get_scan_result(scan_info.name)
     if result["final_status"] != "completed":
         raise AssertionError(
             "Scan did not complete. Its final status was {status}.\n"
@@ -59,7 +68,7 @@ def test_scan_complete(scan_info):
 
 @mark_runs_scans
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_scan_task_results(scan_info):
+def test_scan_task_results(data_provider, scan_info: ScanOptions):
     """Test the scan task results of each scan.
 
     :id: 8087fdc9-6626-476a-a11a-4783cbf501a0
@@ -71,22 +80,26 @@ def test_scan_task_results(scan_info):
        and we get an accurate count of how many were reached and how many
        failed for all tasks.
     """
-    result = get_scan_result(scan_info["name"])
-    assertion_error_message = "Details of failed scan : {0}".format(pformat(result))
-    task_results = result.get("task_results")
-    scan = result.get("scan_results")
+    scan = data_provider.scans.defined_one({"name": scan_info.name})
+    scanjob = ScanJob(scan_id=scan._id)
+    scanjob.create()
+    wait_until_state(scanjob, state="stopped")
+    assertion_error_message = "Details of failed scan : {0}".format(pformat(scanjob.read().json()))
+
+    task_results = scanjob.read().json().get("tasks")
+    scan_data = scanjob.read().json()
 
     # assert count is correct for entire scan
-    sys_count = scan.get("systems_count", 0)
-    num_failed = scan.get("systems_failed", 0)
-    num_scanned = scan.get("systems_scanned", 0)
-    num_unreachable = scan.get("systems_unreachable", 0)
+    sys_count = scan_data.get("systems_count", 0)
+    num_failed = scan_data.get("systems_failed", 0)
+    num_scanned = scan_data.get("systems_scanned", 0)
+    num_unreachable = scan_data.get("systems_unreachable", 0)
     assert num_scanned == (sys_count - num_failed - num_unreachable), assertion_error_message
 
     if not task_results:
         pytest.xfail(
             reason="No task results were returned "
-            "from scan named {scan_name}".format(scan_name=scan_info["name"])
+            "from scan named {scan_name}".format(scan_name=scan_info.name)
         )
 
     for task in task_results:
@@ -99,8 +112,7 @@ def test_scan_task_results(scan_info):
 
 
 @mark_runs_scans
-@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_disabled_optional_products_facts(scan_info):
+def test_disabled_optional_products_facts(data_provider):
     """Test scan jobs from scans with disabled optional products.
 
     :id: 6f91ea5c-32b9-11e8-b467-0ed5f89f718b
@@ -117,44 +129,53 @@ def test_disabled_optional_products_facts(scan_info):
                 dictionaries
     :expectedresults: No facts are collected for disabled products
     """
+    products_to_disable = random.sample(
+        QPC_OPTIONAL_PRODUCTS, k=random.randint(1, len(QPC_OPTIONAL_PRODUCTS))
+    )
+    disabled_optional_products = {name: True for name in products_to_disable}
+
+    source = data_provider.sources.new_one({"type": "network"}, data_only=False)
+    scan = Scan(source_ids=[source._id], disabled_optional_products=disabled_optional_products)
+    scan.create()
+    data_provider.mark_for_cleanup(scan)
+    scanjob = ScanJob(scan_id=scan._id)
+    scanjob.create()
+    wait_until_state(scanjob, state="stopped")
+
     errors_found = []
-    scan = get_scan_result(scan_info["name"])
     facts_to_ignore = []
-    disabled_optional_products = scan_info.get("disabled_optional_products")
-    if disabled_optional_products:
-        # Build the list of facts that should not be in inspection results
-        for product in disabled_optional_products.keys():
-            if product == "jboss_eap":
-                facts_to_ignore += QPC_EAP_RAW_FACTS
-            elif product == "jboss_fuse":
-                facts_to_ignore += QPC_FUSE_RAW_FACTS
-            elif product == "jboss_brms":
-                facts_to_ignore += QPC_BRMS_RAW_FACTS
-        # grab the inspection results of the scan
-        inspection_results = scan.get("inspection_results")
-        if not inspection_results:
-            pytest.xfail(
-                reason="No inspection results were returned "
-                "from scan named {scan_name}".format(scan_name=scan_info["name"])
-            )
-        for system in inspection_results:
-            fact_dicts = system.get("facts")
-            # grab the facts for each system
-            for dictionary in fact_dicts:
-                for fact in facts_to_ignore:
-                    if fact in dictionary.values():
-                        errors_found.append(
-                            "Found fact {fact_name} that should have been "
-                            "DISABLED on scan named {scan_name}".format(
-                                fact_name=fact, scan_name=scan_info["name"]
-                            )
+    # Build the list of facts that should not be in inspection results
+    for product in disabled_optional_products.keys():
+        if product == "jboss_eap":
+            facts_to_ignore += QPC_EAP_RAW_FACTS
+        elif product == "jboss_fuse":
+            facts_to_ignore += QPC_FUSE_RAW_FACTS
+        elif product == "jboss_brms":
+            facts_to_ignore += QPC_BRMS_RAW_FACTS
+    # grab the inspection results of the scan
+    inspection_results = scanjob.inspection_results().json().get("results")
+    if not inspection_results:
+        pytest.xfail(
+            reason="No inspection results were returned "
+            "from scan named {scan_name}".format(scan_name=scan.name)
+        )
+    for system in inspection_results:
+        fact_dicts = system.get("facts")
+        # grab the facts for each system
+        for dictionary in fact_dicts:
+            for fact in facts_to_ignore:
+                if fact in dictionary.values():
+                    errors_found.append(
+                        "Found fact {fact_name} that should have been "
+                        "DISABLED on scan named {scan_name}".format(
+                            fact_name=fact, scan_name=scan.name
                         )
+                    )
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
 @mark_runs_scans
-@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_disabled_optional_products(scan_info):
+def test_disabled_optional_products(data_provider):
     """Test scan jobs from scans with disabled_optional_products.
 
     :id: 77aa1f0c-32be-11e8-b467-0ed5f89f718b
@@ -169,33 +190,41 @@ def test_disabled_optional_products(scan_info):
     :expectedresults: The values for disabled products specified in the
         config file are the same as those returned from the api
     """
-    scan = get_scan_result(scan_info["name"])
+    products_to_disable = random.sample(
+        QPC_OPTIONAL_PRODUCTS, k=random.randint(1, len(QPC_OPTIONAL_PRODUCTS))
+    )
+    disabled_optional_products = {name: True for name in products_to_disable}
+
+    source = data_provider.sources.new_one({"type": "network"}, data_only=False)
+    scan = Scan(source_ids=[source._id], disabled_optional_products=disabled_optional_products)
+    scan.create()
+    data_provider.mark_for_cleanup(scan)
+    scanjob = ScanJob(scan_id=scan._id)
+    scanjob.create()
+    wait_until_state(scanjob, state="stopped")
+
     errors_found = []
-    # grab disabled products from config file
-    specified_optional_products = scan_info.get("disabled_optional_products")
-    if specified_optional_products:
-        # grab disabled products from results
-        returned_optional_products = (
-            scan.get("scan_results").get("options").get("disabled_optional_products")
-        )
-        for product in specified_optional_products:
-            if specified_optional_products[product] != returned_optional_products[product]:
-                errors_found.append(
-                    "The product {product_name} should have been set to "
-                    "{product_status} but was returned with a value of "
-                    "{returned_status} on scan named {scan_name}".format(
-                        product_name=product,
-                        product_status=specified_optional_products[product],
-                        returned_status=returned_optional_products[product],
-                        scan_name=scan_info["name"],
-                    )
+    # grab disabled products from results
+    returned_optional_products = (
+        scanjob.read().json().get("options").get("disabled_optional_products")
+    )
+    for product in disabled_optional_products.keys():
+        if disabled_optional_products[product] != returned_optional_products[product]:
+            errors_found.append(
+                "The product {product_name} should have been set to "
+                "{product_status} but was returned with a value of "
+                "{returned_status} on scan named {scan_name}".format(
+                    product_name=product,
+                    product_status=disabled_optional_products[product],
+                    returned_status=returned_optional_products[product],
+                    scan_name=scan.name,
                 )
+            )
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
 @mark_runs_scans
-@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_enabled_extended_product_search_facts(scan_info):
+def test_enabled_extended_product_search_facts(data_provider):
     """Test scan jobs from scans with enabled extended products search.
 
     :id: 2815ca08-376f-11e8-b467-0ed5f89f718b
@@ -213,53 +242,62 @@ def test_enabled_extended_product_search_facts(scan_info):
                 the inspection results
     :expectedresults: Facts are collected for enabled extended products
     """
+    products_to_enable_extended_search = random.sample(
+        QPC_OPTIONAL_PRODUCTS, k=random.randint(1, len(QPC_OPTIONAL_PRODUCTS))
+    )
+    enabled_extended_products = {name: True for name in products_to_enable_extended_search}
+
+    source = data_provider.sources.new_one({"type": "network"}, data_only=False)
+    scan = Scan(source_ids=[source._id], enabled_extended_product_search=enabled_extended_products)
+    scan.create()
+    data_provider.mark_for_cleanup(scan)
+    scanjob = ScanJob(scan_id=scan._id)
+    scanjob.create()
+    wait_until_state(scanjob, state="stopped")
+
     errors_found = []
-    scan = get_scan_result(scan_info["name"])
     facts_to_include = []
-    enabled_extended_products = scan_info.get("enabled_extended_product_search")
-    if enabled_extended_products:
-        # Build the list of extended facts that should be collected
-        for product in enabled_extended_products.keys():
-            if product == "jboss_eap":
-                facts_to_include += QPC_EAP_EXTENDED_FACTS
-            elif product == "jboss_fuse":
-                facts_to_include += QPC_FUSE_EXTENDED_FACTS
-            elif product == "jboss_brms":
-                facts_to_include += QPC_BRMS_EXTENDED_FACTS
-        # grab the inspection results of the scan
-        inspection_results = scan.get("inspection_results")
-        if not inspection_results:
-            pytest.xfail(
-                reason="No inspection results were returned from "
-                "scan named {scan_name}".format(scan_name=scan_info["name"])
-            )
-        for system in inspection_results:
-            facts_not_found = []
-            # grab the facts for each system
-            fact_dicts = system.get("facts")
-            for fact in facts_to_include:
-                fact_found = False
-                for dictionary in fact_dicts:
-                    if fact in dictionary.values():
-                        fact_found = True
-                if not fact_found:
-                    facts_not_found.append(fact)
-            if len(facts_not_found) != 0:
-                errors_found.append(
-                    "The facts {facts} should have been ENABLED on "
-                    "the scan named {scan_name} but were not found: "
-                    "on the system {system_name}.".format(
-                        facts=facts_not_found,
-                        scan_name=scan_info["name"],
-                        system_name=system.get("name"),
-                    )
+    # Build the list of extended facts that should be collected
+    for product in enabled_extended_products.keys():
+        if product == "jboss_eap":
+            facts_to_include += QPC_EAP_EXTENDED_FACTS
+        elif product == "jboss_fuse":
+            facts_to_include += QPC_FUSE_EXTENDED_FACTS
+        elif product == "jboss_brms":
+            facts_to_include += QPC_BRMS_EXTENDED_FACTS
+    # grab the inspection results of the scan
+    inspection_results = scanjob.inspection_results().json().get("results")
+    if not inspection_results:
+        pytest.xfail(
+            reason="No inspection results were returned from "
+            "scan named {scan_name}".format(scan_name=scan.name)
+        )
+    for system in inspection_results:
+        facts_not_found = []
+        # grab the facts for each system
+        fact_dicts = system.get("facts")
+        for fact in facts_to_include:
+            fact_found = False
+            for dictionary in fact_dicts:
+                if fact in dictionary.values():
+                    fact_found = True
+            if not fact_found:
+                facts_not_found.append(fact)
+        if len(facts_not_found) != 0:
+            errors_found.append(
+                "The facts {facts} should have been ENABLED on "
+                "the scan named {scan_name} but were not found: "
+                "on the system {system_name}.".format(
+                    facts=facts_not_found,
+                    scan_name=scan.name,
+                    system_name=system.get("name"),
                 )
+            )
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
 @mark_runs_scans
-@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_enabled_extended_product_search(scan_info):
+def test_enabled_extended_product_search(data_provider):
     """Test scan jobs from scans with enabled extended product search.
 
     :id: 597235de-376d-11e8-b467-0ed5f89f718b
@@ -274,25 +312,35 @@ def test_enabled_extended_product_search(scan_info):
     :expectedresults: The values for extended products specified in the
         config file are the same as those returned from the api
     """
-    scan = get_scan_result(scan_info["name"])
+    products_to_enable_extended_search = random.sample(
+        QPC_OPTIONAL_PRODUCTS, k=random.randint(1, len(QPC_OPTIONAL_PRODUCTS))
+    )
+    enabled_extended_products = {name: True for name in products_to_enable_extended_search}
+
+    source = data_provider.sources.new_one({"type": "network"}, data_only=False)
+    scan = Scan(source_ids=[source._id], enabled_extended_product_search=enabled_extended_products)
+    scan.create()
+    data_provider.mark_for_cleanup(scan)
+    scanjob = ScanJob(scan_id=scan._id)
+    scanjob.create()
+    wait_until_state(scanjob, state="stopped")
+
     errors_found = []
     # grab extended products from config file
-    specified_extended_products = scan_info.get("enabled_extended_product_search")
-    if specified_extended_products:
-        # grab extended products from results
-        returned_extended_products = (
-            scan.get("scan_results").get("options").get("enabled_extended_product_search")
-        )
-        for product in specified_extended_products:
-            if specified_extended_products[product] != returned_extended_products[product]:
-                errors_found.append(
-                    "The product {product_name} should have been set to "
-                    "{product_status} but was returned with a value of "
-                    "{returned_status} on scan named {scan_name}".format(
-                        product_name=product,
-                        product_status=specified_extended_products[product],
-                        returned_status=returned_extended_products[product],
-                        scan_name=scan_info["name"],
-                    )
+    # grab extended products from results
+    returned_extended_products = (
+        scanjob.read().json().get("options").get("enabled_extended_product_search")
+    )
+    for product in enabled_extended_products:
+        if enabled_extended_products[product] != returned_extended_products[product]:
+            errors_found.append(
+                "The product {product_name} should have been set to "
+                "{product_status} but was returned with a value of "
+                "{returned_status} on scan named {scan_name}".format(
+                    product_name=product,
+                    product_status=enabled_extended_products[product],
+                    returned_status=returned_extended_products[product],
+                    scan_name=scan.name,
                 )
+            )
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
