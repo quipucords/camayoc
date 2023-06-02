@@ -4,54 +4,10 @@ import pytest
 from .utils import clear_all_entities
 from .utils import config_credentials
 from .utils import config_sources
-from .utils import cred_add_and_check
 from .utils import setup_qpc
-from .utils import source_add_and_check
-from camayoc.constants import BECOME_PASSWORD_INPUT
-from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.constants import QPC_SCAN_TYPES
 from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.utils import name_getter
-
-
-@pytest.fixture(autouse=True, scope="module")
-def setup_scan_prerequisites(request):
-    """Create all credentials and sources on the server."""
-    module_path = request.node.fspath.strpath
-    if not (
-        module_path.endswith("test_reports.py")
-        or module_path.endswith("test_scans.py")
-        or module_path.endswith("test_scanjobs.py")
-    ):
-        return
-
-    setup_qpc()
-
-    # Create new creds
-    for credential_data in config_credentials():
-        credential = {key: value for key, value in credential_data.items() if value is not None}
-        inputs = []
-        # Both password and become-password are options to the cred add
-        # command. Update the credentials dictionary to mark them as flag
-        # options and capture their value, if present, to be provided as input
-        # for the prompts.
-        if "password" in credential:
-            inputs.append((CONNECTION_PASSWORD_INPUT, credential["password"]))
-            credential["password"] = None
-        if "become_password" in credential:
-            inputs.append((BECOME_PASSWORD_INPUT, credential["become-password"]))
-            credential["become-password"] = None
-        cred_add_and_check(credential, inputs)
-
-    # create sources
-    for source in config_sources():
-        source["cred"] = source.pop("credentials")
-        options = source.pop("options", {})
-        if options is None:
-            options = {}
-        for k, v in options.items():
-            source[k.replace("_", "-")] = v
-        source_add_and_check(source)
 
 
 @pytest.fixture()
