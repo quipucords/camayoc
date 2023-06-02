@@ -1,7 +1,6 @@
 """Test utilities for quipucords' ``qpc`` tests."""
 import pytest
 
-from .utils import clear_all_entities
 from .utils import config_credentials
 from .utils import config_sources
 from .utils import setup_qpc
@@ -26,12 +25,6 @@ def source_type(request):
 def scan_type(request):
     """Fixture that returns the quipucords scan types."""
     return request.param
-
-
-@pytest.fixture(scope="module", autouse=True)
-def cleanup_server():
-    """Cleanup objects on the server after each module runs."""
-    clear_all_entities()
 
 
 @pytest.fixture(params=config_credentials(), ids=name_getter)
