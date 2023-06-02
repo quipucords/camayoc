@@ -183,18 +183,6 @@ any others, run::
 Any other valid pytest options may be included as well in this
 variable.
 
-By default scans defined in the config file are run at the beginning of the test session and results are cached to be used by other tests. This causes there to be some latency between when the test session begins and tests begin reporting results. If you want to run a test quickly without running the scans, you can include the environment variable ``RUN_SCANS=False`` in your ``py.test`` invocation. There is also a make target that provides this functionality::
-
-    # Runs all tests except ones that require results of scanjobs
-
-    make test-qpc-no-scans
-
-    # You can do this manually as well
-    # For example, if I just want to run a few login/logout
-    # This would just run those without the scans running first.
-
-    RUN_SCANS=False py.test camayoc/tests/qpc/api/v1/authentication/
-
 Testing Camayoc
 ^^^^^^^^^^^^^^^
 Testing Camayoc requires that you have installed the development dependencies. Do that by running ``make install-dev``.

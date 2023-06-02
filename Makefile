@@ -19,8 +19,6 @@ help:
 	@echo "  test              to run unit tests"
 	@echo "  test-coverage     to run unit tests and measure test coverage"
 	@echo "  test-qpc          to run all camayoc tests for quipucords"
-	@echo "  test-qpc-no-scans to run same tests as 'test-qpc' except"
-	@echo "                    skips scans at beginning of session."
 	@echo "  test-qpc-ui       to run all tests for quipucords UI"
 	@echo "  test-qpc-cli      to run all tests for quipucords CLI"
 	@echo "  test-qpc-api      to run all tests for quipucords API"
@@ -78,9 +76,6 @@ test-coverage:
 	--cov=camayoc.api \
 	tests
 
-test-qpc-no-scans:
-	RUN_SCANS=False pytest $(PYTEST_OPTIONS) camayoc/tests/qpc
-
 test-qpc:
 	pytest $(PYTEST_OPTIONS) camayoc/tests/qpc
 
@@ -99,4 +94,4 @@ validate-docstrings:
 
 .PHONY: all clean docs-clean docs-html install install-dev lint package \
 	package-clean package-upload test test-coverage test-qpc \
-	test-qpc-api test-qpc-ui test-qpc-cli test-qpc-no-scans
+	test-qpc-api test-qpc-ui test-qpc-cli
