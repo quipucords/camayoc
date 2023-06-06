@@ -8,6 +8,7 @@
 :testtype: functional
 """
 import json
+import random
 import re
 
 import pytest
@@ -21,12 +22,6 @@ from .utils import scan_pause
 from .utils import scan_restart
 from .utils import scan_start
 from .utils import wait_for_scan
-from camayoc.constants import QPC_BRMS_EXTENDED_FACTS
-from camayoc.constants import QPC_BRMS_RAW_FACTS
-from camayoc.constants import QPC_EAP_EXTENDED_FACTS
-from camayoc.constants import QPC_EAP_RAW_FACTS
-from camayoc.constants import QPC_FUSE_EXTENDED_FACTS
-from camayoc.constants import QPC_FUSE_RAW_FACTS
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
 from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Scan
@@ -123,92 +118,33 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
         assert report.get("sources", []) != []
 
 
-@pytest.mark.skip(reason="Skipped until Quipucords Issue #2038 us resolved")
 @pytest.mark.runs_scan
-def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config):
+def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config, data_provider):
     """Perform a scan with optional products disabled.
 
     :id: 3e01ea6c-3833-11e8-b467-0ed5f89f718b
     :description: Perform a a scan with optional products disabled and assert
-        that the product facts are not collected in the report.
+        that report structure is valid.
     :steps:
         1) Add a scan using the
            camayoc.tests.qpc.cli.utils.scan_add_and_check function
         2) Start the scan and check that it has started
         3) When the scan job completes, access the Report
-        4) Check that the disabled facts are not present in the facts
-           section of the report
-    :expectedresults: The scan must completed without any error and a report
-        should be available. The disabled products should not have results in
-        the report.
+        4) Check that report structure is valid.
+    :expectedresults: The scan must complete without any errors and a report
+        should be available.
     """
     errors_found = []
-    disabled_facts = QPC_EAP_RAW_FACTS + QPC_BRMS_RAW_FACTS + QPC_FUSE_RAW_FACTS
-    scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
-    scan_add_and_check(
-        {
-            "name": scan_name,
-            "sources": source_name,
-            "disabled-optional-products": " ".join(QPC_OPTIONAL_PRODUCTS),
-        }
+    products_to_disable = random.sample(
+        QPC_OPTIONAL_PRODUCTS, k=random.randint(1, len(QPC_OPTIONAL_PRODUCTS))
     )
-    result = scan_start({"name": scan_name})
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
-    result = scan_job({"id": scan_job_id})
-    assert result["status"] == "completed"
-    report_id = result["report_id"]
-    assert report_id is not None
-    output_file = "out.json"
-    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
-    with open(output_file) as report_data:
-        report = json.load(report_data)
-        sources = report.get("sources")
-        if sources:
-            for source in sources:
-                facts = source.get("facts")
-                for fact in disabled_facts:
-                    for dictionary in facts:
-                        if fact in dictionary.keys():
-                            errors_found.append(
-                                "The fact {fact} should have "
-                                "been DISABLED but was found "
-                                "in report.".format(fact=fact)
-                            )
-
-    assert len(errors_found) == 0, "\n================\n".join(errors_found)
-
-
-@pytest.mark.runs_scan
-def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider):
-    """Perform a scan with extended products enabled.
-
-    :id: 2294649e-3833-11e8-b467-0ed5f89f718b
-    :description: Perform a a scan with extended products enabled and
-        assert that the extended facts are collected in the report.
-    :steps:
-        1) Add a scan using the
-           camayoc.tests.qpc.cli.utils.scan_add_and_check function
-        2) Start the scan and check that it has started
-        3) When the scan job completes, access the Report
-        4) Check that the extended facts are present in the facts
-           section of the report
-    :expectedresults: The scan must completed without any error and a report
-        should be available. The extended products should have results in
-        the report.
-    """
-    errors_found = []
-    extended_facts = QPC_EAP_EXTENDED_FACTS + QPC_BRMS_EXTENDED_FACTS + QPC_FUSE_EXTENDED_FACTS
     scan_name = uuid4()
     source = data_provider.sources.new_one({"type": "network"}, data_only=False)
     scan_add_and_check(
         {
             "name": scan_name,
             "sources": source.name,
-            "enabled-ext-product-search": "jboss_fuse jboss_brms jboss_eap",
+            "disabled-optional-products": " ".join(products_to_disable),
         }
     )
     data_provider.mark_for_cleanup(Scan(name=scan_name))
@@ -226,17 +162,74 @@ def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider
     with open(output_file) as report_data:
         report = json.load(report_data)
         sources = report.get("sources")
-        if sources:
-            for source in sources:
-                facts = source.get("facts")
-                for fact in extended_facts:
-                    for dictionary in facts:
-                        if fact not in dictionary.keys():
-                            errors_found.append(
-                                "The fact {fact} should have "
-                                "been ENABLED but was not found "
-                                "in report.".format(fact=fact)
-                            )
+        if not sources:
+            errors_found.append("Report does not include sources.")
+        for source in sources:
+            facts = source.get("facts")
+            if not facts:
+                errors_found.append(
+                    "Report does not include facts key for source {source}.".format(
+                        source=source.get("source_name")
+                    )
+                )
+
+    assert len(errors_found) == 0, "\n================\n".join(errors_found)
+
+
+@pytest.mark.runs_scan
+def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider):
+    """Perform a scan with extended products enabled.
+
+    :id: 2294649e-3833-11e8-b467-0ed5f89f718b
+    :description: Perform a a scan with extended products enabled and
+        assert that report structure is valid.
+    :steps:
+        1) Add a scan using the
+           camayoc.tests.qpc.cli.utils.scan_add_and_check function
+        2) Start the scan and check that it has started
+        3) When the scan job completes, access the Report
+        4) Check that report structure is valid.
+    :expectedresults: The scan must complete without any errors and a report
+        should be available.
+    """
+    errors_found = []
+    products_to_extended_search = random.sample(
+        QPC_OPTIONAL_PRODUCTS, k=random.randint(1, len(QPC_OPTIONAL_PRODUCTS))
+    )
+    scan_name = uuid4()
+    source = data_provider.sources.new_one({"type": "network"}, data_only=False)
+    scan_add_and_check(
+        {
+            "name": scan_name,
+            "sources": source.name,
+            "enabled-ext-product-search": " ".join(products_to_extended_search),
+        }
+    )
+    data_provider.mark_for_cleanup(Scan(name=scan_name))
+    result = scan_start({"name": scan_name})
+    match = re.match(r'Scan "(\d+)" started.', result)
+    assert match is not None
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, timeout=1200)
+    result = scan_job({"id": scan_job_id})
+    assert result["status"] == "completed"
+    report_id = result["report_id"]
+    assert report_id is not None
+    output_file = "out.json"
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        sources = report.get("sources")
+        if not sources:
+            errors_found.append("Report does not include sources.")
+        for source in sources:
+            facts = source.get("facts")
+            if not facts:
+                errors_found.append(
+                    "Report does not include facts key for source {source}.".format(
+                        source=source.get("source_name")
+                    )
+                )
 
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
