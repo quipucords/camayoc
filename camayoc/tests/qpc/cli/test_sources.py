@@ -31,7 +31,6 @@ from camayoc.tests.qpc.cli.utils import source_show_and_check
 from camayoc.utils import client_cmd
 from camayoc.utils import client_cmd_name
 
-
 ISSUE_449_MARK = pytest.mark.xfail(
     reason="https://github.com/quipucords/quipucords/issues/449", strict=True
 )

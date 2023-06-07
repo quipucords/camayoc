@@ -1,18 +1,20 @@
 from __future__ import annotations
 
-from typing import Optional
 from typing import TYPE_CHECKING
+from typing import Optional
 from urllib.parse import urlunparse
+
+from camayoc import config
+from camayoc import exceptions
 
 from .models.pages.login import Login
 from .session import DummySession
 from .types import Session
-from camayoc import config
-from camayoc import exceptions
 
 if TYPE_CHECKING:
-    from playwright.sync_api import Page
     from playwright.sync_api import Download
+    from playwright.sync_api import Page
+
     from camayoc.ui.types import UIPage
 
 
@@ -51,24 +53,28 @@ class Client:
         self._base_url = urlunparse((scheme, netloc, "", "", "", ""))
 
     def begin(self) -> Login:
-        """Start browser and open Quipucords UI login page"""
+        """Start browser and open Quipucords UI login page."""
         self.driver.goto(self._base_url)
         return Login(client=self)
 
     @property
     def current_page(self) -> UIPage:
-        """Get instance of object representing currently opened page"""
+        """Get instance of object representing currently opened page."""
         pass
 
     @property
     def history(self) -> None:
-        """Get access to Session.history
+        """Get access to Session.history.
+
         FIXME: do I need this?
         """
         pass
 
     def navigate_to(self) -> UIPage:
-        """Wrap self.begin().login(default_user, default_pass).navigate_to("Some Page")
+        """Porcelain command for easier setup.
+
+        Wrap self.begin().login(default_user, default_pass).navigate_to("Some Page")
+
         FIXME: do I need this?
         """
         pass

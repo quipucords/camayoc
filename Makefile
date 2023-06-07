@@ -52,7 +52,7 @@ pre-commit:
 
 lint:
 	poetry run ruff .
-	poetry run black . --check --diff
+	poetry run black . --check --diff --line-length 100
 
 test:
 	poetry run pytest $(PYTEST_OPTIONS) tests

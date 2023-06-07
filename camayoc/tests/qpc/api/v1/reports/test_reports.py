@@ -237,7 +237,6 @@ def test_products_found_deployment_report(data_provider, scan_info):
     :expectedresults: There are inspection results for each source we scanned
         and any products found are correctly identified.
     """
-
     scan = data_provider.scans.defined_one({"name": scan_info.get("name")})
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
@@ -320,7 +319,6 @@ def test_OS_found_deployment_report(data_provider, scan_info: ScanOptions):
     :expectedresults: There are inspection results for each source we scanned
         and the operating system is correctly identified.
     """
-
     scan = data_provider.scans.defined_one({"name": scan_info.name})
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()

@@ -1,13 +1,14 @@
 import warnings
 from functools import wraps
 
+from camayoc.exceptions import IncorrectDecoratorUsageWarning
+
 from .types import HistoryRecord
 from .types import Session
-from camayoc.exceptions import IncorrectDecoratorUsageWarning
 
 
 def service(func):
-    """Marks method as a service
+    """Mark method as a service.
 
     Service is user-facing API that makes tests more concise and faster to develop.
     The idea is that service expresses user *intent*.
@@ -18,7 +19,6 @@ def service(func):
     We want to mark functions as services, so long-running tester can skip and focus
     on finer-granular actions.
     """
-
     func.__hvat_hide_method__ = True
 
     @wraps(func)
@@ -29,7 +29,7 @@ def service(func):
 
 
 def autofill():
-    """Make all arguments optional
+    """Make all arguments optional.
 
     Wrap a function, take all arguments beside `self`, check the type
     and automatically create value conforming to this type. Then call
@@ -50,7 +50,7 @@ def autofill():
 
 
 def record_action(func):
-    """Save a function call in session history
+    """Save a function call in session history.
 
     The idea is that if long-running tester fails, we can catch exception
     and save recorded actions somewhere. So it's easy to investigate what
@@ -103,7 +103,7 @@ def record_action(func):
 
 
 def creates_toast(func):
-    """Marks method as one that may create toast notification
+    """Mark method as one that may create toast notification.
 
     Run function as usual, but if returned object has _dismiss_notifications
     method (inherited from ToastNotifications) and client is set to

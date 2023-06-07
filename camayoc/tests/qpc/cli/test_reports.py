@@ -16,6 +16,10 @@ import tarfile
 
 import pytest
 
+from camayoc.qpc_models import Scan
+from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
+from camayoc.utils import uuid4
+
 from .utils import config_sources
 from .utils import report_deployments
 from .utils import report_detail
@@ -28,9 +32,6 @@ from .utils import scan_start
 from .utils import setup_qpc
 from .utils import wait_for_report_merge
 from .utils import wait_for_scan
-from camayoc.qpc_models import Scan
-from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
-from camayoc.utils import uuid4
 
 # from csv_report_parsing import normalize_csv_report
 

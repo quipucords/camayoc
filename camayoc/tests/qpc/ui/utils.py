@@ -20,7 +20,6 @@ from .views import DashboardView
 from .views import DeleteModalView
 from .views import SourceModalView
 
-
 SOURCE_TYPE_RADIO_LABELS = {
     "Network": "Network Range",
     "Satellite": "Satellite",

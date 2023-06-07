@@ -75,7 +75,7 @@ class PageFactoryException(Exception):
 
 
 class DataProviderException(Exception):
-    """Generic problem raised by DataProvider class"""
+    """Generic problem raised by DataProvider class."""
 
 
 class APIResultsEmpty(DataProviderException):
@@ -86,13 +86,17 @@ class APIResultsEmpty(DataProviderException):
 
 
 class NoMatchingDataDefinitionException(DataProviderException):
-    """Requested match_criteria do not match anything in DataProvider
+    """Nothing matches requested definition.
+
+    Requested match_criteria do not match anything in DataProvider
     instance configuration.
     """
 
 
 class FilteredAPIResultsEmpty(DataProviderException):
-    """There are no objects in API request response results matching
+    """API didn't return anything matching criteria.
+
+    There are no objects in API request response results matching
     provided criteria.
 
     This configuration of DataProvider is unable to yield any values.

@@ -83,6 +83,15 @@ select = [
 ignore = [
     "D203",
     "D403",
+    "PLR2004",
+
+    # for now, ignore missing docstrings
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D106",
+    "D107",
 ]
 src = [
     "camayoc",
@@ -95,8 +104,14 @@ line-length = 100
 "__init__.py" = ["F401", "D104"]
 "**/test_*.py" = [
     "PLC1901",
-    "PLR2004"
+    "PLR2004",
+    "C901",
 ]
+"camayoc/data_provider.py" = ["PLW2901"]
+"camayoc/qpc_models.py" = ["PL", "C901"]
+"camayoc/tests/qpc/ui/conftest.py" = ["BLE001"]
+"camayoc/tests/qpc/utils.py" = ["PLW2901"]
+"tests/test_command.py" = ["F401"]
 
 [tool.ruff.isort]
 force-single-line = true

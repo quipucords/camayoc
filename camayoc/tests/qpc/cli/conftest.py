@@ -1,12 +1,13 @@
 """Test utilities for quipucords' ``qpc`` tests."""
 import pytest
 
-from .utils import config_credentials
-from .utils import config_sources
-from .utils import setup_qpc
 from camayoc.constants import QPC_SCAN_TYPES
 from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.utils import name_getter
+
+from .utils import config_credentials
+from .utils import config_sources
+from .utils import setup_qpc
 
 
 @pytest.fixture()

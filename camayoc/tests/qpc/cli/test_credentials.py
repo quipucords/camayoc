@@ -254,7 +254,8 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     password = utils.uuid4()
     cred_add_and_check(
-        {"name": name, "username": username, "password": None}, [("Password:", password)]
+        {"name": name, "username": username, "password": None},
+        [("Password:", password)],
     )
 
     name = utils.uuid4()
@@ -332,7 +333,8 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     password = utils.uuid4()
     cred_add_and_check(
-        {"name": name, "username": username, "password": None}, [("Password:", password)]
+        {"name": name, "username": username, "password": None},
+        [("Password:", password)],
     )
 
     name = utils.uuid4()
@@ -364,7 +366,11 @@ def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
     new_sshkeyfile.touch()
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}"}
+        {
+            "name": name,
+            "username": username,
+            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
+        }
     )
 
     cred_show_and_check(
@@ -505,7 +511,8 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     username = utils.uuid4()
     password = utils.uuid4()
     cred_add_and_check(
-        {"name": name, "username": username, "password": None}, [("Password:", password)]
+        {"name": name, "username": username, "password": None},
+        [("Password:", password)],
     )
 
     name = utils.uuid4()
@@ -706,7 +713,9 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
         cred_add_and_check(options, inputs)
 
     output, exitstatus = pexpect.run(
-        "{} -v cred clear --all".format(client_cmd), encoding="utf-8", withexitstatus=True
+        "{} -v cred clear --all".format(client_cmd),
+        encoding="utf-8",
+        withexitstatus=True,
     )
     assert "All credentials were removed." in output
     assert exitstatus == 0

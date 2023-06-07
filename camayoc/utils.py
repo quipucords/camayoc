@@ -13,7 +13,6 @@ from camayoc import exceptions
 from camayoc.config import get_config
 from camayoc.config import settings
 
-
 _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
 """Environment variables related to the XDG Base Directory specification."""
 
@@ -95,7 +94,7 @@ def create_identity(account_number, org_id=None):
 
 
 def create_x_rh_identity(account_number, org_id=None):
-    """ "Base64-encoded JSON identity header provided by 3Scale."""
+    """Base64-encoded JSON identity header provided by 3Scale."""
     identity = create_identity(account_number, org_id)
     x_rh_identity = {"x-rh-identity": identity}
     return x_rh_identity

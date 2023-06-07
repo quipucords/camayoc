@@ -39,8 +39,7 @@ def test_isolated_filesystem():
 
 
 def test_isolated_filesystem_w_path():
-    """Test ``camayoc.utils.isolated_filesystem`` with a provided
-    filesystem_path."""
+    """Test ``camayoc.utils.isolated_filesystem`` with a provided filesystem_path."""
     test_path = mkdtemp(prefix="")
     with utils.isolated_filesystem(test_path) as path:
         assert path.startswith(test_path), (

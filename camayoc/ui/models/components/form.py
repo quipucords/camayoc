@@ -4,10 +4,11 @@ import logging
 
 from attrs import fields
 
-from ..fields import Field
 from camayoc.exceptions import MisconfiguredWidgetException
 from camayoc.ui.types import UIField
 from camayoc.ui.types import UIPage
+
+from ..fields import Field
 
 logger = logging.getLogger(__name__)
 

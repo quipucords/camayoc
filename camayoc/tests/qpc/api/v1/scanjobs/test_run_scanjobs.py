@@ -175,7 +175,10 @@ def test_enabled_extended_product_search(data_provider):
     enabled_extended_products = {name: True for name in products_to_enable_extended_search}
 
     source = data_provider.sources.new_one({"type": "network"}, data_only=False)
-    scan = Scan(source_ids=[source._id], enabled_extended_product_search=enabled_extended_products)
+    scan = Scan(
+        source_ids=[source._id],
+        enabled_extended_product_search=enabled_extended_products,
+    )
     scan.create()
     data_provider.mark_for_cleanup(scan)
     scanjob = ScanJob(scan_id=scan._id)

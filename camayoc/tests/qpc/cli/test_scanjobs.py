@@ -13,6 +13,11 @@ import re
 
 import pytest
 
+from camayoc.constants import QPC_OPTIONAL_PRODUCTS
+from camayoc.exceptions import NoMatchingDataDefinitionException
+from camayoc.qpc_models import Scan
+from camayoc.utils import uuid4
+
 from .utils import config_sources
 from .utils import report_detail
 from .utils import scan_add_and_check
@@ -22,10 +27,6 @@ from .utils import scan_pause
 from .utils import scan_restart
 from .utils import scan_start
 from .utils import wait_for_scan
-from camayoc.constants import QPC_OPTIONAL_PRODUCTS
-from camayoc.exceptions import NoMatchingDataDefinitionException
-from camayoc.qpc_models import Scan
-from camayoc.utils import uuid4
 
 
 @pytest.mark.runs_scan

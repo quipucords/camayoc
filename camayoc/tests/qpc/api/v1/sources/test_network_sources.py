@@ -101,7 +101,6 @@ def test_create_multiple_creds_and_sources(shared_client, data_provider, scan_ho
            CIDR, individual IPv4 address, etc.)
     :expectedresults: The source is created.
     """
-
     ssh_key_cred = data_provider.credentials.new_one(
         {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
         data_only=False,

@@ -14,8 +14,8 @@ except ImportError:
     ibutsu_plugin_key = None
 
 from camayoc import utils
-from camayoc.config import settings
 from camayoc.config import get_config
+from camayoc.config import settings
 
 
 def _ibutsu_enabled(config: pytest.Config) -> bool:

@@ -11,7 +11,6 @@ from camayoc.qpc_models import ScanJob
 from camayoc.qpc_models import Source
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
 
-
 SCAN_DATA = {}
 """Cache to associate the named scans with their results."""
 

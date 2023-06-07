@@ -7,7 +7,6 @@ import plumbum
 
 from camayoc import exceptions
 
-
 System = namedtuple("System", "hostname transport")
 """A system representation to run commands on."""
 
