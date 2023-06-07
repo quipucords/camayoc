@@ -17,7 +17,7 @@ A GPL-licensed Python library that facilitates functional testing of quipucords_
 Installation
 ^^^^^^^^^^^^
 
-Camayoc supports Python 3.9 and above. It uses `Poetry <https://python-poetry.org/>`_
+Camayoc supports Python 3.11 and above. It uses `Poetry <https://python-poetry.org/>`_
 for dependency and virtual environment management. See Poetry documentation for
 installation instructions - one of the easier paths is to install it through
 `pipx <https://pypa.github.io/pipx/>`_ , which you can get from your distribution.
