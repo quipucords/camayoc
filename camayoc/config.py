@@ -15,7 +15,6 @@ from xdg import BaseDirectory
 from camayoc import exceptions
 from camayoc.types.settings import Configuration
 
-
 default_dynaconf_validators = [
     Validator("camayoc.run_scans", default=False),
     Validator("quipucords_server.hostname", default=""),

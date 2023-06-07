@@ -2,12 +2,6 @@ from __future__ import annotations
 
 from typing import overload
 
-from ..components.form import Form
-from ..components.popup import PopUp
-from ..fields import InputField
-from ..fields import SelectField
-from ..mixins import MainPageMixin
-from .abstract_page import AbstractPage
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
@@ -17,6 +11,13 @@ from camayoc.ui.types import AddCredentialDTO
 from camayoc.ui.types import NetworkCredentialFormDTO
 from camayoc.ui.types import SatelliteCredentialFormDTO
 from camayoc.ui.types import VCenterCredentialFormDTO
+
+from ..components.form import Form
+from ..components.popup import PopUp
+from ..fields import InputField
+from ..fields import SelectField
+from ..mixins import MainPageMixin
+from .abstract_page import AbstractPage
 
 
 class CredentialForm(Form, PopUp, AbstractPage):

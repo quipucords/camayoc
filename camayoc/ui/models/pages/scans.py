@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from playwright.sync_api import Download
 
-from ..components.items_list import AbstractListItem
-from ..mixins import MainPageMixin
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
+
+from ..components.items_list import AbstractListItem
+from ..mixins import MainPageMixin
 
 
 class ScanListElem(AbstractListItem):

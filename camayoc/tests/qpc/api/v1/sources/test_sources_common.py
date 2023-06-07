@@ -308,7 +308,7 @@ def test_negative_create_invalid_data(src_type, cleanup, shared_client, data):
         source_type=src_type,
         client=api.Client(response_handler=api.echo_handler),
         # unpack parametrized arguments
-        **data
+        **data,
     )
     create_response = src.create()
     assert create_response.status_code == 400

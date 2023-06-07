@@ -1,10 +1,12 @@
 import tempfile
 from collections import OrderedDict
+from typing import Union
 from typing import get_args
 from typing import get_origin
-from typing import Union
 
 import factory
+
+from camayoc.config import get_config
 
 from .data_providers import APIDataProvider
 from .enums import CredentialTypes
@@ -28,8 +30,6 @@ from .types import SSHNetworkCredentialFormDTO
 from .types import TriggerScanDTO
 from .types import VCenterCredentialFormDTO
 from .types import VCenterSourceFormDTO
-from camayoc.config import get_config
-
 
 optional_bool = OrderedDict([(None, 0.5), (True, 0.25), (False, 0.25)])
 

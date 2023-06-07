@@ -9,7 +9,6 @@ from camayoc.types.settings import SourceOptions
 from camayoc.types.settings import SSHNetworkCredentialOptions
 from camayoc.types.settings import VCenterCredentialOptions
 
-
 CREDENTIALS = [
     SSHNetworkCredentialOptions(
         **{

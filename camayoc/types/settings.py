@@ -151,7 +151,10 @@ class Configuration(BaseModel):
                     raise ValueError(msg)
                 cred = credentials.get(cred_name)
                 if source.type != cred.type:
-                    msg = f"Source '{source.name}' type {source.type} does not match credential '{cred.name}' type {cred.type}"
+                    msg = (
+                        f"Source '{source.name}' type {source.type}"
+                        f" does not match credential '{cred.name}' type {cred.type}"
+                    )
                     raise ValueError(msg)
         return values
 

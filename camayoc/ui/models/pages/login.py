@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .abstract_page import AbstractPage
 from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import Pages
 from camayoc.ui.types import LoginFormDTO
+
+from .abstract_page import AbstractPage
 
 if TYPE_CHECKING:
     from .sources import SourcesMainPage

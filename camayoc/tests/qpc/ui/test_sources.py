@@ -51,7 +51,6 @@ def test_create_delete_source(ui_client: Client, source_type, cleanup):
     :expectedresults: A new source is created with the provided information,
         then it is deleted.
     """
-
     credential_type = MATCHING_TYPES[source_type]
     credential_data = AddCredentialDTOFactory(credential_type=credential_type)
     source_data = AddSourceDTOFactory(

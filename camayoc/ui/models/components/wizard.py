@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from .popup import PopUp
 from camayoc.ui.types import UIPage
+
+from .popup import PopUp
 
 
 class Wizard(UIPage):

@@ -67,7 +67,9 @@ class ModelWorker:
                 if new:
                     dependency_definition = replace_definition_name(dependency_definition)
                 credential = self._data_provider.credentials._create_from_definition(
-                    definition=dependency_definition, new_dependencies=new, data_only=False
+                    definition=dependency_definition,
+                    new_dependencies=new,
+                    data_only=False,
                 )
                 dependencies_ids.append(credential._id)
             return dependencies_ids
@@ -80,7 +82,9 @@ class ModelWorker:
                 if new:
                     dependency_definition = replace_definition_name(dependency_definition)
                 source = self._data_provider.sources._create_from_definition(
-                    definition=dependency_definition, new_dependencies=new, data_only=False
+                    definition=dependency_definition,
+                    new_dependencies=new,
+                    data_only=False,
                 )
                 dependencies_ids.append(source._id)
             return dependencies_ids
@@ -118,20 +122,27 @@ class ModelWorker:
         for definition in cycle(matching_definitions):
             definition = replace_definition_name(definition)
             model = self._create_from_definition(
-                definition=definition, new_dependencies=new_dependencies, data_only=data_only
+                definition=definition,
+                new_dependencies=new_dependencies,
+                data_only=data_only,
             )
             yield model
 
     def new_one(self, match_criteria, new_dependencies=True, data_only=True):
         new_generator = self.new_many(
-            match_criteria=match_criteria, new_dependencies=new_dependencies, data_only=data_only
+            match_criteria=match_criteria,
+            new_dependencies=new_dependencies,
+            data_only=data_only,
         )
         return next(new_generator)
 
 
 class DataProvider:
     def __init__(
-        self, credentials=settings.credentials, sources=settings.sources, scans=settings.scans
+        self,
+        credentials=settings.credentials,
+        sources=settings.sources,
+        scans=settings.scans,
     ):
         self.credentials = ModelWorker(
             data_provider=self, definitions=credentials, model_class=Credential

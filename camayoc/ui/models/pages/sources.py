@@ -2,17 +2,6 @@ from __future__ import annotations
 
 from typing import overload
 
-from ..components.form import Form
-from ..components.items_list import AbstractListItem
-from ..components.popup import PopUp
-from ..components.wizard import WizardStep
-from ..fields import CheckboxField
-from ..fields import InputField
-from ..fields import MultipleSelectField
-from ..fields import RadioGroupField
-from ..fields import SelectField
-from ..mixins import MainPageMixin
-from .abstract_page import AbstractPage
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
@@ -25,6 +14,18 @@ from camayoc.ui.types import SatelliteSourceFormDTO
 from camayoc.ui.types import SelectSourceDTO
 from camayoc.ui.types import TriggerScanDTO
 from camayoc.ui.types import VCenterSourceFormDTO
+
+from ..components.form import Form
+from ..components.items_list import AbstractListItem
+from ..components.popup import PopUp
+from ..components.wizard import WizardStep
+from ..fields import CheckboxField
+from ..fields import InputField
+from ..fields import MultipleSelectField
+from ..fields import RadioGroupField
+from ..fields import SelectField
+from ..mixins import MainPageMixin
+from .abstract_page import AbstractPage
 
 
 class CancelWizardPopup(PopUp, AbstractPage):

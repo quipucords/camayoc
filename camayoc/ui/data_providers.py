@@ -9,7 +9,6 @@ from camayoc.api import Client as APIClient
 from camayoc.exceptions import APIResultsEmpty
 from camayoc.exceptions import FilteredAPIResultsEmpty
 
-
 _global_db = defaultdict(list)
 _global_client = APIClient()
 

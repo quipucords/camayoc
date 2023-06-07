@@ -5,14 +5,15 @@ import pytest
 from selenium import webdriver
 from widgetastic.browser import Browser
 
-from .utils import create_credential
-from .views import LoginView
 from camayoc import config
 from camayoc.tests.qpc.cli.utils import clear_all_entities
 from camayoc.ui import Client as UIClient
 from camayoc.ui.session import BasicSession
 from camayoc.utils import get_qpc_url
 from camayoc.utils import uuid4
+
+from .utils import create_credential
+from .views import LoginView
 
 
 def pytest_collection_modifyitems(config, items):

@@ -43,7 +43,7 @@ def get_object_for_type(type_name):
 
 
 def test_long_running(ui_client: Client):
-    """Perform random actions on application
+    """Perform random actions on application.
 
     :id: d5941a62-438a-4e95-8041-f55a2ae490c0
     :description: This is proof-of-concept implementation

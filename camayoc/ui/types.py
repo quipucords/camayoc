@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
 from typing import Optional
 from typing import Protocol
 from typing import Sequence
-from typing import TYPE_CHECKING
 from typing import Union
 
 from attrs import field

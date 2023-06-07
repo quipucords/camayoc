@@ -24,7 +24,7 @@ from camayoc.ui.enums import SourceTypes
 
 
 def test_demo_endtoend(ui_client: Client):
-    """Demonstrate new UI framework capabilities in scope of creating data
+    """Demonstrate new UI framework capabilities in scope of creating data.
 
     :id: 18977f91-700d-4358-975e-f68c0a1c1907
     :description: This demonstrates how you can use DTOs and
@@ -71,7 +71,7 @@ def test_demo_endtoend(ui_client: Client):
 
 
 def test_demo_download(ui_client: Client):
-    """Demonstrate new UI framework capabilities in scope of downloading data
+    """Demonstrate new UI framework capabilities in scope of downloading data.
 
     :id: c5db7b18-64c8-4646-aed7-febc1261a9d9
     :description: This demonstrates how you can download the file

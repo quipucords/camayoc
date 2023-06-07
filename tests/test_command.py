@@ -9,6 +9,7 @@ from plumbum.machines.local import LocalMachine
 from camayoc import command
 from camayoc import exceptions
 from camayoc import utils
+from camayoc.command import CompletedProcess
 
 
 class EchoHandlerTestCase(unittest.TestCase):
@@ -78,9 +79,8 @@ class CompletedProcessTestCase(unittest.TestCase):
     def test_can_eval(self):
         """Assert ``__repr__()`` can be parsed by ``eval()``."""
         string = repr(command.CompletedProcess(**self.kwargs))
-        from camayoc.command import CompletedProcess  # noqa pylint:disable=unused-variable
 
-        # pylint:disable=eval-used
+        # This needs camayoc.command.CompletedProcess
         self.assertEqual(string, repr(eval(string)))
 
 

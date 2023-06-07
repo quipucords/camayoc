@@ -18,7 +18,6 @@ from camayoc.qpc_models import ScanJob
 from camayoc.qpc_models import Source
 from camayoc.utils import uuid4
 
-
 CAMAYOC_CONFIG = """
 qpc:
     hostname: example.com
