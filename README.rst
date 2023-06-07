@@ -17,27 +17,22 @@ A GPL-licensed Python library that facilitates functional testing of quipucords_
 Installation
 ^^^^^^^^^^^^
 
-Camayoc supports Python 3.9 and above, so it is recommended that you
-install Camayoc into a virtual environment. There are several tools available
-for managing virtual environments.
-
-Some resources to learn about virtual environments:
-
-* https://docs.python.org/3/tutorial/venv.html
-* http://docs.python-guide.org/en/latest/dev/virtualenvs/
-
+Camayoc supports Python 3.9 and above. It uses `Poetry <https://python-poetry.org/>`_
+for dependency and virtual environment management. See Poetry documentation for
+installation instructions - one of the easier paths is to install it through
+`pipx <https://pypa.github.io/pipx/>`_ , which you can get from your distribution.
 
 This is a suggested install method:
 
-1. Clone the repo and navigate to the base directory::
+1. Install pipx and Poetry:
+
+    sudo dnf install -y pipx
+    pipx install poetry
+
+2. Clone the repo and navigate to the base directory::
 
     git clone https://github.com/quipucords/camayoc.git
     cd camayoc
-
-2. Create and activate a Python3 virtual environment::
-
-    python3 -m venv ~/envs/camayoc
-    source ~/envs/camayoc/bin/activate
 
 3. Install using make targets::
 
