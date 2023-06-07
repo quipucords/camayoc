@@ -12,10 +12,8 @@ help:
 	@echo "  install           to install in editable mode"
 	@echo "  install-dev       to install in editable mode plus the "
 	@echo "                    dev packages and install pre-commit hooks"
+	@echo "  lint              to run all linters"
 	@echo "  pre-commit        to run pre-commit against all the files"
-	@echo "  package           to generate installable Python packages"
-	@echo "  package-clean     to remove generated Python packages"
-	@echo "  package-upload    to upload dist/* to PyPI"
 	@echo "  test              to run unit tests"
 	@echo "  test-coverage     to run unit tests and measure test coverage"
 	@echo "  test-qpc          to run all camayoc tests for quipucords"
@@ -34,41 +32,33 @@ clean:
 	}
 
 docs-clean:
-	@cd docs; $(MAKE) clean
+	@cd docs; poetry run $(MAKE) clean
 
 docs-html:
-	@cd docs; $(MAKE) html
+	@cd docs; poetry run $(MAKE) html
 
 docs-serve:
-	@cd docs; $(MAKE) serve
+	@cd docs; poetry run $(MAKE) serve
 
 install:
-	pip install -e .
+	poetry install
 
 install-dev:
-	pip install -e .[dev]
-	pre-commit install --install-hooks
+	poetry install --with dev
+	poetry run pre-commit install --install-hooks
 
 pre-commit:
 	pre-commit run --all-files
 
 lint:
-	flake8 .
-
-package: package-clean
-	python3 setup.py --quiet sdist bdist_wheel
-
-package-clean:
-	rm -rf build dist camayoc.egg-info
-
-package-upload: package
-	twine upload dist/*
+	poetry run ruff .
+	poetry run black . --check --diff
 
 test:
-	pytest $(PYTEST_OPTIONS) tests
+	poetry run pytest $(PYTEST_OPTIONS) tests
 
 test-coverage:
-	pytest --verbose --cov-report term --cov-report xml:coverage.xml \
+	poetry run pytest --verbose --cov-report term --cov-report xml:coverage.xml \
 	--cov=camayoc.command \
 	--cov=camayoc.config \
 	--cov=camayoc.exceptions \
@@ -90,8 +80,8 @@ test-qpc-cli:
 
 validate-docstrings:
 	@./scripts/validate_docstrings.sh
-	@testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
+	@poetry run testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
 
-.PHONY: all clean docs-clean docs-html install install-dev lint package \
-	package-clean package-upload test test-coverage test-qpc \
+.PHONY: all clean docs-clean docs-html install install-dev lint \
+	test test-coverage test-qpc \
 	test-qpc-api test-qpc-ui test-qpc-cli

@@ -1,0 +1,112 @@
+[tool.poetry]
+name = "camayoc"
+version = "1.2.6"
+description = "A GPL-licensed Python library that facilitates functional testing of Quipucords."
+authors = ["Quipucords Dev Team <quipucords@redhat.com>"]
+readme = "README.rst"
+license = "GPLv3"
+repository = "https://github.com/quipucords/camayoc"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+]
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+attrs = "^23.1.0"
+dynaconf = "^3.1.12"
+factory_boy = "^3.2.1"
+littletable = "^2.2.0"
+pexpect = "^4.8.0"
+playwright = "^1.33.0"
+plumbum = "^1.8.1"
+pydantic = "^1.10.7"
+pytest = "^7.3.1"
+pytest-playwright = "^0.3.3"
+pyvmomi = "^8.0.1.0"
+pyxdg = "^0.28"
+pyyaml = "^6.0"
+"widgetastic.core" = "^1.0.2"
+"widgetastic.patternfly" = "^1.3.5"
+
+[tool.poetry.group.dev.dependencies]
+# For `make docs`
+sphinx = "^7.0.1"
+jinja2 = "^3.0.3"
+# For `make docs-serve`
+sphinx-serve = "^1.0.1"
+# For `make test-coverage`
+pytest-cov = "^4.0.0"
+# For `make validate-docstrings`
+testimony = "^2.2.0"
+# For `make pre-commit`
+pre-commit = "^3.3.2"
+black = "^23.3.0"
+isort = "^5.11.4"
+ruff = "^0.0.270"
+
+[tool.black]
+target-version = ['py311']
+
+[tool.pytest.ini_options]
+filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"
+markers = [
+    "ssh_keyfile_path: mark test with SSH key file path mapped to /sshkeys/ on the server (deselect with '-m \"not ssh_keyfile_path\"')",
+    "runs_scan: tests that run scans (might be slow!)",
+]
+
+[tool.ruff]
+select = [
+    "C90", # mccabe complexity
+    "D",   # pydocstyle
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "Q",   # flake8-quotes
+    "W",   # pycodestyle
+    "PL",  # Pylint
+    "BLE", # flake8-blind-except
+]
+ignore = [
+    "D203",
+    "D403",
+]
+src = [
+    "camayoc",
+    "tests",
+]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "D104"]
+"**/test_*.py" = [
+    "PLC1901",
+    "PLR2004"
+]
+
+[tool.ruff.isort]
+force-single-line = true
+known-first-party = [
+    "camayoc",
+]
+
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.pydocstyle]
+convention = "pep257"
