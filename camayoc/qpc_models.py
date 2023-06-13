@@ -457,7 +457,7 @@ class Scan(QPCObject):
                 definition_key = "source_ids"
                 definition_value = dependencies
             definition_data[definition_key] = definition_value
-        definition_data.pop("expected_data")
+        definition_data.pop("expected_data", None)
         return cls(**definition_data)
 
     def delete(self, **kwargs):
