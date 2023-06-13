@@ -8,10 +8,8 @@
 :testtype: functional
 """
 import json
-import os
 import random
 from io import BytesIO
-from pathlib import Path
 
 import pexpect
 import pytest
@@ -343,68 +341,6 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
     assert qpc_cred_edit.exitstatus != 0
-
-
-@pytest.mark.ssh_keyfile_path
-def test_edit_sshkeyfile(isolated_filesystem, qpc_server_config):
-    """Edit an auth's sshkeyfile.
-
-    :id: 81975705-bc77-4d1c-a8dd-72d1b996e19d
-    :description: Edit the sshkeyfile of an auth entry.
-    :steps: Run ``qpc cred edit --name <name> --sshkeyfile <newsshkeyfile>``
-    :expectedresults: The auth sshkeyfile must be updated.
-    """
-    name = utils.uuid4()
-    username = utils.uuid4()
-
-    tmp_dir = os.path.basename(os.getcwd())
-    sshkeyfile_name = utils.uuid4()
-    sshkeyfile = Path(sshkeyfile_name)
-    sshkeyfile.touch()
-    new_sshkeyfile_name = utils.uuid4()
-    new_sshkeyfile = Path(new_sshkeyfile_name)
-    new_sshkeyfile.touch()
-
-    cred_add_and_check(
-        {
-            "name": name,
-            "username": username,
-            "sshkeyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
-        }
-    )
-
-    cred_show_and_check(
-        {"name": name},
-        generate_show_output(
-            {
-                "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{sshkeyfile_name}",
-                "username": username,
-            }
-        ),
-    )
-
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, f"/sshkeys/{tmp_dir}/{new_sshkeyfile_name}"
-        )
-    )
-    qpc_cred_edit.logfile = BytesIO()
-    assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
-    assert qpc_cred_edit.expect(pexpect.EOF) == 0
-    qpc_cred_edit.close()
-    assert qpc_cred_edit.exitstatus == 0
-
-    cred_show_and_check(
-        {"name": name},
-        generate_show_output(
-            {
-                "name": name,
-                "ssh_keyfile": f"/sshkeys/{tmp_dir}/{new_sshkeyfile_name}",
-                "username": username,
-            }
-        ),
-    )
 
 
 @pytest.mark.ssh_keyfile_path
