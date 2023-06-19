@@ -88,5 +88,13 @@ def run_scan(
 
 
 def scan_list():
-    """Generate list of scan dict objects found in config file."""
-    return settings.scans
+    """Generate list of netwok / VCenter / Satellite scan objects found in config file."""
+    scans = []
+    supported_source_types = ("network", "vcenter", "satellite")
+    source_names_types = {s.name: s.type for s in settings.sources}
+    for scan in settings.scans:
+        source_types = [source_names_types.get(source) for source in scan.sources]
+        if not all(source_type in supported_source_types for source_type in source_types):
+            continue
+        scans.append(scan)
+    return scans
