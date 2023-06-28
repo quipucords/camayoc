@@ -65,6 +65,7 @@ optional = true
 [tool.poetry.group.jenkins.dependencies]
 pytest-ibutsu = "^2.2.4"
 qpc = {path = "../qpc"}
+koji = "^1.33.0"
 
 [tool.black]
 target-version = ['py311']
