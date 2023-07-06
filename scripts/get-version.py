@@ -4,7 +4,9 @@ Obtain versions of Quipucords & co installed in environment.
 This script is used by CI to set test run metadata.
 """
 import argparse
+import json
 import subprocess
+from operator import itemgetter
 
 from camayoc import api
 
@@ -21,7 +23,21 @@ def get_frontend_version():
 
 
 def get_cli_version():
-    # Grab from git directly until DISCOVERY-359 is resolved
+    # Use available metadata until DISCOVERY-359 is resolved
+    # Jenkins uses CLI image downloaded from quay
+    podman_images_cmd = ["podman", "images", "--format", "json"]
+    podman_images_result = subprocess.run(
+        podman_images_cmd, capture_output=True, check=True, text=True
+    )
+    podman_images = json.loads(podman_images_result.stdout.strip())
+    podman_images = [
+        image for image in podman_images if "quipucords.cli.git_sha" in image.get("Labels")
+    ]
+    podman_images = sorted(podman_images, key=itemgetter("Created"), reverse=True)
+    if podman_images:
+        return podman_images[0]["Labels"]["quipucords.cli.git_sha"]
+
+    # Failover value for local runs, where qpc may be installed from git
     cmd = ["git", "-C", "../qpc/", "rev-parse", "HEAD"]
     result = subprocess.run(cmd, capture_output=True, check=True, text=True)
     return result.stdout.strip()
