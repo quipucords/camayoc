@@ -69,6 +69,7 @@ koji = "^1.33.0"
 
 [tool.black]
 target-version = ['py311']
+line-length = 100
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"
