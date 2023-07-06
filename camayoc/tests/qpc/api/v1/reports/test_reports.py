@@ -153,9 +153,26 @@ def test_merge_reports_from_scanjob(data_provider):
     scanjob2.create()
     for scanjob in (scanjob1, scanjob2):
         wait_until_state(scanjob, state="stopped")
+
     report = Report()
-    reportid1 = Report().retrieve_from_scan_job(scanjob1._id).json().get("report_id")
-    reportid2 = Report().retrieve_from_scan_job(scanjob2._id).json().get("report_id")
+    report1_json = Report().retrieve_from_scan_job(scanjob1._id).json()
+    reportid1 = report1_json.get("report_id")
+    assert reportid1 is not None, (
+        "Report 1 response for Scan Job {scanjob_id} did not have a report_id.\n"
+        "Full report JSON response was:\n{report_json}".format(
+            scanjob_id=scanjob1._id, report_json=report1_json
+        )
+    )
+
+    report2_json = Report().retrieve_from_scan_job(scanjob2._id).json()
+    reportid2 = report2_json.get("report_id")
+    assert reportid2 is not None, (
+        "Report 2 response for Scan Job {scanjob_id} did not have a report_id.\n"
+        "Full report JSON response was:\n{report_json}".format(
+            scanjob_id=scanjob2._id, report_json=report2_json
+        )
+    )
+
     response = report.create_from_merge([reportid1, reportid2])
     deployments = report.deployments()
     details = report.details()
