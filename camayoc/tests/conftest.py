@@ -11,6 +11,16 @@ from camayoc.config import get_config
 from camayoc.config import settings
 
 
+def pytest_collection_modifyitems(
+    session: pytest.Session, items: list[pytest.Item], config: pytest.Config
+) -> None:
+    for clear_all_idx, node in enumerate(items):
+        if node.nodeid.endswith("test_credentials.py::test_clear_all"):
+            break
+    clear_all_node = items.pop(clear_all_idx)
+    items.insert(0, clear_all_node)
+
+
 @pytest.fixture(scope="session")
 def vcenter_client():
     """Create a vCenter client.
