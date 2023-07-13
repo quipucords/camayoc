@@ -1,51 +1,14 @@
 # coding=utf-8
 """Pytest customizations and fixtures for the quipucords tests."""
 import ssl
-from pathlib import Path
 
 import pytest
 from pyVim.connect import Disconnect
 from pyVim.connect import SmartConnect
 
-try:
-    from pytest_ibutsu.pytest_plugin import ibutsu_plugin_key
-    from pytest_ibutsu.pytest_plugin import ibutsu_result_key
-except ImportError:
-    ibutsu_plugin_key = None
-
 from camayoc import utils
 from camayoc.config import get_config
 from camayoc.config import settings
-
-
-def _ibutsu_enabled(config: pytest.Config) -> bool:
-    if not ibutsu_plugin_key:
-        return False
-    ibutsu = config.stash.get(ibutsu_plugin_key, None)
-    if ibutsu is None:
-        return False
-    return ibutsu.enabled
-
-
-def _fill_ibutsu_result(item: pytest.Item):
-    ibutsu_result = item.stash[ibutsu_result_key]
-    component = ibutsu_result.metadata.get("component", None)
-    if not component:
-        testpath, _, _ = item.location
-        testpath = Path(testpath).relative_to("camayoc/tests/qpc/")
-        component = testpath.parts[0]
-    ibutsu_result.component = component
-
-
-@pytest.hookimpl(trylast=True)
-def pytest_collection_modifyitems(
-    session: pytest.Session, items: list[pytest.Item], config: pytest.Config
-) -> None:
-    ibutsu_enabled = _ibutsu_enabled(config)
-    if not ibutsu_enabled:
-        return
-    for item in items:
-        _fill_ibutsu_result(item)
 
 
 @pytest.fixture(scope="session")
