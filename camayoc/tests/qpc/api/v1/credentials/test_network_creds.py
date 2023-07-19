@@ -107,7 +107,10 @@ def test_negative_update_to_invalid(data_provider):
     del cred.ssh_keyfile
     response = cred.update()
     assert response.status_code == 400
-    assert "must have either a password or an ssh_keyfile" in response.text
+    assert (
+        "A host credential must have a password, ssh_keyfile, or ssh_key exclusively."
+        in response.text
+    )
     cred.ssh_keyfile = old
     assert_matches_server(cred)
 
