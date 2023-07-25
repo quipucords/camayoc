@@ -9,6 +9,7 @@ import subprocess
 from operator import itemgetter
 
 from camayoc import api
+from camayoc.utils import client_cmd
 
 
 def get_backend_version():
@@ -23,7 +24,14 @@ def get_frontend_version():
 
 
 def get_cli_version():
-    # Use available metadata until DISCOVERY-359 is resolved
+    # Use --build-sha flag if available
+    qpc_build_cmd = [client_cmd, "--build-sha"]
+    try:
+        qpc_build_result = subprocess.run(qpc_build_cmd, capture_output=True, check=True, text=True)
+        return qpc_build_result.stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+
     # Jenkins uses CLI image downloaded from quay
     podman_images_cmd = ["podman", "images", "--format", "json"]
     podman_images_result = subprocess.run(
