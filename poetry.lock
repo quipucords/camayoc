@@ -1428,14 +1428,13 @@ description = ""
 optional = false
 python-versions = "^3.8"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 cryptography = ">=37.0.4"
 gitpython = "^3.1.32"
 packaging = "^23.1"
 requests = ">=2.28.1"
-ruff = "^0.0.270"
 setuptools = "^67.8.0"
 
 [package.source]
@@ -1944,4 +1943,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8c3991f5f7a6c114606c40f0289f1defd687804672e5d4005a9547cdc1fc7b8b"
+content-hash = "dc90ae1763f30a88809cbd86d818b0a36955296d54f3fcd97ef5d3b170681548"

@@ -64,7 +64,7 @@ optional = true
 
 [tool.poetry.group.jenkins.dependencies]
 pytest-ibutsu = "^2.2.4"
-qpc = {path = "../qpc"}
+qpc = {path = "../qpc", develop = true}
 koji = "^1.33.0"
 
 [tool.black]
