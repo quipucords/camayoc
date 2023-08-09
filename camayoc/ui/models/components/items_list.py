@@ -21,15 +21,8 @@ class ItemsList(UIPage):
 
     def _get_item_from_current_list(self, name: str):
         default_timeout = 5000  # 5s
-        name_selectors = [
-            f'div.{class_name}:text-is("{name}")'
-            for class_name in ("list-group-item-heading", "list-item-name")
-        ]
-        item_elem = self._driver.locator(",".join(name_selectors))
-        item_elem_locator = (
-            "xpath=./ancestor::div[contains(@class, 'list-group-item')]"
-            "[not(contains(@class, 'list-group-item-text'))]"
-        )
+        item_elem = self._driver.locator("css=strong").filter(has_text=name)
+        item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'quipucords-table__tr')]"
         item_elem = item_elem.locator(item_elem_locator)
         item_elem.hover(timeout=default_timeout, trial=True)
         return item_elem
@@ -39,12 +32,14 @@ class ItemsList(UIPage):
     # by multiple fileds, clearing filters, sorting?).
     # But YAGNI tells us this will do for now
     def _search_for_item_by_name(self, name: str):
-        filter_field_button = self._driver.locator("button#filterFieldTypeMenu")
+        filter_field_button = self._driver.locator(
+            "div.pf-c-toolbar__content button[id]:has(span.pf-c-select__toggle-arrow)"
+        ).locator("nth=0")
         if filter_field_button.text_content() != "Name":
             filter_field_button.click()
             values_list = filter_field_button.locator("xpath=following-sibling::ul")
             values_list.locator("text='Name'").click()
-        self._driver.fill("input[placeholder$=Name]", name)
+        self._driver.fill("input[placeholder$=name]", name)
         self._driver.keyboard.press("Enter")
 
     def _get_item(self, name: str):

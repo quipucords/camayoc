@@ -38,8 +38,8 @@ class NetworkCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[placeholder$=credential]")
         authentication_type = SelectField("button#auth-type-select")
-        username = InputField("input[placeholder$=Username]")
-        password = InputField("input[placeholder$=Password]")
+        username = InputField("input[placeholder$=username]")
+        password = InputField("input[placeholder$=password]")
         ssh_key_file = InputField('label:has-text("SSH Key File") + div input')
         passphrase = InputField('label:has-text("Passphrase") + div input')
         become_method = SelectField("button#become-method-select")
@@ -59,8 +59,8 @@ class NetworkCredentialForm(CredentialForm):
 class SatelliteCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[placeholder$=credential]")
-        username = InputField("input[placeholder$=Username]")
-        password = InputField("input[placeholder$=Password]")
+        username = InputField("input[placeholder$=username]")
+        password = InputField("input[placeholder$=password]")
 
     @overload
     def fill(self, data: SatelliteCredentialFormDTO):
@@ -75,8 +75,8 @@ class SatelliteCredentialForm(CredentialForm):
 class VCenterCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[placeholder$=credential]")
-        username = InputField("input[placeholder$=Username]")
-        password = InputField("input[placeholder$=Password]")
+        username = InputField("input[placeholder$=username]")
+        password = InputField("input[placeholder$=password]")
 
     @overload
     def fill(self, data: VCenterCredentialFormDTO):
@@ -104,11 +104,11 @@ class CredentialsMainPage(MainPageMixin):
                 "class": NetworkCredentialForm,
             },
             CredentialTypes.SATELLITE: {
-                "selector": f"{create_credential_button} ~ ul li:nth-of-type(2) a",
+                "selector": f"{create_credential_button} ~ ul li:nth-of-type(3) a",
                 "class": SatelliteCredentialForm,
             },
             CredentialTypes.VCENTER: {
-                "selector": f"{create_credential_button} ~ ul li:nth-of-type(3) a",
+                "selector": f"{create_credential_button} ~ ul li:nth-of-type(4) a",
                 "class": VCenterCredentialForm,
             },
         }
