@@ -29,8 +29,8 @@ from .abstract_page import AbstractPage
 
 
 class CancelWizardPopup(PopUp, AbstractPage):
-    SAVE_LOCATOR = ".modal-footer button.btn-primary:text-is('Yes')"
-    CANCEL_LOCATOR = ".modal-footer button.btn-cancel:text-is('No')"
+    SAVE_LOCATOR = ".pf-c-modal-box__footer button.pf-m-primary:text-is('Yes')"
+    CANCEL_LOCATOR = ".pf-c-modal-box__footer button.pf-m-secondary:text-is('No')"
     SAVE_RESULT_CLASS = Pages.SOURCES
     CANCEL_RESULT_CLASS = None
 
@@ -41,7 +41,7 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
     CANCEL_RESULT_CLASS = CancelWizardPopup
 
     class FormDefinition:
-        source_type = RadioGroupField("div.wizard-pf-contents:not(.hidden)")
+        source_type = RadioGroupField("div.pf-c-wizard__main-body:not(.hidden)")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -65,7 +65,7 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
 
 
 class SourceCredentialsForm(Form, WizardStep, AbstractPage):
-    NEXT_STEP_LOCATOR = '.modal-footer button:has-text("Save")'
+    NEXT_STEP_LOCATOR = '.pf-c-wizard__footer button:has-text("Save")'
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES_RESULTS_PAGE
     PREV_STEP_RESULT_CLASS = SelectSourceTypeForm
     CANCEL_RESULT_CLASS = CancelWizardPopup
@@ -134,7 +134,7 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
 
 
 class ResultForm(WizardStep, AbstractPage):
-    NEXT_STEP_LOCATOR = ".modal-footer button.btn-primary"
+    NEXT_STEP_LOCATOR = ".pf-c-wizard__footer button.pf-m-primary"
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES
 
 
@@ -163,7 +163,7 @@ class ScanForm(Form, PopUp, AbstractPage):
 
 class SourceListElem(AbstractListItem):
     def open_scan(self) -> ScanForm:
-        scan_locator = 'div.list-view-pf-actions button:has-text("Scan")'
+        scan_locator = 'td.quipucords-table__td-action button:has-text("Scan")'
         self.locator.locator(scan_locator).click()
         return ScanForm(client=self._client)
 
@@ -185,7 +185,7 @@ class SourcesMainPage(MainPageMixin):
 
     @record_action
     def open_add_source(self) -> SelectSourceTypeForm:
-        create_source_button = 'button.btn-primary:has-text("Add")'
+        create_source_button = 'button.pf-m-primary:has-text("Add")'
         self._driver.click(create_source_button)
         return self._new_page(SelectSourceTypeForm)
 
