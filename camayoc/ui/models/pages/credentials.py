@@ -36,15 +36,15 @@ class CredentialForm(Form, PopUp, AbstractPage):
 
 class NetworkCredentialForm(CredentialForm):
     class FormDefinition:
-        credential_name = InputField("input[placeholder$=credential]")
-        authentication_type = SelectField("button#auth-type-select")
-        username = InputField("input[placeholder$=username]")
-        password = InputField("input[placeholder$=password]")
-        ssh_key_file = InputField('label:has-text("SSH Key File") + div input')
-        passphrase = InputField('label:has-text("Passphrase") + div input')
-        become_method = SelectField("button#become-method-select")
-        become_user = InputField('label:has-text("Become User") + div input')
-        become_password = InputField('label:has-text("Become Password") + div input')
+        authentication_type = SelectField("div[data-ouia-component-id=auth_type] > button")
+        credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        username = InputField("input[data-ouia-component-id=username]")
+        password = InputField("input[data-ouia-component-id=password]")
+        ssh_key_file = InputField("input[data-ouia-component-id=ssh_keyfile]")
+        passphrase = InputField("input[data-ouia-component-id=ssh_passphrase]")
+        become_method = SelectField("div[data-ouia-component-id=become_method] > button")
+        become_user = InputField("input[data-ouia-component-id=become_user]")
+        become_password = InputField("input[data-ouia-component-id=become_password]")
 
     @overload
     def fill(self, data: NetworkCredentialFormDTO):
@@ -58,9 +58,9 @@ class NetworkCredentialForm(CredentialForm):
 
 class SatelliteCredentialForm(CredentialForm):
     class FormDefinition:
-        credential_name = InputField("input[placeholder$=credential]")
-        username = InputField("input[placeholder$=username]")
-        password = InputField("input[placeholder$=password]")
+        credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        username = InputField("input[data-ouia-component-id=username]")
+        password = InputField("input[data-ouia-component-id=password]")
 
     @overload
     def fill(self, data: SatelliteCredentialFormDTO):
@@ -74,9 +74,9 @@ class SatelliteCredentialForm(CredentialForm):
 
 class VCenterCredentialForm(CredentialForm):
     class FormDefinition:
-        credential_name = InputField("input[placeholder$=credential]")
-        username = InputField("input[placeholder$=username]")
-        password = InputField("input[placeholder$=password]")
+        credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        username = InputField("input[data-ouia-component-id=username]")
+        password = InputField("input[data-ouia-component-id=password]")
 
     @overload
     def fill(self, data: VCenterCredentialFormDTO):
@@ -97,7 +97,7 @@ class CredentialsMainPage(MainPageMixin):
 
     @record_action
     def open_add_credential(self, source_type: CredentialTypes) -> CredentialForm:
-        create_credential_button = "#createCredentialButton"
+        create_credential_button = "div[data-ouia-component-id=add_credential] > button"
         source_type_map = {
             CredentialTypes.NETWORK: {
                 "selector": f"{create_credential_button} ~ ul li:nth-of-type(1) a",
