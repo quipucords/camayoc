@@ -78,14 +78,16 @@ class SourceCredentialsForm(Form, WizardStep, AbstractPage):
 
 class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
-        source_name = InputField('label:has-text("Name") + div input')
+        source_name = InputField("input[data-ouia-component-id=name]")
         addresses = InputField(
-            'label:has-text("Search addresses") + div textarea',
+            "textarea[data-ouia-component-id=hosts_multiple]",
             transform_input=lambda i: ",".join(i),
         )
-        port = InputField('label:has-text("Port") + div input', transform_input=lambda i: str(i))
-        credentials = MultipleSelectField("button#credentials")
-        use_paramiko = CheckboxField('label:has-text("Paramiko") input')
+        port = InputField("input[data-ouia-component-id=port]", transform_input=lambda i: str(i))
+        credentials = MultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select] > button"
+        )
+        use_paramiko = CheckboxField("input[data-ouia-component-id=options_paramiko]")
 
     @overload
     def fill(self, data: NetworkSourceFormDTO):
@@ -99,11 +101,13 @@ class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
 
 class SatelliteSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
-        source_name = InputField('label:has-text("Name") + div input')
-        address = InputField('label:has-text("IP address") + div input')
-        credentials = MultipleSelectField("button#credentials")
-        connection = SelectField("button#optionSslProtocol")
-        verify_ssl = CheckboxField('label:has-text("Verify SSL") input')
+        source_name = InputField("input[data-ouia-component-id=name]")
+        address = InputField("input[data-ouia-component-id=hosts_single]")
+        credentials = MultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select] > button"
+        )
+        connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
     def fill(self, data: SatelliteSourceFormDTO):
@@ -117,11 +121,13 @@ class SatelliteSourceCredentialsForm(SourceCredentialsForm):
 
 class VCenterSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
-        source_name = InputField('label:has-text("Name") + div input')
-        address = InputField('label:has-text("IP address") + div input')
-        credentials = MultipleSelectField("button#credentials")
-        connection = SelectField("button#optionSslProtocol")
-        verify_ssl = CheckboxField('label:has-text("Verify SSL") input')
+        source_name = InputField("input[data-ouia-component-id=name]")
+        address = InputField("input[data-ouia-component-id=hosts_single]")
+        credentials = MultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select] > button"
+        )
+        connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
     def fill(self, data: VCenterSourceFormDTO):
@@ -185,7 +191,7 @@ class SourcesMainPage(MainPageMixin):
 
     @record_action
     def open_add_source(self) -> SelectSourceTypeForm:
-        create_source_button = 'button.pf-m-primary:has-text("Add")'
+        create_source_button = "button[data-ouia-component-id=add_source]"
         self._driver.click(create_source_button)
         return self._new_page(SelectSourceTypeForm)
 
