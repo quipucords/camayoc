@@ -10,6 +10,7 @@ import inspect
 import random
 from enum import Enum
 
+import pytest
 from playwright.sync_api import TimeoutError
 
 from camayoc.exceptions import MisconfiguredWidgetException
@@ -42,6 +43,7 @@ def get_object_for_type(type_name):
     raise Exception(f"I don't know what to do with {type_name}")
 
 
+@pytest.mark.skip("Not intended for CI run")
 def test_long_running(ui_client: Client):
     """Perform random actions on application.
 
