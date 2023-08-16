@@ -12,7 +12,7 @@ from ..mixins import MainPageMixin
 
 class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
-        scan_locator = "div.list-view-pf-actions button[title=Download]"
+        scan_locator = "td.pf-c-table__action button[data-ouia-component-id=download]"
         # timeout argument below is in milliseconds; this is how long
         # script will wait for download button to appear
         with self.locator.page.expect_download() as download_info:
