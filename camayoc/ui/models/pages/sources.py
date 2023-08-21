@@ -143,6 +143,13 @@ class ResultForm(WizardStep, AbstractPage):
     NEXT_STEP_LOCATOR = ".pf-c-wizard__footer button.pf-m-primary"
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES
 
+    def confirm(self):
+        locator_template = ".pf-c-wizard svg[data-test-state={state}]"
+        fulfilled_elem = self._driver.locator(locator_template.format(state="fulfilled"))
+        error_elem = self._driver.locator(locator_template.format(state="error"))
+        fulfilled_elem.or_(error_elem).hover(trial=True)
+        return super().confirm()
+
 
 class ScanForm(Form, PopUp, AbstractPage):
     SAVE_RESULT_CLASS = Pages.SOURCES
