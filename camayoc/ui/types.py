@@ -14,6 +14,9 @@ from attrs import frozen
 from playwright.sync_api import Locator
 from playwright.sync_api import Page
 
+from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Source
+
 from .enums import CredentialTypes
 from .enums import NetworkCredentialAuthenticationTypes
 from .enums import NetworkCredentialBecomeMethods
@@ -92,6 +95,23 @@ class PlainNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
     )
     password: str = field(kw_only=True)
 
+    @classmethod
+    def from_model(cls, model: Credential):
+        try:
+            become_method_name = getattr(model, "become_method")
+            become_method = getattr(NetworkCredentialBecomeMethods, become_method_name.upper())
+        except AttributeError:
+            become_method = next(iter(NetworkCredentialBecomeMethods))
+
+        return cls(
+            credential_name=model.name,
+            username=model.username,
+            password=model.password,
+            become_method=become_method,
+            become_user=getattr(model, "become_user", None),
+            become_password=getattr(model, "become_password", None),
+        )
+
 
 @frozen
 class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
@@ -100,6 +120,24 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
     )
     ssh_key_file: str = field(kw_only=True)
     passphrase: Optional[str] = None
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        try:
+            become_method_name = getattr(model, "become_method")
+            become_method = getattr(NetworkCredentialBecomeMethods, become_method_name.upper())
+        except AttributeError:
+            become_method = next(iter(NetworkCredentialBecomeMethods))
+
+        return cls(
+            credential_name=model.name,
+            username=model.username,
+            ssh_key_file=model.ssh_keyfile,
+            passphrase=model.auth_token,
+            become_method=become_method,
+            become_user=getattr(model, "become_user", None),
+            become_password=getattr(model, "become_password", None),
+        )
 
 
 NetworkCredentialFormDTO = Union[
@@ -114,12 +152,20 @@ class SatelliteCredentialFormDTO:
     username: str
     password: str
 
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(credential_name=model.name, username=model.username, password=model.password)
+
 
 @frozen
 class VCenterCredentialFormDTO:
     credential_name: str
     username: str
     password: str
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(credential_name=model.name, username=model.username, password=model.password)
 
 
 CredentialFormDTO = Union[
@@ -131,6 +177,25 @@ CredentialFormDTO = Union[
 class AddCredentialDTO:
     credential_type: CredentialTypes
     credential_form_dto: CredentialFormDTO
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        match model.cred_type:
+            case "network":
+                credential_type = CredentialTypes.NETWORK
+                dto_cls = PlainNetworkCredentialFormDTO
+                if model.ssh_keyfile:
+                    dto_cls = SSHNetworkCredentialFormDTO
+                credential_form_dto = dto_cls.from_model(model)
+            case "satellite":
+                credential_type = CredentialTypes.SATELLITE
+                credential_form_dto = SatelliteCredentialFormDTO.from_model(model)
+            case "vcenter":
+                credential_type = CredentialTypes.VCENTER
+                credential_form_dto = VCenterCredentialFormDTO.from_model(model)
+            case _:
+                raise ValueError(f"Can't create Credential UI DTO from {model}")
+        return cls(credential_type, credential_form_dto)
 
 
 @frozen
@@ -146,14 +211,32 @@ class NetworkSourceFormDTO:
     port: Optional[int] = None
     use_paramiko: Optional[bool] = None
 
+    @classmethod
+    def from_model(cls, model: Source):
+        return cls(
+            source_name=model.name,
+            addresses=model.hosts,
+            credentials=model.credentials,
+            port=getattr(model, "port", None),
+        )
+
 
 @frozen
 class SatelliteSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    connection: SourceConnectionTypes
+    connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
+
+    @classmethod
+    def from_model(cls, model: Source):
+        return cls(
+            source_name=model.name,
+            address=model.hosts[0],
+            credentials=model.credentials,
+            verify_ssl=model.options.get("ssl_cert_verify"),
+        )
 
 
 @frozen
@@ -161,8 +244,17 @@ class VCenterSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    connection: SourceConnectionTypes
+    connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
+
+    @classmethod
+    def from_model(cls, model: Source):
+        return cls(
+            source_name=model.name,
+            address=model.hosts[0],
+            credentials=model.credentials,
+            verify_ssl=model.options.get("ssl_cert_verify"),
+        )
 
 
 SourceFormDTO = Union[
@@ -176,6 +268,22 @@ SourceFormDTO = Union[
 class AddSourceDTO:
     select_source_type: SelectSourceDTO
     source_form: SourceFormDTO
+
+    @classmethod
+    def from_model(cls, model: Source):
+        match model.source_type:
+            case "network":
+                source_type = SourceTypes.NETWORK_RANGE
+                source_form_dto = NetworkSourceFormDTO.from_model(model)
+            case "satellite":
+                source_type = SourceTypes.SATELLITE
+                source_form_dto = SatelliteSourceFormDTO.from_model(model)
+            case "vcenter":
+                source_type = SourceTypes.VCENTER_SERVER
+                source_form_dto = VCenterSourceFormDTO.from_model(model)
+            case _:
+                raise ValueError(f"Can't create Source UI DTO from {model}")
+        return cls(SelectSourceDTO(source_type), source_form_dto)
 
 
 @frozen

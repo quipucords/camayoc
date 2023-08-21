@@ -6,6 +6,7 @@
 :caselevel: integration
 :testtype: functional
 """
+import random
 import shutil
 import tarfile
 import tempfile
@@ -13,60 +14,59 @@ from pathlib import Path
 
 import pytest
 
-from camayoc.qpc_models import Credential
+from camayoc.config import settings
 from camayoc.qpc_models import Scan
-from camayoc.qpc_models import Source
 from camayoc.tests.qpc.utils import calculate_sha256sums
 from camayoc.tests.qpc.utils import get_expected_sha256sums
 from camayoc.ui import Client
 from camayoc.ui import data_factories
-from camayoc.ui.data_factories import AddCredentialDTOFactory
-from camayoc.ui.data_factories import AddSourceDTOFactory
-from camayoc.ui.data_factories import SSHNetworkCredentialFormDTOFactory
 from camayoc.ui.data_factories import TriggerScanDTOFactory
-from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
-from camayoc.ui.enums import NetworkCredentialBecomeMethods
-from camayoc.ui.enums import SourceTypes
+from camayoc.ui.types import AddCredentialDTO
+from camayoc.ui.types import AddSourceDTO
 
 
-def credential_source_pairs():
-    credential_form = SSHNetworkCredentialFormDTOFactory(
-        username="cloud-user",
-        ssh_key_file="/sshkeys/id_rsa",
-        passphrase="",
-        become_method=NetworkCredentialBecomeMethods.SUDO,
-        become_user="root",
-        become_password="",
+def create_endtoend_dtos(source_name, data_provider):
+    known_sources_map = {
+        source_definition.name: source_definition for source_definition in settings.sources
+    }
+    source_definition = known_sources_map.get(source_name)
+    credential_name = random.choice(source_definition.credentials)
+    credential_model = data_provider.credentials.new_one({"name": credential_name}, data_only=True)
+    credential_dto = AddCredentialDTO.from_model(credential_model)
+
+    source_model = data_provider.sources.new_one(
+        {"name": source_definition.name}, new_dependencies=True, data_only=True
     )
-    credential = AddCredentialDTOFactory(
-        credential_type=CredentialTypes.NETWORK,
-        credential_form_dto=credential_form,
-    )
-    source = AddSourceDTOFactory(
-        select_source_type__source_type=SourceTypes.NETWORK_RANGE,
-        source_form__addresses=["10.0.151.20", "10.0.149.227"],
-        source_form__credentials=[credential.credential_form_dto.credential_name],
-    )
-    yield pytest.param(credential, source, id="network")
+    source_model.credentials = [credential_model.name]
+    source_dto = AddSourceDTO.from_model(source_model)
 
-    credential = AddCredentialDTOFactory(credential_type=CredentialTypes.SATELLITE)
-    source = AddSourceDTOFactory(
-        select_source_type__source_type=SourceTypes.SATELLITE,
-        source_form__credentials=[credential.credential_form_dto.credential_name],
+    trigger_scan_dto = TriggerScanDTOFactory(
+        source_name=source_model.name,
+        scan_form__jboss_eap=None,
+        scan_form__fuse=None,
+        scan_form__jboss_web_server=None,
+        scan_form__decision_manager=None,
     )
-    yield pytest.param(credential, source, id="satellite")
-
-    credential = AddCredentialDTOFactory(credential_type=CredentialTypes.VCENTER)
-    source = AddSourceDTOFactory(
-        select_source_type__source_type=SourceTypes.VCENTER_SERVER,
-        source_form__credentials=[credential.credential_form_dto.credential_name],
+    data_provider.mark_for_cleanup(
+        credential_model, source_model, Scan(name=trigger_scan_dto.scan_form.scan_name)
     )
-    yield pytest.param(credential, source, id="vcenter")
+    return credential_dto, source_dto, trigger_scan_dto
 
 
-@pytest.mark.parametrize("credential,source", credential_source_pairs())
-def test_end_to_end(cleanup, ui_client: Client, credential, source):
+def source_names():
+    for source_definition in settings.sources:
+        # FIXME: should add Ansible to UI, not ignore it
+        if source_definition.type == "ansible":
+            continue
+
+        fixture_id = f"{source_definition.name}-{source_definition.type}"
+        yield pytest.param(source_definition.name, id=fixture_id)
+
+
+@pytest.mark.skip("Skipped to save time in CI execution")
+@pytest.mark.parametrize("source_name", source_names())
+def test_end_to_end(data_provider, ui_client: Client, source_name):
     """End-to-end test using web user interface.
 
     :id: f187fbd0-021c-4563-9691-61e54eb272bf
@@ -82,26 +82,17 @@ def test_end_to_end(cleanup, ui_client: Client, credential, source):
     :expectedresults: Credential and Source are created. Scan is completed.
         Report is downloaded. User is logged out.
     """
-    trigger_scan_data = TriggerScanDTOFactory(
-        source_name=source.source_form.source_name,
-        scan_form__jboss_eap=None,
-        scan_form__fuse=None,
-        scan_form__jboss_web_server=None,
-        scan_form__decision_manager=None,
-    )
-    cleanup.append(Credential(name=credential.credential_form_dto.credential_name))
-    cleanup.append(Scan(name=trigger_scan_data.scan_form.scan_name))
-    cleanup.append(Source(name=source.source_form.source_name))
+    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(source_name, data_provider)
     (
         ui_client.begin()
         .login(data_factories.LoginFormDTOFactory())
         .navigate_to(MainMenuPages.CREDENTIALS)
-        .add_credential(credential)
+        .add_credential(credential_dto)
         .navigate_to(MainMenuPages.SOURCES)
-        .add_source(source)
-        .trigger_scan(trigger_scan_data)
+        .add_source(source_dto)
+        .trigger_scan(trigger_scan_dto)
         .navigate_to(MainMenuPages.SCANS)
-        .download_scan(trigger_scan_data.scan_form.scan_name)
+        .download_scan(trigger_scan_dto.scan_form.scan_name)
         .logout()
     )
 
@@ -121,3 +112,35 @@ def test_end_to_end(cleanup, ui_client: Client, credential, source):
         if not file.is_file():
             continue
         assert file.stat().st_size > 0
+
+
+@pytest.mark.parametrize("source_name", source_names())
+def test_trigger_scan(data_provider, ui_client: Client, source_name):
+    """Mostly end-to-end test using web user interface (without downloading scan results).
+
+    :id: ae8b2d7d-8ac2-4957-a67a-6dedd80f4f31
+    :description: This is mostly end-to-end user journey through the web user interface.
+        To save time, we don't wait for scan to complete and we don't download scan
+        results.
+    :steps:
+        1) Log into the UI.
+        2) Go to Credentials page, open Credentials modal and fill in the form.
+        3) Go to Sources page, open Sources wizard and fill in all the forms.
+        4) Trigger scan for newly created source.
+        5) Verify that scan has started.
+        6) Log out.
+    :expectedresults: Credential and Source are created. Scan has started.
+        User is logged out.
+    """
+    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(source_name, data_provider)
+    scans_page = (
+        ui_client.begin()
+        .login(data_factories.LoginFormDTOFactory())
+        .navigate_to(MainMenuPages.CREDENTIALS)
+        .add_credential(credential_dto)
+        .navigate_to(MainMenuPages.SOURCES)
+        .add_source(source_dto)
+        .trigger_scan(trigger_scan_dto)
+        .navigate_to(MainMenuPages.SCANS)
+    )
+    assert scans_page._get_item(trigger_scan_dto.scan_form.scan_name).locator.is_visible()
