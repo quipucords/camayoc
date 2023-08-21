@@ -7,39 +7,72 @@
 :caselevel: integration
 :testtype: functional
 """
+import random
+from typing import get_args
+
 import pytest
 
-from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Source
 from camayoc.ui import Client
 from camayoc.ui import data_factories
-from camayoc.ui.data_factories import AddCredentialDTOFactory
 from camayoc.ui.data_factories import AddSourceDTOFactory
-from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import SourceTypes
+from camayoc.ui.types import NetworkSourceFormDTO
+from camayoc.ui.types import SatelliteSourceFormDTO
+from camayoc.ui.types import SourceFormDTO
+from camayoc.ui.types import VCenterSourceFormDTO
 
-SOURCE_DATA = {
-    SourceTypes.NETWORK_RANGE: [
+SOURCE_DATA_MAP = {
+    NetworkSourceFormDTO: [
         "127.0.0.1",
         "127.0.0.1, 127.0.0.2",
         "192.168.1.[1:100]",
         "192.168.0.0/24",
         "example.sonar.com",
     ],
-    SourceTypes.SATELLITE: ["127.0.0.1", "examplesatellite.sonar.com"],
-    SourceTypes.VCENTER_SERVER: ["127.0.0.1", "examplevcenter.sonar.com"],
-}
-
-MATCHING_TYPES = {
-    SourceTypes.NETWORK_RANGE: CredentialTypes.NETWORK,
-    SourceTypes.SATELLITE: CredentialTypes.SATELLITE,
-    SourceTypes.VCENTER_SERVER: CredentialTypes.VCENTER,
+    SatelliteSourceFormDTO: ["127.0.0.1", "examplesatellite.sonar.com"],
+    VCenterSourceFormDTO: ["127.0.0.1", "examplevcenter.sonar.com"],
 }
 
 
-@pytest.mark.parametrize("source_type, ", SOURCE_DATA.keys())
-def test_create_delete_source(ui_client: Client, source_type, cleanup):
+CREDENTIAL_TYPES_MAP = {
+    NetworkSourceFormDTO: "network",
+    SatelliteSourceFormDTO: "satellite",
+    VCenterSourceFormDTO: "vcenter",
+}
+
+
+SOURCE_TYPES_MAP = {
+    NetworkSourceFormDTO: SourceTypes.NETWORK_RANGE,
+    SatelliteSourceFormDTO: SourceTypes.SATELLITE,
+    VCenterSourceFormDTO: SourceTypes.VCENTER_SERVER,
+}
+
+
+def create_source_dto(source_type, data_provider):
+    credential_type = CREDENTIAL_TYPES_MAP.get(source_type)
+    credential_model = data_provider.credentials.new_one({"type": credential_type}, data_only=False)
+
+    source_address = random.choice(SOURCE_DATA_MAP.get(source_type))
+    extra_source_kwargs = {}
+    if issubclass(source_type, NetworkSourceFormDTO):
+        extra_source_kwargs["source_form__addresses"] = [source_address]
+    else:
+        extra_source_kwargs["source_form__address"] = source_address
+
+    source_dto = AddSourceDTOFactory(
+        select_source_type__source_type=SOURCE_TYPES_MAP.get(source_type),
+        source_form__credentials=[credential_model.name],
+        **extra_source_kwargs,
+    )
+    data_provider.mark_for_cleanup(Source(name=source_dto.source_form.source_name))
+    return source_dto
+
+
+# FIXME: this never actually deletes in UI
+@pytest.mark.parametrize("source_type", get_args(SourceFormDTO))
+def test_create_delete_source(data_provider, ui_client: Client, source_type):
     """Create and then delete a source through the UI.
 
     :id: b1f64fd6-0421-4650-aa6d-149cb3099012
@@ -51,20 +84,11 @@ def test_create_delete_source(ui_client: Client, source_type, cleanup):
     :expectedresults: A new source is created with the provided information,
         then it is deleted.
     """
-    credential_type = MATCHING_TYPES[source_type]
-    credential_data = AddCredentialDTOFactory(credential_type=credential_type)
-    source_data = AddSourceDTOFactory(
-        select_source_type__source_type=source_type,
-        source_form__credentials=[credential_data.credential_form_dto.credential_name],
-    )
-    cleanup.append(Credential(name=credential_data.credential_form_dto.credential_name))
-    cleanup.append(Source(name=source_data.source_form.source_name))
+    source_dto = create_source_dto(source_type, data_provider)
     (
         ui_client.begin()
         .login(data_factories.LoginFormDTOFactory())
-        .navigate_to(MainMenuPages.CREDENTIALS)
-        .add_credential(credential_data)
         .navigate_to(MainMenuPages.SOURCES)
-        .add_source(source_data)
+        .add_source(source_dto)
         .logout()
     )
