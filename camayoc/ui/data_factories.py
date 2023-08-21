@@ -85,7 +85,7 @@ class PlainNetworkCredentialFormDTOFactory(factory.Factory):
     class Meta:
         model = PlainNetworkCredentialFormDTO
 
-    credential_name = factory.Faker("sentence")
+    credential_name = factory.Faker("text", max_nb_chars=56)
     authentication_type = NetworkCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
     username = factory.Faker("user_name")
     password = factory.Faker("password")
@@ -103,7 +103,7 @@ class SSHNetworkCredentialFormDTOFactory(factory.Factory):
     class Meta:
         model = SSHNetworkCredentialFormDTO
 
-    credential_name = factory.Faker("sentence")
+    credential_name = factory.Faker("text", max_nb_chars=56)
     authentication_type = NetworkCredentialAuthenticationTypes.SSH_KEY
     username = factory.Faker("user_name")
     ssh_key_file = factory.LazyFunction(_existing_ssh_key_file)
@@ -122,7 +122,7 @@ class SatelliteCredentialFormDTOFactory(factory.Factory):
     class Meta:
         model = SatelliteCredentialFormDTO
 
-    credential_name = factory.Faker("sentence")
+    credential_name = factory.Faker("text", max_nb_chars=56)
     username = factory.Faker("user_name")
     password = factory.Faker("password")
 
@@ -131,7 +131,7 @@ class VCenterCredentialFormDTOFactory(factory.Factory):
     class Meta:
         model = VCenterCredentialFormDTO
 
-    credential_name = factory.Faker("sentence")
+    credential_name = factory.Faker("text", max_nb_chars=56)
     username = factory.Faker("user_name")
     password = factory.Faker("password")
 
@@ -173,7 +173,7 @@ class NetworkSourceFormDTOFactory(factory.Factory):
     class Params:
         credentials_num = 1
 
-    source_name = factory.Faker("sentence")
+    source_name = factory.Faker("text", max_nb_chars=56)
 
     @factory.lazy_attribute
     def addresses(self):
@@ -203,7 +203,7 @@ class SatelliteSourceFormDTOFactory(factory.Factory):
     class Params:
         credentials_num = 1
 
-    source_name = factory.Faker("sentence")
+    source_name = factory.Faker("text", max_nb_chars=56)
     address = factory.Faker("ipv4_private")
 
     @factory.lazy_attribute
@@ -222,7 +222,7 @@ class VCenterSourceFormDTOFactory(factory.Factory):
     class Params:
         credentials_num = 1
 
-    source_name = factory.Faker("sentence")
+    source_name = factory.Faker("text", max_nb_chars=56)
     address = factory.Faker("ipv4_private")
 
     @factory.lazy_attribute
@@ -261,7 +261,7 @@ class NewScanFormDTOFactory(factory.Factory):
     class Meta:
         model = NewScanFormDTO
 
-    scan_name = factory.Faker("sentence")
+    scan_name = factory.Faker("text", max_nb_chars=56)
     max_concurrent_scans = None
     jboss_eap = factory.Faker(
         "random_element",
