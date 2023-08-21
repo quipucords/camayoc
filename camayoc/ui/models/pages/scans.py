@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import time
+
 from playwright.sync_api import Download
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
@@ -13,13 +16,18 @@ from ..mixins import MainPageMixin
 class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
         scan_locator = "td.pf-c-table__action button[data-ouia-component-id=download]"
-        # timeout argument below is in milliseconds; this is how long
-        # script will wait for download button to appear
-        with self.locator.page.expect_download() as download_info:
-            self.locator.locator(scan_locator).click(timeout=30_000)
-        download = download_info.value
-        download.path()  # blocks the script while file is downloaded
-        return download
+        timeout_start = time.monotonic()
+        while 10 * 60 > (time.monotonic() - timeout_start):
+            try:
+                with self.locator.page.expect_download() as download_info:
+                    self.locator.locator(scan_locator).click(timeout=10_000)
+                download = download_info.value
+                download.path()  # blocks the script while file is downloaded
+                return download
+            except PlaywrightTimeoutError:
+                self._client.driver.locator(
+                    "div.pf-c-toolbar button[data-ouia-component-id=refresh]"
+                ).click()
 
 
 class ScansMainPage(MainPageMixin):
