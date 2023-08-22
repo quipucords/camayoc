@@ -140,6 +140,13 @@ def browser_context_args(browser_context_args):
     return {**browser_context_args, **extra_context_args}
 
 
+@pytest.fixture(scope="module")
+def data_provider(data_provider):
+    data_provider.cleanup()
+    clear_all_entities()
+    return data_provider
+
+
 @pytest.fixture
 def ui_client(page):
     client_session = BasicSession()
