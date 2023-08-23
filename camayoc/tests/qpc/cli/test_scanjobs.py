@@ -61,7 +61,8 @@ def test_scanjob(qpc_server_config, data_provider):
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1800)
+    wait_for_scan(scan_job_id, status="running", timeout=120)
+    wait_for_scan(scan_job_id, status="completed", timeout=1800)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     report_id = result["report_id"]
@@ -107,7 +108,8 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
+    wait_for_scan(scan_job_id, status="running", timeout=120)
+    wait_for_scan(scan_job_id, status="completed", timeout=1200)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     report_id = result["report_id"]
@@ -153,7 +155,8 @@ def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config, 
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
+    wait_for_scan(scan_job_id, status="running", timeout=120)
+    wait_for_scan(scan_job_id, status="completed", timeout=1200)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     report_id = result["report_id"]
@@ -211,7 +214,8 @@ def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
     scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
+    wait_for_scan(scan_job_id, status="running", timeout=120)
+    wait_for_scan(scan_job_id, status="completed", timeout=1200)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     report_id = result["report_id"]
