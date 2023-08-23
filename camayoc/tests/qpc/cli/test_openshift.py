@@ -118,7 +118,8 @@ def test_openshift_clusters(cluster, qpc_server_config):
     match_scan_id = re.match(r'Scan "(\d+)" started.', output)
     assert match_scan_id is not None
     scan_job_id = match_scan_id.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
+    wait_for_scan(scan_job_id, status="running", timeout=120)
+    wait_for_scan(scan_job_id, status="completed", timeout=1200)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     details, deployments = retrieve_report(scan_name, scan_job_id)
