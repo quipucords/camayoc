@@ -148,10 +148,37 @@ def wait_until_state(scanjob, timeout=3600, state="completed"):
         )
 
     current_status = scanjob.status()
-    while (not current_status or not current_status == state) and timeout > 0:
-        if state in stopped_states and current_status in stopped_states:
-            # scanjob is no longer running, so we will return
+    while True:
+        # achieved expected state - happy path
+        if current_status == state:
             return
+
+        # scanjob is no longer running, user wanted one of stopped states. Stopped is stopped
+        if current_status in stopped_states and state in stopped_states:
+            return
+
+        scanjob_details = scanjob.read().json()
+        exception_format = {
+            "scanjob_id": scanjob._id,
+            "scan_id": scanjob.scan_id,
+            "expected_state": state,
+            "scanjob_state": current_status,
+            "scanjob_details": pprint.pformat(scanjob_details),
+            "scanjob_results": pprint.pformat(scanjob_details.get("tasks")),
+        }
+
+        if current_status in stopped_states and state not in stopped_states:
+            raise StoppedScanException(
+                "You have called wait_until_state() on a scanjob with\n"
+                "ID={scanjob_id} has stopped running instead of reaching \n"
+                'the state="{expected_state}"\n'
+                'When the scanjob stopped, it had the state="{scanjob_state}".'
+                "\nThe scanjob was started for the scan with id {scan_id}"
+                "The full details of the scanjob were \n{scanjob_details}\n"
+                'The "results" available from the scanjob were \n'
+                "{scanjob_results}\n".format(**exception_format)
+            )
+
         if timeout <= 0:
             raise WaitTimeError(
                 "You have called wait_until_state() on a scanjob with\n"
@@ -162,33 +189,9 @@ def wait_until_state(scanjob, timeout=3600, state="completed"):
                 "The scanjob was started for the scan with id {scan_id}"
                 "The full details of the scanjob were \n{scanjob_details}\n"
                 'The "results" available from the scanjob were'
-                "\n{scanjob_results}\n".format(
-                    scanjob_id=scanjob._id,
-                    scan_id=scanjob.scan_id,
-                    expected_state=state,
-                    scanjob_state=current_status,
-                    scanjob_details=pprint.pformat(scanjob.read().json()),
-                    scanjob_results=pprint.pformat(scanjob.read().json().get("tasks")),
-                )
+                "\n{scanjob_results}\n".format(**exception_format)
             )
-        if state not in stopped_states and current_status in QPC_SCAN_TERMINAL_STATES:
-            raise StoppedScanException(
-                "You have called wait_until_state() on a scanjob with\n"
-                "ID={scanjob_id} has stopped running instead of reaching \n"
-                'the state="{expected_state}"\n'
-                'When the scanjob stopped, it had the state="{scanjob_state}".'
-                "\nThe scanjob was started for the scan with id {scan_id}"
-                "The full details of the scanjob were \n{scanjob_details}\n"
-                'The "results" available from the scanjob were \n'
-                "{scanjob_results}\n".format(
-                    scanjob_id=scanjob._id,
-                    scan_id=scanjob.scan_id,
-                    expected_state=state,
-                    scanjob_state=current_status,
-                    scanjob_details=pprint.pformat(scanjob.read().json()),
-                    scanjob_results=pprint.pformat(scanjob.read().json().get("tasks")),
-                )
-            )
+
         time.sleep(5)
         timeout -= 5
         current_status = scanjob.status()
