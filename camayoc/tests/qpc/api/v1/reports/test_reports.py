@@ -81,8 +81,7 @@ def test_report_content_consistency(data_provider):
     scan = data_provider.scans.new_one({}, new_dependencies=False, data_only=False)
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
-    wait_until_state(scanjob, state="running", timeout=120)
-    wait_until_state(scanjob, state="stopped", timeout=900)
+    wait_until_state(scanjob, state="stopped")
     report = Report()
     response = report.retrieve_from_scan_job(scanjob._id)
     if response.json().get("report_id") is None:
@@ -152,9 +151,8 @@ def test_merge_reports_from_scanjob(data_provider):
     scanjob1.create()
     scanjob2 = ScanJob(scan_id=scan2._id)
     scanjob2.create()
-    wait_until_state(scanjob1, state="running", timeout=120)
     for scanjob in (scanjob1, scanjob2):
-        wait_until_state(scanjob, state="stopped", timeout=900)
+        wait_until_state(scanjob, state="stopped")
 
     report = Report()
     report1_json = Report().retrieve_from_scan_job(scanjob1._id).json()
@@ -259,8 +257,7 @@ def test_products_found_deployment_report(data_provider, scan_info):
     scan = data_provider.scans.defined_one({"name": scan_info.get("name")})
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
-    wait_until_state(scanjob, state="running", timeout=120)
-    wait_until_state(scanjob, state="stopped", timeout=900)
+    wait_until_state(scanjob, state="stopped")
     report = Report()
     report.retrieve_from_scan_job(scan_job_id=scanjob._id)
     result = SCAN_DATA.get(scan.name)
@@ -342,8 +339,7 @@ def test_OS_found_deployment_report(data_provider, scan_info: ScanOptions):
     scan = data_provider.scans.defined_one({"name": scan_info.name})
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
-    wait_until_state(scanjob, state="running", timeout=120)
-    wait_until_state(scanjob, state="stopped", timeout=900)
+    wait_until_state(scanjob, state="stopped")
     report = Report()
     report.retrieve_from_scan_job(scan_job_id=scanjob._id)
     if not report._id:

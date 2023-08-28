@@ -76,8 +76,7 @@ def test_scan_task_results(data_provider, scan_info: ScanOptions):
     scan = data_provider.scans.defined_one({"name": scan_info.name})
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
-    wait_until_state(scanjob, state="running", timeout=120)
-    wait_until_state(scanjob, state="stopped", timeout=900)
+    wait_until_state(scanjob, state="stopped")
     assertion_error_message = "Details of failed scan : {0}".format(pformat(scanjob.read().json()))
 
     task_results = scanjob.read().json().get("tasks")
@@ -132,8 +131,7 @@ def test_disabled_optional_products(data_provider):
     data_provider.mark_for_cleanup(scan)
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
-    wait_until_state(scanjob, state="running", timeout=120)
-    wait_until_state(scanjob, state="stopped", timeout=900)
+    wait_until_state(scanjob, state="stopped")
 
     errors_found = []
     # grab disabled products from results
@@ -185,8 +183,7 @@ def test_enabled_extended_product_search(data_provider):
     data_provider.mark_for_cleanup(scan)
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
-    wait_until_state(scanjob, state="running", timeout=120)
-    wait_until_state(scanjob, state="stopped", timeout=900)
+    wait_until_state(scanjob, state="stopped")
 
     errors_found = []
     # grab extended products from config file
