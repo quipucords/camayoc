@@ -313,8 +313,7 @@ def setup_reports_prerequisites(data_provider):
         assert match is not None, result
         scan_job_id = match.group(1)
         scan["scan-job"] = scan_job_id
-        wait_for_scan(scan_job_id, status="running", timeout=120)
-        wait_for_scan(scan_job_id, status="completed")
+        wait_for_scan(scan_job_id)
         result = scan_job({"id": scan_job_id})
         assert result["status"] == "completed"
         report_id = result["report_id"]
