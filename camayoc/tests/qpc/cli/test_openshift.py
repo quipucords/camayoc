@@ -77,6 +77,30 @@ def validate_openshift_report(cluster, details, deployments):
     assert set(cluster_nodes) == set(seen_nodes), "The number of expected nodes diverged"
 
 
+def validate_openshift_with_acm(cluster, details):
+    EXPECTED_METRICS_KEYS = (
+        "vendor",
+        "cloud",
+        "version",
+        "managed_cluster_id",
+        "available",
+        "core_worker",
+        "socket_worker",
+        "created_via",
+    )
+    cluster_id = cluster["cluster_id"]
+    # The last 'facts' in the list will contains cluster, operators and acm_metrics information
+    acm_metrics = details["sources"][0]["facts"][-1]["acm_metrics"]
+    assert (
+        len(acm_metrics) > 1
+    ), "Cluster has ACM and no metrics were detected (expected at least one)"
+    assert cluster_id in [
+        x["managed_cluster_id"] for x in acm_metrics
+    ], "Cluster has ACM and its id is not in metrics"
+    for metrics in acm_metrics:
+        assert set(EXPECTED_METRICS_KEYS) == set(list(metrics))
+
+
 @pytest.mark.parametrize(
     "cluster", config_openshift(), ids=(x["hostname"] for x in config_openshift())
 )
@@ -102,6 +126,7 @@ def test_openshift_clusters(cluster, qpc_server_config):
     hostname = cluster["hostname"]
     port = cluster.get("port", 6443)
     ssl_cert_verify = not cluster["skip_tls_verify"]
+    has_acm = "advanced-cluster-management" in cluster.get("operators", [])
     source_add_and_check(
         {
             "name": source_name,
@@ -123,3 +148,5 @@ def test_openshift_clusters(cluster, qpc_server_config):
     assert result["status"] == "completed"
     details, deployments = retrieve_report(scan_name, scan_job_id)
     validate_openshift_report(cluster, details, deployments)
+    if has_acm:
+        validate_openshift_with_acm(cluster, details)

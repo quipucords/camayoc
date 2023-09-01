@@ -41,6 +41,9 @@ openshift:
           - 'worker-1.example.com'
           - 'worker-2.example.com'
           - 'worker-3.example.com'
+      operators:
+          - 'abc-operator'
+          - 'xyz-operator'
 
 # We host most of our test machines on a VCenter instance
 # and this section contains its URL and the credentials

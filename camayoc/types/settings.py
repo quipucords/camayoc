@@ -35,6 +35,7 @@ class OpenShiftOptions(BaseModel):
     cluster_id: str
     version: str
     nodes: list[str]
+    operators: list[str]
 
 
 class VCenterOptions(BaseModel):
