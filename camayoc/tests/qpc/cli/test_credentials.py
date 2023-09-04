@@ -19,6 +19,8 @@ from camayoc import utils
 from camayoc.constants import BECOME_PASSWORD_INPUT
 from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
+from camayoc.constants import SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG
+from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
 from camayoc.tests.qpc.cli.utils import cred_show_and_check
 from camayoc.tests.qpc.cli.utils import source_add_and_check
@@ -125,10 +127,13 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=True,
-    )
+    try:
+        sshkeyfile_cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=True,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
 
     cred_add_and_check(
         {"name": name, "username": username, "sshkeyfile": sshkeyfile_cred.ssh_keyfile}
@@ -160,10 +165,13 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=True,
-    )
+    try:
+        sshkeyfile_cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=True,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
 
     cred_add_and_check(
         {
@@ -355,10 +363,13 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
     """
     name = utils.uuid4()
     username = utils.uuid4()
-    sshkeyfile_cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=True,
-    )
+    try:
+        sshkeyfile_cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=True,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
     cred_add_and_check(
         {"name": name, "username": username, "sshkeyfile": sshkeyfile_cred.ssh_keyfile}
     )
