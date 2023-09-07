@@ -3,7 +3,6 @@ UI tests framework
 
 .. caution::
    This documentation focuses on UI testing framework that uses `Playwright <https://playwright.dev/python/>`_.
-   Older framework, built on top of `Selenium <https://www.selenium.dev/>`_, is briefly documented in project README file.
 
 
 Preparing Playwright environment
