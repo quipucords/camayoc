@@ -77,6 +77,13 @@ def validate_openshift_report(cluster, details, deployments):
     assert set(cluster_nodes) == set(seen_nodes), "The number of expected nodes diverged"
 
 
+def validate_operators(cluster, details):
+    expected_operators = cluster["operators"]
+    detected_operators = [op["name"] for op in details["sources"][0]["facts"][-1]["operators"]]
+    for operator in expected_operators:
+        assert operator in detected_operators, f"The operator '{operator}' was not detected."
+
+
 def validate_openshift_with_acm(cluster, details):
     EXPECTED_METRICS_KEYS = (
         "vendor",
@@ -148,5 +155,6 @@ def test_openshift_clusters(cluster, qpc_server_config):
     assert result["status"] == "completed"
     details, deployments = retrieve_report(scan_name, scan_job_id)
     validate_openshift_report(cluster, details, deployments)
+    validate_operators(cluster, details)
     if has_acm:
         validate_openshift_with_acm(cluster, details)
