@@ -5,10 +5,8 @@ PYTEST_OPTIONS=--verbose
 help:
 	@echo "Please use \`make <target>' where <target> is one of:"
 	@echo "  help              to show this message"
-	@echo "  all               to execute test-coverage and pre-commit and docs stuff"
+	@echo "  all               to execute test-coverage and pre-commit stuff"
 	@echo "  clean			   to clean all pycache files"
-	@echo "  docs-clean        to remove documentation"
-	@echo "  docs-html         to generate HTML documentation"
 	@echo "  install           to install in editable mode"
 	@echo "  install-dev       to install in editable mode plus the "
 	@echo "                    dev packages and install pre-commit hooks"
@@ -22,7 +20,7 @@ help:
 	@echo "  test-qpc-api      to run all tests for quipucords API"
 
 
-all: test-coverage pre-commit validate-docstrings docs-html
+all: test-coverage pre-commit validate-docstrings
 
 clean:
 	{ \
@@ -30,15 +28,6 @@ clean:
     find $${pycaches} -type f -name "*.py[co]" -delete;\
     find $${pycaches} -type d -name "__pycache__" -delete;\
 	}
-
-docs-clean:
-	@cd docs; poetry run $(MAKE) clean
-
-docs-html:
-	@cd docs; poetry run $(MAKE) html
-
-docs-serve:
-	@cd docs; poetry run $(MAKE) serve
 
 install:
 	poetry install
@@ -82,6 +71,6 @@ validate-docstrings:
 	@./scripts/validate_docstrings.sh
 	@poetry run testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
 
-.PHONY: all clean docs-clean docs-html install install-dev lint \
+.PHONY: all clean install install-dev lint \
 	test test-coverage test-qpc \
 	test-qpc-api test-qpc-ui test-qpc-cli

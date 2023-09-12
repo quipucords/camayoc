@@ -1,6 +1,5 @@
 .. _quipucords: https://github.com/quipucords/quipucords
 .. _qpc: https://copr.fedorainfracloud.org/coprs/g/quipucords/qpc/
-.. _sphinx: http://www.sphinx-doc.org/en/master/
 
 =======
 Camayoc
@@ -145,11 +144,6 @@ Testing Camayoc
 ^^^^^^^^^^^^^^^
 Testing Camayoc requires that you have installed the development dependencies. Do that by running ``make install-dev``.
 
-To run all checks of the Camayoc test framework, including testing the docs
-build, run::
+To run all checks of the Camayoc test framework, execute::
 
     make all
-
-The doc strings of each test case are designed to be digested by sphinx_. It is a good idea when writing new tests to make sure the doc strings are rendering as you expect them to. To make and serve the docs on your local machine::
-
-    make docs-serve
