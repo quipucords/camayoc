@@ -12,6 +12,7 @@ import random
 import re
 
 import pytest
+from littletable import Table
 
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
 from camayoc.exceptions import NoMatchingDataDefinitionException
@@ -284,7 +285,12 @@ def test_scanjob_cancel(qpc_server_config, data_provider):
         3) Try to restart the scan by running ``qpc scan restart --id <id>``
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
-    source = data_provider.sources.new_one({}, data_only=False)
+    # There's nothing fundamentally wrong with Ansible. In our environment,
+    # it finishes too quick, largely increasing a risk of test failing
+    # because job finished before we checked if it started.
+    source = data_provider.sources.new_one(
+        {"type": Table.not_in(("ansible", "openshift"))}, data_only=False
+    )
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
     data_provider.mark_for_cleanup(Scan(name=scan_name))
