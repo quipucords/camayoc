@@ -28,6 +28,3 @@ jobs:
       - name: Validate docstrings
         run: |
           make validate-docstrings
-      - name: Generate HTML documentation
-        run: |
-          make docs-html
