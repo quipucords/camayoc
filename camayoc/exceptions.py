@@ -2,19 +2,6 @@
 """Custom exceptions defined by Camayoc."""
 
 
-class CalledProcessError(Exception):
-    """Indicates a command process has a non-zero return code.
-
-    See :meth:`camayoc.command.CompletedProcess` for more information.
-    """
-
-    def __str__(self):
-        """Provide a human-friendly string representation of this exception."""
-        return (
-            "Command {} returned non-zero exit status {}.\n\n" "stdout: {}\n\n" "stderr: {}"
-        ).format(*self.args)
-
-
 class ConfigFileNotFoundError(UserWarning):
     """We cannot find the requested Camayoc configuration file.
 
