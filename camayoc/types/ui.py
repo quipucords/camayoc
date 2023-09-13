@@ -16,12 +16,11 @@ from playwright.sync_api import Page
 
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Source
-
-from .enums import CredentialTypes
-from .enums import NetworkCredentialAuthenticationTypes
-from .enums import NetworkCredentialBecomeMethods
-from .enums import SourceConnectionTypes
-from .enums import SourceTypes
+from camayoc.ui.enums import CredentialTypes
+from camayoc.ui.enums import NetworkCredentialAuthenticationTypes
+from camayoc.ui.enums import NetworkCredentialBecomeMethods
+from camayoc.ui.enums import SourceConnectionTypes
+from camayoc.ui.enums import SourceTypes
 
 if TYPE_CHECKING:
     from camayoc.ui import Client

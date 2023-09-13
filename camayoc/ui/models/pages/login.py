@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from camayoc.types.ui import LoginFormDTO
 from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import Pages
-from camayoc.ui.types import LoginFormDTO
 
 from .abstract_page import AbstractPage
 

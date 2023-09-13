@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing import overload
 
+from camayoc.types.ui import AddSourceDTO
+from camayoc.types.ui import NetworkSourceFormDTO
+from camayoc.types.ui import NewScanFormDTO
+from camayoc.types.ui import SatelliteSourceFormDTO
+from camayoc.types.ui import SelectSourceDTO
+from camayoc.types.ui import TriggerScanDTO
+from camayoc.types.ui import VCenterSourceFormDTO
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
 from camayoc.ui.enums import Pages
 from camayoc.ui.enums import SourceTypes
-from camayoc.ui.types import AddSourceDTO
-from camayoc.ui.types import NetworkSourceFormDTO
-from camayoc.ui.types import NewScanFormDTO
-from camayoc.ui.types import SatelliteSourceFormDTO
-from camayoc.ui.types import SelectSourceDTO
-from camayoc.ui.types import TriggerScanDTO
-from camayoc.ui.types import VCenterSourceFormDTO
 
 from ..components.form import Form
 from ..components.items_list import AbstractListItem

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from camayoc.ui.types import UIPage
+from camayoc.types.ui import UIPage
 
 from .popup import PopUp
 

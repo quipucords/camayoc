@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from camayoc.exceptions import MisconfiguredWidgetException
-from camayoc.ui.types import UIPage
+from camayoc.types.ui import UIPage
 
 
 class PopUp(UIPage):

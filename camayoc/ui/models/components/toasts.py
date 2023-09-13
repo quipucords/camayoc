@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from playwright.sync_api import TimeoutError
 
-from camayoc.ui.types import UIPage
+from camayoc.types.ui import UIPage
 
 
 class ToastNotifications(UIPage):

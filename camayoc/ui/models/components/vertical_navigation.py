@@ -5,10 +5,10 @@ from typing import Literal
 from typing import Union
 from typing import overload
 
+from camayoc.types.ui import UIPage
 from camayoc.ui.decorators import record_action
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import Pages
-from camayoc.ui.types import UIPage
 
 if TYPE_CHECKING:
     from ..credentials import CredentialsMainPage

@@ -6,16 +6,16 @@ from urllib.parse import urlunparse
 
 from camayoc import config
 from camayoc import exceptions
+from camayoc.types.ui import Session
 
 from .models.pages.login import Login
 from .session import DummySession
-from .types import Session
 
 if TYPE_CHECKING:
     from playwright.sync_api import Download
     from playwright.sync_api import Page
 
-    from camayoc.ui.types import UIPage
+    from camayoc.types.ui import UIPage
 
 
 class Client:

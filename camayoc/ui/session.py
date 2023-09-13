@@ -1,7 +1,7 @@
 from typing import Optional
 
-from camayoc.ui.types import HistoryRecord
-from camayoc.ui.types import Session
+from camayoc.types.ui import HistoryRecord
+from camayoc.types.ui import Session
 
 
 class BasicSession(Session):

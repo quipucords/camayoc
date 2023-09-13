@@ -18,12 +18,12 @@ from camayoc.config import settings
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import calculate_sha256sums
 from camayoc.tests.qpc.utils import get_expected_sha256sums
+from camayoc.types.ui import AddCredentialDTO
+from camayoc.types.ui import AddSourceDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.data_factories import TriggerScanDTOFactory
 from camayoc.ui.enums import MainMenuPages
-from camayoc.ui.types import AddCredentialDTO
-from camayoc.ui.types import AddSourceDTO
 
 
 def create_endtoend_dtos(source_name, data_provider):

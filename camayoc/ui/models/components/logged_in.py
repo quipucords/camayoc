@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from camayoc.types.ui import UIPage
 from camayoc.ui.enums import Pages
-from camayoc.ui.types import UIPage
 
 if TYPE_CHECKING:
     from .login import Login

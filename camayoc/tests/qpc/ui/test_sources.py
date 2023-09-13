@@ -13,15 +13,15 @@ from typing import get_args
 import pytest
 
 from camayoc.qpc_models import Source
+from camayoc.types.ui import NetworkSourceFormDTO
+from camayoc.types.ui import SatelliteSourceFormDTO
+from camayoc.types.ui import SourceFormDTO
+from camayoc.types.ui import VCenterSourceFormDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.data_factories import AddSourceDTOFactory
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import SourceTypes
-from camayoc.ui.types import NetworkSourceFormDTO
-from camayoc.ui.types import SatelliteSourceFormDTO
-from camayoc.ui.types import SourceFormDTO
-from camayoc.ui.types import VCenterSourceFormDTO
 
 SOURCE_DATA_MAP = {
     NetworkSourceFormDTO: [

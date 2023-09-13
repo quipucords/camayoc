@@ -5,8 +5,8 @@ import logging
 from attrs import fields
 
 from camayoc.exceptions import MisconfiguredWidgetException
-from camayoc.ui.types import UIField
-from camayoc.ui.types import UIPage
+from camayoc.types.ui import UIField
+from camayoc.types.ui import UIPage
 
 from ..fields import Field
 

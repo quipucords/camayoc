@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 from camayoc.exceptions import PageFactoryException
+from camayoc.types.ui import UIPage
 from camayoc.ui.enums import Pages
-from camayoc.ui.types import UIPage
 
 if TYPE_CHECKING:
     import camayoc

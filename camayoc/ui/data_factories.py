@@ -7,6 +7,22 @@ from typing import get_origin
 import factory
 
 from camayoc.config import get_config
+from camayoc.types.ui import AddCredentialDTO
+from camayoc.types.ui import AddSourceDTO
+from camayoc.types.ui import CredentialFormDTO
+from camayoc.types.ui import LoginFormDTO
+from camayoc.types.ui import NetworkCredentialFormDTO
+from camayoc.types.ui import NetworkSourceFormDTO
+from camayoc.types.ui import NewScanFormDTO
+from camayoc.types.ui import PlainNetworkCredentialFormDTO
+from camayoc.types.ui import SatelliteCredentialFormDTO
+from camayoc.types.ui import SatelliteSourceFormDTO
+from camayoc.types.ui import SelectSourceDTO
+from camayoc.types.ui import SourceFormDTO
+from camayoc.types.ui import SSHNetworkCredentialFormDTO
+from camayoc.types.ui import TriggerScanDTO
+from camayoc.types.ui import VCenterCredentialFormDTO
+from camayoc.types.ui import VCenterSourceFormDTO
 
 from .data_providers import APIDataProvider
 from .enums import CredentialTypes
@@ -14,22 +30,6 @@ from .enums import NetworkCredentialAuthenticationTypes
 from .enums import NetworkCredentialBecomeMethods
 from .enums import SourceConnectionTypes
 from .enums import SourceTypes
-from .types import AddCredentialDTO
-from .types import AddSourceDTO
-from .types import CredentialFormDTO
-from .types import LoginFormDTO
-from .types import NetworkCredentialFormDTO
-from .types import NetworkSourceFormDTO
-from .types import NewScanFormDTO
-from .types import PlainNetworkCredentialFormDTO
-from .types import SatelliteCredentialFormDTO
-from .types import SatelliteSourceFormDTO
-from .types import SelectSourceDTO
-from .types import SourceFormDTO
-from .types import SSHNetworkCredentialFormDTO
-from .types import TriggerScanDTO
-from .types import VCenterCredentialFormDTO
-from .types import VCenterSourceFormDTO
 
 optional_bool = OrderedDict([(None, 0.5), (True, 0.25), (False, 0.25)])
 
