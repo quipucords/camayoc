@@ -5,10 +5,6 @@ from camayoc.types.ui import UIPage
 from .popup import PopUp
 
 
-class Wizard(UIPage):
-    pass
-
-
 class WizardStep(PopUp, UIPage):
     NEXT_STEP_LOCATOR = '.pf-c-wizard__footer button:has-text("Next")'
     PREV_STEP_LOCATOR = '.pf-c-wizard__footer button:has-text("Back")'

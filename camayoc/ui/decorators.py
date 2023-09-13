@@ -27,27 +27,6 @@ def service(func):
     return inner
 
 
-def autofill():
-    """Make all arguments optional.
-
-    Wrap a function, take all arguments beside `self`, check the type
-    and automatically create value conforming to this type. Then call
-    the function with generated value.
-
-    If value is provided, don't do anything.
-
-    Expose the same function signature, but with all arguments wrapped
-    in `Optional`.
-
-    This way long-running tester can automatically fill forms with random,
-    but correct data.
-
-    Test authors may skip arguments and get randomized data each test run,
-    or they can opt-in to create argument objects and run the same test
-    every time. May be useful for edge cases!
-    """
-
-
 def record_action(func):
     """Save a function call in session history.
 
