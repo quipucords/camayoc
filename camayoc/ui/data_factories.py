@@ -6,7 +6,7 @@ from typing import get_origin
 
 import factory
 
-from camayoc.config import get_config
+from camayoc.config import settings
 from camayoc.data_provider import DataProvider
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
@@ -77,8 +77,8 @@ class LoginFormDTOFactory(factory.Factory):
     class Meta:
         model = LoginFormDTO
 
-    username = get_config().get("qpc", {}).get("username")
-    password = get_config().get("qpc", {}).get("password")
+    username = settings.quipucords_server.username
+    password = settings.quipucords_server.password
 
 
 class PlainNetworkCredentialFormDTOFactory(factory.Factory):

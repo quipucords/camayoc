@@ -4,8 +4,9 @@ from typing import TYPE_CHECKING
 from typing import Optional
 from urllib.parse import urlunparse
 
-from camayoc import config
 from camayoc import exceptions
+from camayoc.config import settings
+from camayoc.types.settings import Configuration
 from camayoc.types.ui import Session
 
 from .models.pages.login import Login
@@ -24,7 +25,7 @@ class Client:
         url=None,
         auto_dismiss_notification=True,
     ):
-        self._camayoc_config = config.get_config()
+        self._camayoc_config: Configuration = settings
         self._base_url = url
         self._set_url()
         self._auto_dismiss_notification = auto_dismiss_notification
@@ -37,16 +38,17 @@ class Client:
         if self._base_url:
             return
 
-        cfg = self._camayoc_config.get("qpc", {})
-        hostname = cfg.get("hostname")
+        hostname = self._camayoc_config.quipucords_server.hostname
 
         if not hostname:
-            raise exceptions.QPCBaseUrlNotFound(
-                "\n'qpc' section specified in camayoc config file, but" "no 'hostname' key found."
+            msg = (
+                "\n'quipucords_server' section specified in camayoc config file, "
+                "but no 'hostname' key found."
             )
+            raise exceptions.QPCBaseUrlNotFound(msg)
 
-        scheme = "https" if cfg.get("https", False) else "http"
-        port = str(cfg.get("port", ""))
+        scheme = "https" if self._camayoc_config.quipucords_server.https else "http"
+        port = str(self._camayoc_config.quipucords_server.port)
         netloc = hostname + ":{}".format(port) if port else hostname
         self._base_url = urlunparse((scheme, netloc, "", "", "", ""))
 
