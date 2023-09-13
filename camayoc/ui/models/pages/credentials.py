@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import overload
 
+from camayoc.types.ui import AddCredentialDTO
+from camayoc.types.ui import NetworkCredentialFormDTO
+from camayoc.types.ui import SatelliteCredentialFormDTO
+from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import Pages
-from camayoc.ui.types import AddCredentialDTO
-from camayoc.ui.types import NetworkCredentialFormDTO
-from camayoc.ui.types import SatelliteCredentialFormDTO
-from camayoc.ui.types import VCenterCredentialFormDTO
 
 from ..components.form import Form
 from ..components.popup import PopUp

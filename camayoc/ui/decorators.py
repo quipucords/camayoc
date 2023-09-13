@@ -2,9 +2,8 @@ import warnings
 from functools import wraps
 
 from camayoc.exceptions import IncorrectDecoratorUsageWarning
-
-from .types import HistoryRecord
-from .types import Session
+from camayoc.types.ui import HistoryRecord
+from camayoc.types.ui import Session
 
 
 def service(func):

@@ -14,17 +14,17 @@ import pytest
 from littletable import Table
 
 from camayoc.qpc_models import Credential
+from camayoc.types.ui import CredentialFormDTO
+from camayoc.types.ui import NetworkCredentialFormDTO
+from camayoc.types.ui import PlainNetworkCredentialFormDTO
+from camayoc.types.ui import SatelliteCredentialFormDTO
+from camayoc.types.ui import SSHNetworkCredentialFormDTO
+from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import NetworkCredentialBecomeMethods
-from camayoc.ui.types import CredentialFormDTO
-from camayoc.ui.types import NetworkCredentialFormDTO
-from camayoc.ui.types import PlainNetworkCredentialFormDTO
-from camayoc.ui.types import SatelliteCredentialFormDTO
-from camayoc.ui.types import SSHNetworkCredentialFormDTO
-from camayoc.ui.types import VCenterCredentialFormDTO
 
 CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,

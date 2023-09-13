@@ -2,7 +2,7 @@ from enum import Enum
 
 from playwright.sync_api import Page
 
-from camayoc.ui.types import UIField
+from camayoc.types.ui import UIField
 
 
 class Field(UIField):

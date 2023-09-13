@@ -6,8 +6,8 @@ from playwright.sync_api import Locator
 from playwright.sync_api import TimeoutError
 
 from camayoc.exceptions import MisconfiguredWidgetException
-from camayoc.ui.types import UIListItem
-from camayoc.ui.types import UIPage
+from camayoc.types.ui import UIListItem
+from camayoc.types.ui import UIPage
 
 
 class AbstractListItem(UIListItem):
