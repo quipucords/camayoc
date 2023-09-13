@@ -15,8 +15,6 @@ if TYPE_CHECKING:
     from playwright.sync_api import Download
     from playwright.sync_api import Page
 
-    from camayoc.types.ui import UIPage
-
 
 class Client:
     def __init__(
@@ -56,25 +54,3 @@ class Client:
         """Start browser and open Quipucords UI login page."""
         self.driver.goto(self._base_url)
         return Login(client=self)
-
-    @property
-    def current_page(self) -> UIPage:
-        """Get instance of object representing currently opened page."""
-        pass
-
-    @property
-    def history(self) -> None:
-        """Get access to Session.history.
-
-        FIXME: do I need this?
-        """
-        pass
-
-    def navigate_to(self) -> UIPage:
-        """Porcelain command for easier setup.
-
-        Wrap self.begin().login(default_user, default_pass).navigate_to("Some Page")
-
-        FIXME: do I need this?
-        """
-        pass
