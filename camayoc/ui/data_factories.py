@@ -7,6 +7,7 @@ from typing import get_origin
 import factory
 
 from camayoc.config import get_config
+from camayoc.data_provider import DataProvider
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
 from camayoc.types.ui import CredentialFormDTO
@@ -24,7 +25,6 @@ from camayoc.types.ui import TriggerScanDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.types.ui import VCenterSourceFormDTO
 
-from .data_providers import APIDataProvider
 from .enums import CredentialTypes
 from .enums import NetworkCredentialAuthenticationTypes
 from .enums import NetworkCredentialBecomeMethods
@@ -182,8 +182,15 @@ class NetworkSourceFormDTOFactory(factory.Factory):
 
     @factory.lazy_attribute
     def credentials(self):
-        generator = APIDataProvider.get_credential(cred_type="network")
-        return [next(generator) for i in range(self.credentials_num)]
+        data_provider = DataProvider()
+        network_credential_generator = data_provider.credentials.new_many(
+            {"type": "network"}, data_only=False
+        )
+        cred_names = []
+        for _ in range(self.credentials_num):
+            cred = next(network_credential_generator)
+            cred_names.append(cred.name)
+        return cred_names
 
     port = 22
     use_paramiko = factory.Faker("random_element", elements=optional_bool)
@@ -208,8 +215,15 @@ class SatelliteSourceFormDTOFactory(factory.Factory):
 
     @factory.lazy_attribute
     def credentials(self):
-        generator = APIDataProvider.get_credential(cred_type="satellite")
-        return [next(generator) for i in range(self.credentials_num)]
+        data_provider = DataProvider()
+        network_credential_generator = data_provider.credentials.new_many(
+            {"type": "satellite"}, data_only=False
+        )
+        cred_names = []
+        for _ in range(self.credentials_num):
+            cred = next(network_credential_generator)
+            cred_names.append(cred.name)
+        return cred_names
 
     connection = factory.Faker("random_element", elements=list(SourceConnectionTypes))
     verify_ssl = factory.LazyAttribute(_verify_ssl_based_on_connection)
@@ -227,8 +241,15 @@ class VCenterSourceFormDTOFactory(factory.Factory):
 
     @factory.lazy_attribute
     def credentials(self):
-        generator = APIDataProvider.get_credential(cred_type="vcenter")
-        return [next(generator) for i in range(self.credentials_num)]
+        data_provider = DataProvider()
+        network_credential_generator = data_provider.credentials.new_many(
+            {"type": "vcenter"}, data_only=False
+        )
+        cred_names = []
+        for _ in range(self.credentials_num):
+            cred = next(network_credential_generator)
+            cred_names.append(cred.name)
+        return cred_names
 
     connection = factory.Faker("random_element", elements=list(SourceConnectionTypes))
     verify_ssl = factory.LazyAttribute(_verify_ssl_based_on_connection)
@@ -287,5 +308,10 @@ class TriggerScanDTOFactory(factory.Factory):
     class Meta:
         model = TriggerScanDTO
 
-    source_name = factory.Iterator(APIDataProvider.get_source())
+    @factory.lazy_attribute
+    def source_name(self):
+        data_provider = DataProvider()
+        source = data_provider.sources.new_one({}, data_only=False)
+        return source.name
+
     scan_form = factory.SubFactory(NewScanFormDTOFactory)
