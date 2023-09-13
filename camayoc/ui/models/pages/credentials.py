@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import overload
 
 from camayoc.types.ui import AddCredentialDTO
+from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
@@ -88,6 +89,22 @@ class VCenterCredentialForm(CredentialForm):
         return self
 
 
+class AnsibleCredentialForm(CredentialForm):
+    class FormDefinition:
+        credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        username = InputField("input[data-ouia-component-id=username]")
+        password = InputField("input[data-ouia-component-id=password]")
+
+    @overload
+    def fill(self, data: AnsibleCredentialFormDTO):
+        ...
+
+    @record_action
+    def fill(self, data: AnsibleCredentialFormDTO):
+        super().fill(data)
+        return self
+
+
 class CredentialsMainPage(MainPageMixin):
     @service
     def add_credential(self, data: AddCredentialDTO) -> CredentialsMainPage:
@@ -110,6 +127,10 @@ class CredentialsMainPage(MainPageMixin):
             CredentialTypes.VCENTER: {
                 "selector": f"{create_credential_button} ~ ul li:nth-of-type(4) a",
                 "class": VCenterCredentialForm,
+            },
+            CredentialTypes.ANSIBLE: {
+                "selector": f"{create_credential_button} ~ ul li:nth-of-type(5) a",
+                "class": AnsibleCredentialForm,
             },
         }
 

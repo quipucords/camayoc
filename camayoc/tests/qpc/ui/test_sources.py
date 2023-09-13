@@ -13,6 +13,7 @@ from typing import get_args
 import pytest
 
 from camayoc.qpc_models import Source
+from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import SatelliteSourceFormDTO
 from camayoc.types.ui import SourceFormDTO
@@ -33,6 +34,7 @@ SOURCE_DATA_MAP = {
     ],
     SatelliteSourceFormDTO: ["127.0.0.1", "examplesatellite.sonar.com"],
     VCenterSourceFormDTO: ["127.0.0.1", "examplevcenter.sonar.com"],
+    AnsibleSourceFormDTO: ["127.0.0.1", "exampleansible.sonar.com"],
 }
 
 
@@ -40,6 +42,7 @@ CREDENTIAL_TYPES_MAP = {
     NetworkSourceFormDTO: "network",
     SatelliteSourceFormDTO: "satellite",
     VCenterSourceFormDTO: "vcenter",
+    AnsibleSourceFormDTO: "ansible",
 }
 
 
@@ -47,6 +50,7 @@ SOURCE_TYPES_MAP = {
     NetworkSourceFormDTO: SourceTypes.NETWORK_RANGE,
     SatelliteSourceFormDTO: SourceTypes.SATELLITE,
     VCenterSourceFormDTO: SourceTypes.VCENTER_SERVER,
+    AnsibleSourceFormDTO: SourceTypes.ANSIBLE_CONTROLLER,
 }
 
 

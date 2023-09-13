@@ -30,6 +30,7 @@ class CredentialTypes(StrEnum):
     NETWORK = auto()
     SATELLITE = auto()
     VCENTER = auto()
+    ANSIBLE = auto()
 
 
 class NetworkCredentialAuthenticationTypes(StrEnum):
@@ -52,6 +53,7 @@ class SourceTypes(StrEnum):
     NETWORK_RANGE = "network"
     SATELLITE = "satellite"
     VCENTER_SERVER = "vcenter"
+    ANSIBLE_CONTROLLER = "ansible"
 
 
 class SourceConnectionTypes(StrEnum):

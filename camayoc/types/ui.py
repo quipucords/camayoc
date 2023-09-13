@@ -167,8 +167,22 @@ class VCenterCredentialFormDTO:
         return cls(credential_name=model.name, username=model.username, password=model.password)
 
 
+@frozen
+class AnsibleCredentialFormDTO:
+    credential_name: str
+    username: str
+    password: str
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(credential_name=model.name, username=model.username, password=model.password)
+
+
 CredentialFormDTO = Union[
-    NetworkCredentialFormDTO, SatelliteCredentialFormDTO, VCenterCredentialFormDTO
+    NetworkCredentialFormDTO,
+    SatelliteCredentialFormDTO,
+    VCenterCredentialFormDTO,
+    AnsibleCredentialFormDTO,
 ]
 
 
@@ -192,6 +206,9 @@ class AddCredentialDTO:
             case "vcenter":
                 credential_type = CredentialTypes.VCENTER
                 credential_form_dto = VCenterCredentialFormDTO.from_model(model)
+            case "ansible":
+                credential_type = CredentialTypes.ANSIBLE
+                credential_form_dto = AnsibleCredentialFormDTO.from_model(model)
             case _:
                 raise ValueError(f"Can't create Credential UI DTO from {model}")
         return cls(credential_type, credential_form_dto)
@@ -256,10 +273,29 @@ class VCenterSourceFormDTO:
         )
 
 
+@frozen
+class AnsibleSourceFormDTO:
+    source_name: str
+    address: str
+    credentials: list[str]
+    connection: Optional[SourceConnectionTypes] = None
+    verify_ssl: Optional[bool] = None
+
+    @classmethod
+    def from_model(cls, model: Source):
+        return cls(
+            source_name=model.name,
+            address=model.hosts[0],
+            credentials=model.credentials,
+            verify_ssl=model.options.get("ssl_cert_verify"),
+        )
+
+
 SourceFormDTO = Union[
     NetworkSourceFormDTO,
     SatelliteSourceFormDTO,
     VCenterSourceFormDTO,
+    AnsibleSourceFormDTO,
 ]
 
 
@@ -280,6 +316,9 @@ class AddSourceDTO:
             case "vcenter":
                 source_type = SourceTypes.VCENTER_SERVER
                 source_form_dto = VCenterSourceFormDTO.from_model(model)
+            case "ansible":
+                source_type = SourceTypes.ANSIBLE_CONTROLLER
+                source_form_dto = AnsibleSourceFormDTO.from_model(model)
             case _:
                 raise ValueError(f"Can't create Source UI DTO from {model}")
         return cls(SelectSourceDTO(source_type), source_form_dto)

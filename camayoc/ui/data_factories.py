@@ -10,6 +10,8 @@ from camayoc.config import settings
 from camayoc.data_provider import DataProvider
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
+from camayoc.types.ui import AnsibleCredentialFormDTO
+from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import CredentialFormDTO
 from camayoc.types.ui import LoginFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
@@ -136,6 +138,15 @@ class VCenterCredentialFormDTOFactory(factory.Factory):
     password = factory.Faker("password")
 
 
+class AnsibleCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = AnsibleCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    username = factory.Faker("user_name")
+    password = factory.Faker("password")
+
+
 class CredentialFormDTOFactory(UnionDTOFactory):
     class Meta:
         model = CredentialFormDTO
@@ -149,6 +160,8 @@ def _type_dependent_credential_form_factory(obj):
         return SatelliteCredentialFormDTOFactory
     elif credential_type == CredentialTypes.VCENTER:
         return VCenterCredentialFormDTOFactory
+    elif credential_type == CredentialTypes.ANSIBLE:
+        return AnsibleCredentialFormDTOFactory
 
 
 class AddCredentialDTOFactory(factory.Factory):
@@ -255,6 +268,32 @@ class VCenterSourceFormDTOFactory(factory.Factory):
     verify_ssl = factory.LazyAttribute(_verify_ssl_based_on_connection)
 
 
+class AnsibleSourceFormDTOFactory(factory.Factory):
+    class Meta:
+        model = AnsibleSourceFormDTO
+
+    class Params:
+        credentials_num = 1
+
+    source_name = factory.Faker("text", max_nb_chars=56)
+    address = factory.Faker("ipv4_private")
+
+    @factory.lazy_attribute
+    def credentials(self):
+        data_provider = DataProvider()
+        network_credential_generator = data_provider.credentials.new_many(
+            {"type": "ansible"}, data_only=False
+        )
+        cred_names = []
+        for _ in range(self.credentials_num):
+            cred = next(network_credential_generator)
+            cred_names.append(cred.name)
+        return cred_names
+
+    connection = factory.Faker("random_element", elements=list(SourceConnectionTypes))
+    verify_ssl = factory.LazyAttribute(_verify_ssl_based_on_connection)
+
+
 class SourceFormDTOFactory(UnionDTOFactory):
     class Meta:
         model = SourceFormDTO
@@ -268,6 +307,8 @@ def _source_type_dependent_source_form_factory(obj):
         return SatelliteSourceFormDTOFactory
     elif source_type == SourceTypes.VCENTER_SERVER:
         return VCenterSourceFormDTOFactory
+    elif source_type == SourceTypes.ANSIBLE_CONTROLLER:
+        return AnsibleSourceFormDTOFactory
 
 
 class AddSourceDTOFactory(factory.Factory):

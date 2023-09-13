@@ -56,10 +56,6 @@ def create_endtoend_dtos(source_name, data_provider):
 
 def source_names():
     for source_definition in settings.sources:
-        # FIXME: should add Ansible to UI, not ignore it
-        if source_definition.type == "ansible":
-            continue
-
         fixture_id = f"{source_definition.name}-{source_definition.type}"
         yield pytest.param(source_definition.name, id=fixture_id)
 
