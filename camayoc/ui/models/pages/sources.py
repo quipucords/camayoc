@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import overload
 
 from camayoc.types.ui import AddSourceDTO
+from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import NewScanFormDTO
 from camayoc.types.ui import SatelliteSourceFormDTO
@@ -57,6 +58,7 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
             SourceTypes.NETWORK_RANGE: NetworkRangeSourceCredentialsForm,
             SourceTypes.SATELLITE: SatelliteSourceCredentialsForm,
             SourceTypes.VCENTER_SERVER: VCenterSourceCredentialsForm,
+            SourceTypes.ANSIBLE_CONTROLLER: AnsibleSourceCredentialsForm,
         }
         next_step_class = source_type_map.get(data.source_type)
         setattr(self, "NEXT_STEP_RESULT_CLASS", next_step_class)
@@ -135,6 +137,26 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
 
     @record_action
     def fill(self, data: VCenterSourceFormDTO):
+        super().fill(data)
+        return self
+
+
+class AnsibleSourceCredentialsForm(SourceCredentialsForm):
+    class FormDefinition:
+        source_name = InputField("input[data-ouia-component-id=name]")
+        address = InputField("input[data-ouia-component-id=hosts_single]")
+        credentials = MultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select] > button"
+        )
+        connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
+
+    @overload
+    def fill(self, data: AnsibleSourceFormDTO):
+        ...
+
+    @record_action
+    def fill(self, data: AnsibleSourceFormDTO):
         super().fill(data)
         return self
 
