@@ -24,6 +24,7 @@ from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.data_factories import TriggerScanDTOFactory
 from camayoc.ui.enums import MainMenuPages
+from camayoc.ui.enums import SourceTypes
 
 
 def create_endtoend_dtos(source_name, data_provider):
@@ -60,7 +61,6 @@ def source_names():
         yield pytest.param(source_definition.name, id=fixture_id)
 
 
-@pytest.mark.skip("Skipped to save time in CI execution")
 @pytest.mark.parametrize("source_name", source_names())
 def test_end_to_end(data_provider, ui_client: Client, source_name):
     """End-to-end test using web user interface.
@@ -92,6 +92,7 @@ def test_end_to_end(data_provider, ui_client: Client, source_name):
         .logout()
     )
 
+    is_network_scan = source_dto.select_source_type.source_type == SourceTypes.NETWORK_RANGE
     downloaded_report = ui_client.downloaded_files[-1]
     report_directory = Path(tempfile.mkdtemp(prefix="camayoc"))
     report_file = report_directory / downloaded_report.suggested_filename
@@ -104,12 +105,25 @@ def test_end_to_end(data_provider, ui_client: Client, source_name):
         actual_shasum = actual_shasums.get(filename)
         assert actual_shasum == expected_shasum
 
+    has_ansible_logs = False
     for file in report_directory.rglob("*"):
         if not file.is_file():
             continue
+
+        # Ansible STDERR may or may not be empty, no point in asserting size
+        if "ansible-stderr" in file.name:
+            has_ansible_logs = True
+            continue
+
+        if "ansible-stdout" in file.name:
+            has_ansible_logs = True
+
         assert file.stat().st_size > 0
 
+    assert is_network_scan == has_ansible_logs
 
+
+@pytest.mark.skip("Skipped due to intermittent failure - DISCOVERY-426")
 @pytest.mark.parametrize("source_name", source_names())
 def test_trigger_scan(data_provider, ui_client: Client, source_name):
     """Mostly end-to-end test using web user interface (without downloading scan results).
