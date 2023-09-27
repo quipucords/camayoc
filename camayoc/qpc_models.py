@@ -655,7 +655,6 @@ class Report(QPCObject):
         >>> scanjob.create()
         >>> scanjob2.create()
         >>> report = Report()
-        >>> report.create_from_merge(ids=[scanjob._id, scanjob2._id])
         >>> report.deployments()
         >>> report.details()
     """
@@ -676,20 +675,6 @@ class Report(QPCObject):
         """
         path = urljoin(QPC_SCANJOB_PATH, str(scan_job_id), "/")
         response = self.client.get(path, **kwargs)
-        if response.status_code in range(200, 203):
-            self._id = response.json().get("report_id")
-        return response
-
-    def create_from_merge(self, ids, **kwargs):
-        """Create a report from a merge of the results of multiple scanjobs.
-
-        :param ``ids``: Scan job identifiers
-        :param ``**kwargs``: Additional arguments accepted by Requests's
-            `request.request()` method.
-        """
-        path = urljoin(self.endpoint, "merge/")
-        payload = {"reports": ids}
-        response = self.client.put(path, payload, **kwargs)
         if response.status_code in range(200, 203):
             self._id = response.json().get("report_id")
         return response
