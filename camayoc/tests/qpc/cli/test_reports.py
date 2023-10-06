@@ -53,6 +53,7 @@ DEPLOYMENTS_REPORT_FIELDS = (
     "etc_machine_id",
     "infrastructure_type",
     "insights_client_id",
+    "installed_products",
     "ip_addresses",
     "is_redhat",
     "mac_addresses",
