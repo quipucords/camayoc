@@ -18,7 +18,6 @@ from camayoc import api
 from camayoc import utils
 from camayoc.qpc_models import Report
 from camayoc.qpc_models import ScanJob
-from camayoc.tests.qpc.api.v1.conftest import SCAN_DATA
 from camayoc.tests.qpc.api.v1.conftest import scan_list
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
 from camayoc.types.settings import ScanOptions
@@ -68,7 +67,7 @@ def test_report_content_consistency(data_provider):
     :description: If a scan job identifier is provided,
         a valid report of the given content type should be returned.
     :steps:
-        1) Grab the scan info for a scan from SCAN_DATA
+        1) Grab the scan info for a scan from data_provider
         2) Check if the scan info is None return if so
         3) Grab the scan job identifier from the scan info a scan
         4) Access the deployments & details endpoint of the report as JSON
@@ -100,10 +99,9 @@ def test_report_content_consistency(data_provider):
     validate_json_response(report.deployments(headers=accept_json))
 
 
-@pytest.mark.skip("Skipped until Middleware are handled by Camayoc")
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
-def test_products_found_deployment_report(data_provider, scan_info):
+def test_products_found_deployment_report(data_provider, scan_info: ScanOptions):
     """Test that products reported as present are correct for the source.
 
     :id: d5d424bb-8183-4b60-b21a-1b4ed1d879c0
@@ -116,62 +114,58 @@ def test_products_found_deployment_report(data_provider, scan_info):
     :expectedresults: There are inspection results for each source we scanned
         and any products found are correctly identified.
     """
-    scan = data_provider.scans.defined_one({"name": scan_info.get("name")})
+    scan = data_provider.scans.defined_one({"name": scan_info.name})
     scanjob = ScanJob(scan_id=scan._id)
     scanjob.create()
     wait_until_state(scanjob, state="stopped")
     report = Report()
     report.retrieve_from_scan_job(scan_job_id=scanjob._id)
-    result = SCAN_DATA.get(scan.name)
-
     if not report._id:
         pytest.xfail(
             reason="No report id was returned from scan "
-            "named {scan_name}".format(scan_name=scan_info["name"])
+            "named {scan_name}".format(scan_name=scan_info.name)
         )
     report_content = report.deployments().json()
     assert report_content.get("status") == "completed"
-    report = report_content.get("system_fingerprints")
+    system_fingerprints = report_content.get("system_fingerprints")
+    found_hosts = {host.get("name"): host for host in system_fingerprints}
+    if len(found_hosts) != len(system_fingerprints):
+        msg = "Some discovered hosts have the same name. " "Test result might not be accurate."
+        warnings.warn(msg)
     errors_found = []
-    for entity in report:
-        all_found_products = []
-        present_products = []
-        for product in entity.get("products"):
-            name = "".join(product["name"].lower().split())
-            if product["presence"] == "present":
-                present_products.append(name)
-            if product["presence"] in ["present", "potential"]:
-                all_found_products.append(name)
-        for source_to_product_map in scan_info.get("expected_products", []):
-            src_id = list(source_to_product_map.keys())[0]
-            entity_src_ids = get_report_entity_src_ids(entity)
-            hostname = result["source_id_to_hostname"][src_id]
-            ex_products = source_to_product_map[src_id]
-            expected_product_names = [prod for prod in ex_products.keys() if prod != "distribution"]
-            if src_id in entity_src_ids:
-                # We assert that products marked as present are expected
-                # We do not assert that products marked as potential must
-                # actually be on server
-                unexpected_products = []
-                for prod_name in present_products:
-                    # Assert that products marked "present"
-                    # Are actually expected on machine
-                    if prod_name not in expected_product_names:
-                        unexpected_products.append(prod_name)
-                # after inpsecting all found products,
-                # raise assertion error for all unexpected products
-                if len(unexpected_products) > 0:
-                    errors_found.append(
-                        "Found {found_products} but only expected to find\n"
-                        "{expected_products} on {host_found_on}.\n"
-                        "All information about the entity was as follows\n"
-                        "{entity_info}".format(
-                            found_products=unexpected_products,
-                            expected_products=expected_product_names,
-                            host_found_on=hostname,
-                            entity_info=pformat(entity),
-                        )
+    for hostname, expected_data in scan_info.expected_data.items():
+        if not (expected_products := expected_data.products):
+            continue
+        if not found_hosts.get(hostname):
+            errors_found.append(
+                f"Host '{hostname}' was expected for scan {scan_info.get('name')}, but not found"
+            )
+        for fingerprint in system_fingerprints:
+            present_product_names = {
+                product["name"]
+                for product in fingerprint.get("products")
+                if product["presence"] == "present"
+            }
+            expected_product_names = {
+                product.name for product in expected_products if product.presence == "present"
+            }
+            unexpected_product_names = {
+                product_name
+                for product_name in present_product_names
+                if product_name not in expected_product_names
+            }
+            if len(unexpected_product_names) > 0:
+                errors_found.append(
+                    "Found {found_products} but only expected to find\n"
+                    "{expected_products} on {host_found_on}.\n"
+                    "All information about the fingerprint was as follows\n"
+                    "{fingerprint_info}".format(
+                        found_products=unexpected_product_names,
+                        expected_products=expected_product_names,
+                        host_found_on=hostname,
+                        fingerprint_info=pformat(fingerprint),
                     )
+                )
     assert len(errors_found) == 0, (
         "Found {num} unexpected products!\n"
         "Errors are listed below: \n {errors}.\n"
