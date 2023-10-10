@@ -121,8 +121,14 @@ class ExpectedDistributionData(BaseModel):
     release: str
 
 
+class ExpectedProductData(BaseModel):
+    name: str
+    presence: str
+
+
 class ExpectedScanData(BaseModel):
     distribution: Optional[ExpectedDistributionData]
+    products: Optional[list[ExpectedProductData]]
 
 
 class ScanOptions(BaseModel):
