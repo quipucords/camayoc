@@ -117,19 +117,19 @@ class CredentialsMainPage(MainPageMixin):
         create_credential_button = "div[data-ouia-component-id=add_credential] > button"
         source_type_map = {
             CredentialTypes.NETWORK: {
-                "selector": f"{create_credential_button} ~ ul li:nth-of-type(1) a",
+                "selector": f"{create_credential_button} ~ ul li a[data-value=network]",
                 "class": NetworkCredentialForm,
             },
             CredentialTypes.SATELLITE: {
-                "selector": f"{create_credential_button} ~ ul li:nth-of-type(3) a",
+                "selector": f"{create_credential_button} ~ ul li a[data-value=satellite]",
                 "class": SatelliteCredentialForm,
             },
             CredentialTypes.VCENTER: {
-                "selector": f"{create_credential_button} ~ ul li:nth-of-type(4) a",
+                "selector": f"{create_credential_button} ~ ul li a[data-value=vcenter]",
                 "class": VCenterCredentialForm,
             },
             CredentialTypes.ANSIBLE: {
-                "selector": f"{create_credential_button} ~ ul li:nth-of-type(5) a",
+                "selector": f"{create_credential_button} ~ ul li a[data-value=ansible]",
                 "class": AnsibleCredentialForm,
             },
         }
