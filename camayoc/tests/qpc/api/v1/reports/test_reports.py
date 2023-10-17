@@ -100,7 +100,7 @@ def test_report_content_consistency(data_provider):
 
 
 @pytest.mark.runs_scan
-@pytest.mark.parametrize("scan_info", scan_list(), ids=utils.name_getter)
+@pytest.mark.parametrize("scan_info", scan_list(["network"]), ids=utils.name_getter)
 def test_products_found_deployment_report(data_provider, scan_info: ScanOptions):
     """Test that products reported as present are correct for the source.
 

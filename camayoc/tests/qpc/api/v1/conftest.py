@@ -87,10 +87,16 @@ def run_scan(
         SCAN_DATA[scan_name]["errors"].append("{}".format(pformat(str(e))))
 
 
-def scan_list():
-    """Generate list of netwok / VCenter / Satellite scan objects found in config file."""
+def scan_list(source_types=None):
+    """Generate list of network / VCenter / Satellite scan objects found in config file.
+
+    Optionally filter by a custom iterable of source types (network, vcenter, satellite).
+    """
     scans = []
-    supported_source_types = ("network", "vcenter", "satellite")
+    if source_types is None:
+        supported_source_types = ("network", "vcenter", "satellite")
+    else:
+        supported_source_types = source_types
     source_names_types = {s.name: s.type for s in settings.sources}
     for scan in settings.scans:
         source_types = [source_names_types.get(source) for source in scan.sources]
