@@ -18,8 +18,8 @@ quipucords_server:
     ssl-verify: false
     # credentials for logging into the server
     username: 'admin'
-    password: 'qpcpassw0rd'
-    ssh_keyfile_path: '/home/user/quipucords/server/volumes/sshkeyfiles/'
+    password: 'CHANGEME'
+    ssh_keyfile_path: '/home/user/.local/share/quipucords/sshkeyfiles/'
 
 # Quipucords / Discovery CLI
 quipucords_cli:
