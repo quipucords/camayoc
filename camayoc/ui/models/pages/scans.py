@@ -5,6 +5,7 @@ import time
 from playwright.sync_api import Download
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
+from camayoc.exceptions import FailedScanException
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
@@ -28,6 +29,7 @@ class ScanListElem(AbstractListItem):
                 self._client.driver.locator(
                     "div.pf-c-toolbar button[data-ouia-component-id=refresh]"
                 ).click()
+        raise FailedScanException("Scan could not be downloaded")
 
 
 class ScansMainPage(MainPageMixin):
