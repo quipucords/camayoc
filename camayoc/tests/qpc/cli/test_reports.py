@@ -88,7 +88,7 @@ DEPLOYMENTS_REPORT_FIELDS = (
 """Common deployments report expected fields."""
 
 CSV_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
-    "detection-acs",
+    "detection-rhacs",
     "detection-ansible",
     "detection-network",
     "detection-openshift",
