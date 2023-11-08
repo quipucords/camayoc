@@ -6,10 +6,7 @@
 :caselevel: integration
 :testtype: functional
 """
-import json
-import pathlib
 import re
-import tarfile
 
 import pytest
 
@@ -17,28 +14,12 @@ from camayoc import utils
 from camayoc.constants import AUTH_TOKEN_INPUT
 from camayoc.tests.qpc.cli.utils import config_openshift
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
-from camayoc.tests.qpc.cli.utils import report_download
+from camayoc.tests.qpc.cli.utils import retrieve_report
 from camayoc.tests.qpc.cli.utils import scan_add_and_check
 from camayoc.tests.qpc.cli.utils import scan_job
 from camayoc.tests.qpc.cli.utils import scan_start
 from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import wait_for_scan
-
-
-def retrieve_report(scan_name, scan_job_id):
-    output_file = f"report-{scan_name}.tar.gz"
-    report_download({"scan-job": scan_job_id, "output-file": output_file})
-    details = deployments = None
-    with tarfile.open(output_file) as pkg:
-        for member in pkg.getmembers():
-            if member.name.endswith("details.json"):
-                data = pkg.extractfile(member).read()
-                details = json.loads(data)
-            if member.name.endswith("deployments.json"):
-                data = pkg.extractfile(member).read()
-                deployments = json.loads(data)
-    pathlib.Path.unlink(output_file)
-    return details, deployments
 
 
 def validate_openshift_report(cluster, details, deployments):
@@ -180,7 +161,7 @@ def test_openshift_clusters(cluster, qpc_server_config):
     wait_for_scan(scan_job_id, timeout=1200)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
-    details, deployments = retrieve_report(scan_name, scan_job_id)
+    details, deployments = retrieve_report(scan_job_id)
     validate_openshift_report(cluster, details, deployments)
     validate_operators(cluster, details)
     validate_node_metrics(cluster, details)
