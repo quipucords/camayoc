@@ -78,6 +78,9 @@ credentials:
       type: 'satellite'
       password: 'CHANGEME'
       username: 'CHANGEUSERNAME'
+    - name: 'rhacs'
+      type: 'rhacs'
+      auth_token: 'these_tend_to_be_very_long'
 
 # Values in "credentials" field can use names present in "credentials" section
 # above
@@ -102,6 +105,14 @@ sources:
           - 'sat6'
       name: 'sat6'
       type: 'satellite'
+      options:
+          ssl_cert_verify: false
+    - hosts:
+          - 'acs-endpoint.acs.mycluster.com'
+      credentials:
+          - 'rhacs'
+      name: 'RHACS'
+      type: 'rhacs'
       options:
           ssl_cert_verify: false
 
