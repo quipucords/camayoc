@@ -79,6 +79,12 @@ class VCenterCredentialOptions(BaseModel):
     password: str
 
 
+class RHACSCredentialOptions(BaseModel):
+    name: str
+    type: Literal["rhacs"]
+    auth_token: str
+
+
 class AnsibleCredentialOptions(BaseModel):
     name: str
     type: Literal["ansible"]
@@ -90,6 +96,7 @@ ServicesCredentialOptions = Annotated[
     Union[
         VCenterCredentialOptions,
         SatelliteCredentialOptions,
+        RHACSCredentialOptions,
         AnsibleCredentialOptions,
     ],
     Field(discriminator="type"),
