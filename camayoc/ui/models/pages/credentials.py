@@ -5,6 +5,7 @@ from typing import overload
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
+from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.ui.decorators import creates_toast
@@ -105,6 +106,21 @@ class AnsibleCredentialForm(CredentialForm):
         return self
 
 
+class RHACSCredentialForm(CredentialForm):
+    class FormDefinition:
+        credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        token = InputField("input[data-ouia-component-id=auth_token]")
+
+    @overload
+    def fill(self, data: RHACSCredentialFormDTO):
+        ...
+
+    @record_action
+    def fill(self, data: RHACSCredentialFormDTO):
+        super().fill(data)
+        return self
+
+
 class CredentialsMainPage(MainPageMixin):
     @service
     def add_credential(self, data: AddCredentialDTO) -> CredentialsMainPage:
@@ -131,6 +147,10 @@ class CredentialsMainPage(MainPageMixin):
             CredentialTypes.ANSIBLE: {
                 "selector": f"{create_credential_button} ~ ul li a[data-value=ansible]",
                 "class": AnsibleCredentialForm,
+            },
+            CredentialTypes.RHACS: {
+                "selector": f"{create_credential_button} ~ ul li a[data-value=rhacs]",
+                "class": RHACSCredentialForm,
             },
         }
 

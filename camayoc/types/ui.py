@@ -178,11 +178,22 @@ class AnsibleCredentialFormDTO:
         return cls(credential_name=model.name, username=model.username, password=model.password)
 
 
+@frozen
+class RHACSCredentialFormDTO:
+    credential_name: str
+    token: str
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(credential_name=model.name, token=model.auth_token)
+
+
 CredentialFormDTO = Union[
     NetworkCredentialFormDTO,
     SatelliteCredentialFormDTO,
     VCenterCredentialFormDTO,
     AnsibleCredentialFormDTO,
+    RHACSCredentialFormDTO,
 ]
 
 
@@ -209,6 +220,9 @@ class AddCredentialDTO:
             case "ansible":
                 credential_type = CredentialTypes.ANSIBLE
                 credential_form_dto = AnsibleCredentialFormDTO.from_model(model)
+            case "rhacs":
+                credential_type = CredentialTypes.RHACS
+                credential_form_dto = RHACSCredentialFormDTO.from_model(model)
             case _:
                 raise ValueError(f"Can't create Credential UI DTO from {model}")
         return cls(credential_type, credential_form_dto)
@@ -291,11 +305,30 @@ class AnsibleSourceFormDTO:
         )
 
 
+@frozen
+class RHACSSourceFormDTO:
+    source_name: str
+    address: str
+    credentials: list[str]
+    connection: Optional[SourceConnectionTypes] = None
+    verify_ssl: Optional[bool] = None
+
+    @classmethod
+    def from_model(cls, model: Source):
+        return cls(
+            source_name=model.name,
+            address=model.hosts[0],
+            credentials=model.credentials,
+            verify_ssl=model.options.get("ssl_cert_verify"),
+        )
+
+
 SourceFormDTO = Union[
     NetworkSourceFormDTO,
     SatelliteSourceFormDTO,
     VCenterSourceFormDTO,
     AnsibleSourceFormDTO,
+    RHACSSourceFormDTO,
 ]
 
 
@@ -319,6 +352,9 @@ class AddSourceDTO:
             case "ansible":
                 source_type = SourceTypes.ANSIBLE_CONTROLLER
                 source_form_dto = AnsibleSourceFormDTO.from_model(model)
+            case "rhacs":
+                source_type = SourceTypes.RHACS
+                source_form_dto = RHACSSourceFormDTO.from_model(model)
             case _:
                 raise ValueError(f"Can't create Source UI DTO from {model}")
         return cls(SelectSourceDTO(source_type), source_form_dto)

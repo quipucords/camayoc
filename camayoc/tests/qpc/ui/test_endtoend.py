@@ -57,7 +57,7 @@ def create_endtoend_dtos(source_name, data_provider):
 
 def source_names():
     for source_definition in settings.sources:
-        if source_definition.type in ("openshift", "rhacs"):
+        if source_definition.type in ("openshift",):
             continue
         fixture_id = f"{source_definition.name}-{source_definition.type}"
         yield pytest.param(source_definition.name, id=fixture_id)

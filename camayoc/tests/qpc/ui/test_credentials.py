@@ -18,6 +18,7 @@ from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import CredentialFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
+from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
@@ -31,6 +32,7 @@ CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,
     VCenterCredentialFormDTO: CredentialTypes.VCENTER,
     AnsibleCredentialFormDTO: CredentialTypes.ANSIBLE,
+    RHACSCredentialFormDTO: CredentialTypes.RHACS,
 }
 
 
