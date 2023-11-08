@@ -4,6 +4,8 @@ import functools
 import itertools
 import json
 import re
+import tarfile
+import tempfile
 import time
 from pprint import pformat
 
@@ -428,6 +430,22 @@ source_show = functools.partial(cli_command, "{} source show".format(client_cmd)
 def scan_job(options=None, exitstatus=0):
     """Run ``qpc scan job`` command with ``options`` returning its output."""
     return json.loads(cli_command("{} -v scan job".format(client_cmd), options, exitstatus))
+
+
+def retrieve_report(scan_job_id):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        output_file = f"{tmpdirname}/report.tar.gz"
+        report_download({"scan-job": scan_job_id, "output-file": output_file})
+        details = deployments = None
+        with tarfile.open(output_file) as pkg:
+            for member in pkg.getmembers():
+                if member.name.endswith("details.json"):
+                    data = pkg.extractfile(member).read()
+                    details = json.loads(data)
+                if member.name.endswith("deployments.json"):
+                    data = pkg.extractfile(member).read()
+                    deployments = json.loads(data)
+    return details, deployments
 
 
 def setup_qpc():
