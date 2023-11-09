@@ -6,6 +6,7 @@ from camayoc.types.ui import AddSourceDTO
 from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import NewScanFormDTO
+from camayoc.types.ui import OpenShiftSourceFormDTO
 from camayoc.types.ui import RHACSSourceFormDTO
 from camayoc.types.ui import SatelliteSourceFormDTO
 from camayoc.types.ui import SelectSourceDTO
@@ -59,6 +60,7 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
             SourceTypes.NETWORK_RANGE: NetworkRangeSourceCredentialsForm,
             SourceTypes.SATELLITE: SatelliteSourceCredentialsForm,
             SourceTypes.VCENTER_SERVER: VCenterSourceCredentialsForm,
+            SourceTypes.OPENSHIFT: OpenShiftSourceCredentialsForm,
             SourceTypes.ANSIBLE_CONTROLLER: AnsibleSourceCredentialsForm,
             SourceTypes.RHACS: RHACSSourceCredentialsForm,
         }
@@ -139,6 +141,26 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
 
     @record_action
     def fill(self, data: VCenterSourceFormDTO):
+        super().fill(data)
+        return self
+
+
+class OpenShiftSourceCredentialsForm(SourceCredentialsForm):
+    class FormDefinition:
+        source_name = InputField("input[data-ouia-component-id=name]")
+        address = InputField("input[data-ouia-component-id=hosts_single]")
+        credentials = MultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select] > button"
+        )
+        connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
+
+    @overload
+    def fill(self, data: OpenShiftSourceFormDTO):
+        ...
+
+    @record_action
+    def fill(self, data: OpenShiftSourceFormDTO):
         super().fill(data)
         return self
 
