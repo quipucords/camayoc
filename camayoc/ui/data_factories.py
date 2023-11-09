@@ -17,6 +17,8 @@ from camayoc.types.ui import LoginFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import NewScanFormDTO
+from camayoc.types.ui import OpenShiftCredentialFormDTO
+from camayoc.types.ui import OpenShiftSourceFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import RHACSSourceFormDTO
@@ -140,6 +142,14 @@ class VCenterCredentialFormDTOFactory(factory.Factory):
     password = factory.Faker("password")
 
 
+class OpenShiftCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = OpenShiftCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    token = factory.Faker("password")
+
+
 class AnsibleCredentialFormDTOFactory(factory.Factory):
     class Meta:
         model = AnsibleCredentialFormDTO
@@ -170,6 +180,8 @@ def _type_dependent_credential_form_factory(obj):
         return SatelliteCredentialFormDTOFactory
     elif credential_type == CredentialTypes.VCENTER:
         return VCenterCredentialFormDTOFactory
+    elif credential_type == CredentialTypes.OPENSHIFT:
+        return OpenShiftCredentialFormDTOFactory
     elif credential_type == CredentialTypes.ANSIBLE:
         return AnsibleCredentialFormDTOFactory
     elif credential_type == CredentialTypes.RHACS:
@@ -280,6 +292,32 @@ class VCenterSourceFormDTOFactory(factory.Factory):
     verify_ssl = factory.LazyAttribute(_verify_ssl_based_on_connection)
 
 
+class OpenShiftSourceFormDTOFactory(factory.Factory):
+    class Meta:
+        model = OpenShiftSourceFormDTO
+
+    class Params:
+        credentials_num = 1
+
+    source_name = factory.Faker("text", max_nb_chars=56)
+    address = factory.Faker("ipv4_private")
+
+    @factory.lazy_attribute
+    def credentials(self):
+        data_provider = DataProvider()
+        network_credential_generator = data_provider.credentials.new_many(
+            {"type": "openshift"}, data_only=False
+        )
+        cred_names = []
+        for _ in range(self.credentials_num):
+            cred = next(network_credential_generator)
+            cred_names.append(cred.name)
+        return cred_names
+
+    connection = factory.Faker("random_element", elements=list(SourceConnectionTypes))
+    verify_ssl = factory.LazyAttribute(_verify_ssl_based_on_connection)
+
+
 class AnsibleSourceFormDTOFactory(factory.Factory):
     class Meta:
         model = AnsibleSourceFormDTO
@@ -345,6 +383,8 @@ def _source_type_dependent_source_form_factory(obj):
         return SatelliteSourceFormDTOFactory
     elif source_type == SourceTypes.VCENTER_SERVER:
         return VCenterSourceFormDTOFactory
+    elif source_type == SourceTypes.OPENSHIFT:
+        return OpenShiftSourceFormDTOFactory
     elif source_type == SourceTypes.ANSIBLE_CONTROLLER:
         return AnsibleSourceFormDTOFactory
     elif source_type == SourceTypes.RHACS:

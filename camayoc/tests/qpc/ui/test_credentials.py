@@ -17,6 +17,7 @@ from camayoc.qpc_models import Credential
 from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import CredentialFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
+from camayoc.types.ui import OpenShiftCredentialFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
@@ -31,6 +32,7 @@ from camayoc.ui.enums import NetworkCredentialBecomeMethods
 CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,
     VCenterCredentialFormDTO: CredentialTypes.VCENTER,
+    OpenShiftCredentialFormDTO: CredentialTypes.OPENSHIFT,
     AnsibleCredentialFormDTO: CredentialTypes.ANSIBLE,
     RHACSCredentialFormDTO: CredentialTypes.RHACS,
 }

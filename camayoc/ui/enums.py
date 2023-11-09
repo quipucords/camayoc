@@ -30,6 +30,7 @@ class CredentialTypes(StrEnum):
     NETWORK = auto()
     SATELLITE = auto()
     VCENTER = auto()
+    OPENSHIFT = auto()
     ANSIBLE = auto()
     RHACS = auto()
 
@@ -54,6 +55,7 @@ class SourceTypes(StrEnum):
     NETWORK_RANGE = "network"
     SATELLITE = "satellite"
     VCENTER_SERVER = "vcenter"
+    OPENSHIFT = "openshift"
     ANSIBLE_CONTROLLER = "ansible"
     RHACS = "rhacs"
 

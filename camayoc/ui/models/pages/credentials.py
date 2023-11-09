@@ -5,6 +5,7 @@ from typing import overload
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
+from camayoc.types.ui import OpenShiftCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
@@ -90,6 +91,21 @@ class VCenterCredentialForm(CredentialForm):
         return self
 
 
+class OpenShiftCredentialForm(CredentialForm):
+    class FormDefinition:
+        credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        token = InputField("input[data-ouia-component-id=auth_token]")
+
+    @overload
+    def fill(self, data: OpenShiftCredentialFormDTO):
+        ...
+
+    @record_action
+    def fill(self, data: OpenShiftCredentialFormDTO):
+        super().fill(data)
+        return self
+
+
 class AnsibleCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
@@ -143,6 +159,10 @@ class CredentialsMainPage(MainPageMixin):
             CredentialTypes.VCENTER: {
                 "selector": f"{create_credential_button} ~ ul li a[data-value=vcenter]",
                 "class": VCenterCredentialForm,
+            },
+            CredentialTypes.OPENSHIFT: {
+                "selector": f"{create_credential_button} ~ ul li a[data-value=openshift]",
+                "class": OpenShiftCredentialForm,
             },
             CredentialTypes.ANSIBLE: {
                 "selector": f"{create_credential_button} ~ ul li a[data-value=ansible]",
