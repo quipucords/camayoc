@@ -12,6 +12,7 @@ from typing import get_args
 
 import pytest
 
+from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Source
 from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
@@ -23,6 +24,7 @@ from camayoc.types.ui import VCenterSourceFormDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.data_factories import AddSourceDTOFactory
+from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import SourceTypes
 
@@ -42,13 +44,23 @@ SOURCE_DATA_MAP = {
 }
 
 
-CREDENTIAL_TYPES_MAP = {
+CREDENTIAL_DP_TYPES_MAP = {
     NetworkSourceFormDTO: "network",
     SatelliteSourceFormDTO: "satellite",
     VCenterSourceFormDTO: "vcenter",
     OpenShiftSourceFormDTO: "openshift",
     AnsibleSourceFormDTO: "ansible",
     RHACSSourceFormDTO: "rhacs",
+}
+
+
+CREDENTIAL_DTO_TYPES_MAP = {
+    NetworkSourceFormDTO: CredentialTypes.NETWORK,
+    SatelliteSourceFormDTO: CredentialTypes.SATELLITE,
+    VCenterSourceFormDTO: CredentialTypes.VCENTER,
+    OpenShiftSourceFormDTO: CredentialTypes.OPENSHIFT,
+    AnsibleSourceFormDTO: CredentialTypes.ANSIBLE,
+    RHACSSourceFormDTO: CredentialTypes.RHACS,
 }
 
 
@@ -63,8 +75,18 @@ SOURCE_TYPES_MAP = {
 
 
 def create_source_dto(source_type, data_provider):
-    credential_type = CREDENTIAL_TYPES_MAP.get(source_type)
-    credential_model = data_provider.credentials.new_one({"type": credential_type}, data_only=False)
+    credential_dp_type = CREDENTIAL_DP_TYPES_MAP.get(source_type)
+    try:
+        credential_model = data_provider.credentials.new_one(
+            {"type": credential_dp_type}, data_only=False
+        )
+    except NoMatchingDataDefinitionException:
+        credential_dto = data_factories.AddCredentialDTOFactory(
+            credential_type=CREDENTIAL_DTO_TYPES_MAP.get(source_type)
+        )
+        credential_model = credential_dto.credential_form_dto.to_model()
+        credential_model.create()
+        data_provider.mark_for_cleanup(credential_model)
 
     source_address = random.choice(SOURCE_DATA_MAP.get(source_type))
     extra_source_kwargs = {}
