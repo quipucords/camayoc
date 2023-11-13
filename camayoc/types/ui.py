@@ -138,6 +138,19 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
             become_password=getattr(model, "become_password", None),
         )
 
+    def to_model(self):
+        model = Credential(
+            cred_type="network",
+            name=self.credential_name,
+            username=self.username,
+            ssh_keyfile=self.ssh_key_file,
+            auth_token=self.passphrase,
+            become_method=self.become_method.value,
+            become_user=self.become_user,
+            become_password=self.become_password,
+        )
+        return model
+
 
 NetworkCredentialFormDTO = Union[
     PlainNetworkCredentialFormDTO,
@@ -155,6 +168,15 @@ class SatelliteCredentialFormDTO:
     def from_model(cls, model: Credential):
         return cls(credential_name=model.name, username=model.username, password=model.password)
 
+    def to_model(self):
+        model = Credential(
+            cred_type="satellite",
+            name=self.credential_name,
+            username=self.username,
+            password=self.password,
+        )
+        return model
+
 
 @frozen
 class VCenterCredentialFormDTO:
@@ -166,6 +188,15 @@ class VCenterCredentialFormDTO:
     def from_model(cls, model: Credential):
         return cls(credential_name=model.name, username=model.username, password=model.password)
 
+    def to_model(self):
+        model = Credential(
+            cred_type="vcenter",
+            name=self.credential_name,
+            username=self.username,
+            password=self.password,
+        )
+        return model
+
 
 @frozen
 class OpenShiftCredentialFormDTO:
@@ -175,6 +206,14 @@ class OpenShiftCredentialFormDTO:
     @classmethod
     def from_model(cls, model: Credential):
         return cls(credential_name=model.name, token=model.auth_token)
+
+    def to_model(self):
+        model = Credential(
+            cred_type="openshift",
+            name=self.credential_name,
+            auth_token=self.token,
+        )
+        return model
 
 
 @frozen
@@ -187,6 +226,15 @@ class AnsibleCredentialFormDTO:
     def from_model(cls, model: Credential):
         return cls(credential_name=model.name, username=model.username, password=model.password)
 
+    def to_model(self):
+        model = Credential(
+            cred_type="ansible",
+            name=self.credential_name,
+            username=self.username,
+            password=self.password,
+        )
+        return model
+
 
 @frozen
 class RHACSCredentialFormDTO:
@@ -196,6 +244,14 @@ class RHACSCredentialFormDTO:
     @classmethod
     def from_model(cls, model: Credential):
         return cls(credential_name=model.name, token=model.auth_token)
+
+    def to_model(self):
+        model = Credential(
+            cred_type="rhacs",
+            name=self.credential_name,
+            auth_token=self.token,
+        )
+        return model
 
 
 CredentialFormDTO = Union[
