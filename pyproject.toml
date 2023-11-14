@@ -25,14 +25,14 @@ requires = ["poetry-core"]
 [tool.poetry.dependencies]
 python = "^3.11"
 attrs = "^23.1.0"
-dynaconf = "^3.1.12"
+dynaconf = "^3.2.4"
 factory_boy = "^3.2.1"
 littletable = "^2.2.0"
 pexpect = "^4.8.0"
-playwright = "^1.33.0"
+playwright = "^1.39.0"
 pydantic = "^1.10.7"
-pytest = "^7.3.1"
-pytest-playwright = "^0.3.3"
+pytest = "^7.4.3"
+pytest-playwright = "^0.4.3"
 pyxdg = "^0.28"
 pyyaml = "^6.0"
 
