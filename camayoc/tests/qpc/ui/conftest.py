@@ -41,3 +41,8 @@ def ui_client(page):
     client_session = BasicSession()
     client = UIClient(driver=page, session=client_session)
     yield client
+    if client.page_errors:
+        fail_msg = ["Browser encountered errors during test execution:"]
+        page_errors = [f"- {err}" for err in client.page_errors]
+        fail_msg = "\n".join(fail_msg + page_errors)
+        pytest.fail(fail_msg)
