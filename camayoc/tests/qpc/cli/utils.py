@@ -67,15 +67,6 @@ def config_sources():
     return [source for source in config_sources if source["name"] in scan_sources]
 
 
-def config_openshift():
-    """Return all OpenShift sources available on configuration file for CLI scans."""
-    try:
-        cfg = get_config().get("openshift", [])
-    except ConfigFileNotFoundError:
-        cfg = []
-    return cfg
-
-
 def config_scans():
     """Return all CLI scans available on the configuration file."""
     try:

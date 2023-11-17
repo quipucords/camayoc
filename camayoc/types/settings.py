@@ -27,17 +27,6 @@ class QuipucordsCLIOptions(BaseModel):
     display_name: Optional[str] = "qpc"
 
 
-class OpenShiftOptions(BaseModel):
-    hostname: str
-    port: int
-    token: str
-    skip_tls_verify: bool
-    cluster_id: str
-    version: str
-    nodes: list[str]
-    operators: list[str]
-
-
 class VCenterOptions(BaseModel):
     hostname: str
     password: str
@@ -140,9 +129,17 @@ class ExpectedProductData(BaseModel):
     presence: str
 
 
+class ExpectedOpenShiftData(BaseModel):
+    cluster_id: str
+    version: str
+    nodes: list[str]
+    operators: list[str]
+
+
 class ExpectedScanData(BaseModel):
     distribution: Optional[ExpectedDistributionData]
     products: Optional[list[ExpectedProductData]]
+    cluster_info: Optional[ExpectedOpenShiftData]
 
 
 class ScanOptions(BaseModel):
@@ -155,7 +152,6 @@ class Configuration(BaseModel):
     camayoc: CamayocOptions
     quipucords_server: QuipucordsServerOptions
     quipucords_cli: QuipucordsCLIOptions
-    openshift: list[OpenShiftOptions]
     vcenter: VCenterOptions
     credentials: list[CredentialOptions]
     sources: list[SourceOptions]
