@@ -11,23 +11,19 @@ import re
 import pytest
 
 from camayoc import utils
-from camayoc.constants import AUTH_TOKEN_INPUT
-from camayoc.tests.qpc.cli.utils import config_openshift
-from camayoc.tests.qpc.cli.utils import cred_add_and_check
+from camayoc.config import settings
+from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.cli.utils import retrieve_report
 from camayoc.tests.qpc.cli.utils import scan_add_and_check
 from camayoc.tests.qpc.cli.utils import scan_job
 from camayoc.tests.qpc.cli.utils import scan_start
-from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import wait_for_scan
+from camayoc.types.settings import SourceOptions
 
 
 def validate_openshift_report(cluster, details, deployments):
     assert details["sources"]
     assert deployments["system_fingerprints"]
-    cluster_version = cluster["version"]
-    cluster_id = cluster["cluster_id"]
-    cluster_nodes = cluster["nodes"]
     total_clusters = 0
     seen_nodes = []
     for source in details["sources"]:
@@ -36,26 +32,26 @@ def validate_openshift_report(cluster, details, deployments):
                 assert fact["node"]["kind"] == "node"
                 seen_nodes.append(fact["node"]["name"])
             if "cluster" in fact:
-                assert fact["cluster"]["uuid"] == cluster_id
-                assert fact["cluster"]["version"] == cluster_version
+                assert fact["cluster"]["uuid"] == cluster.cluster_id
+                assert fact["cluster"]["version"] == cluster.version
                 total_clusters += 1
             if "projects" in fact:
                 assert len(fact["projects"]) > 0
             if "workloads" in fact:
                 assert len(fact["workloads"]) > 0
     assert total_clusters == 1, "Only one system fact should have a 'cluster' key"
-    assert set(cluster_nodes) == set(seen_nodes), "The number of expected nodes diverged"
+    assert set(cluster.nodes) == set(seen_nodes), "The number of expected nodes diverged"
     #
     # Fingerprints
     #
     seen_nodes = []
     facts = deployments["system_fingerprints"]
     for fact in facts:
-        assert fact["name"] in cluster_nodes
+        assert fact["name"] in cluster.nodes
         assert fact["cpu_count"] > 0
         assert fact["architecture"] in ("x86_64",)
         seen_nodes.append(fact["name"])
-    assert set(cluster_nodes) == set(seen_nodes), "The number of expected nodes diverged"
+    assert set(cluster.nodes) == set(seen_nodes), "The number of expected nodes diverged"
 
 
 def validate_node_metrics(cluster, details):
@@ -73,7 +69,7 @@ def validate_node_metrics(cluster, details):
 
 def validate_operators(cluster, details):
     has_operators = False
-    expected_operators = cluster["operators"]
+    expected_operators = cluster.operators
     for source in details["sources"]:
         for fact in source["facts"]:
             if "operators" in fact:
@@ -97,7 +93,7 @@ def validate_openshift_with_acm(cluster, details):
         "socket_worker",
         "created_via",
     )
-    cluster_id = cluster["cluster_id"]
+    cluster_id = cluster.cluster_id
     for source in details["sources"]:
         for fact in source["facts"]:
             if "acm_metrics" in fact:
@@ -116,10 +112,22 @@ def validate_openshift_with_acm(cluster, details):
                     assert int(metric["socket_worker"]) >= 0
 
 
-@pytest.mark.parametrize(
-    "cluster", config_openshift(), ids=(x["hostname"] for x in config_openshift())
-)
-def test_openshift_clusters(cluster, qpc_server_config):
+def openshift_sources():
+    for source_definition in settings.sources:
+        if source_definition.type != "openshift":
+            continue
+        fixture_id = source_definition.name
+        yield pytest.param(source_definition, id=fixture_id)
+
+
+def openshift_cluster_info(name):
+    for scan_info in settings.scans:
+        if name == scan_info.name:
+            return scan_info.expected_data[scan_info.name].cluster_info
+
+
+@pytest.mark.parametrize("source_definition", openshift_sources())
+def test_openshift_clusters(qpc_server_config, data_provider, source_definition: SourceOptions):
     """Perform OpenShift inspection and validate results.
 
     :id: b7719be5-5473-424f-895d-022ea9ae55d5
@@ -132,28 +140,10 @@ def test_openshift_clusters(cluster, qpc_server_config):
     :expectedresults: The facts already knew about the cluster and nodes
         have expected values in deployment and details reports.
     """
-    cred_name = utils.uuid4()
-    cred_add_and_check(
-        {"name": cred_name, "token": None, "type": "openshift"},
-        [(AUTH_TOKEN_INPUT, cluster["token"])],
-    )
-    source_name = utils.uuid4()
-    hostname = cluster["hostname"]
-    port = cluster.get("port", 6443)
-    ssl_cert_verify = not cluster["skip_tls_verify"]
-    is_acm_hub = "advanced-cluster-management" in cluster.get("operators", [])
-    source_add_and_check(
-        {
-            "name": source_name,
-            "cred": [cred_name],
-            "hosts": [hostname],
-            "port": port,
-            "ssl-cert-verify": ssl_cert_verify,
-            "type": "openshift",
-        }
-    )
+    source = data_provider.sources.new_one({"name": source_definition.name}, data_only=False)
     scan_name = utils.uuid4()
-    scan_add_and_check({"name": scan_name, "sources": source_name})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
+    data_provider.mark_for_cleanup(Scan(name=scan_name))
     output = scan_start({"name": scan_name})
     match_scan_id = re.match(r'Scan "(\d+)" started.', output)
     assert match_scan_id is not None
@@ -162,8 +152,9 @@ def test_openshift_clusters(cluster, qpc_server_config):
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     details, deployments = retrieve_report(scan_job_id)
-    validate_openshift_report(cluster, details, deployments)
-    validate_operators(cluster, details)
-    validate_node_metrics(cluster, details)
-    if is_acm_hub:
-        validate_openshift_with_acm(cluster, details)
+    cluster_info = openshift_cluster_info(source_definition.name)
+    validate_openshift_report(cluster_info, details, deployments)
+    validate_operators(cluster_info, details)
+    validate_node_metrics(cluster_info, details)
+    if "advanced-cluster-management" in cluster_info.operators:
+        validate_openshift_with_acm(cluster_info, details)

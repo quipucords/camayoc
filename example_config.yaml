@@ -25,26 +25,6 @@ quipucords_server:
 quipucords_cli:
     executable: qpc
 
-# OpenShift (OCP) cluster
-openshift:
-    - hostname: api.example.com
-      port: 6443
-      token: sha256~...
-      skip_tls_verify: true
-      cluster_id: '00000000-1111-2222-3333-123456789abc'
-      version: '4.11.32'
-      nodes:
-          - 'master-0.example.com'
-          - 'master-1.example.com'
-          - 'master-2.example.com'
-          - 'worker-0.example.com'
-          - 'worker-1.example.com'
-          - 'worker-2.example.com'
-          - 'worker-3.example.com'
-      operators:
-          - 'abc-operator'
-          - 'xyz-operator'
-
 # We host most of our test machines on a VCenter instance
 # and this section contains its URL and the credentials
 # needed to log in to it
@@ -78,7 +58,7 @@ credentials:
       type: 'satellite'
       password: 'CHANGEME'
       username: 'CHANGEUSERNAME'
-    - name: 'openshift'
+    - name: 'OpenShift'
       type: 'openshift'
       auth_token: 'sha256~XYZabc...'
     - name: 'rhacs'
@@ -108,6 +88,14 @@ sources:
           - 'sat6'
       name: 'sat6'
       type: 'satellite'
+      options:
+          ssl_cert_verify: false
+    - hosts:
+          - 'api.example.com'
+      credentials:
+          - 'OpenShift'
+      name: 'OpenShift'
+      type: 'openshift'
       options:
           ssl_cert_verify: false
     - hosts:
@@ -144,3 +132,21 @@ scans:
                   name: 'Red Hat Enterprise Linux'
                   version: '6.9'
                   release: ''
+    - name: OpenShift
+      sources:
+          - 'OpenShift'
+      expected_data:
+          OpenShift:
+              cluster_id: '00000000-1111-2222-3333-123456789abc'
+              version: '4.11.32'
+              nodes:
+                  - 'master-0.example.com'
+                  - 'master-1.example.com'
+                  - 'master-2.example.com'
+                  - 'worker-0.example.com'
+                  - 'worker-1.example.com'
+                  - 'worker-2.example.com'
+                  - 'worker-3.example.com'
+              operators:
+                  - 'abc-operator'
+                  - 'xyz-operator'
