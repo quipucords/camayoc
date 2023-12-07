@@ -365,6 +365,7 @@ def setup_reports_prerequisites(data_provider):
         os.remove(scan["json-file"])
 
 
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)
 def test_deployments_report(source_option, output_format, isolated_filesystem, qpc_server_config):
@@ -408,6 +409,7 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
             assert_json_report_fields(report_item.keys(), expected_fields)
 
 
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)
 def test_detail_report(source_option, output_format, isolated_filesystem, qpc_server_config):
@@ -459,6 +461,7 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
             )
 
 
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("merge_by", REPORT_SOURCE_OPTIONS + ("json-file",))
 def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     """Ensure can merge reports using report ids, scanjob ids and JSON files.
@@ -506,6 +509,7 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
         assert_json_report_fields(report_item.keys())
 
 
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     """Ensure a report can be downloaded and has expected information.
