@@ -126,6 +126,7 @@ def openshift_cluster_info(name):
             return scan_info.expected_data[scan_info.name].cluster_info
 
 
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_definition", openshift_sources())
 def test_openshift_clusters(qpc_server_config, data_provider, source_definition: SourceOptions):
     """Perform OpenShift inspection and validate results.

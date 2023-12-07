@@ -30,6 +30,7 @@ def rhacs_sources():
         yield pytest.param(source_definition, id=fixture_id)
 
 
+@pytest.mark.runs_scan
 @pytest.mark.parametrize("source_definition", rhacs_sources())
 def test_rhacs_data(qpc_server_config, data_provider, source_definition: SourceOptions):
     """Perform Advanced Cluster Security scan and ensure data is valid and correct.
