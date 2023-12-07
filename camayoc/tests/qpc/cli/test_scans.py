@@ -15,7 +15,6 @@ import pytest
 from camayoc.utils import client_cmd_name
 from camayoc.utils import uuid4
 
-from .utils import config_sources
 from .utils import scan_add_and_check
 from .utils import scan_clear
 from .utils import scan_edit_and_check
@@ -25,7 +24,7 @@ from .utils import source_show
 NEGATIVE_CASES = [1, -100, "redhat_packages", "ifconfig", {}, [], ["/foo/bar/"]]
 
 
-def test_create_scan(isolated_filesystem, qpc_server_config, source):
+def test_create_scan(isolated_filesystem, qpc_server_config, data_provider, source):
     """Create a single source scan.
 
     :id: 95d108dc-6a92-4723-aec2-10bc73a0e3fa
@@ -33,11 +32,11 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
     :steps: Run ``qpc scan add --sources <source>``
     :expectedresults: The created scan matches default for options.
     """
+    source = data_provider.sources.defined_one({"name": source["name"]})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
-    scan_add_and_check({"name": scan_name, "sources": source_name})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -45,13 +44,15 @@ def test_create_scan(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [
+            {"id": source_output["id"], "name": source.name, "source_type": source.source_type}
+        ],
     }
 
     scan_show_and_check(scan_name, expected_result)
 
 
-def test_create_scan_with_options(isolated_filesystem, qpc_server_config, source):
+def test_create_scan_with_options(isolated_filesystem, qpc_server_config, data_provider):
     """Perform a scan and disable an optional product.
 
     :id: 79fadb3a-9e3c-4e84-890a-d2bd954c2869
@@ -60,19 +61,19 @@ def test_create_scan_with_options(isolated_filesystem, qpc_server_config, source
         <optional-product>``
     :expectedresults: The created scan matches specified options for options.
     """
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
     scan_add_and_check(
         {
             "name": scan_name,
-            "sources": source_name,
+            "sources": source.name,
             "max-concurrency": 25,
             "disabled-optional-products": "jboss_eap",
             "enabled-ext-product-search": "jboss_fuse",
         }
     )
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -94,7 +95,7 @@ def test_create_scan_with_options(isolated_filesystem, qpc_server_config, source
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -102,7 +103,7 @@ def test_create_scan_with_options(isolated_filesystem, qpc_server_config, source
 
 @pytest.mark.parametrize("fail_cases", NEGATIVE_CASES)
 def test_create_scan_with_disabled_products_negative(
-    isolated_filesystem, qpc_server_config, source, fail_cases
+    isolated_filesystem, qpc_server_config, data_provider, fail_cases
 ):
     """Attempt to create a scan with invalid values for disabled products.
 
@@ -114,12 +115,12 @@ def test_create_scan_with_disabled_products_negative(
            <optional-product>`` and asserts that it fails
     :expectedresults: The scan is not created
     """
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
     scan_add_and_check(
         {
             "name": scan_name,
-            "sources": source_name,
+            "sources": source.name,
             "disabled-optional-products": fail_cases,
         },
         r"usage: {} scan add(.|[\r\n])*".format(client_cmd_name),
@@ -129,7 +130,7 @@ def test_create_scan_with_disabled_products_negative(
 
 @pytest.mark.parametrize("fail_cases", NEGATIVE_CASES)
 def test_create_scan_with_extended_products_negative(
-    isolated_filesystem, qpc_server_config, source, fail_cases
+    isolated_filesystem, qpc_server_config, data_provider, fail_cases
 ):
     """Attempt to create a scan with invalid values for extended products.
 
@@ -141,12 +142,12 @@ def test_create_scan_with_extended_products_negative(
            <product>`` and asserts that it fails
     :expectedresults: The scan is not created
     """
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
     scan_add_and_check(
         {
             "name": scan_name,
-            "sources": source_name,
+            "sources": source.name,
             "enabled-ext-product-search": fail_cases,
         },
         r"usage: {} scan add(.|[\r\n])*".format(client_cmd_name),
@@ -156,7 +157,7 @@ def test_create_scan_with_extended_products_negative(
 
 @pytest.mark.parametrize("fail_cases", NEGATIVE_CASES)
 def test_create_scan_with_extended_product_directories_negative(
-    isolated_filesystem, qpc_server_config, source, fail_cases
+    isolated_filesystem, qpc_server_config, data_provider, fail_cases
 ):
     """Attempt to create a scan with invalid extended products directories.
 
@@ -169,12 +170,12 @@ def test_create_scan_with_extended_product_directories_negative(
            that it fails
     :expectedresults: The scan is not created
     """
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
     scan_add_and_check(
         {
             "name": scan_name,
-            "sources": source_name,
+            "sources": source.name,
             "enabled-ext-product-search": "jboss_fuse",
             "ext-product-search-dirs": fail_cases,
         },
@@ -183,7 +184,7 @@ def test_create_scan_with_extended_product_directories_negative(
     )
 
 
-def test_edit_scan(isolated_filesystem, qpc_server_config, source):
+def test_edit_scan(isolated_filesystem, qpc_server_config, data_provider):
     """Edit a single source scan.
 
     :id: 5ad22515-2276-48b5-a896-f26f039134fa
@@ -195,11 +196,11 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
     :expectedresults: The edited scan matches specified options for options.
     """
     # Create scan
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
-    scan_add_and_check({"name": scan_name, "sources": source_name})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -207,7 +208,7 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
@@ -243,12 +244,12 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, source):
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
 
-def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
+def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, data_provider):
     """Perform a scan and disable an optional product.
 
     :id: 29e36e96-3682-11e8-b467-0ed5f89f718b
@@ -260,19 +261,19 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
     :expectedresults: The edited scan matches default.
     """
     # Create scan
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
     scan_add_and_check(
         {
             "name": scan_name,
-            "sources": source_name,
+            "sources": source.name,
             "max-concurrency": 25,
             "disabled-optional-products": "jboss_eap",
             "enabled-ext-product-search": "jboss_fuse",
         }
     )
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -294,7 +295,7 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -329,12 +330,12 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, source):
             "max_concurrency": 25,
         },
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
 
-def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
+def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provider):
     """Create a single source  scan.
 
     :id: 29e37242-3682-11e8-b467-0ed5f89f718b
@@ -346,11 +347,11 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     :expectedresults: Scan edit fails due to invalid options.
     """
     # Create scan
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
-    scan_add_and_check({"name": scan_name, "sources": source_name})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -358,7 +359,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -379,7 +380,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
 
     # Edit scan options
     scan_edit_and_check(
-        {"name": scan_name, "sources": source_name, "max-concurrency": "abc"},
+        {"name": scan_name, "sources": source.name, "max-concurrency": "abc"},
         r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
         exitstatus=2,
     )
@@ -414,8 +415,8 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, source):
     )
 
 
-def test_clear(isolated_filesystem, qpc_server_config, source):
-    """Create a single source  scan.
+def test_clear(isolated_filesystem, qpc_server_config, data_provider, source):
+    """Create a single source scan.
 
     :id: 29e3744a-3682-11e8-b467-0ed5f89f718b
     :description: Create a single source scan with default options
@@ -426,11 +427,11 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
     :expectedresults: Scan is deleted.
     """
     # Create scan
+    source = data_provider.sources.defined_one({"name": source["name"]})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
-    scan_add_and_check({"name": scan_name, "sources": source_name})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -438,7 +439,9 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [
+            {"id": source_output["id"], "name": source.name, "source_type": source.source_type}
+        ],
     }
 
     scan_show_and_check(scan_name, expected_result)
@@ -449,7 +452,7 @@ def test_clear(isolated_filesystem, qpc_server_config, source):
     assert match is not None
 
 
-def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
+def test_clear_all(isolated_filesystem, qpc_server_config, data_provider):
     """Clear all sources.
 
     :id: 29e37620-3682-11e8-b467-0ed5f89f718b
@@ -461,11 +464,11 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
     :expectedresults: All scans entries are removed.
     """
     # Create scan
+    source = data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
-    source_name = config_sources()[0]["name"]
-    scan_add_and_check({"name": scan_name, "sources": source_name})
+    scan_add_and_check({"name": scan_name, "sources": source.name})
 
-    source_output = source_show({"name": source_name})
+    source_output = source_show({"name": source.name})
     source_output = json.loads(source_output)
 
     expected_result = {
@@ -473,7 +476,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, scan_type):
         "name": scan_name,
         "options": {"max_concurrency": 25},
         "scan_type": "inspect",
-        "sources": [{"id": source_output["id"], "name": source_name, "source_type": "network"}],
+        "sources": [{"id": source_output["id"], "name": source.name, "source_type": "network"}],
     }
     scan_show_and_check(scan_name, expected_result)
 
