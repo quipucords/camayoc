@@ -74,6 +74,13 @@ class OpenShiftCredentialOptions(BaseModel):
     auth_token: str
 
 
+class PlainOpenShiftCredentialOptions(BaseModel):
+    name: str
+    type: Literal["openshift"]
+    username: str
+    password: str
+
+
 class RHACSCredentialOptions(BaseModel):
     name: str
     type: Literal["rhacs"]
@@ -102,6 +109,7 @@ ServicesCredentialOptions = Annotated[
 CredentialOptions = Union[
     PlainNetworkCredentialOptions,
     SSHNetworkCredentialOptions,
+    PlainOpenShiftCredentialOptions,
     ServicesCredentialOptions,
 ]
 

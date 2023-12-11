@@ -92,7 +92,7 @@ def test_invalid_source_credential_type_mismatch(tmp_path, faker, example_config
         ]
     )
     credential["type"] = new_type
-    if new_type in ("satellite", "vcenter") and not credential.get("password"):
+    if new_type in ("satellite", "vcenter", "openshift") and not credential.get("password"):
         credential["password"] = faker.password()
     with open(config_file, "w") as fh:
         yaml.dump(data=example_config, stream=fh)
