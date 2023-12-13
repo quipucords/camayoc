@@ -1133,6 +1133,7 @@ develop = true
 
 [package.dependencies]
 cryptography = ">=37.0.4"
+faker = "^20.0.3"
 packaging = "^23.1"
 requests = ">=2.28.1"
 setuptools = "^67.8.0"
@@ -1321,4 +1322,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "4cbe155fe1f71b972925d9f7eff0e9c3b881739303ec172071901e90025ff489"
+content-hash = "9bb151b3e0be6e956adeae3e74f6ea3ee3ef56f45c9ef6a25fb45e14b613894d"
