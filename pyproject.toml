@@ -35,6 +35,7 @@ pexpect = "^4.8.0"
 playwright = "1.39.0"
 pydantic = "^1.10.7"
 pytest = "^7.4.3"
+pytest-ibutsu = "^2.2.4"
 pytest-playwright = "^0.4.3"
 pyxdg = "^0.28"
 pyyaml = "^6.0"
@@ -57,7 +58,6 @@ ruff = "^0.0.270"
 optional = true
 
 [tool.poetry.group.jenkins.dependencies]
-pytest-ibutsu = "^2.2.4"
 qpc = {path = "../qpc", develop = true}
 koji = "^1.33.0"
 
