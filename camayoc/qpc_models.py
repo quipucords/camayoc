@@ -249,6 +249,8 @@ class Credential(QPCObject):
                 "become_method",
                 "become_user",
                 "become_password",
+                "created_at",
+                "updated_at",
             ]:
                 if not local_items.get(key) == other.get(key):
                     return False
@@ -263,6 +265,9 @@ class Credential(QPCObject):
                     return False
             if key == "become_user":
                 if not other.get(key) == local_items.get(key, "root"):
+                    return False
+            if key in ("created_at", "updated_at"):
+                if not other.get(key):
                     return False
         return True
 
