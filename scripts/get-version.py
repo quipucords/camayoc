@@ -4,9 +4,7 @@ Obtain versions of Quipucords & co installed in environment.
 This script is used by CI to set test run metadata.
 """
 import argparse
-import json
 import subprocess
-from operator import itemgetter
 
 from camayoc import api
 from camayoc.utils import client_cmd
@@ -28,22 +26,27 @@ def get_cli_version():
     qpc_build_cmd = [client_cmd, "--build-sha"]
     try:
         qpc_build_result = subprocess.run(qpc_build_cmd, capture_output=True, check=True, text=True)
-        return qpc_build_result.stdout.strip()
+        qpc_build_result = qpc_build_result.stdout.strip()
+        if qpc_build_result.lower() != "unknown":
+            return qpc_build_result
     except (subprocess.CalledProcessError, FileNotFoundError):
         pass
 
-    # Jenkins uses CLI image downloaded from quay
-    podman_images_cmd = ["podman", "images", "--format", "json"]
-    podman_images_result = subprocess.run(
-        podman_images_cmd, capture_output=True, check=True, text=True
-    )
-    podman_images = json.loads(podman_images_result.stdout.strip())
-    podman_images = [
-        image for image in podman_images if "quipucords.cli.git_sha" in image.get("Labels")
-    ]
-    podman_images = sorted(podman_images, key=itemgetter("Created"), reverse=True)
-    if podman_images:
-        return podman_images[0]["Labels"]["quipucords.cli.git_sha"]
+    # Jenkins will use CLI installed from rpm package
+    try:
+        cmd = [
+            "rpm",
+            "-qa",
+            "--queryformat",
+            "%{NAME}:version=%{VERSION} provideversion=%{PROVIDEVERSION}\n",
+        ]
+        rpm_qa_result = subprocess.run(cmd, capture_output=True, check=True, text=True)
+        for pkg_line in rpm_qa_result.stdout.split("\n"):
+            pkg_name, pkg_version = pkg_line.split(":", maxsplit=1)
+            if pkg_name in ("qpc", "discovery-cli"):
+                return pkg_version
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
 
     # Failover value for local runs, where qpc may be installed from git
     cmd = ["git", "-C", "../qpc/", "rev-parse", "HEAD"]
