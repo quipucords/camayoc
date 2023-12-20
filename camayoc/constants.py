@@ -88,3 +88,8 @@ QPC_BECOME_METHODS = ("doas", "dzdo", "ksu", "pbrun", "pfexec", "runas", "su", "
 
 QPC_OPTIONAL_PRODUCTS = ("jboss_brms", "jboss_eap", "jboss_fuse", "jboss_ws")
 """Optional products that can be enabled or disabled for a scan."""
+
+SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG = (
+    "Make sure you have at least one network credential with sshkeyfile "
+    "on the config file to run this test."
+)

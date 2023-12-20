@@ -13,6 +13,8 @@ import pytest
 from littletable import Table
 
 from camayoc import api
+from camayoc.constants import SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG
+from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Source
 from camayoc.tests.qpc.utils import assert_matches_server
@@ -68,10 +70,13 @@ def test_create_multiple_creds(shared_client, data_provider, scan_host):
         2) Send POST with data to create network source using the credentials
     :expectedresults: The source is created.
     """
-    ssh_key_cred = data_provider.credentials.new_one(
-        {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
-        data_only=False,
-    )
+    try:
+        ssh_key_cred = data_provider.credentials.new_one(
+            {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
+            data_only=False,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
     pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 
@@ -101,10 +106,13 @@ def test_create_multiple_creds_and_sources(shared_client, data_provider, scan_ho
            CIDR, individual IPv4 address, etc.)
     :expectedresults: The source is created.
     """
-    ssh_key_cred = data_provider.credentials.new_one(
-        {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
-        data_only=False,
-    )
+    try:
+        ssh_key_cred = data_provider.credentials.new_one(
+            {"type": NETWORK_TYPE, "sshkeyfile": Table.is_not_null()},
+            data_only=False,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
     pwd_cred = Credential(cred_type=NETWORK_TYPE, client=shared_client, password=uuid4())
     pwd_cred.create()
 

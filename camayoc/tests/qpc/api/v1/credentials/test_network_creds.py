@@ -13,6 +13,8 @@ from littletable import Table
 
 from camayoc import api
 from camayoc.constants import QPC_BECOME_METHODS
+from camayoc.constants import SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG
+from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Credential
 from camayoc.tests.qpc.utils import assert_matches_server
 from camayoc.utils import uuid4
@@ -35,10 +37,13 @@ def test_update_password_to_sshkeyfile(shared_client, data_provider):
     cred.create()
     data_provider.mark_for_cleanup(cred)
     assert_matches_server(cred)
-    sshkeyfile_cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=True,
-    )
+    try:
+        sshkeyfile_cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=True,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
 
     cred.ssh_keyfile = sshkeyfile_cred.ssh_keyfile
     cred.password = None
@@ -60,10 +65,13 @@ def test_update_sshkey_to_password(data_provider):
         3) Confirm network credential has been updated.
     :expectedresults: The network credential is updated.
     """
-    cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=False,
-    )
+    try:
+        cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=False,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
     assert_matches_server(cred)
     cred.client.response_handler = api.echo_handler
     cred.password = uuid4()
@@ -86,10 +94,13 @@ def test_negative_update_to_invalid(data_provider):
     :expectedresults: Error codes are returned and the network credentials are
         not updated.
     """
-    cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=False,
-    )
+    try:
+        cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=False,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
     assert_matches_server(cred)
 
     cred.client = api.Client(api.echo_handler)
@@ -124,10 +135,13 @@ def test_create_with_sshkey(data_provider):
     :steps: Send POST with necessary data to documented api endpoint.
     :expectedresults: A new network credential entry is created with the data.
     """
-    cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=False,
-    )
+    try:
+        cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=False,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
     assert_matches_server(cred)
 
 
@@ -142,10 +156,13 @@ def test_negative_create_key_and_pass(data_provider):
     :steps: Send POST with necessary data to the credential api endpoint.
     :expectedresults: Error is thrown and no new network credential is created.
     """
-    sshkeyfile_cred = data_provider.credentials.new_one(
-        {"type": "network", "sshkeyfile": Table.is_not_null()},
-        data_only=True,
-    )
+    try:
+        sshkeyfile_cred = data_provider.credentials.new_one(
+            {"type": "network", "sshkeyfile": Table.is_not_null()},
+            data_only=True,
+        )
+    except NoMatchingDataDefinitionException:
+        pytest.skip(SKIP_ADD_CRED_WITH_SSHKEYFILE_IN_CONFIG)
 
     client = api.Client(api.echo_handler)
     cred = Credential(
