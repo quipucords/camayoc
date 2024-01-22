@@ -289,9 +289,7 @@ def test_scanjob_cancel(qpc_server_config, data_provider):
     # In our environment, they tend to finish too quickly, largely
     # increasing a risk of test failing because job finished before
     # we checked if it started.
-    source = data_provider.sources.new_one(
-        {"type": Table.is_in(("network", "vcenter"))}, data_only=False
-    )
+    source = data_provider.sources.new_one({"type": Table.eq("network")}, data_only=False)
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
     data_provider.mark_for_cleanup(Scan(name=scan_name))
