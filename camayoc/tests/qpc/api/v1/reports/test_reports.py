@@ -138,7 +138,7 @@ def test_products_found_deployment_report(data_provider, scan_info: ScanOptions)
             continue
         if not found_hosts.get(hostname):
             errors_found.append(
-                f"Host '{hostname}' was expected for scan {scan_info.get('name')}, but not found"
+                f"Host '{hostname}' was expected for scan {scan_info.name}, but not found"
             )
         for fingerprint in system_fingerprints:
             present_product_names = {
@@ -222,7 +222,7 @@ def test_OS_found_deployment_report(data_provider, scan_info: ScanOptions):
         actual_data = found_hosts.get(hostname)
         if not actual_data:
             errors_found.append(
-                f"Host '{hostname}' was expected for scan {scan_info.get('name')}, but not found"
+                f"Host '{hostname}' was expected for scan {scan_info.name}, but not found"
             )
 
         found_release = actual_data.get("os_release", "")
