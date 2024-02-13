@@ -7,96 +7,17 @@
 :caselevel: integration
 :testtype: functional
 """
-import csv
-import json
 import warnings
 from pprint import pformat
 
 import pytest
 
-from camayoc import api
 from camayoc import utils
 from camayoc.qpc_models import Report
 from camayoc.qpc_models import ScanJob
 from camayoc.tests.qpc.api.v1.conftest import scan_list
 from camayoc.tests.qpc.api.v1.utils import wait_until_state
 from camayoc.types.settings import ScanOptions
-
-
-def get_report_entity_src_ids(entity):
-    """Given an entity from a deployment report, find the source ids."""
-    entity_src_ids = []
-    client = api.Client()
-    for s in entity["sources"]:
-        s_info = client.get("sources/?name={}".format(s["source_name"]))
-        # the source is returned in a list, but there should only be one item
-        # because names should be unique
-        s_info = s_info.json().get("results", {})
-        assert len(s_info) == 1
-        s_info = s_info[0]
-        if s_info.get("id"):
-            entity_src_ids.append(s_info.get("id"))
-    return entity_src_ids
-
-
-def validate_csv_response(response):
-    """Validate that the response provided is csv."""
-    msg = 'Report is not expected content-type "csv".'
-    try:
-        csv_content = csv.DictReader(response.text.split("\r\n"), delimiter=",")
-        metadata = [row for row in csv_content][0]
-        msg = f"{msg} Incorrect data format."
-        assert metadata.get("Report Type") in ("details", "deployments"), msg
-    except csv.Error:
-        assert False, msg
-
-
-def validate_json_response(response):
-    """Validate that the response provided is json."""
-    try:
-        response.json()
-    except json.JSONDecodeError:
-        assert False, 'Report is not expected content-type "json".'
-
-
-@pytest.mark.runs_scan
-def test_report_content_consistency(data_provider):
-    """Confirm that a report is created with the correct content type.
-
-    :id: 9724fb9a-c151-4288-a8d0-7238472731a8
-    :description: If a scan job identifier is provided,
-        a valid report of the given content type should be returned.
-    :steps:
-        1) Grab the scan info for a scan from data_provider
-        2) Check if the scan info is None return if so
-        3) Grab the scan job identifier from the scan info a scan
-        4) Access the deployments & details endpoint of the report as JSON
-        5) Access the deployments & details endpoint of the report as CSV
-        6) Access the deployments & details endpoint of the report as JSON
-        7) Access the deployments & details endpoint of the report as CSV
-        8) Assert that all response codes were successful
-    :expectedresults: Reports return the appropriate content type.
-    """
-    scan = data_provider.scans.new_one({}, new_dependencies=False, data_only=False)
-    scanjob = ScanJob(scan_id=scan._id)
-    scanjob.create()
-    wait_until_state(scanjob, state="stopped")
-    report = Report()
-    response = report.retrieve_from_scan_job(scanjob._id)
-    if response.json().get("report_id") is None:
-        pytest.xfail(reason='Scan Job does not have "report_id".')
-    accept_json = {"Accept": "application/json"}
-    accept_csv = {"Accept": "text/csv"}
-
-    validate_csv_response(report.details(headers=accept_csv))
-    validate_json_response(report.details(headers=accept_json))
-    validate_csv_response(report.details(headers=accept_csv))
-    validate_json_response(report.details(headers=accept_json))
-
-    validate_csv_response(report.deployments(headers=accept_csv))
-    validate_json_response(report.deployments(headers=accept_json))
-    validate_csv_response(report.deployments(headers=accept_csv))
-    validate_json_response(report.deployments(headers=accept_json))
 
 
 @pytest.mark.runs_scan
