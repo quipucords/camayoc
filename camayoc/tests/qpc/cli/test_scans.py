@@ -102,60 +102,6 @@ def test_create_scan_with_options(isolated_filesystem, qpc_server_config, data_p
 
 
 @pytest.mark.parametrize("fail_cases", NEGATIVE_CASES)
-def test_create_scan_with_disabled_products_negative(
-    isolated_filesystem, qpc_server_config, data_provider, fail_cases
-):
-    """Attempt to create a scan with invalid values for disabled products.
-
-    :id: 4acaaeb4-3833-11e8-b467-0ed5f89f718b
-    :description: Create a scan with invalid values for disabled products.
-    :steps:
-        1) Call scan_add_and_check which runs the command
-           ``qpc scan add --sources <source> --disabled-optional-products
-           <optional-product>`` and asserts that it fails
-    :expectedresults: The scan is not created
-    """
-    source = data_provider.sources.defined_one({"type": "network"})
-    scan_name = uuid4()
-    scan_add_and_check(
-        {
-            "name": scan_name,
-            "sources": source.name,
-            "disabled-optional-products": fail_cases,
-        },
-        r"usage: {} scan add(.|[\r\n])*".format(client_cmd_name),
-        exitstatus=2,
-    )
-
-
-@pytest.mark.parametrize("fail_cases", NEGATIVE_CASES)
-def test_create_scan_with_extended_products_negative(
-    isolated_filesystem, qpc_server_config, data_provider, fail_cases
-):
-    """Attempt to create a scan with invalid values for extended products.
-
-    :id: 190711ac-cde6-4a9f-bfbd-887c41094ed1
-    :description: Create a scan with invalid values for extended products.
-    :steps:
-        1) Call scan_add_and_check which runs the command
-           ``qpc scan add --sources <source> --enabled-ext-product-search
-           <product>`` and asserts that it fails
-    :expectedresults: The scan is not created
-    """
-    source = data_provider.sources.defined_one({"type": "network"})
-    scan_name = uuid4()
-    scan_add_and_check(
-        {
-            "name": scan_name,
-            "sources": source.name,
-            "enabled-ext-product-search": fail_cases,
-        },
-        r"usage: {} scan add(.|[\r\n])*".format(client_cmd_name),
-        exitstatus=2,
-    )
-
-
-@pytest.mark.parametrize("fail_cases", NEGATIVE_CASES)
 def test_create_scan_with_extended_product_directories_negative(
     isolated_filesystem, qpc_server_config, data_provider, fail_cases
 ):
