@@ -1,10 +1,11 @@
+from typing import Any
 from typing import Literal
 from typing import Optional
 from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
-from pydantic import root_validator
+from pydantic import model_validator
 from typing_extensions import Annotated
 
 
@@ -117,7 +118,7 @@ class SourceOptions(BaseModel):
     type: str
     hosts: list[str]
     credentials: list[str]
-    options: Optional[SourceOptionsOptions]
+    options: Optional[SourceOptionsOptions] = None
 
 
 class ExpectedDistributionData(BaseModel):
@@ -139,15 +140,15 @@ class ExpectedOpenShiftData(BaseModel):
 
 
 class ExpectedScanData(BaseModel):
-    distribution: Optional[ExpectedDistributionData]
-    products: Optional[list[ExpectedProductData]]
-    cluster_info: Optional[ExpectedOpenShiftData]
+    distribution: Optional[ExpectedDistributionData] = None
+    products: Optional[list[ExpectedProductData]] = None
+    cluster_info: Optional[ExpectedOpenShiftData] = None
 
 
 class ScanOptions(BaseModel):
     name: str
     sources: list[str]
-    expected_data: Optional[dict[str, ExpectedScanData]]
+    expected_data: Optional[dict[str, ExpectedScanData]] = None
 
 
 class Configuration(BaseModel):
@@ -158,38 +159,50 @@ class Configuration(BaseModel):
     sources: list[SourceOptions]
     scans: list[ScanOptions]
 
-    @root_validator
-    def check_name_uniqueness(cls, values):
-        for option in ("credentials", "sources", "scans"):
-            names = [item.name for item in values.get(option)]
-            if len(names) != len(set(names)):
-                msg = f"Names inside '{option}' are not unique"
-                raise ValueError(msg)
-        return values
-
-    @root_validator
-    def check_credentials(cls, values):
-        credentials = {cred.name: cred for cred in values.get("credentials")}
-        for source in values.get("sources"):
-            for cred_name in source.credentials:
-                if cred_name not in credentials:
-                    msg = f"Source '{source.name}' refers to undefined credential '{cred_name}'"
-                    raise ValueError(msg)
-                cred = credentials.get(cred_name)
-                if source.type != cred.type:
-                    msg = (
-                        f"Source '{source.name}' type {source.type}"
-                        f" does not match credential '{cred.name}' type {cred.type}"
-                    )
+    @model_validator(mode="before")
+    @classmethod
+    def check_name_uniqueness(cls, values: Any) -> Any:
+        if isinstance(values, dict):
+            for option in ("credentials", "sources", "scans"):
+                names = [item.get("name") for item in values.get(option)]
+                if len(names) != len(set(names)):
+                    msg = f"Names inside '{option}' are not unique"
                     raise ValueError(msg)
         return values
 
-    @root_validator
-    def check_sources(cls, values):
-        source_names = [source.name for source in values.get("sources")]
-        for scan in values.get("scans"):
-            for source_name in scan.sources:
-                if source_name not in source_names:
-                    msg = f"Scan '{scan.name}' refers to undefined source '{source_name}'"
-                    raise ValueError(msg)
+    @model_validator(mode="before")
+    @classmethod
+    def check_credentials(cls, values: Any) -> Any:
+        if isinstance(values, dict):
+            credentials = {cred.get("name"): cred for cred in values.get("credentials")}
+            for source in values.get("sources"):
+                for cred_name in source.get("credentials"):
+                    if cred_name not in credentials:
+                        source_name = source.get("name")
+                        msg = f"Source '{source_name}' refers to undefined credential '{cred_name}'"
+                        raise ValueError(msg)
+                    cred = credentials.get(cred_name)
+
+                    source_type = source.get("type")
+                    cred_type = cred.get("type")
+                    if source_type != cred_type:
+                        source_name = source.get("name")
+                        msg = (
+                            f"Source '{source_name}' type {source_type}"
+                            f" does not match credential '{cred_name}' type {cred_type}"
+                        )
+                        raise ValueError(msg)
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_sources(cls, values: Any) -> Any:
+        if isinstance(values, dict):
+            source_names = [source.get("name") for source in values.get("sources")]
+            for scan in values.get("scans"):
+                for source_name in scan.get("sources"):
+                    if source_name not in source_names:
+                        scan_name = scan.get("name")
+                        msg = f"Scan '{scan_name}' refers to undefined source '{source_name}'"
+                        raise ValueError(msg)
         return values

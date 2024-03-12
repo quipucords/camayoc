@@ -33,7 +33,7 @@ pexpect = "^4.8.0"
 # generation to save time during execution, but that means we need to keep
 # version here in sync with version used when generating images
 playwright = "1.40.0"
-pydantic = "^1.10.7"
+pydantic = "^2.6.3"
 pytest = "^7.4.3"
 pytest-ibutsu = "^2.2.4"
 pytest-playwright = "^0.4.3"

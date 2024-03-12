@@ -210,7 +210,7 @@ class Credential(QPCObject):
             "type": "cred_type",
         }
         definition_data = {}
-        for definition_key, definition_value in definition.dict().items():
+        for definition_key, definition_value in definition.model_dump().items():
             if definition_value is None:
                 continue
             if new_definition_key := attrs_translation_map.get(definition_key):
@@ -326,7 +326,7 @@ class Source(QPCObject):
             "type": "source_type",
         }
         definition_data = {}
-        for definition_key, definition_value in definition.dict().items():
+        for definition_key, definition_value in definition.model_dump().items():
             if definition_value is None:
                 continue
             if new_definition_key := attrs_translation_map.get(definition_key):
@@ -455,7 +455,7 @@ class Scan(QPCObject):
     @classmethod
     def from_definition(cls, definition: ScanOptions, dependencies: Optional[list[int]] = None):
         definition_data = {}
-        for definition_key, definition_value in definition.dict().items():
+        for definition_key, definition_value in definition.model_dump().items():
             if definition_value is None:
                 continue
             if definition_key == "sources":
