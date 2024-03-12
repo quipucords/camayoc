@@ -48,7 +48,9 @@ test:
 
 test-coverage:
 	poetry run pytest --verbose --cov-report term --cov-report xml:coverage.xml \
-	--cov=camayoc.command \
+	--cov=camayoc.constants \
+	--cov=camayoc.qpc_models \
+	--cov=camayoc.data_provider \
 	--cov=camayoc.config \
 	--cov=camayoc.exceptions \
 	--cov=camayoc.utils \
