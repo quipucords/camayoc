@@ -18,7 +18,7 @@ from camayoc.utils import uuid4
 def replace_definition_name(definition, name=None):
     if not name:
         name = f"{definition.name}-{uuid4()}"
-    new_definition = definition.copy()
+    new_definition = definition.model_copy()
     new_definition.name = name
     return new_definition
 
