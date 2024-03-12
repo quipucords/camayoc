@@ -27,12 +27,6 @@ class QuipucordsCLIOptions(BaseModel):
     display_name: Optional[str] = "qpc"
 
 
-class VCenterOptions(BaseModel):
-    hostname: str
-    password: str
-    username: str
-
-
 class PlainNetworkCredentialOptions(BaseModel):
     name: str
     type: Literal["network"]
@@ -160,7 +154,6 @@ class Configuration(BaseModel):
     camayoc: CamayocOptions
     quipucords_server: QuipucordsServerOptions
     quipucords_cli: QuipucordsCLIOptions
-    vcenter: VCenterOptions
     credentials: list[CredentialOptions]
     sources: list[SourceOptions]
     scans: list[ScanOptions]
