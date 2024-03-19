@@ -155,7 +155,7 @@ def test_new_no_match():
 def test_automatic_cleanup():
     dp = DataProvider(credentials=CREDENTIALS, sources=SOURCES, scans=SCANS)
     with mock.patch("camayoc.api.Client"):
-        with mock.patch.object(dp.credentials._model_class, "delete") as mock_delete:
+        with mock.patch.object(dp.credentials._model_class, "bulk_delete") as mock_delete:
             cred = dp.credentials.new_one({"type": "network"}, data_only=False)
             cred._id = 123
             mock_delete.return_value = mock.Mock
@@ -167,7 +167,7 @@ def test_automatic_cleanup():
 def test_mark_for_cleanup():
     dp = DataProvider(credentials=CREDENTIALS, sources=SOURCES, scans=SCANS)
     with mock.patch("camayoc.api.Client"):
-        with mock.patch.object(dp.credentials._model_class, "delete") as mock_delete:
+        with mock.patch.object(dp.credentials._model_class, "bulk_delete") as mock_delete:
             cred = dp.credentials.new_one({"type": "network"}, data_only=True)
             cred._id = 123
             mock_delete.return_value = mock.Mock

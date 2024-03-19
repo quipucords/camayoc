@@ -21,6 +21,29 @@ from camayoc.utils import uuid4
 OPTIONAL_PROD_KEY = "disabled_optional_products"
 
 
+class QPCObjectBulkDeleteMixin(object):
+    """Mixin that provides access to bulk_delete method.
+
+    We can't put that in base model, because not all objects have
+    bulk_delete endpoint; but we don't want to implement that for
+    every object separately, because implementation is exactly the
+    same for objects that do have this endpoint.
+    """
+
+    def bulk_delete(self, ids, **kwargs):
+        """Send POST request to the self.endpoint/bulk_delete/ of this object.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+
+        :returns: requests.models.Response. A successful delete has the return
+            code `204`.
+
+        """
+        path = urljoin(self.endpoint, "bulk_delete/")
+        return self.client.post(path, payload={"ids": ids}, **kwargs)
+
+
 class QPCObject(object):
     """A base class for other QPC models."""
 
@@ -146,7 +169,7 @@ class QPCObject(object):
         return self.client.delete(self.path(), **kwargs)
 
 
-class Credential(QPCObject):
+class Credential(QPCObject, QPCObjectBulkDeleteMixin):
     """A class to aid in CRUD tests of Host Credentials on the QPC server.
 
     Host credentials can be created by instantiating a Credential
@@ -272,7 +295,7 @@ class Credential(QPCObject):
         return True
 
 
-class Source(QPCObject):
+class Source(QPCObject, QPCObjectBulkDeleteMixin):
     """A class to aid in CRUD test cases for sources.
 
     Sources can be created on the quipucords server by
@@ -391,7 +414,7 @@ class Source(QPCObject):
         return True
 
 
-class Scan(QPCObject):
+class Scan(QPCObject, QPCObjectBulkDeleteMixin):
     """A class to aid in CRUD test cases for scan jobs.
 
     Scans are named objects on the server that can then be used to generate any

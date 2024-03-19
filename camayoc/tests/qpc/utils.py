@@ -141,33 +141,35 @@ def sort_and_delete(trash):
     creds = []
     sources = []
     scans = []
+
+    client = api.Client(response_handler=api.echo_handler)
     # first sort into types because we have to delete scans before sources
     # and sources before scans
     for obj in trash:
-        if isinstance(obj, Credential):
-            creds.append(obj)
-            continue
-        if isinstance(obj, Source):
-            sources.append(obj)
-            continue
-        if isinstance(obj, Scan):
-            scans.append(obj)
+        # Override client to use a fresh one. It may have been a while
+        # since the object was created and its token may be invalid.
+        obj.client = client
+        # Get object id based on the name.
+        # This allows us to clean up objects created from UI and CLI.
+        # If object id could not be found, assume object was already deleted.
+        if not obj._id and obj.name:
+            obj._id = get_object_id(obj)
+        if obj._id is None:
             continue
 
-    client = api.Client(response_handler=api.echo_handler)
-    for collection in [scans, sources, creds]:
-        for obj in collection:
-            # Override client to use a fresh one. It may have been a while
-            # since the object was created and its token may be invalid.
-            obj.client = client
-            # Get object id based on the name.
-            # This allows us to clean up objects created from UI and CLI.
-            # If object id could not be found, assume object was already deleted.
-            if not obj._id and obj.name:
-                obj._id = get_object_id(obj)
-            if obj._id is None:
-                continue
-            # Only assert that we do not hit an internal server error, in case
-            # for some reason the object was already cleaned up by the test
-            response = obj.delete()
-            assert response.status_code < 500, response.content
+        if isinstance(obj, Credential):
+            creds.append(obj)
+        elif isinstance(obj, Source):
+            sources.append(obj)
+        elif isinstance(obj, Scan):
+            scans.append(obj)
+
+    for collection in (scans, sources, creds):
+        if not collection:
+            continue
+
+        ids = [obj._id for obj in collection]
+        obj = collection[0]
+        # Only assert that we do not hit an internal server error
+        response = obj.bulk_delete(ids=ids)
+        assert response.status_code < 500, response.content
