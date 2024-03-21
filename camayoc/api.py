@@ -14,8 +14,8 @@ from urllib.parse import urlunparse
 import requests
 from requests.exceptions import HTTPError
 
-from camayoc import config
 from camayoc import exceptions
+from camayoc.config import settings
 from camayoc.constants import QPC_API_VERSION
 from camayoc.constants import QPC_TOKEN_PATH
 
@@ -113,42 +113,27 @@ class Client(object):
     .. _Requests: http://docs.python-requests.org/en/master/
     """
 
-    def __init__(self, response_handler=None, url=None, authenticate=True):
+    def __init__(
+        self, response_handler=None, url=None, authenticate=True, config=settings.quipucords_server
+    ):
         """Initialize this object, collecting base URL from config file.
 
         If no response handler is specified, use the `code_handler` which will
         raise an exception for 'bad' return codes.
 
 
-        If no URL is specified, then the config file will be parsed and the URL
-        will be built by reading the hostname, port and https values. You can
-        configure the default URL by including the following on your Camayoc
-        configuration file::
-
-            qpc:
-                hostname: <machine_hostname_or_ip_address>
-                port: <port>  # if not defined will take the default port
-                              # depending on the https config: 80 if https is
-                              # false and 443 if https is true.
-                https: false  # change to true if server is published over
-                              # https. Defaults to false if not defined
+        If no URL is specified, it will be calculated automatically based on config
+        values.
         """
         self.url = url
         self.token = None
-        cfg = config.get_config().get("qpc", {})
-        self.verify = cfg.get("ssl-verify", False)
+        self.config = config
+        self.verify = self.config.ssl_verify
 
         if not self.url:
-            hostname = cfg.get("hostname")
-
-            if not hostname:
-                raise exceptions.QPCBaseUrlNotFound(
-                    "\n'qpc' section specified in camayoc config file, but"
-                    "no 'hostname' key found."
-                )
-
-            scheme = "https" if cfg.get("https", False) else "http"
-            port = str(cfg.get("port", ""))
+            hostname = self.config.hostname
+            scheme = "https" if self.config.https else "http"
+            port = str(self.config.port)
             netloc = hostname + ":{}".format(port) if port else hostname
             self.url = urlunparse((scheme, netloc, QPC_API_VERSION, "", "", ""))
 
@@ -168,9 +153,8 @@ class Client(object):
 
     def login(self):
         """Login to the server to receive an authorization token."""
-        cfg = config.get_config().get("qpc", {})
-        server_username = cfg.get("username", "admin")
-        server_password = cfg.get("password", "pass")
+        server_username = self.config.username
+        server_password = self.config.password
         login_request = self.request(
             "POST",
             urljoin(self.url, QPC_TOKEN_PATH),

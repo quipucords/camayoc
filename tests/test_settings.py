@@ -1,13 +1,10 @@
 from copy import deepcopy
 from pathlib import Path
-from unittest import mock
 
 import pytest
 import yaml
 from pydantic import ValidationError
 
-import camayoc.config
-from camayoc.config import get_config
 from camayoc.config import get_settings
 
 EXAMPLE_CONFIG_PATH = Path(__file__).parent / "../example_config.yaml"
@@ -99,11 +96,3 @@ def test_invalid_source_credential_type_mismatch(tmp_path, faker, example_config
 
     with pytest.raises(ValidationError):
         get_settings(config_file)
-
-
-def test_get_config_backward_compatibility():
-    global_settings = get_settings(path=EXAMPLE_CONFIG_PATH)
-    with mock.patch.object(camayoc.config, "settings", global_settings):
-        settings = get_config()
-        assert "qpc" in settings
-        assert "quipucords_server" not in settings

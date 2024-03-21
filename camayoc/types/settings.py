@@ -17,7 +17,9 @@ class QuipucordsServerOptions(BaseModel):
     hostname: str
     https: Optional[bool] = False
     port: Optional[int] = 8000
-    ssl_verify: Optional[bool] = Field(False, alias="ssl-verify")
+    # FIXME: this is thin layer around requests.adapters.BaseAdapter.send() `verify`
+    # param, which can be a boolean OR string (representing local path to CA bundle)
+    ssl_verify: Optional[bool] = False
     username: str
     password: str
     ssh_keyfile_path: str

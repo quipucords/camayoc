@@ -331,7 +331,7 @@ def setup_reports_prerequisites(data_provider):
     and store the information about it on the global ``_SCANS`` list.
     """
     setup_qpc()
-    network_sources = [source for source in config_sources() if source["type"] == "network"]
+    network_sources = [source for source in config_sources() if source.type == "network"]
     random.shuffle(network_sources)
     network_sources = network_sources[:2]
     if len(network_sources) < 2:
@@ -341,7 +341,7 @@ def setup_reports_prerequisites(data_provider):
         )
 
     for source in network_sources:
-        real_source = data_provider.sources.new_one({"name": source["name"]}, data_only=False)
+        real_source = data_provider.sources.new_one({"name": source.name}, data_only=False)
         scan = {"name": uuid4(), "sources": [real_source]}
         scan_add_and_check({"name": scan["name"], "sources": real_source.name})
         data_provider.mark_for_cleanup(Scan(name=scan["name"]))

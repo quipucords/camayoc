@@ -251,7 +251,7 @@ def test_scanjob_restart(isolated_filesystem, qpc_server_config):
         should be available.
     """
     scan_name = uuid4()
-    scan_add_and_check({"name": scan_name, "sources": config_sources()[0]["name"]})
+    scan_add_and_check({"name": scan_name, "sources": config_sources()[0].name})
     result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
@@ -322,7 +322,7 @@ def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
     :expectedresults: The scan must be canceled and can't not be restarted.
     """
     scan_name = uuid4()
-    scan_add_and_check({"name": scan_name, "sources": config_sources()[0]["name"]})
+    scan_add_and_check({"name": scan_name, "sources": config_sources()[0].name})
     result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
