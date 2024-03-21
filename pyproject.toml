@@ -50,7 +50,7 @@ pytest-cov = "^4.0.0"
 testimony = "^2.2.0"
 # For `make pre-commit`
 pre-commit = "^3.3.2"
-black = "^23.3.0"
+black = "^24.3.0"
 isort = "^5.11.4"
 ruff = "^0.0.270"
 
