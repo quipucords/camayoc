@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from camayoc import api
-from camayoc import config
+from camayoc.config import settings
 from camayoc.constants import QPC_CREDENTIALS_PATH
 from camayoc.constants import QPC_SCAN_PATH
 from camayoc.constants import QPC_SOURCE_PATH
@@ -80,5 +80,5 @@ def test_user():
     :expectedresults: The server correctly reports our username.
     """
     client = api.Client()
-    qpc_user = config.get_config().get("qpc", {}).get("username")
+    qpc_user = settings.quipucords_server.username
     assert client.get_user().json()["username"] == qpc_user

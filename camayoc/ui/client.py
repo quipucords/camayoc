@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 from typing import Optional
 from urllib.parse import urlunparse
 
-from camayoc import exceptions
 from camayoc.config import settings
 from camayoc.types.settings import Configuration
 from camayoc.types.ui import Session
@@ -83,14 +82,6 @@ class Client:
             return
 
         hostname = self._camayoc_config.quipucords_server.hostname
-
-        if not hostname:
-            msg = (
-                "\n'quipucords_server' section specified in camayoc config file, "
-                "but no 'hostname' key found."
-            )
-            raise exceptions.QPCBaseUrlNotFound(msg)
-
         scheme = "https" if self._camayoc_config.quipucords_server.https else "http"
         port = str(self._camayoc_config.quipucords_server.port)
         netloc = hostname + ":{}".format(port) if port else hostname

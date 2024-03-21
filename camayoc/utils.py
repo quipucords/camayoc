@@ -9,8 +9,6 @@ import tempfile
 import uuid
 from urllib.parse import urlunparse
 
-from camayoc import exceptions
-from camayoc.config import get_config
 from camayoc.config import settings
 
 _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
@@ -33,22 +31,13 @@ client_cmd = settings.quipucords_cli.executable
 client_cmd_name = settings.quipucords_cli.display_name
 """Client name displayed on help texts. Defaults to `qpc`."""
 # this is useful when client_cmd is set to an absolute path, has extra arguments like -v
-# or even when we finally support running tests with proper dsc.
 
 
 def get_qpc_url():
     """Return the base url for the qpc server."""
-    cfg = get_config().get("qpc", {})
-    hostname = cfg.get("hostname")
-
-    if not hostname:
-        raise exceptions.QPCBaseUrlNotFound(
-            'Make sure you have a "qpc" section and `hostname`is specified in '
-            "the camayoc config file"
-        )
-
-    scheme = "https" if cfg.get("https", False) else "http"
-    port = str(cfg.get("port", ""))
+    hostname = settings.quipucords_server.hostname
+    scheme = "https" if settings.quipucords_server.https else "http"
+    port = str(settings.quipucords_server.port)
     netloc = hostname + ":{}".format(port) if port else hostname
     return urlunparse((scheme, netloc, "", "", "", ""))
 

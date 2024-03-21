@@ -32,7 +32,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, data_provider, sour
     :steps: Run ``qpc scan add --sources <source>``
     :expectedresults: The created scan matches default for options.
     """
-    source = data_provider.sources.defined_one({"name": source["name"]})
+    source = data_provider.sources.defined_one({"name": source.name})
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
 
@@ -373,7 +373,7 @@ def test_clear(isolated_filesystem, qpc_server_config, data_provider, source):
     :expectedresults: Scan is deleted.
     """
     # Create scan
-    source = data_provider.sources.defined_one({"name": source["name"]})
+    source = data_provider.sources.defined_one({"name": source.name})
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
 

@@ -93,11 +93,3 @@ def get_settings(path=None) -> Configuration:
 
 
 settings = get_settings()
-
-
-def get_config():
-    """Backwards compatibility shim. Returns global config object."""
-    shim_settings = settings.model_dump(by_alias=True)
-    qpc_options = shim_settings.pop("quipucords_server")
-    shim_settings["qpc"] = qpc_options
-    return shim_settings

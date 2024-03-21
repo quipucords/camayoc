@@ -3,14 +3,11 @@
 import pprint
 import time
 
-from camayoc import config
 from camayoc.constants import QPC_SCAN_STATES
 from camayoc.constants import QPC_SCAN_TERMINAL_STATES
 from camayoc.exceptions import StoppedScanException
 from camayoc.exceptions import WaitTimeError
-from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
-from camayoc.qpc_models import Source
 
 
 def get_source(source_type, cleanup):
@@ -50,44 +47,10 @@ def get_source(source_type, cleanup):
         on server and has all credentials listed in config file created and
         associtated with it.
     """
-    cfg = config.get_config()
-    cred_list = cfg.get("credentials", [])
-    src_list = cfg.get("qpc", {}).get("sources", [])
-    config_src = {}
-    if not (src_list and cred_list):
-        return
-    for src in src_list:
-        if src.get("type") == source_type:
-            config_src = src
-    if config_src:
-        config_src.setdefault("credential_ids", [])
-        src_creds = config_src.get("credentials")
-        for cred in src_creds:
-            for config_cred in cred_list:
-                if cred == config_cred["name"]:
-                    server_cred = Credential(
-                        cred_type=source_type, username=config_cred["username"]
-                    )
-                    if config_cred.get("password"):
-                        server_cred.password = config_cred["password"]
-                    else:
-                        server_cred.ssh_keyfile = config_cred["sshkeyfile"]
-
-                    server_cred.create()
-                    cleanup.append(server_cred)
-                    config_src["credential_ids"].append(server_cred._id)
-        server_src = Source(
-            hosts=config_src["hosts"],
-            credential_ids=config_src["credential_ids"],
-            source_type=source_type,
-        )
-
-        if config_src.get("options"):
-            server_src.options = config_src.get("options")
-
-        server_src.create()
-        cleanup.append(server_src)
-        return server_src
+    # FIXME: Taking some debt here. This function is only used by prepare_scan, which in
+    # turn is only used by 2 tests that are skipped. These tests should be rewritten to
+    # data_provider, which fundamentally does exactly the same thing.
+    return None
 
 
 def prepare_scan(source_type, cleanup):

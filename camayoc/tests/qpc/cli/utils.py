@@ -11,7 +11,7 @@ from pprint import pformat
 
 import pexpect
 
-from camayoc.config import get_config
+from camayoc.config import settings
 from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.exceptions import FailedMergeReportException
 from camayoc.exceptions import FailedScanException
@@ -38,39 +38,35 @@ def clear_all_entities():
 def config_credentials():
     """Return all credentials available on configuration file for CLI scans."""
     try:
-        config_credentials = get_config().get("credentials", [])
+        config_credentials = settings.credentials
     except ConfigFileNotFoundError:
         config_credentials = []
 
     if not config_credentials:
         return []
 
-    scan_credentials = list(
-        itertools.chain(*[source["credentials"] for source in config_sources()])
-    )
-    return [
-        credential for credential in config_credentials if credential["name"] in scan_credentials
-    ]
+    scan_credentials = list(itertools.chain(*[source.credentials for source in config_sources()]))
+    return [credential for credential in config_credentials if credential.name in scan_credentials]
 
 
 def config_sources():
     """Return all sources available on configuration file for CLI scans."""
     try:
-        config_sources = get_config().get("sources", [])
+        config_sources = settings.sources
     except ConfigFileNotFoundError:
         config_sources = []
 
     if not config_sources:
         return []
 
-    scan_sources = list(itertools.chain(*[scan["sources"] for scan in config_scans()]))
-    return [source for source in config_sources if source["name"] in scan_sources]
+    scan_sources = list(itertools.chain(*[scan.sources for scan in config_scans()]))
+    return [source for source in config_sources if source.name in scan_sources]
 
 
 def config_scans():
     """Return all CLI scans available on the configuration file."""
     try:
-        return get_config().get("scans", [])
+        return settings.scans
     except ConfigFileNotFoundError:
         return []
 
@@ -463,41 +459,28 @@ def setup_qpc():
           ssl-verify: /path/to/custom/certificate
           username: gandalf
     """
-    qpc_config = get_config().get("qpc", {})
+    qpc_config = settings.quipucords_server
 
-    hostname = qpc_config.get("hostname")
-    port = qpc_config.get("port")
-    if not all([hostname, port]):
-        raise ValueError(
-            "Both hostname and port must be defined under the qpc section on "
-            "the Camayoc's configuration file."
-        )
-
-    https = qpc_config.get("https", False)
-    if not https:
+    https = ""
+    if not qpc_config.https:
         https = " --use-http"
-    else:
-        https = ""
-    ssl_verify = qpc_config.get("ssl-verify", False)
-    if ssl_verify not in (True, False):
-        ssl_verify = " --ssl-verify={}".format(ssl_verify)
-    else:
-        ssl_verify = ""
+
+    ssl_verify = ""
+    if not isinstance(qpc_config.ssl_verify, bool):
+        ssl_verify = " --ssl-verify={}".format(qpc_config.ssl_verify)
 
     command = "{} server config --host {} --port {}{}{}".format(
-        client_cmd, hostname, port, https, ssl_verify
+        client_cmd, qpc_config.hostname, qpc_config.port, https, ssl_verify
     )
     output, exitstatus = pexpect.run(command, encoding="utf8", withexitstatus=True)
     assert exitstatus == 0, output
 
     # now login to the server
-    username = qpc_config.get("username", "admin")
-    password = qpc_config.get("password", "pass")
-    command = "{} server login --username {}".format(client_cmd, username)
+    command = "{} server login --username {}".format(client_cmd, qpc_config.username)
     output, exitstatus = pexpect.run(
         command,
         encoding="utf8",
-        events=[("Password: ", password + "\n")],
+        events=[("Password: ", qpc_config.password + "\n")],
         withexitstatus=True,
     )
     assert exitstatus == 0, output

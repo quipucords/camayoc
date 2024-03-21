@@ -2,7 +2,7 @@
 
 import pytest
 
-from camayoc import config
+from camayoc.config import settings
 from camayoc.tests.qpc.cli.utils import clear_all_entities
 from camayoc.ui import Client as UIClient
 from camayoc.ui.session import BasicSession
@@ -22,7 +22,7 @@ def pytest_exception_interact(node, call, report):
 @pytest.fixture(scope="session")
 def browser_context_args(browser_context_args):
     extra_context_args = {}
-    verify_ssl = config.get_config().get("qpc", {}).get("ssl-verify", False)
+    verify_ssl = settings.quipucords_server.ssl_verify
     if not verify_ssl:
         extra_context_args["ignore_https_errors"] = True
 
