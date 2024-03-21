@@ -399,14 +399,14 @@ def test_clear(isolated_filesystem, qpc_server_config, data_provider, source):
 
 
 def test_clear_all(isolated_filesystem, qpc_server_config, data_provider):
-    """Clear all sources.
+    """Clear all scans.
 
     :id: 29e37620-3682-11e8-b467-0ed5f89f718b
     :description: Clear multiple scan entries using the ``--all`` option.
     :steps:
         1) Run ``qpc scan add --sources <source>``
         2) Run ``qpc scan add --sources <source>``
-        3) Run ``qpc source clear --all``
+        3) Run ``qpc scan clear --all``
     :expectedresults: All scans entries are removed.
     """
     # Create scan
@@ -428,5 +428,10 @@ def test_clear_all(isolated_filesystem, qpc_server_config, data_provider):
 
     # Remove scan
     result = scan_clear({"all": None})
-    match = re.match(r"All scans were removed.", result)
-    assert match is not None
+    # Note! When run in isolation, this test may delete only one scan.
+    # However, when part of the full test suite, scans from previous tests may
+    # be lingering, and calling "clear --all" here may delete more than just the
+    # one scan added in the lines above. For example, I saw this output in our
+    # test pipeline: Successfully deleted 18 scans.
+    match = re.match(r"Successfully deleted [1-9][0-9]* scans.", result)
+    assert match is not None, f"Could not find match in result: {result}"

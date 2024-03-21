@@ -1693,7 +1693,12 @@ def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
     assert sorted(sources, key=name) == sorted(output, key=name)
 
     qpc_source_clear = pexpect.spawn("{} -v source clear --all".format(client_cmd))
-    assert qpc_source_clear.expect("All sources were removed") == 0
+    assert (
+        qpc_source_clear.expect(
+            f"Successfully deleted {len(sources)} sources. 0 sources could not be deleted."
+        )
+        == 0
+    )
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
