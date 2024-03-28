@@ -90,8 +90,10 @@ def normalize_detail_report(header_info, reader):
     ), "Extracted Report Fields didn't match expected list"
 
     report = {
-        "id": report_info["report_id"],
+        "report_id": report_info["report_id"],
         "report_type": report_info["report_type"],
+        "report_platform_id": report_info["report_platform_id"],
+        "report_version": report_info["report_version"],
         "sources": [
             {
                 "facts": [row for row in reader],
