@@ -141,6 +141,12 @@ def test_openshift_clusters(qpc_server_config, data_provider, source_definition:
     :expectedresults: The facts already knew about the cluster and nodes
         have expected values in deployment and details reports.
     """
+    credential_name = source_definition.credentials[0]
+    credential = data_provider.credentials.defined_one({"name": credential_name})
+    if not credential.auth_token and not credential.password:
+        pytest.skip(
+            f"Empty auth_token or password for credential '{credential_name}' in config file."
+        )
     source = data_provider.sources.new_one({"name": source_definition.name}, data_only=False)
     scan_name = utils.uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
