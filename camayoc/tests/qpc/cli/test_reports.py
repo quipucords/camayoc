@@ -226,23 +226,16 @@ FACTS = (
     "jboss_eap_chkconfig",
     "jboss_eap_common_files",
     "jboss_eap_find_jboss_modules_jar",
-    "jboss_eap_find_jboss_modules_jar",
     "jboss_eap_id_jboss",
     "jboss_eap_jar_ver",
-    "jboss_eap_jar_ver",
-    "jboss_eap_locate_jboss_modules_jar",
     "jboss_eap_locate_jboss_modules_jar",
     "jboss_eap_packages",
-    "jboss_eap_run_jar_ver",
     "jboss_eap_run_jar_ver",
     "jboss_eap_running_paths",
     "jboss_eap_systemctl_unit_files",
     "jboss_fuse_activemq_ver",
-    "jboss_fuse_activemq_ver",
-    "jboss_fuse_camel_ver",
     "jboss_fuse_camel_ver",
     "jboss_fuse_chkconfig",
-    "jboss_fuse_cxf_ver",
     "jboss_fuse_cxf_ver",
     "jboss_fuse_on_eap_activemq_ver",
     "jboss_fuse_on_eap_camel_ver",
@@ -395,11 +388,18 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
         if output_format == "json":
             report = json.load(f)
             expected_fields = JSON_DEPLOYMENTS_REPORT_FIELDS
+            scan_report_id = scan["report"]
         else:
             report = normalize_csv_report(f, 5, [(0, 1)], report_type="deployments")
             expected_fields = CSV_DEPLOYMENTS_REPORT_FIELDS
+            scan_report_id = str(scan["report"])
 
     assert report["report_type"] == "deployments"
+    assert report["report_id"] == scan_report_id
+    assert report["report_platform_id"]
+    assert report["report_version"]
+    if output_format == "json":
+        assert report["status"] == "completed"
     for report_item in report["system_fingerprints"]:
         if output_format == "csv":
             # CSV reports must include all fields
@@ -407,6 +407,32 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
         else:
             # JSON reports will only diplay fields that are not null nor blank
             assert_json_report_fields(report_item.keys(), expected_fields)
+
+    if output_format == "csv":
+        return
+
+    known_source_names = [
+        source["source_name"]
+        for fingerprint in report["system_fingerprints"]
+        for source in fingerprint["sources"]
+    ]
+    known_source_types = [
+        source["source_type"]
+        for fingerprint in report["system_fingerprints"]
+        for source in fingerprint["sources"]
+    ]
+    assert any(source.name in known_source_names for source in scan["sources"])
+    assert any(source.source_type in known_source_types for source in scan["sources"])
+    for fingerprint in report["system_fingerprints"]:
+        fingerprint_keys = set(fingerprint.keys())
+        metadata_keys = set(fingerprint["metadata"].keys())
+        assert not (metadata_keys - fingerprint_keys)
+        for metadata in fingerprint["metadata"].values():
+            assert "has_sudo" in metadata
+            assert "raw_fact_key" in metadata
+            assert "server_id" in metadata
+            assert "source_name" in metadata
+            assert "source_type" in metadata
 
 
 @pytest.mark.runs_scan
@@ -438,18 +464,26 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
     with open(output_path) as f:
         if output_format == "json":
             report = json.load(f)
+            scan_report_id = scan["report"]
         else:
             # For CSV we need to massage the data a little bit. First ensure
             # there is a header with the report id, number of sources and
             # sources' information.
             report = normalize_csv_report(f, 8, [(0, 1), (5, 6)], report_type="detail")
+            scan_report_id = str(scan["report"])
 
     assert report["report_type"] == "details"
+    assert report["report_id"] == scan_report_id
+    assert report["report_platform_id"]
+    assert report["report_version"]
     assert len(report["sources"]) == len(scan["sources"])
     for report_source, scan_source in zip(report["sources"], scan["sources"]):
         assert "server_id" in report_source
         assert report_source["source_name"] == scan_source.name
         assert report_source["source_type"] == scan_source.source_type
+        if output_format == "json":
+            assert report_source["report_version"]
+            assert report_source["report_version"] == report["report_version"]
         for facts in report_source["facts"]:
             report_facts = set(facts.keys())
             expected_facts = set(FACTS)
