@@ -632,15 +632,23 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
 
 
 def test_clear_all(isolated_filesystem, qpc_server_config):
-    """Clear all auth entries.
+    """Clear all Credentials entries.
 
     :id: 16aa6914-e7ae-400f-b12b-6c9d218c4e0f
-    :description: Clear multiple auth entries using the ``--all`` option.
+    :description: Clear multiple Credentials entries using the ``--all`` option.
     :steps: Run ``qpc cred clear --all``
-    :expectedresults: All auth entries are removed.
+    :expectedresults: All Credentials entries are removed.
     """
-    expected_credential_count = random.randint(2, 3)
-    for _ in range(expected_credential_count):
+    number_of_credentials = 0
+    output, exitstatus = pexpect.run(
+        "{} -v cred list".format(client_cmd), encoding="utf8", withexitstatus=True
+    )
+    assert exitstatus == 0
+    if "No credentials exist yet." not in output:
+        number_of_credentials = len(json.loads(output))
+
+    new_credentials_count = random.randint(2, 3)
+    for _ in range(new_credentials_count):
         options = {
             "name": utils.uuid4(),
             "username": utils.uuid4(),
@@ -656,8 +664,9 @@ def test_clear_all(isolated_filesystem, qpc_server_config):
         encoding="utf-8",
         withexitstatus=True,
     )
+    successfully_deleted_count = number_of_credentials + new_credentials_count
     assert (
-        f"Successfully deleted {expected_credential_count} credentials. "
+        f"Successfully deleted {successfully_deleted_count} credentials. "
         "0 credentials could not be deleted." in output
     )
     assert exitstatus == 0
