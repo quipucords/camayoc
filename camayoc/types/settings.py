@@ -127,6 +127,7 @@ class ExpectedDistributionData(BaseModel):
     name: str
     version: str
     release: str
+    is_redhat: bool
 
 
 class ExpectedProductData(BaseModel):
@@ -145,6 +146,8 @@ class ExpectedScanData(BaseModel):
     distribution: Optional[ExpectedDistributionData] = None
     products: Optional[list[ExpectedProductData]] = None
     cluster_info: Optional[ExpectedOpenShiftData] = None
+    installed_products: Optional[list[str]] = None
+    raw_facts: Optional[dict[str, Any]] = None
 
 
 class ScanOptions(BaseModel):
