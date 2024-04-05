@@ -15,17 +15,6 @@ from camayoc.types.settings import ScanOptions
 _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
 """Environment variables related to the XDG Base Directory specification."""
 
-
-def name_getter(obj):
-    """Generate test IDs by fetching the ``name`` item."""
-    try:
-        name = obj.get("name")
-        if not name:
-            raise KeyError
-    except (AttributeError, KeyError):
-        return obj.name
-
-
 client_cmd = settings.quipucords_cli.executable
 """Client command to use during tests. Defaults to `qpc`."""
 
