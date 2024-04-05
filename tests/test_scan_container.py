@@ -20,6 +20,7 @@ SCANS = [
                         "name": "Fedora",
                         "version": "40",
                         "release": "",
+                        "is_redhat": False,
                     }
                 }
             },
