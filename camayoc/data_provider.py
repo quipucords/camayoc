@@ -1,18 +1,31 @@
+import logging
 import random
 from itertools import chain
 from itertools import cycle
+from typing import Sequence
 
+from attrs import evolve
 from littletable import Table
 
 from camayoc.api import HTTPError
 from camayoc.config import settings
 from camayoc.exceptions import NoMatchingDataDefinitionException
+from camayoc.exceptions import StoppedScanException
+from camayoc.exceptions import WaitTimeError
 from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Report
 from camayoc.qpc_models import Scan
+from camayoc.qpc_models import ScanJob
 from camayoc.qpc_models import Source
+from camayoc.tests.qpc.api.v1.utils import wait_until_state
 from camayoc.tests.qpc.utils import get_object_id
 from camayoc.tests.qpc.utils import sort_and_delete
+from camayoc.types.scans import FinishedScan
+from camayoc.types.scans import ScanSimplifiedStatusEnum
+from camayoc.utils import expected_data_has_attribute
 from camayoc.utils import uuid4
+
+logger = logging.getLogger(__name__)
 
 
 def replace_definition_name(definition, name=None):
@@ -164,3 +177,111 @@ class DataProvider:
             (getattr(self, store)._created_models.values() for store in self._stores)
         )
         sort_and_delete(trash)
+
+
+class ScanContainer:
+    def __init__(self, data_provider: DataProvider, scans=settings.scans):
+        self._dp = data_provider
+        self._scan_definitions = scans
+        self._finished_scans: dict[str, FinishedScan] = {}
+
+    def all(self) -> dict[str, FinishedScan]:
+        all_scans = [scan.name for scan in self._scan_definitions]
+        return self._get_or_run_scans(all_scans)
+
+    def ok(self) -> dict[str, FinishedScan]:
+        all_scans = [scan.name for scan in self._scan_definitions]
+        return self._get_or_run_scans(all_scans, ok_only=True)
+
+    def ok_with_expected_data_attr(self, attr_name) -> dict[str, FinishedScan]:
+        wanted_scans = [
+            scan.name
+            for scan in self._scan_definitions
+            if expected_data_has_attribute(scan, attr_name)
+        ]
+
+        return self._get_or_run_scans(scans=wanted_scans, ok_only=True)
+
+    def _get_or_run_scans(self, scans: Sequence[str], ok_only=False) -> dict[str, FinishedScan]:
+        self._ensure_wanted_scans_finished(scans)
+
+        scans_to_return = [
+            scan for scan_name, scan in self._finished_scans.items() if scan_name in scans
+        ]
+
+        if ok_only:
+            scans_to_return = [
+                scan
+                for scan in scans_to_return
+                if scan.status == ScanSimplifiedStatusEnum.COMPLETED
+            ]
+
+        scans_to_return = {scan.definition.name: scan for scan in scans_to_return}
+
+        return scans_to_return
+
+    def _ensure_wanted_scans_finished(self, scans: Sequence[str]):
+        finished_scans = set(self._finished_scans.keys())
+        wanted_scans = set(scans)
+        wanted_diff = wanted_scans - finished_scans
+
+        if not wanted_diff:
+            return
+
+        all_scans = self._run_scans(wanted_diff)
+        for scan in all_scans:
+            scan_name = scan.definition.name
+            self._finished_scans[scan_name] = scan
+
+    def _run_scans(self, wanted_scans: set[str]) -> list[FinishedScan]:
+        started_scans = []
+        for scan_definition in self._scan_definitions:
+            if scan_definition.name not in wanted_scans:
+                continue
+
+            scan = self._dp.scans.defined_one({"name": scan_definition.name})
+            scanjob = ScanJob(scan_id=scan._id)
+            scanjob.create()
+            logger.info("Started scanjob %s for scan %s", scanjob._id, scan_definition.name)
+            scan = FinishedScan(
+                scan_id=scan._id,
+                scan_job_id=scanjob._id,
+                status=ScanSimplifiedStatusEnum.CREATED,
+                definition=scan_definition,
+            )
+            started_scans.append(scan)
+
+        all_scans = []
+        for scan in started_scans:
+            try:
+                scanjob = ScanJob(_id=scan.scan_job_id)
+                wait_until_state(scanjob)
+                report = Report()
+                report.retrieve_from_scan_job(scan_job_id=scanjob._id)
+                details_report = report.details().json()
+                deployments_report = report.deployments().json()
+                finished_scan = evolve(
+                    scan,
+                    status=ScanSimplifiedStatusEnum.COMPLETED,
+                    report_id=report._id,
+                    details_report=details_report,
+                    deployments_report=deployments_report,
+                )
+                logger.info(
+                    "Finished scanjob %s for scan %s", scan.scan_job_id, scan.definition.name
+                )
+            except (WaitTimeError, StoppedScanException) as e:
+                finished_scan = evolve(
+                    scan,
+                    status=ScanSimplifiedStatusEnum.FAILED,
+                    error=e,
+                )
+                logger.warning(
+                    "Encountered error when running scanjob %s for scan %s",
+                    scan.scan_job_id,
+                    scan.definition.name,
+                    exc_info=True,
+                )
+            all_scans.append(finished_scan)
+
+        return all_scans
