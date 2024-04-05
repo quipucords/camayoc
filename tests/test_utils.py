@@ -5,6 +5,7 @@ from unittest import mock
 
 from camayoc import utils
 from camayoc.types.settings import QuipucordsServerOptions
+from camayoc.types.settings import ScanOptions
 
 
 def test_get_qpc_url():
@@ -38,3 +39,53 @@ def test_isolated_filesystem_w_path():
             "Make sure isolated_filesystem "
             "creates the temp dir under ``filesystem_path``, when provided."
         )
+
+
+def test_expected_data_has_attribute_happy_path():
+    scan = ScanOptions(
+        **{
+            "name": "networkscan",
+            "sources": ["mynetwork"],
+            "expected_data": {
+                "host1": {
+                    "distribution": {
+                        "name": "Fedora",
+                        "version": "40",
+                        "release": "",
+                        "is_redhat": False,
+                    }
+                }
+            },
+        }
+    )
+    assert utils.expected_data_has_attribute(scan, "distribution")
+
+
+def test_expected_data_has_attribute_no_attr():
+    scan = ScanOptions(
+        **{
+            "name": "networkscan",
+            "sources": ["mynetwork"],
+            "expected_data": {
+                "host1": {
+                    "distribution": {
+                        "name": "Fedora",
+                        "version": "40",
+                        "release": "",
+                        "is_redhat": False,
+                    }
+                }
+            },
+        }
+    )
+    assert not utils.expected_data_has_attribute(scan, "products")
+
+
+def test_expected_data_has_attribute_no_expected_data():
+    scan = ScanOptions(
+        **{
+            "name": "networkscan",
+            "sources": ["mynetwork"],
+        }
+    )
+    assert not utils.expected_data_has_attribute(scan, "distribution")

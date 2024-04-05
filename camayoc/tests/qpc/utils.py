@@ -1,11 +1,14 @@
 """Utility functions for quipucords server tests."""
 import hashlib
 from pathlib import Path
+from typing import Callable
 
 from camayoc import api
+from camayoc.config import settings
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
+from camayoc.types.settings import ScanOptions
 from camayoc.utils import uuid4
 
 
@@ -173,3 +176,11 @@ def sort_and_delete(trash):
         # Only assert that we do not hit an internal server error
         response = obj.bulk_delete(ids=ids)
         assert response.status_code < 500, response.content
+
+
+def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
+    """Grab a list of scan names for which predicate returns True."""
+    matching_scans = [
+        scan_definition.name for scan_definition in settings.scans if predicate(scan_definition)
+    ]
+    return matching_scans

@@ -127,11 +127,13 @@ scans:
                   # in /etc/redhat-release
                   version: '5.9'
                   release: ''
+                  is_redhat: true
           jbossamq-rhel-6-vc:
               distribution:
                   name: 'Red Hat Enterprise Linux'
                   version: '6.9'
                   release: ''
+                  is_redhat: true
     - name: OpenShift
       sources:
           - 'OpenShift'

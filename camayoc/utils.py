@@ -10,6 +10,7 @@ import uuid
 from urllib.parse import urlunparse
 
 from camayoc.config import settings
+from camayoc.types.settings import ScanOptions
 
 _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
 """Environment variables related to the XDG Base Directory specification."""
@@ -87,3 +88,13 @@ def create_x_rh_identity(account_number, org_id=None):
     identity = create_identity(account_number, org_id)
     x_rh_identity = {"x-rh-identity": identity}
     return x_rh_identity
+
+
+def expected_data_has_attribute(scan_definition: ScanOptions, attr_name: str) -> bool:
+    """Check if scan definition has an attribute in expected_data."""
+    if not scan_definition.expected_data:
+        return False
+    for expected_data in scan_definition.expected_data.values():
+        if getattr(expected_data, attr_name, None):
+            return True
+    return False

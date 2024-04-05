@@ -3,6 +3,7 @@ import pytest
 
 from camayoc import api
 from camayoc.data_provider import DataProvider
+from camayoc.data_provider import ScanContainer
 from camayoc.tests.qpc.utils import sort_and_delete
 
 
@@ -23,6 +24,12 @@ def cleanup():
     yield trash
 
     sort_and_delete(trash)
+
+
+@pytest.fixture(scope="session")
+def scans(data_provider):
+    scan_container = ScanContainer(data_provider)
+    yield scan_container
 
 
 @pytest.fixture()
