@@ -178,6 +178,18 @@ def sort_and_delete(trash):
         assert response.status_code < 500, response.content
 
 
+def all_source_names() -> list[str]:
+    """Grab a list of all source names."""
+    matching_sources = [source_definition.name for source_definition in settings.sources]
+    return matching_sources
+
+
+def all_scan_names() -> list[str]:
+    """Grab a list of all scan names."""
+    matching_scans = [scan_definition.name for scan_definition in settings.scans]
+    return matching_scans
+
+
 def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
     """Grab a list of scan names for which predicate returns True."""
     matching_scans = [

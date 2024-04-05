@@ -12,6 +12,7 @@ import re
 
 import pytest
 
+from camayoc.tests.qpc.utils import all_source_names
 from camayoc.utils import client_cmd_name
 from camayoc.utils import uuid4
 
@@ -24,7 +25,8 @@ from .utils import source_show
 NEGATIVE_CASES = [1, -100, "redhat_packages", "ifconfig", {}, [], ["/foo/bar/"]]
 
 
-def test_create_scan(isolated_filesystem, qpc_server_config, data_provider, source):
+@pytest.mark.parametrize("source_name", all_source_names())
+def test_create_scan(isolated_filesystem, qpc_server_config, data_provider, source_name):
     """Create a single source scan.
 
     :id: 95d108dc-6a92-4723-aec2-10bc73a0e3fa
@@ -32,7 +34,7 @@ def test_create_scan(isolated_filesystem, qpc_server_config, data_provider, sour
     :steps: Run ``qpc scan add --sources <source>``
     :expectedresults: The created scan matches default for options.
     """
-    source = data_provider.sources.defined_one({"name": source.name})
+    source = data_provider.sources.defined_one({"name": source_name})
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
 
@@ -361,7 +363,8 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provide
     )
 
 
-def test_clear(isolated_filesystem, qpc_server_config, data_provider, source):
+@pytest.mark.parametrize("source_name", all_source_names())
+def test_clear(isolated_filesystem, qpc_server_config, data_provider, source_name):
     """Create a single source scan.
 
     :id: 29e3744a-3682-11e8-b467-0ed5f89f718b
@@ -373,7 +376,7 @@ def test_clear(isolated_filesystem, qpc_server_config, data_provider, source):
     :expectedresults: Scan is deleted.
     """
     # Create scan
-    source = data_provider.sources.defined_one({"name": source.name})
+    source = data_provider.sources.defined_one({"name": source_name})
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
 
