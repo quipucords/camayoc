@@ -35,7 +35,11 @@ def login(args):
         cmd = ["oc", "login", url, insecure, "--token", args.auth_token]
     else:
         cmd = ["oc", "login", url, insecure, "-u", args.username, "-p", args.password]
-    result = subprocess.run(cmd, capture_output=True, check=False, text=True)
+    try:
+        result = subprocess.run(cmd, capture_output=True, check=False, text=True)
+    except TypeError:
+        print("Error: provide a password or authentication token to login!", file=sys.stderr)
+        return False
     return result.returncode == 0
 
 
@@ -117,9 +121,18 @@ def get_cluster_information():
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Create an OpenShift configuration for Camayoc.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("-n", "--name", help="The common name for credentials, sources and scans.")
-    parser.add_argument("-a", "--api-url", required=True, help="Provide the API URL to log in.")
+    parser.add_argument(
+        "-n",
+        "--name",
+        required=True,
+        default="ocp",
+        help="The common name for credentials, sources and scans.",
+    )
+    parser.add_argument(
+        "-a", "--api-url", required=True, default="localhost", help="Provide the API URL to log in."
+    )
     parser.add_argument("-P", "--port", type=int, default=6443, help="Provide the API port number.")
     parser.add_argument(
         "-k", "--insecure", action="store_false", help="Skip the SSL verification step."
