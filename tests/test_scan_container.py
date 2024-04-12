@@ -93,6 +93,21 @@ def test_run_ok():
         assert len(scans) == 1
 
 
+def test_run_name():
+    """ScanContainer.with_name() runs only requested scan."""
+    dp = DataProvider(credentials=[], sources=[], scans=SCANS)
+    sc = ScanContainer(data_provider=dp, scans=SCANS)
+    with mock.patch.object(
+        sc, "_run_scans", autospec=True, side_effect=mocked_run_scans
+    ) as mock_run_scans:
+        scan = sc.with_name("networkscan")
+        assert mock_run_scans.call_count == 1
+        assert mock_run_scans.call_args.args == ({"networkscan"},)
+        assert len(sc._finished_scans) == 1
+        assert isinstance(scan, FinishedScan)
+        assert scan.definition.name == "networkscan"
+
+
 def test_expected_attr():
     """ScanContainer.ok_with_expected_data_attr() runs only scans with attr in expected data."""
     dp = DataProvider(credentials=[], sources=[], scans=SCANS)
