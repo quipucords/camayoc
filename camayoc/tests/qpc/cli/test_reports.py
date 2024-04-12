@@ -13,6 +13,7 @@ import pprint
 import random
 import re
 import tarfile
+from pathlib import Path
 
 import pytest
 
@@ -24,6 +25,7 @@ from .utils import config_sources
 from .utils import report_deployments
 from .utils import report_detail
 from .utils import report_download
+from .utils import report_insights
 from .utils import report_merge
 from .utils import report_merge_status
 from .utils import scan_add_and_check
@@ -608,3 +610,57 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
             was: {str(no_dir_exception_info.value)}'
         )
         pytest.fail("I expected to fail with an AssertionError due to a bad output value specified")
+
+
+@pytest.mark.runs_scan
+def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc_server_config):
+    """Ensure insights report can be downloaded.
+
+    :id: 3f5e87c2-8a4d-42a0-afda-6fcaf77142c3
+    :description: Request insights report file, download it and verify
+        it appears to be correct. Full upload-verify hosts-verify
+        subscriptions flow is tested by iqe-foreman-rh-cloud-plugin.
+    :steps:
+        1) Run ``qpc report insights --report <report id>
+           --output-file <path>``.
+        2) Verify that command succeeded.
+        3) Verify that downloaded archive looks like valid
+           insights archive.
+    :expectedresults: Report is downloaded and content matches
+        insights archive format.
+    """
+    network_source = data_provider.sources.defined_one({"type": "network"})
+
+    def contains_source(sources):
+        return network_source.name in sources
+
+    scan = data_provider.scans.defined_one({"sources": contains_source})
+    finished_scan = scans.with_name(scan.name)
+    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
+
+    output_file = f"insights-{uuid4()}.tar.gz"
+
+    output = report_insights({"report": finished_scan.report_id, "output-file": output_file})
+
+    assert "Report written successfully" in output
+    assert os.path.isfile(
+        output_file
+    ), f"Insights report not found at (failed download?): {output_file}"
+
+    tar = tarfile.open(output_file)
+    tar_content = {"report_slices": {}}
+    for filename in tar.getnames():
+        file_fh = tar.extractfile(filename)
+        assert file_fh, f"Broken tar archive: {filename}"
+        file_content = json.load(file_fh)
+        if filename.endswith("metadata.json"):
+            tar_content["metadata.json"] = file_content
+        else:
+            key = Path(filename).stem
+            hosts_num = len(file_content.get("hosts", []))
+            tar_content["report_slices"][key] = {"number_hosts": hosts_num}
+
+    assert "metadata.json" in tar_content, "Insights report does not have metadata.json file"
+    assert (
+        tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"]
+    ), "Data in metadata.json and actual data in archive do not match"

@@ -193,6 +193,10 @@ class ScanContainer:
         all_scans = [scan.name for scan in self._scan_definitions]
         return self._get_or_run_scans(all_scans, ok_only=True)
 
+    def with_name(self, scan_name: str) -> FinishedScan:
+        scans = self._get_or_run_scans([scan_name])
+        return scans[scan_name]
+
     def ok_with_expected_data_attr(self, attr_name) -> dict[str, FinishedScan]:
         wanted_scans = [
             scan.name
