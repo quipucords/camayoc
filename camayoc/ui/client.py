@@ -41,6 +41,11 @@ def requestfinished_handler_factory(ui_client):
         # we are only interested in client and server errors
         if 400 > response_status:
             return
+
+        # workaround for DISCOVERY-531
+        if "/reports/" in request.url and response_status == 424:
+            return
+
         error_msg = f"{request.method} {request.url} returned {response_status}"
         ui_client._log_page_error(error_msg)
 
@@ -88,6 +93,10 @@ class Client:
         self._base_url = urlunparse((scheme, netloc, "", "", "", ""))
 
     def _log_page_error(self, error: str):
+        # workaround for DISCOVERY-531
+        if "detected" in error and self.driver.url.endswith("client/scans"):
+            return
+
         context_msg = f"[issued by {self.driver.url}]"
         error_msg = f"{error} {context_msg}"
         self.page_errors.append(error_msg)
