@@ -21,6 +21,9 @@ import sys
 
 import yaml
 
+# Time out limit (in seconds) to log in
+TIMEOUT = 60
+
 
 def has_oc_command():
     cmd = ["command", "-v", "oc"]
@@ -36,9 +39,12 @@ def login(args):
     else:
         cmd = ["oc", "login", url, insecure, "-u", args.username, "-p", args.password]
     try:
-        result = subprocess.run(cmd, capture_output=True, check=False, text=True)
+        result = subprocess.run(cmd, capture_output=True, check=False, text=True, timeout=TIMEOUT)
     except TypeError:
         print("Error: provide a password or authentication token to login!", file=sys.stderr)
+        return False
+    except subprocess.TimeoutExpired:
+        print(f"Error: login timed out after waiting for {TIMEOUT} second(s)", file=sys.stderr)
         return False
     return result.returncode == 0
 
