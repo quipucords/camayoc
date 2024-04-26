@@ -33,11 +33,12 @@ def has_oc_command():
 
 def login(args):
     url = f"https://{args.api_url}:{args.port}"
-    insecure = f"--insecure-skip-tls-verify={args.insecure}"
+    is_insecure_tls = "true" if args.insecure else "false"
+    insecure_tls_option = f"--insecure-skip-tls-verify={is_insecure_tls}"
     if args.auth_token:
-        cmd = ["oc", "login", url, insecure, "--token", args.auth_token]
+        cmd = ["oc", "login", url, insecure_tls_option, "--token", args.auth_token]
     else:
-        cmd = ["oc", "login", url, insecure, "-u", args.username, "-p", args.password]
+        cmd = ["oc", "login", url, insecure_tls_option, "-u", args.username, "-p", args.password]
     try:
         result = subprocess.run(cmd, capture_output=True, check=False, text=True, timeout=TIMEOUT)
     except TypeError:
@@ -141,7 +142,7 @@ def parse_args():
     )
     parser.add_argument("-P", "--port", type=int, default=6443, help="Provide the API port number.")
     parser.add_argument(
-        "-k", "--insecure", action="store_false", help="Skip the SSL verification step."
+        "-k", "--insecure", action="store_true", help="Skip the SSL verification step."
     )
     parser.add_argument(
         "-u", "--username", default="kubeadmin", help="Provide the username to log in."
