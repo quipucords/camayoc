@@ -392,12 +392,6 @@ def scan_show_and_check(scan_name, expected_result=None):
 scan_cancel = functools.partial(cli_command, "{} -v scan cancel".format(client_cmd))
 """Run ``qpc scan cancel`` command with ``options`` returning its output."""
 
-scan_pause = functools.partial(cli_command, "{} -v scan pause".format(client_cmd))
-"""Run ``qpc scan pause`` command with ``options`` returning its output."""
-
-scan_restart = functools.partial(cli_command, "{} -v scan restart".format(client_cmd))
-"""Run ``qpc scan restart`` command with ``options`` returning its output."""
-
 scan_add = functools.partial(cli_command, "{} -v scan add".format(client_cmd))
 """Run ``qpc scan add`` command with ``options`` returning its output."""
 

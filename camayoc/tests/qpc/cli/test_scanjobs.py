@@ -19,13 +19,10 @@ from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Scan
 from camayoc.utils import uuid4
 
-from .utils import config_sources
 from .utils import report_detail
 from .utils import scan_add_and_check
 from .utils import scan_cancel
 from .utils import scan_job
-from .utils import scan_pause
-from .utils import scan_restart
 from .utils import scan_start
 from .utils import wait_for_scan
 
@@ -236,42 +233,6 @@ def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider
     assert len(errors_found) == 0, "\n================\n".join(errors_found)
 
 
-@pytest.mark.skip(reason="Skipping until Quipucords Issue #2040 resoloved")
-@pytest.mark.runs_scan
-def test_scanjob_restart(isolated_filesystem, qpc_server_config):
-    """Perform a scan and ensure it can be paused and restarted.
-
-    :id: 7eb79aa8-fe3d-4fcd-9f1a-5e2d4df2f3b6
-    :description: Start a scan, then pause it and finally restart it.
-    :steps:
-        1) Run ``qpc scan start --sources <source>`` and store its ID.
-        2) Stop the scan by running ``qpc scan stop --id <id>``
-        3) Restart the scan by running ``qpc scan restart --id <id>``
-    :expectedresults: The scan must completed without any error and a report
-        should be available.
-    """
-    scan_name = uuid4()
-    scan_add_and_check({"name": scan_name, "sources": config_sources()[0].name})
-    result = scan_start({"name": scan_name})
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status="running", timeout=60)
-    scan_pause({"id": scan_job_id})
-    wait_for_scan(scan_job_id, status="paused", timeout=60)
-    scan_restart({"id": scan_job_id})
-    wait_for_scan(scan_job_id)
-    result = scan_job({"id": scan_job_id})
-    assert result["status"] == "completed"
-    report_id = result["report_id"]
-    assert report_id is not None
-    output_file = "out.json"
-    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
-    with open(output_file) as report_data:
-        report = json.load(report_data)
-        assert report.get("sources", []) != []
-
-
 @pytest.mark.runs_scan
 def test_scanjob_cancel(qpc_server_config, data_provider):
     """Perform a scan and ensure it can be canceled.
@@ -300,39 +261,3 @@ def test_scanjob_cancel(qpc_server_config, data_provider):
     wait_for_scan(scan_job_id, status="running", timeout=60)
     scan_cancel({"id": scan_job_id})
     wait_for_scan(scan_job_id, status="canceled", timeout=60)
-    result = scan_restart({"id": scan_job_id}, exitstatus=1)
-    assert result.startswith(
-        "Error: Scan cannot be restarted. The scan must be paused for it to " "be restarted."
-    )
-
-
-@pytest.mark.skip(reason="Skipping until Quipucords Issue #2040 resoloved")
-@pytest.mark.runs_scan
-def test_scanjob_cancel_paused(isolated_filesystem, qpc_server_config):
-    """Perform a scan and ensure it can be canceled even when paused.
-
-    :id: 62943ef9-8989-4998-8456-8073f8fd9ce4
-    :description: Start a scan, next stop it, then cancel it and finally check
-        it can't be restarted.
-    :steps:
-        1) Run ``qpc scan start --sources <source>`` and store its ID.
-        2) Pause the scan by running ``qpc scan pause --id <id>``
-        3) Cancel the scan by running ``qpc scan cancel --id <id>``
-        4) Try to restart the scan by running ``qpc scan restart --id <id>``
-    :expectedresults: The scan must be canceled and can't not be restarted.
-    """
-    scan_name = uuid4()
-    scan_add_and_check({"name": scan_name, "sources": config_sources()[0].name})
-    result = scan_start({"name": scan_name})
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, status="running", timeout=60)
-    scan_pause({"id": scan_job_id})
-    wait_for_scan(scan_job_id, status="paused", timeout=60)
-    scan_cancel({"id": scan_job_id})
-    wait_for_scan(scan_job_id, status="canceled", timeout=60)
-    result = scan_restart({"id": scan_job_id}, exitstatus=1)
-    assert result.startswith(
-        "Error: Scan cannot be restarted. The scan must be paused for it to " "be restarted."
-    )
