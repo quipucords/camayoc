@@ -96,7 +96,7 @@ def create_ocp_configuration(args, cluster):
     source = name_and_type | {
         "hosts": [args.api_url],
         "credentials": [args.name],
-        "options": {"ssl_cert_verify": args.insecure},
+        "options": {"ssl_cert_verify": not args.insecure},
     }
     scan = {
         "name": args.name,
