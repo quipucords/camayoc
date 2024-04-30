@@ -1,4 +1,5 @@
 """Utility functions for quipucords server tests."""
+
 import hashlib
 from pathlib import Path
 from typing import Callable

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Unit tests for :mod:`camayoc.utils`."""
+
 from tempfile import mkdtemp
 from unittest import mock
 

@@ -96,8 +96,7 @@ class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
         use_paramiko = CheckboxField("input[data-ouia-component-id=options_paramiko]")
 
     @overload
-    def fill(self, data: NetworkSourceFormDTO):
-        ...
+    def fill(self, data: NetworkSourceFormDTO): ...
 
     @record_action
     def fill(self, data: NetworkSourceFormDTO):
@@ -116,8 +115,7 @@ class SatelliteSourceCredentialsForm(SourceCredentialsForm):
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
-    def fill(self, data: SatelliteSourceFormDTO):
-        ...
+    def fill(self, data: SatelliteSourceFormDTO): ...
 
     @record_action
     def fill(self, data: SatelliteSourceFormDTO):
@@ -136,8 +134,7 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
-    def fill(self, data: VCenterSourceFormDTO):
-        ...
+    def fill(self, data: VCenterSourceFormDTO): ...
 
     @record_action
     def fill(self, data: VCenterSourceFormDTO):
@@ -156,8 +153,7 @@ class OpenShiftSourceCredentialsForm(SourceCredentialsForm):
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
-    def fill(self, data: OpenShiftSourceFormDTO):
-        ...
+    def fill(self, data: OpenShiftSourceFormDTO): ...
 
     @record_action
     def fill(self, data: OpenShiftSourceFormDTO):
@@ -176,8 +172,7 @@ class AnsibleSourceCredentialsForm(SourceCredentialsForm):
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
-    def fill(self, data: AnsibleSourceFormDTO):
-        ...
+    def fill(self, data: AnsibleSourceFormDTO): ...
 
     @record_action
     def fill(self, data: AnsibleSourceFormDTO):
@@ -196,8 +191,7 @@ class RHACSSourceCredentialsForm(SourceCredentialsForm):
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
-    def fill(self, data: RHACSSourceFormDTO):
-        ...
+    def fill(self, data: RHACSSourceFormDTO): ...
 
     @record_action
     def fill(self, data: RHACSSourceFormDTO):
@@ -230,8 +224,7 @@ class ScanForm(Form, PopUp, AbstractPage):
         alternate_dirs = InputField("textarea[name=displayScanDirectories]")
 
     @overload
-    def fill(self, data: NewScanFormDTO):
-        ...
+    def fill(self, data: NewScanFormDTO): ...
 
     @record_action
     def fill(self, data: NewScanFormDTO):

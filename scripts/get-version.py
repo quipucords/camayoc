@@ -3,6 +3,7 @@ Obtain versions of Quipucords & co installed in environment.
 
 This script is used by CI to set test run metadata.
 """
+
 import argparse
 import subprocess
 

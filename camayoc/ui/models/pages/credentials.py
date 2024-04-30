@@ -50,8 +50,7 @@ class NetworkCredentialForm(CredentialForm):
         become_password = InputField("input[data-ouia-component-id=become_password]")
 
     @overload
-    def fill(self, data: NetworkCredentialFormDTO):
-        ...
+    def fill(self, data: NetworkCredentialFormDTO): ...
 
     @record_action
     def fill(self, data: NetworkCredentialFormDTO):
@@ -66,8 +65,7 @@ class SatelliteCredentialForm(CredentialForm):
         password = InputField("input[data-ouia-component-id=password]")
 
     @overload
-    def fill(self, data: SatelliteCredentialFormDTO):
-        ...
+    def fill(self, data: SatelliteCredentialFormDTO): ...
 
     @record_action
     def fill(self, data: SatelliteCredentialFormDTO):
@@ -82,8 +80,7 @@ class VCenterCredentialForm(CredentialForm):
         password = InputField("input[data-ouia-component-id=password]")
 
     @overload
-    def fill(self, data: VCenterCredentialFormDTO):
-        ...
+    def fill(self, data: VCenterCredentialFormDTO): ...
 
     @record_action
     def fill(self, data: VCenterCredentialFormDTO):
@@ -97,8 +94,7 @@ class OpenShiftCredentialForm(CredentialForm):
         token = InputField("input[data-ouia-component-id=auth_token]")
 
     @overload
-    def fill(self, data: OpenShiftCredentialFormDTO):
-        ...
+    def fill(self, data: OpenShiftCredentialFormDTO): ...
 
     @record_action
     def fill(self, data: OpenShiftCredentialFormDTO):
@@ -113,8 +109,7 @@ class AnsibleCredentialForm(CredentialForm):
         password = InputField("input[data-ouia-component-id=password]")
 
     @overload
-    def fill(self, data: AnsibleCredentialFormDTO):
-        ...
+    def fill(self, data: AnsibleCredentialFormDTO): ...
 
     @record_action
     def fill(self, data: AnsibleCredentialFormDTO):
@@ -128,8 +123,7 @@ class RHACSCredentialForm(CredentialForm):
         token = InputField("input[data-ouia-component-id=auth_token]")
 
     @overload
-    def fill(self, data: RHACSCredentialFormDTO):
-        ...
+    def fill(self, data: RHACSCredentialFormDTO): ...
 
     @record_action
     def fill(self, data: RHACSCredentialFormDTO):

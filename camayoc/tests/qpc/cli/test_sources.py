@@ -7,6 +7,7 @@
 :caselevel: integration
 :testtype: functional
 """
+
 import json
 import operator
 import random
@@ -77,10 +78,8 @@ def generate_show_output(data):
         r"    \],\r\n".format(data["cred_name"])
     )
     if data.get("exclude_hosts"):
-        output += (
-            r'    "exclude_hosts": \[\r\n'
-            r'        "{}"\r\n'
-            r"    \],\r\n".format(data["exclude_hosts"])
+        output += r'    "exclude_hosts": \[\r\n' r'        "{}"\r\n' r"    \],\r\n".format(
+            data["exclude_hosts"]
         )
     output += r'    "hosts": \[\r\n' r'        "{}"\r\n' r"    \],\r\n".format(data["hosts"])
     output += r'    "id": \d+,\r\n'
@@ -233,8 +232,9 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --port {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, port, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --port {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, port, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -284,8 +284,9 @@ def test_add_with_ssl_cert_verify(
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -377,8 +378,9 @@ def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_ty
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, ssl_protocol, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, ssl_protocol, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -469,8 +471,9 @@ def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, disable_ssl, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, disable_ssl, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -563,9 +566,7 @@ def test_add_with_exclude_hosts(
 
     qpc_source_add = pexpect.spawn(
         """{} -v source add --name {} --cred {} --hosts {} --exclude-hosts {}
-        --type {}""".format(
-            client_cmd, name, cred_name, hosts, exclude_hosts, source_type
-        )
+        --type {}""".format(client_cmd, name, cred_name, hosts, exclude_hosts, source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -622,9 +623,7 @@ def test_add_with_cred_hosts_exclude_file(
 
     qpc_source_add = pexpect.spawn(
         """{} -v source add --name {} --cred {} --hosts {} --exclude-hosts={}
-        --type {}""".format(
-            client_cmd, name, cred_name, hosts, "exclude_hosts_file", source_type
-        )
+        --type {}""".format(client_cmd, name, cred_name, hosts, "exclude_hosts_file", source_type)
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -680,9 +679,7 @@ def test_add_exclude_hosts_negative(
 
     qpc_source_add = pexpect.spawn(
         """{} -v source add --name {} --cred {} --hosts {} --exclude-hosts {}
-        --type {}""".format(
-            client_cmd, name, cred_name, hosts, exclude_hosts, source_type
-        )
+        --type {}""".format(client_cmd, name, cred_name, hosts, exclude_hosts, source_type)
     )
     assert (
         qpc_source_add.expect(
@@ -1257,8 +1254,9 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -1330,8 +1328,9 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, ssl_protocol, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, ssl_protocol, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0
@@ -1401,8 +1400,9 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} "
-        "--type {}".format(client_cmd, name, cred_name, hosts, disable_ssl, source_type)
+        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} " "--type {}".format(
+            client_cmd, name, cred_name, hosts, disable_ssl, source_type
+        )
     )
     assert qpc_source_add.expect('Source "{}" was added'.format(name)) == 0
     assert qpc_source_add.expect(pexpect.EOF) == 0

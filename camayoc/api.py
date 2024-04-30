@@ -6,6 +6,7 @@ server, allowing the user to customize how return codes are handled depending
 on the context.
 
 """
+
 from json import JSONDecodeError
 from pprint import pformat
 from urllib.parse import urljoin

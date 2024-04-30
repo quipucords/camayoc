@@ -5,6 +5,7 @@ Perform scans and download reports.
 This tool is for creating scans and download reports from the sources that
 Discovery/Quipucords server supports.
 """
+
 import argparse
 import logging
 import os

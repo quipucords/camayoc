@@ -1,5 +1,6 @@
 # coding=utf-8
 """Helper functions for parsing csv reports."""
+
 import csv
 
 EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS = (

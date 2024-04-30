@@ -1,5 +1,6 @@
 # coding=utf-8
 """Unit tests for :mod:`camayoc.api`."""
+
 import json
 import unittest
 from unittest import mock

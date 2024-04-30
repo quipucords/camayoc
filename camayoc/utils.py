@@ -1,5 +1,6 @@
 # coding=utf-8
 """Utility functions."""
+
 import base64
 import contextlib
 import json

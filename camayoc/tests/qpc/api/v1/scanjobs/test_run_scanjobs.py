@@ -9,6 +9,7 @@ These tests are parametrized on the inventory listed in the config file.
 :caselevel: integration
 :testtype: functional
 """
+
 import pytest
 
 from camayoc.tests.qpc.utils import all_scan_names

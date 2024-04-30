@@ -1,4 +1,5 @@
 """Models for use with the Quipucords API."""
+
 import re
 from pprint import pformat
 from typing import Optional

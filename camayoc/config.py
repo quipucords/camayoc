@@ -5,6 +5,7 @@ Camayoc needs to know what servers it can talk to and how to access those
 systems. For example, it needs to know the username, hostname and password of a
 system in order to SSH into it.
 """
+
 import os
 import warnings
 
