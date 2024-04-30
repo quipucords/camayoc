@@ -37,11 +37,11 @@ install-dev:
 	poetry run pre-commit install --install-hooks
 
 pre-commit:
-	pre-commit run --all-files
+	poetry run pre-commit run --all-files
 
 lint:
 	poetry run ruff .
-	poetry run black . --check --diff --line-length 100
+	poetry run ruff format --check .
 
 test:
 	poetry run pytest $(PYTEST_OPTIONS) tests
