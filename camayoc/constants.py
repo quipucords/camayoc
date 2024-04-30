@@ -1,5 +1,6 @@
 # coding=utf-8
 """Values usable by multiple test modules."""
+
 from camayoc import utils
 
 VALID_BOOLEAN_CHOICES = ["true", "false"]

@@ -49,8 +49,7 @@ class UIPage(Protocol):
     _client: Client
     _driver: Page
 
-    def _new_page(self, class_or_page) -> UIPage:
-        ...
+    def _new_page(self, class_or_page) -> UIPage: ...
 
 
 class UIListItem(Protocol):
@@ -65,11 +64,9 @@ class UIField(Protocol):
     name: str
     driver: Page
 
-    def bind(self, parent, name, driver: Page) -> None:
-        ...
+    def bind(self, parent, name, driver: Page) -> None: ...
 
-    def fill(self, value) -> None:
-        ...
+    def fill(self, value) -> None: ...
 
 
 @frozen

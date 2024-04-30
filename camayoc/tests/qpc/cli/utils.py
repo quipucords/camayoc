@@ -1,5 +1,6 @@
 # coding=utf-8
 """Utility functions for Quipucords cli tests."""
+
 import functools
 import itertools
 import json

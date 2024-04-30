@@ -10,6 +10,7 @@ type in the config file, the test will skip.
 :caselevel: integration
 :testtype: functional
 """
+
 import pytest
 
 import camayoc.tests.qpc.api.v1.utils as util

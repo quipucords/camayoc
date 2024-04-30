@@ -1,6 +1,5 @@
 """Pytest customizations and fixtures for the quipucords tests."""
 
-
 from camayoc.config import settings
 
 

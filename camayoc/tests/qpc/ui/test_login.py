@@ -7,6 +7,7 @@
 :caselevel: integration
 :testtype: functional
 """
+
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 

@@ -1,4 +1,5 @@
 """Pytest customizations and fixtures for the quipucords tests."""
+
 import pytest
 
 from camayoc import api

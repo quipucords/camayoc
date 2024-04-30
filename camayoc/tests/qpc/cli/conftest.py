@@ -1,4 +1,5 @@
 """Test utilities for quipucords' ``qpc`` tests."""
+
 import pytest
 
 from camayoc.constants import QPC_SCAN_TYPES
