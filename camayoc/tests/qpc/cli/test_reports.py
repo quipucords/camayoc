@@ -44,6 +44,8 @@ REPORT_SOURCE_OPTIONS = ("report", "scan-job")
 """Options to generate reports from."""
 
 DEPLOYMENTS_REPORT_FIELDS = (
+    "created_at",
+    "updated_at",
     "architecture",
     "bios_uuid",
     "cloud_provider",
