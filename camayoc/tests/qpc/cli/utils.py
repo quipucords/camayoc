@@ -103,7 +103,7 @@ def wait_for_report_merge(job_id, status="completed", timeout=900):
     :param timeout: wait up to this amount of seconds. Default is 900.
     """
     while timeout > 0:
-        result = report_merge_status({"job": job_id})
+        result = job_status({"id": job_id})
         if status != "failed" and result["status"] == "failed":
             raise FailedMergeReportException(
                 'The merge report job with ID "{}" has failed '
@@ -214,15 +214,10 @@ report_merge = functools.partial(cli_command, "{} -v report merge".format(client
 """Run ``qpc report merge`` with ``options`` and return output."""
 
 
-def report_merge_status(options=None, exitstatus=0):
-    """Run ``qpc report merge-status`` with ``options`` and return output."""
-    output = cli_command("{} -v report merge-status".format(client_cmd), options, exitstatus)
-    match = re.match(
-        r"Report merge job (?P<id>\d+) is (?P<status>\w+)(.*id: " r'"(?P<report_id>\d+)")?',
-        output,
-        flags=re.DOTALL,
-    )
-    return match.groupdict()
+def job_status(options=None, exitstatus=0):
+    """Run ``qpc scan job`` with ``options`` and return output."""
+    output = cli_command("{} -v scan job".format(client_cmd), options, exitstatus)
+    return json.loads(output)
 
 
 report_deployments = functools.partial(cli_command, "{} -v report deployments".format(client_cmd))
