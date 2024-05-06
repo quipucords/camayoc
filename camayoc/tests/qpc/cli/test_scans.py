@@ -83,13 +83,11 @@ def test_create_scan_with_options(isolated_filesystem, qpc_server_config, data_p
         "name": scan_name,
         "options": {
             "disabled_optional_products": {
-                "jboss_brms": False,
                 "jboss_eap": True,
                 "jboss_fuse": False,
                 "jboss_ws": False,
             },
             "enabled_extended_product_search": {
-                "jboss_brms": False,
                 "jboss_eap": False,
                 "jboss_fuse": True,
                 "jboss_ws": False,
@@ -177,13 +175,11 @@ def test_edit_scan(isolated_filesystem, qpc_server_config, data_provider):
         "name": scan_name,
         "options": {
             "disabled_optional_products": {
-                "jboss_brms": False,
                 "jboss_eap": True,
                 "jboss_fuse": False,
                 "jboss_ws": False,
             },
             "enabled_extended_product_search": {
-                "jboss_brms": False,
                 "jboss_eap": False,
                 "jboss_fuse": True,
                 "jboss_ws": False,
@@ -229,13 +225,11 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, data_pro
         "name": scan_name,
         "options": {
             "disabled_optional_products": {
-                "jboss_brms": False,
                 "jboss_eap": True,
                 "jboss_fuse": False,
                 "jboss_ws": False,
             },
             "enabled_extended_product_search": {
-                "jboss_brms": False,
                 "jboss_eap": False,
                 "jboss_fuse": True,
                 "jboss_ws": False,
@@ -264,13 +258,11 @@ def test_edit_scan_with_options(isolated_filesystem, qpc_server_config, data_pro
         "name": scan_name,
         "options": {
             "disabled_optional_products": {
-                "jboss_brms": False,
                 "jboss_eap": False,
                 "jboss_fuse": False,
                 "jboss_ws": False,
             },
             "enabled_extended_product_search": {
-                "jboss_brms": False,
                 "jboss_eap": False,
                 "jboss_fuse": False,
                 "jboss_ws": False,

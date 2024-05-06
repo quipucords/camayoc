@@ -459,7 +459,6 @@ class NewScanFormDTO:
     jboss_eap: Optional[bool] = None
     fuse: Optional[bool] = None
     jboss_web_server: Optional[bool] = None
-    decision_manager: Optional[bool] = None
     alternate_dirs: Optional[str] = None
 
 

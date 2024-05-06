@@ -6,6 +6,7 @@
 :caselevel: integration
 :testtype: functional
 """
+
 import random
 import shutil
 import tarfile
@@ -47,7 +48,6 @@ def create_endtoend_dtos(source_name, data_provider):
         scan_form__jboss_eap=None,
         scan_form__fuse=None,
         scan_form__jboss_web_server=None,
-        scan_form__decision_manager=None,
     )
     data_provider.mark_for_cleanup(
         credential_model, source_model, Scan(name=trigger_scan_dto.scan_form.scan_name)
