@@ -227,7 +227,6 @@ class ScanForm(Form, PopUp, AbstractPage):
         jboss_eap = CheckboxField("input[name=jbossEap]")
         fuse = CheckboxField("input[name=jbossFuse]")
         jboss_web_server = CheckboxField("input[name=jbossWs]")
-        decision_manager = CheckboxField("input[name=jbossBrms]")
         alternate_dirs = InputField("textarea[name=displayScanDirectories]")
 
     @overload
