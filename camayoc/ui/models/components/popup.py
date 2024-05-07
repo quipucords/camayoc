@@ -5,8 +5,8 @@ from camayoc.types.ui import UIPage
 
 
 class PopUp(UIPage):
-    SAVE_LOCATOR = ".pf-v5-c-modal-box__footer button.pf-m-primary"
-    CANCEL_LOCATOR = ".pf-v5-c-modal-box__footer button.pf-m-secondary"
+    SAVE_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-primary"
+    CANCEL_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-secondary"
     SAVE_RESULT_CLASS = None
     CANCEL_RESULT_CLASS = None
 

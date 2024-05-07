@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     NavigateToPage = Union[CredentialsMainPage, ScansMainPage, SourcesMainPage]
 
-LEFT_NAV = "nav.pf-v5-c-nav"
+LEFT_NAV = "nav[class*=-c-nav]"
 
 
 class VerticalNavigation(UIPage):

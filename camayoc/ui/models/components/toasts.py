@@ -9,7 +9,7 @@ class ToastNotifications(UIPage):
     def _dismiss_notifications(self, ensure_notifications_appeared=False):
         default_timeout = 100  # milliseconds!
         current_timeout = 5000 if ensure_notifications_appeared else default_timeout
-        notifications_selector = ".pf-m-toast > li > .pf-v5-c-alert"
+        notifications_selector = ".pf-m-toast > li > *[class*=-c-alert]"
 
         notifications = self._driver.locator(notifications_selector)
         while True:

@@ -16,7 +16,7 @@ from ..mixins import MainPageMixin
 
 class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
-        scan_locator = "td.pf-v5-c-table__action button[data-ouia-component-id=download]"
+        scan_locator = "td[class*=-c-table__action] button[data-ouia-component-id=download]"
         timeout_start = time.monotonic()
         while 10 * 60 > (time.monotonic() - timeout_start):
             try:
@@ -27,7 +27,7 @@ class ScanListElem(AbstractListItem):
                 return download
             except PlaywrightTimeoutError:
                 self._client.driver.locator(
-                    "div.pf-v5-c-toolbar button[data-ouia-component-id=refresh]"
+                    "div[class*=-c-toolbar] button[data-ouia-component-id=refresh]"
                 ).click()
         raise FailedScanException("Scan could not be downloaded")
 
