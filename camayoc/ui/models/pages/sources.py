@@ -32,8 +32,8 @@ from .abstract_page import AbstractPage
 
 
 class CancelWizardPopup(PopUp, AbstractPage):
-    SAVE_LOCATOR = ".pf-v5-c-modal-box__footer button.pf-m-primary:text-is('Yes')"
-    CANCEL_LOCATOR = ".pf-v5-c-modal-box__footer button.pf-m-secondary:text-is('No')"
+    SAVE_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-primary:text-is('Yes')"
+    CANCEL_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-secondary:text-is('No')"
     SAVE_RESULT_CLASS = Pages.SOURCES
     CANCEL_RESULT_CLASS = None
 
@@ -44,7 +44,7 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
     CANCEL_RESULT_CLASS = CancelWizardPopup
 
     class FormDefinition:
-        source_type = RadioGroupField("div.pf-v5-c-wizard__main-body:not(.hidden)")
+        source_type = RadioGroupField("div[class*=-c-wizard__main-body]:not(.hidden)")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -71,7 +71,7 @@ class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
 
 
 class SourceCredentialsForm(Form, WizardStep, AbstractPage):
-    NEXT_STEP_LOCATOR = '.pf-v5-c-wizard__footer button:has-text("Save")'
+    NEXT_STEP_LOCATOR = '*[class*=-c-wizard__footer] button:has-text("Save")'
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES_RESULTS_PAGE
     PREV_STEP_RESULT_CLASS = SelectSourceTypeForm
     CANCEL_RESULT_CLASS = CancelWizardPopup
@@ -200,11 +200,11 @@ class RHACSSourceCredentialsForm(SourceCredentialsForm):
 
 
 class ResultForm(WizardStep, AbstractPage):
-    NEXT_STEP_LOCATOR = ".pf-v5-c-wizard__footer button.pf-m-primary"
+    NEXT_STEP_LOCATOR = "*[class*=-c-wizard__footer] button.pf-m-primary"
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES
 
     def confirm(self):
-        locator_template = ".pf-v5-c-wizard svg[data-test-state={state}]"
+        locator_template = "*[class*=-c-wizard] svg[data-test-state={state}]"
         fulfilled_elem = self._driver.locator(locator_template.format(state="fulfilled"))
         error_elem = self._driver.locator(locator_template.format(state="error"))
         fulfilled_elem.or_(error_elem).hover(trial=True)
