@@ -6,9 +6,9 @@ from .popup import PopUp
 
 
 class WizardStep(PopUp, UIPage):
-    NEXT_STEP_LOCATOR = '.pf-c-wizard__footer button:has-text("Next")'
-    PREV_STEP_LOCATOR = '.pf-c-wizard__footer button:has-text("Back")'
-    CANCEL_LOCATOR = ".pf-c-wizard__footer .pf-c-wizard__footer-cancel button"
+    NEXT_STEP_LOCATOR = '.pf-v5-c-wizard__footer button:has-text("Next")'
+    PREV_STEP_LOCATOR = '.pf-v5-c-wizard__footer button:has-text("Back")'
+    CANCEL_LOCATOR = ".pf-v5-c-wizard__footer .pf-v5-c-wizard__footer-cancel button"
     NEXT_STEP_RESULT_CLASS = None
     PREV_STEP_RESULT_CLASS = None
     CANCEL_RESULT_CLASS = None

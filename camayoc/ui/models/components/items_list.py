@@ -33,7 +33,7 @@ class ItemsList(UIPage):
     # But YAGNI tells us this will do for now
     def _search_for_item_by_name(self, name: str):
         filter_field_button = self._driver.locator(
-            "div.pf-c-toolbar__content button[id]:has(span.pf-c-select__toggle-arrow)"
+            "div.pf-v5-c-toolbar__content button[id]:has(span.pf-v5-c-select__toggle-arrow)"
         ).locator("nth=0")
         if filter_field_button.text_content() != "Name":
             filter_field_button.click()
