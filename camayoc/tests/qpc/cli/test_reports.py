@@ -14,12 +14,18 @@ import pprint
 import random
 import re
 import tarfile
+from copy import deepcopy
+from functools import partial
+from operator import itemgetter
 from pathlib import Path
 
 import pytest
+from littletable import Table
 
+from camayoc.qpc_models import Report
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
+from camayoc.types.scans import FinishedScan
 from camayoc.utils import uuid4
 
 from .utils import config_sources
@@ -28,6 +34,7 @@ from .utils import report_detail
 from .utils import report_download
 from .utils import report_insights
 from .utils import report_merge
+from .utils import report_upload
 from .utils import scan_add_and_check
 from .utils import scan_job
 from .utils import scan_start
@@ -529,6 +536,111 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
 
     for report_item in report["system_fingerprints"]:
         assert_json_report_fields(report_item.keys())
+
+
+@pytest.mark.runs_scan
+def test_upload_report(data_provider, scans, isolated_filesystem, qpc_server_config, tmp_path):
+    """Ensure can upload reports using JSON files.
+
+    :id: fb661698-4cc7-4b6e-9964-a006633eb5af
+    :description: Ensure (JSON) details reports can be uploaded. Also ensure
+        that that uploaded report has been successfully processed by generating
+        a deployments report.
+    :steps:
+        1) Run ``qpc report upload --json-file <json-file>``. Note the
+           job_id and report_id.
+        2) Wait until job completion (``qpc scan job --id <job_id>``).
+        3) Collect details report.
+        4) Ensure details report is equivalent to the original report.
+        5) Collect deployments report.
+        6) Ensure the deployments report is equivalent to the original report.
+    :expectedresults: The details and deployments report must be on the requested format
+        (JSON) and must have contents equivalent to the original report.
+    """
+
+    def _get_from_keys(*keys):
+        """
+        Return a function that will get the value of dicts by certain keys.
+
+        This is intended to be used later as the "key" argument for `sorted`.
+        """
+
+        def _getter(_dict):
+            # coerce to values to str to avoid issues comparing different types
+            return tuple(str(_dict.get(key)) for key in keys)
+
+        return _getter
+
+    def _get_comparable_source_list(details_report_json):
+        """Return a list of comparable 'sources' from details report."""
+        # preserve the original data
+        source_list = deepcopy(details_report_json["sources"])
+        # given source names are uuids, let's use those to order sources
+        source_list = sorted(source_list, key=itemgetter("source_name"))
+        for source_dict in source_list:
+            # sort facts by unique facts for network, satellite and vcenter
+            sorted_facts = sorted(
+                source_dict.pop("facts", []),
+                key=_get_from_keys(
+                    "connection_uuid", "uuid", "vm.uuid", "vm.name", "hostname", "connection_host"
+                ),
+            )
+            source_dict["facts"] = sorted_facts
+        return source_list
+
+    # only the sources below can generate proper fingerprints
+    valid_source_types = {"vcenter", "satellite", "network"}
+    target_source = data_provider.sources.defined_one({"type": Table.is_in(valid_source_types)})
+    scan = data_provider.scans.defined_one(
+        {"sources": lambda sources: target_source.name in sources}
+    )
+    finished_scan: FinishedScan = scans.with_name(scan.name)
+    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
+
+    path_to_details_report = tmp_path / "original-report.json"
+    path_to_details_report.write_text(json.dumps(finished_scan.details_report))
+    output = report_upload({"json-file": path_to_details_report})
+    match = re.search(r"Report uploaded. Job (\d+) created.", output)
+    assert match is not None, output
+    job_id = match.group(1)
+    wait_for_scan(job_id)
+    report = Report()
+    report.retrieve_from_scan_job(scan_job_id=job_id)
+
+    # compare details report
+    uploaded_report = report.details().json()
+    original_report = finished_scan.details_report
+    assert (
+        original_report["report_type"] == "details" and uploaded_report["report_type"] == "details"
+    )
+    equal_fields = {}
+    for field in ("report_id", "report_platform_id"):
+        if original_report[field] == uploaded_report[field]:
+            equal_fields.add(field)
+    assert not equal_fields, (
+        "Uploaded report has fields that should not be equal to the original: %s"
+        % ", ".join(equal_fields)
+    )
+    source_list1 = _get_comparable_source_list(original_report)
+    source_list2 = _get_comparable_source_list(uploaded_report)
+    assert source_list1 == source_list2
+
+    # compare deployments report
+    uploaded_deployments = report.deployments().json()
+    for report_item in uploaded_deployments["system_fingerprints"]:
+        assert_json_report_fields(report_item.keys())
+    fingerprint_sorter = partial(
+        sorted, key=_get_from_keys("bios_uuid", "vm_uuid", "subscription_manager_id", "name")
+    )
+
+    original_fingerprints = fingerprint_sorter(
+        deepcopy(finished_scan.deployments_report["system_fingerprints"])
+    )
+    uploaded_fingerprints = fingerprint_sorter(uploaded_deployments["system_fingerprints"])
+    # remove id & deployment_report from comparison as these fields are expected to be distinct
+    [(f.pop("id"), f.pop("deployment_report")) for f in original_fingerprints]
+    [(f.pop("id"), f.pop("deployment_report")) for f in uploaded_fingerprints]
+    assert original_fingerprints == uploaded_fingerprints
 
 
 @pytest.mark.runs_scan
