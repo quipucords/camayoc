@@ -23,7 +23,6 @@ from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
 from camayoc.utils import uuid4
 
 from .utils import config_sources
-from .utils import job_status
 from .utils import report_deployments
 from .utils import report_detail
 from .utils import report_download
@@ -33,7 +32,6 @@ from .utils import scan_add_and_check
 from .utils import scan_job
 from .utils import scan_start
 from .utils import setup_qpc
-from .utils import wait_for_report_merge
 from .utils import wait_for_scan
 
 # from csv_report_parsing import normalize_csv_report
@@ -519,8 +517,8 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     assert match is not None, output
     job_id = match.group(1)
 
-    wait_for_report_merge(job_id)
-    report_id = job_status({"id": job_id})["report_id"]
+    wait_for_scan(job_id)
+    report_id = scan_job({"id": job_id})["report_id"]
 
     output_path = "{}.json".format(uuid4())
     output = report_deployments({"report": report_id, "json": None, "output-file": output_path})

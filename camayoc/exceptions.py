@@ -27,15 +27,6 @@ class WaitTimeError(Exception):
     """
 
 
-class FailedMergeReportException(Exception):
-    """A test has raised this exception because a merge report job failed.
-
-    While waiting for the scan to acheive some other state, the merge report
-    job failed. The test expected the merge report job to succeed, so this
-    exception has been raised.
-    """
-
-
 class FailedScanException(Exception):
     """A test has raised this exception because a scan failed.
 
