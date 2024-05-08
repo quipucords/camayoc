@@ -14,7 +14,6 @@ import pexpect
 
 from camayoc.config import settings
 from camayoc.exceptions import ConfigFileNotFoundError
-from camayoc.exceptions import FailedMergeReportException
 from camayoc.exceptions import FailedScanException
 from camayoc.exceptions import WaitTimeError
 from camayoc.utils import client_cmd
@@ -93,36 +92,6 @@ def wait_for_scan(scan_job_id, status="completed", timeout=900):
     raise WaitTimeError(
         'Timeout waiting for scan with ID "{}" to achieve the "{}" status.\n\n'
         "The information about the scan is:\n{}\n".format(scan_job_id, status, pformat(result))
-    )
-
-
-def wait_for_report_merge(job_id, status="completed", timeout=900):
-    """Wait for a report merge to reach some ``status`` up to ``timeout`` seconds.
-
-    :param job_id: Merge job ID to wait for.
-    :param status: Merge status which will wait for. Default is completed.
-    :param timeout: wait up to this amount of seconds. Default is 900.
-    """
-    while timeout > 0:
-        result = job_status({"id": job_id})
-        if status != "failed" and result["status"] == "failed":
-            raise FailedMergeReportException(
-                'The merge report job with ID "{}" has failed '
-                "unexpectedly.\n\n"
-                "The information about the merge report job is:\n{}\n".format(
-                    job_id, pformat(result)
-                )
-            )
-        if result["status"] == status:
-            return
-        time.sleep(5)
-        timeout -= 5
-    raise WaitTimeError(
-        'Timeout waiting for the merge report job with ID "{}" to achieve '
-        'the "{}" status.\n\n'
-        "The current information about the merge report job is:\n{}\n".format(
-            job_id, status, pformat(result)
-        )
     )
 
 
@@ -214,11 +183,8 @@ report_detail = functools.partial(cli_command, "{} -v report details".format(cli
 report_merge = functools.partial(cli_command, "{} -v report merge".format(client_cmd))
 """Run ``qpc report merge`` with ``options`` and return output."""
 
-
-def job_status(options=None, exitstatus=0):
-    """Run ``qpc scan job`` with ``options`` and return output."""
-    output = cli_command("{} -v scan job".format(client_cmd), options, exitstatus)
-    return json.loads(output)
+report_upload = functools.partial(cli_command, "{} -v report upload".format(client_cmd))
+"""Run ``qpc report upload`` with ``options`` and return output."""
 
 
 report_deployments = functools.partial(cli_command, "{} -v report deployments".format(client_cmd))
