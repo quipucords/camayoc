@@ -68,6 +68,14 @@ markers = [
 ]
 
 [tool.ruff]
+src = [
+    "camayoc",
+    "tests",
+]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
 select = [
     "C90", # mccabe complexity
     "D",   # pydocstyle
@@ -92,14 +100,8 @@ ignore = [
     "D106",
     "D107",
 ]
-src = [
-    "camayoc",
-    "tests",
-]
-target-version = "py311"
-line-length = 100
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "D104"]
 "**/test_*.py" = [
     "PLC1901",
@@ -112,15 +114,14 @@ line-length = 100
 "camayoc/tests/qpc/utils.py" = ["PLW2901"]
 "tests/test_command.py" = ["F401"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-single-line = true
 known-first-party = [
     "camayoc",
 ]
 
-
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 10
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "pep257"

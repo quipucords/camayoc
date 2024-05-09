@@ -40,7 +40,7 @@ pre-commit:
 	poetry run pre-commit run --all-files
 
 lint:
-	poetry run ruff .
+	poetry run ruff check .
 	poetry run ruff format --check .
 
 test:
