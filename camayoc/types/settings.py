@@ -27,7 +27,6 @@ class QuipucordsServerOptions(BaseModel):
 
 class QuipucordsCLIOptions(BaseModel):
     executable: Optional[str] = "qpc"
-    display_name: Optional[str] = "qpc"
 
 
 class PlainNetworkCredentialOptions(BaseModel):

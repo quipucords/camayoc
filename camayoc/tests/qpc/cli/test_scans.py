@@ -14,7 +14,7 @@ import re
 import pytest
 
 from camayoc.tests.qpc.utils import all_source_names
-from camayoc.utils import client_cmd_name
+from camayoc.utils import client_cmd
 from camayoc.utils import uuid4
 
 from .utils import scan_add_and_check
@@ -308,7 +308,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provide
     # Edit scan options
     scan_edit_and_check(
         {"name": scan_name, "sources": ""},
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -322,7 +322,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provide
     # Edit scan options
     scan_edit_and_check(
         {"name": scan_name, "sources": source.name, "max-concurrency": "abc"},
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -333,7 +333,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provide
             "sources": "",
             "disabled-optional-products": "not_a_real_product",
         },
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
@@ -344,14 +344,14 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provide
             "sources": "",
             "enabled-ext-product-search": "not_a_real_product",
         },
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 
     # Edit ext-product-search-dirs
     scan_edit_and_check(
         {"name": scan_name, "sources": "", "ext-product-search-dirs": "not-a-dir"},
-        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd_name),
+        r"usage: {} scan edit(.|[\r\n])*".format(client_cmd),
         exitstatus=2,
     )
 

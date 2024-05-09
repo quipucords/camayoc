@@ -19,10 +19,6 @@ _XDG_ENV_VARS = ("XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME")
 client_cmd = settings.quipucords_cli.executable
 """Client command to use during tests. Defaults to `qpc`."""
 
-client_cmd_name = settings.quipucords_cli.display_name
-"""Client name displayed on help texts. Defaults to `qpc`."""
-# this is useful when client_cmd is set to an absolute path, has extra arguments like -v
-
 
 def get_qpc_url():
     """Return the base url for the qpc server."""
