@@ -30,7 +30,6 @@ from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import source_edit_and_check
 from camayoc.tests.qpc.cli.utils import source_show_and_check
 from camayoc.utils import client_cmd
-from camayoc.utils import client_cmd_name
 
 ISSUE_449_MARK = pytest.mark.xfail(
     reason="https://github.com/quipucords/quipucords/issues/449", strict=True
@@ -342,7 +341,7 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
     qpc_source_add = pexpect.spawn(
         "{} source add --name {} --cred {} --hosts {} --port {} "
         "--ssl-cert-verify {} --type {}".format(
-            client_cmd_name, name, cred_name, hosts, port, ssl_cert_verify, source_type
+            client_cmd, name, cred_name, hosts, port, ssl_cert_verify, source_type
         )
     )
     assert qpc_source_add.expect(expected_error) == 0
