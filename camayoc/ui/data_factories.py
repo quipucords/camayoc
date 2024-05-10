@@ -417,6 +417,10 @@ class NewScanFormDTOFactory(factory.Factory):
         "random_element",
         elements=optional_bool,
     )
+    decision_manager = factory.Faker(
+        "random_element",
+        elements=optional_bool,
+    )
     # FIXME: produce real value
     alternate_dirs = None
 
