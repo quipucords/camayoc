@@ -119,6 +119,7 @@ class SourceOptions(BaseModel):
     name: str
     type: str
     hosts: list[str]
+    port: Optional[int] = None
     credentials: list[str]
     options: Optional[SourceOptionsOptions] = None
 
