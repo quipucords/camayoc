@@ -328,9 +328,12 @@ class SatelliteSourceFormDTO:
 
     @classmethod
     def from_model(cls, model: Source):
+        address = model.hosts[0]
+        if hasattr(model, "port") and model.port:
+            address = f"{address}:{model.port}"
         return cls(
             source_name=model.name,
-            address=model.hosts[0],
+            address=address,
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
         )
@@ -346,9 +349,12 @@ class VCenterSourceFormDTO:
 
     @classmethod
     def from_model(cls, model: Source):
+        address = model.hosts[0]
+        if hasattr(model, "port") and model.port:
+            address = f"{address}:{model.port}"
         return cls(
             source_name=model.name,
-            address=model.hosts[0],
+            address=address,
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
         )
@@ -364,9 +370,12 @@ class OpenShiftSourceFormDTO:
 
     @classmethod
     def from_model(cls, model: Source):
+        address = model.hosts[0]
+        if hasattr(model, "port") and model.port:
+            address = f"{address}:{model.port}"
         return cls(
             source_name=model.name,
-            address=model.hosts[0],
+            address=address,
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
         )
@@ -382,9 +391,12 @@ class AnsibleSourceFormDTO:
 
     @classmethod
     def from_model(cls, model: Source):
+        address = model.hosts[0]
+        if hasattr(model, "port") and model.port:
+            address = f"{address}:{model.port}"
         return cls(
             source_name=model.name,
-            address=model.hosts[0],
+            address=address,
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
         )
@@ -400,9 +412,12 @@ class RHACSSourceFormDTO:
 
     @classmethod
     def from_model(cls, model: Source):
+        address = model.hosts[0]
+        if hasattr(model, "port") and model.port:
+            address = f"{address}:{model.port}"
         return cls(
             source_name=model.name,
-            address=model.hosts[0],
+            address=address,
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
         )
