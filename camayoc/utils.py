@@ -1,9 +1,7 @@
 # coding=utf-8
 """Utility functions."""
 
-import base64
 import contextlib
-import json
 import os
 import shutil
 import tempfile
@@ -60,24 +58,6 @@ def isolated_filesystem(filesystem_path=None):
             shutil.rmtree(path)
         except (OSError, IOError):
             pass
-
-
-def create_identity(account_number, org_id=None):
-    """Base64-encoded JSON identity."""
-    identity = {"identity": {"account_number": account_number}}
-    if org_id is not None:
-        identity["identity"]["internal"] = {"org_id": org_id}
-    identity = json.dumps(identity)
-    identity = base64.standard_b64encode(identity.encode("ascii"))
-    identity = identity.decode("ascii")
-    return identity
-
-
-def create_x_rh_identity(account_number, org_id=None):
-    """Base64-encoded JSON identity header provided by 3Scale."""
-    identity = create_identity(account_number, org_id)
-    x_rh_identity = {"x-rh-identity": identity}
-    return x_rh_identity
 
 
 def expected_data_has_attribute(scan_definition: ScanOptions, attr_name: str) -> bool:

@@ -51,7 +51,7 @@ QPC_SCANJOB_PATH = "jobs/"
 QPC_REPORTS_PATH = "reports/"
 """The path to the endpoint used for obtaining reports."""
 
-QPC_SCAN_TERMINAL_STATES = ("completed", "failed", "paused", "canceled")
+QPC_SCAN_TERMINAL_STATES = ("completed", "failed", "canceled")
 """Scans to not change from these states without intervention."""
 
 QPC_SCAN_STATES = QPC_SCAN_TERMINAL_STATES + ("running",)

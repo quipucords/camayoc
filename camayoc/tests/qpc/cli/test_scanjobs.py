@@ -239,13 +239,11 @@ def test_scanjob_cancel(qpc_server_config, data_provider):
     """Perform a scan and ensure it can be canceled.
 
     :id: b5c11b82-e86e-478b-b885-89a577f81b13
-    :description: Start a scan, then cancel it and finally check it can't be
-        restarted.
+    :description: Start a scan, then cancel it.
     :steps:
         1) Run ``qpc scan start --sources <source>`` and store its ID.
         2) Cancel the scan by running ``qpc scan cancel --id <id>``
-        3) Try to restart the scan by running ``qpc scan restart --id <id>``
-    :expectedresults: The scan must be canceled and can't not be restarted.
+    :expectedresults: The scan must be canceled.
     """
     # There's nothing fundamentally wrong with other source types.
     # In our environment, they tend to finish too quickly, largely

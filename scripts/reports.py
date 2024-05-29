@@ -18,7 +18,7 @@ from camayoc.data_provider import DataProvider
 from camayoc.exceptions import WaitTimeError
 from camayoc.qpc_models import Report
 from camayoc.qpc_models import ScanJob
-from camayoc.tests.qpc.api.v1.utils import wait_until_state
+from camayoc.tests.qpc.utils import wait_until_state
 
 # urllib is a bit too noisy
 warnings.filterwarnings("module")
