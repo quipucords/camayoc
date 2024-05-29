@@ -439,8 +439,7 @@ class Scan(QPCObject, QPCObjectBulkDeleteMixin):
         >>> scan.create()
         >>> scanjob = ScanJob(scan._id)
         >>> scanjob.create()
-        >>> scanjob.pause()
-        >>> assert scanjob.status() == 'paused'
+        >>> assert scanjob.status() == 'running'
     """
 
     def __init__(
@@ -596,15 +595,6 @@ class ScanJob(QPCObject):
         path = urljoin(QPC_SCAN_PATH, "{}/jobs/".format(self.scan_id))
         return self.client.get(path, **kwargs)
 
-    def pause(self, **kwargs):
-        """Send PUT request to self.endpoint/{id}/pause/ to pause a scan.
-
-        :param ``**kwargs``: Additional arguments accepted by Requests's
-            `request.request()` method.
-        """
-        path = urljoin(self.path(), "pause/")
-        return self.client.put(path, {}, **kwargs)
-
     def cancel(self, **kwargs):
         """Send PUT request to self.endpoint/{id}/cancel/ to cancel a scan.
 
@@ -612,15 +602,6 @@ class ScanJob(QPCObject):
             `request.request()` method.
         """
         path = urljoin(self.path(), "cancel/")
-        return self.client.put(path, {}, **kwargs)
-
-    def restart(self, **kwargs):
-        """Send PUT request to self.endpoint/{id}/restart/ to restart a scan.
-
-        :param ``**kwargs``: Additional arguments accepted by Requests's
-            `request.request()` method.
-        """
-        path = urljoin(self.path(), "restart/")
         return self.client.put(path, {}, **kwargs)
 
     def connection_results(self, **kwargs):

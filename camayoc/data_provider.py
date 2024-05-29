@@ -17,9 +17,9 @@ from camayoc.qpc_models import Report
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import ScanJob
 from camayoc.qpc_models import Source
-from camayoc.tests.qpc.api.v1.utils import wait_until_state
 from camayoc.tests.qpc.utils import get_object_id
 from camayoc.tests.qpc.utils import sort_and_delete
+from camayoc.tests.qpc.utils import wait_until_state
 from camayoc.types.scans import FinishedScan
 from camayoc.types.scans import ScanSimplifiedStatusEnum
 from camayoc.utils import expected_data_has_attribute

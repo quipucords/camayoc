@@ -1,73 +1,21 @@
 """Utility functions for quipucords server tests."""
 
 import hashlib
+import pprint
+import time
 from pathlib import Path
 from typing import Callable
 
 from camayoc import api
 from camayoc.config import settings
+from camayoc.constants import QPC_SCAN_STATES
+from camayoc.constants import QPC_SCAN_TERMINAL_STATES
+from camayoc.exceptions import StoppedScanException
+from camayoc.exceptions import WaitTimeError
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
 from camayoc.types.settings import ScanOptions
-from camayoc.utils import uuid4
-
-
-def assert_matches_server(qpcobject):
-    """Assert that the data on the server matches this object."""
-    other = qpcobject.read().json()
-    assert qpcobject.equivalent(other)
-
-
-def assert_source_update_fails(original_data, source):
-    """Assert that the update method on this source fails.
-
-    :param original_data: This should be the json you expect to match the
-        server. This can be collected from your object via source.fields()
-        before altering the object with the invalid data.
-    """
-    # replace whatever client the source had with one that won't raise
-    # exceptions
-    orig_client = source.client
-    source.client = api.Client(response_handler=api.echo_handler)
-    update_response = source.update()
-    assert update_response.status_code == 400
-    server_data = source.read().json()
-    for key, value in server_data.items():
-        if key == "options" and original_data.get(key) is None:
-            continue
-        if key == "credentials":
-            # the server creds are dicts with other data besides the id
-            cred_ids = []
-            for cred in value:
-                cred_ids.append(cred.get("id"))
-            assert sorted(original_data.get(key)) == sorted(cred_ids)
-        else:
-            assert original_data.get(key) == value
-    # give the source its original client back
-    source.client = orig_client
-
-
-def assert_source_create_fails(source, source_type=""):
-    """Assert that the create method of this source fails.
-
-    :param source: The source object.
-    """
-    # replace whatever client the source had with one that won't raise
-    # exceptions
-    orig_client = source.client
-    source.client = api.Client(response_handler=api.echo_handler)
-    create_response = source.create()
-    assert create_response.status_code == 400
-    expected_errors = [
-        {"hosts": ["This source must have a single host."]},
-        {"credentials": ["This source must have a single credential."]},
-        {"exclude_hosts": ["The exclude_hosts option is not valid for this source."]},
-    ]
-    response = create_response.json()
-    assert response in expected_errors
-    # give the source its original client back
-    source.client = orig_client
 
 
 def calculate_sha256sums(directory):
@@ -84,22 +32,6 @@ def calculate_sha256sums(directory):
                 shasum.update(block)
         shasums[key] = shasum.hexdigest()
     return shasums
-
-
-def gen_valid_source(cleanup, src_type, hosts, create=True, exclude_hosts=None):
-    """Create valid source."""
-    cred = Credential(cred_type=src_type, password=uuid4())
-    cred.create()
-    cleanup.append(cred)
-    source = Source(source_type=src_type, hosts=[hosts], credential_ids=[cred._id])
-    # QPC does not accept blank exclude_host values, only add it if not empty.
-    if exclude_hosts is not None:
-        source.exclude_hosts = [exclude_hosts]
-    if create:
-        source.create()
-        cleanup.append(source)
-        assert_matches_server(source)
-    return source
 
 
 def get_expected_sha256sums(directory):
@@ -197,3 +129,83 @@ def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
         scan_definition.name for scan_definition in settings.scans if predicate(scan_definition)
     ]
     return matching_scans
+
+
+def wait_until_state(scanjob, timeout=3600, state="completed"):
+    """Wait until the scanjob has failed or reached desired state.
+
+    The default state is 'completed'.
+
+    Valid options for 'state': 'completed', 'failed', 'canceled',
+    'running', 'stopped'.
+
+    If 'stopped' is selected, then any state other than 'running' will
+    cause `wait_until_state` to return.
+
+    This method should not be called on scanjob jobs that have not yet been
+    created or are canceled.
+
+    The default timeout is set to 3600 seconds (an hour), but can be
+    overridden. An hour is an extremely long time. We use this because
+    it is been proven that in general the server is accurate when
+    reporting that a task really is still running. All other terminal
+    states will cause this function to return.
+    """
+    valid_states = QPC_SCAN_STATES + ("stopped",)
+    stopped_states = QPC_SCAN_TERMINAL_STATES + ("stopped",)
+    if state not in valid_states:
+        raise ValueError(
+            "You have called `wait_until_state` and specified an invalid\n"
+            'state={0}. Valid options for "state" are [ {1} ]'.format(
+                state, pprint.pformat(valid_states)
+            )
+        )
+
+    current_status = scanjob.status()
+    while True:
+        # achieved expected state - happy path
+        if current_status == state:
+            return
+
+        # scanjob is no longer running, user wanted one of stopped states. Stopped is stopped
+        if current_status in stopped_states and state in stopped_states:
+            return
+
+        scanjob_details = scanjob.read().json()
+        exception_format = {
+            "scanjob_id": scanjob._id,
+            "scan_id": scanjob.scan_id,
+            "expected_state": state,
+            "scanjob_state": current_status,
+            "scanjob_details": pprint.pformat(scanjob_details),
+            "scanjob_results": pprint.pformat(scanjob_details.get("tasks")),
+        }
+
+        if current_status in stopped_states and state not in stopped_states:
+            raise StoppedScanException(
+                "You have called wait_until_state() on a scanjob with\n"
+                "ID={scanjob_id} has stopped running instead of reaching \n"
+                'the state="{expected_state}"\n'
+                'When the scanjob stopped, it had the state="{scanjob_state}".'
+                "\nThe scanjob was started for the scan with id {scan_id}"
+                "The full details of the scanjob were \n{scanjob_details}\n"
+                'The "results" available from the scanjob were \n'
+                "{scanjob_results}\n".format(**exception_format)
+            )
+
+        if timeout <= 0:
+            raise WaitTimeError(
+                "You have called wait_until_state() on a scanjob with\n"
+                "ID={scanjob_id} and the scanjob timed out while waiting\n"
+                'to achieve the state="{expected_state}"\n'
+                "When the scanjob timed out, it had the"
+                ' state="{scanjob_state}".\n'
+                "The scanjob was started for the scan with id {scan_id}"
+                "The full details of the scanjob were \n{scanjob_details}\n"
+                'The "results" available from the scanjob were'
+                "\n{scanjob_results}\n".format(**exception_format)
+            )
+
+        time.sleep(5)
+        timeout -= 5
+        current_status = scanjob.status()
