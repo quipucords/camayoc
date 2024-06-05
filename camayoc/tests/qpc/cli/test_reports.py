@@ -29,6 +29,7 @@ from camayoc.types.scans import FinishedScan
 from camayoc.utils import uuid4
 
 from .utils import config_sources
+from .utils import report_aggregate
 from .utils import report_deployments
 from .utils import report_detail
 from .utils import report_download
@@ -762,3 +763,39 @@ def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc
     assert (
         tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"]
     ), "Data in metadata.json and actual data in archive do not match"
+
+
+@pytest.mark.runs_scan
+def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qpc_server_config):
+    """Ensure aggregate report can be downloaded.
+
+    :id: 3e772a6a-c8b1-48b4-aee0-9a636afaf000
+    :description: Request aggregate report, download it and verify
+        it appears to be correct.
+    :steps:
+        1) Run ``qpc report aggregate --report <report id>``.
+        2) Verify that command succeeded.
+        3) Verify that downloaded data looks like valid JSON.
+    :expectedresults: Report is downloaded and data is valid JSON.
+    """
+    network_source = data_provider.sources.defined_one({})
+
+    def contains_source(sources):
+        return network_source.name in sources
+
+    scan = data_provider.scans.defined_one({"sources": contains_source})
+    finished_scan = scans.with_name(scan.name)
+    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
+
+    output_file = f"aggregate-{uuid4()}.json"
+
+    output = report_aggregate({"report": finished_scan.report_id, "output-file": output_file})
+
+    assert "Report written successfully" in output
+    assert os.path.isfile(
+        output_file
+    ), f"Aggregate report not found at (failed download?): {output_file}"
+
+    with open(output_file) as fh:
+        json_formatted = json.load(fh)
+    assert len(json_formatted)
