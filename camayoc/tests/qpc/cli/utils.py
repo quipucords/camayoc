@@ -196,6 +196,9 @@ report_download = functools.partial(cli_command, "{} -v report download".format(
 report_insights = functools.partial(cli_command, "{} -v report insights".format(client_cmd))
 """Run ``qpc report insights`` with ``options`` and return output."""
 
+report_aggregate = functools.partial(cli_command, "{} -v report aggregate".format(client_cmd))
+"""Run ``qpc report aggregate`` with ``options`` and return output."""
+
 
 def convert_ip_format(ipaddr):
     """Convert IP strings (for generating expected test results)."""
