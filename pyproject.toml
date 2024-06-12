@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "camayoc"
-version = "1.2.6"
+version = "1.8.2"
 description = "A GPL-licensed Python library that facilitates functional testing of Quipucords."
 authors = ["Quipucords Dev Team <quipucords@redhat.com>"]
 readme = "README.rst"
 license = "GPLv3"
 repository = "https://github.com/quipucords/camayoc"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
