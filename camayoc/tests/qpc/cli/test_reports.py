@@ -11,24 +11,25 @@
 import json
 import os
 import pprint
-import random
 import re
 import tarfile
 from copy import deepcopy
 from functools import partial
 from operator import itemgetter
 from pathlib import Path
+from typing import Iterable
 
 import pytest
 from littletable import Table
 
+from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.qpc_models import Report
-from camayoc.qpc_models import Scan
+from camayoc.qpc_models import Source
 from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
 from camayoc.types.scans import FinishedScan
+from camayoc.types.settings import SourceOptions
 from camayoc.utils import uuid4
 
-from .utils import config_sources
 from .utils import report_aggregate
 from .utils import report_deployments
 from .utils import report_detail
@@ -36,13 +37,8 @@ from .utils import report_download
 from .utils import report_insights
 from .utils import report_merge
 from .utils import report_upload
-from .utils import scan_add_and_check
 from .utils import scan_job
-from .utils import scan_start
-from .utils import setup_qpc
 from .utils import wait_for_scan
-
-# from csv_report_parsing import normalize_csv_report
 
 REPORT_OUTPUT_FORMATS = ("csv", "json")
 """Valid report output formats."""
@@ -96,13 +92,17 @@ DEPLOYMENTS_REPORT_FIELDS = (
 )
 """Common deployments report expected fields."""
 
-CSV_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
+VCENTER_CSV_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
     "detection-rhacs",
     "detection-ansible",
     "detection-network",
     "detection-openshift",
     "detection-satellite",
     "detection-vcenter",
+)
+"""Deployments report expected fields for CSV output in VCenter scan."""
+
+CSV_DEPLOYMENTS_REPORT_FIELDS = VCENTER_CSV_DEPLOYMENTS_REPORT_FIELDS + (
     "jboss eap",
     "jboss fuse",
     "jboss web server",
@@ -298,9 +298,6 @@ FACTS = (
 )
 """Common detail report expected facts."""
 
-_SCANS = []
-"""Global list of scans to generate reports from."""
-
 
 def assert_json_report_fields(report_fields, expected_fields=JSON_DEPLOYMENTS_REPORT_FIELDS):
     """Assert that report fields are a subset of expected field."""
@@ -311,53 +308,40 @@ def assert_json_report_fields(report_fields, expected_fields=JSON_DEPLOYMENTS_RE
     )
 
 
-@pytest.fixture(autouse=True, scope="module")
-def setup_reports_prerequisites(data_provider):
-    """Perform a couple of scans to generate reports from.
+def scan_with_source_type(source_types, data_provider, scans) -> FinishedScan:
+    """Obtain a scan that uses a source of type specified in argument."""
+    scan_source = data_provider.sources.defined_one({"type": Table.is_in(source_types)})
 
-    Make sure there are two or more network sources on the config file and
-    randomly choose two of them. Next, perform a scan for each network source
-    and store the information about it on the global ``_SCANS`` list.
-    """
-    setup_qpc()
-    network_sources = [source for source in config_sources() if source.type == "network"]
-    random.shuffle(network_sources)
-    network_sources = network_sources[:2]
-    if len(network_sources) < 2:
-        pytest.skip(
-            "Make sure you have at least two network sources on the config "
-            "file to run these tets."
-        )
+    def contains_source(sources):
+        return scan_source.name in sources
 
-    for source in network_sources:
-        real_source = data_provider.sources.new_one({"name": source.name}, data_only=False)
-        scan = {"name": uuid4(), "sources": [real_source]}
-        scan_add_and_check({"name": scan["name"], "sources": real_source.name})
-        data_provider.mark_for_cleanup(Scan(name=scan["name"]))
+    scan = data_provider.scans.defined_one({"sources": contains_source})
+    finished_scan = scans.with_name(scan.name)
+    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
 
-        result = scan_start({"name": scan["name"]})
-        match = re.match(r'Scan "(\d+)" started.', result)
-        assert match is not None, result
-        scan_job_id = match.group(1)
-        scan["scan-job"] = scan_job_id
-        wait_for_scan(scan_job_id)
-        result = scan_job({"id": scan_job_id})
-        assert result["status"] == "completed"
-        report_id = result["report_id"]
-        assert report_id is not None
-        scan["report"] = report_id
-        scan["json-file"] = os.path.abspath("{}.json".format(scan["name"]))
-        report_detail({"json": None, "output-file": scan["json-file"], "report": scan["report"]})
-        _SCANS.append(scan)
-    yield
-    for scan in _SCANS:
-        os.remove(scan["json-file"])
+    return finished_scan
+
+
+def scan_sources(finished_scan: FinishedScan, data_provider) -> Iterable[SourceOptions]:
+    """List of source configuration objects used by a specific scan."""
+    scan_sources = finished_scan.definition.sources
+    sources = data_provider.sources._defined_models.where(name=Table.is_in(scan_sources))
+    sources = [source for source in sources]
+    return sources
+
+
+def source_option_attr(source_option, finished_scan):
+    """Obtain a relevant source_option-mapped value from FinishedScan."""
+    attr_name = source_option.replace("-", "_") + "_id"
+    return getattr(finished_scan, attr_name)
 
 
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)
-def test_deployments_report(source_option, output_format, isolated_filesystem, qpc_server_config):
+def test_deployments_report(  # noqa: PLR0913
+    source_option, output_format, data_provider, scans, isolated_filesystem, qpc_server_config
+):
     """Ensure a deployments report can be generated and has expected information.
 
     :id: 0ddfdd85-0836-46b5-9541-cf62b5d9c7bc
@@ -368,11 +352,16 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
     :expectedresults: The generated report must be on the requested format
         (either CSV or JSON) and must have the expected fields.
     """
-    scan = random.choice(_SCANS)
+    finished_scan = scan_with_source_type(("network", "satellite", "vcenter"), data_provider, scans)
+    sources = scan_sources(finished_scan, data_provider)
+    sources_names = [source.name for source in sources]
+    sources_types = [source.type for source in sources]
+
     output_path = "{}.{}".format(uuid4(), output_format)
+
     output = report_deployments(
         {
-            source_option: scan[source_option],
+            source_option: source_option_attr(source_option, finished_scan),
             output_format: None,
             "output-file": output_path,
         }
@@ -384,11 +373,13 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
         if output_format == "json":
             report = json.load(f)
             expected_fields = JSON_DEPLOYMENTS_REPORT_FIELDS
-            scan_report_id = scan["report"]
+            scan_report_id = finished_scan.report_id
         else:
             report = normalize_csv_report(f, 5, [(0, 1)], report_type="deployments")
             expected_fields = CSV_DEPLOYMENTS_REPORT_FIELDS
-            scan_report_id = str(scan["report"])
+            if "vcenter" in sources_types:
+                expected_fields = VCENTER_CSV_DEPLOYMENTS_REPORT_FIELDS
+            scan_report_id = str(finished_scan.report_id)
 
     assert report["report_type"] == "deployments"
     assert report["report_id"] == scan_report_id
@@ -417,8 +408,8 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
         for fingerprint in report["system_fingerprints"]
         for source in fingerprint["sources"]
     ]
-    assert any(source.name in known_source_names for source in scan["sources"])
-    assert any(source.source_type in known_source_types for source in scan["sources"])
+    assert any(source_name in known_source_names for source_name in sources_names)
+    assert any(source_type in known_source_types for source_type in sources_types)
     for fingerprint in report["system_fingerprints"]:
         fingerprint_keys = set(fingerprint.keys())
         metadata_keys = set(fingerprint["metadata"].keys())
@@ -434,7 +425,9 @@ def test_deployments_report(source_option, output_format, isolated_filesystem, q
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)
-def test_detail_report(source_option, output_format, isolated_filesystem, qpc_server_config):
+def test_detail_report(  # noqa: PLR0913
+    source_option, output_format, data_provider, scans, isolated_filesystem, qpc_server_config
+):
     """Ensure a detail report can be generated and has expected information.
 
     :id: 54fcfbb9-2435-4717-8693-8774b5c3643d
@@ -445,13 +438,17 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
     :expectedresults: The generated report must be on the requested format
         (either CSV or JSON) and must have the expected fields.
     """
-    scan = random.choice(_SCANS)
+    finished_scan = scan_with_source_type(("network",), data_provider, scans)
+    sources = scan_sources(finished_scan, data_provider)
+    sources_names = [source.name for source in sources]
+    sources_types = [source.type for source in sources]
+
     output_path = "{}.{}".format(uuid4(), output_format)
     output = report_detail(
         {
             "output-file": output_path,
             output_format: None,
-            source_option: scan[source_option],
+            source_option: source_option_attr(source_option, finished_scan),
         }
     )
 
@@ -460,23 +457,25 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
     with open(output_path) as f:
         if output_format == "json":
             report = json.load(f)
-            scan_report_id = scan["report"]
+            scan_report_id = finished_scan.report_id
+            number_sources = len(report["sources"])
         else:
             # For CSV we need to massage the data a little bit. First ensure
             # there is a header with the report id, number of sources and
             # sources' information.
             report = normalize_csv_report(f, 8, [(0, 1), (5, 6)], report_type="detail")
-            scan_report_id = str(scan["report"])
+            scan_report_id = str(finished_scan.report_id)
+            number_sources = int(report["number_sources"])
 
     assert report["report_type"] == "details"
     assert report["report_id"] == scan_report_id
     assert report["report_platform_id"]
     assert report["report_version"]
-    assert len(report["sources"]) == len(scan["sources"])
-    for report_source, scan_source in zip(report["sources"], scan["sources"]):
+    assert len(sources_names) == number_sources
+    for report_source in report["sources"]:
         assert "server_id" in report_source
-        assert report_source["source_name"] == scan_source.name
-        assert report_source["source_type"] == scan_source.source_type
+        assert report_source["source_name"] in sources_names
+        assert report_source["source_type"] in sources_types
         if output_format == "json":
             assert report_source["report_version"]
             assert report_source["report_version"] == report["report_version"]
@@ -493,7 +492,7 @@ def test_detail_report(source_option, output_format, isolated_filesystem, qpc_se
 
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("merge_by", REPORT_SOURCE_OPTIONS + ("json-file",))
-def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
+def test_merge_report(merge_by, data_provider, scans, isolated_filesystem, qpc_server_config):
     """Ensure can merge reports using report ids, scanjob ids and JSON files.
 
     :id: c47e37c0-3864-41d4-873d-276affdc6612
@@ -510,15 +509,42 @@ def test_merge_report(merge_by, isolated_filesystem, qpc_server_config):
     :expectedresults: The merged report must be on the requested format
         (either CSV or JSON) and must have the expected fields.
     """
+    expected_source_types = set(("network", "satellite", "vcenter"))
+    found_scans = []
+    scan_generator = data_provider.scans.defined_many({})
+    for scan in scan_generator:
+        source_types = set()
+        for source_id in scan.sources:
+            source = Source(client=scan.client, _id=source_id)
+            source_data = source.read().json()
+            source_types.add(source_data.get("source_type"))
+
+        if not expected_source_types.intersection(source_types):
+            continue
+
+        finished_scan = scans.with_name(scan.name)
+        assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
+        found_scans.append(finished_scan)
+
+        if len(found_scans) >= 2:
+            break
+
     if merge_by == "scan-job":
         merge_option = "job-ids"
+        merge_values = [str(scan.scan_job_id) for scan in found_scans]
     elif merge_by == "report":
         merge_option = "report-ids"
+        merge_values = [str(scan.report_id) for scan in found_scans]
     elif merge_by == "json-file":
         merge_option = "json-files"
+        merge_values = []
+        for scan in found_scans:
+            json_file = Path(f"{scan.definition.name}-{uuid4()}.json").resolve().as_posix()
+            report_detail({"json": None, "output-file": json_file, "report": scan.report_id})
+            merge_values.append(json_file)
     else:
         pytest.fail('Unrecognized merge_by value: "{}"'.format(merge_by))
-    merge_values = [str(scan[merge_by]) for scan in _SCANS]
+
     output = report_merge({merge_option: " ".join(merge_values)})
 
     match = re.search(r"Report merge job (\d+) created.", output)
@@ -589,15 +615,7 @@ def test_upload_report(data_provider, scans, isolated_filesystem, qpc_server_con
             source_dict["facts"] = sorted_facts
         return source_list
 
-    # only the sources below can generate proper fingerprints
-    valid_source_types = {"vcenter", "satellite", "network"}
-    target_source = data_provider.sources.defined_one({"type": Table.is_in(valid_source_types)})
-    scan = data_provider.scans.defined_one(
-        {"sources": lambda sources: target_source.name in sources}
-    )
-    finished_scan: FinishedScan = scans.with_name(scan.name)
-    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
-
+    finished_scan = scan_with_source_type(("network", "satellite", "vcenter"), data_provider, scans)
     path_to_details_report = tmp_path / "original-report.json"
     path_to_details_report.write_text(json.dumps(finished_scan.details_report))
     output = report_upload({"json-file": path_to_details_report})
@@ -646,7 +664,9 @@ def test_upload_report(data_provider, scans, isolated_filesystem, qpc_server_con
 
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
-def test_download_report(source_option, isolated_filesystem, qpc_server_config):
+def test_download_report(
+    source_option, data_provider, scans, isolated_filesystem, qpc_server_config
+):
     """Ensure a report can be downloaded and has expected information.
 
     :id: a8c8ef8c-fa64-11e8-82bb-8c1645a90ee2
@@ -659,10 +679,13 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     :expectedresults: The downloaded report must be an un-extracted tar.gz
         package and must contain the expected report.
     """
-    scan = random.choice(_SCANS)
-    output_path = f"{uuid4()}"
-    output_pkg = f"{output_path}.tar.gz"
-    output = report_download({source_option: scan[source_option], "output-file": output_pkg})
+    finished_scan = scan_with_source_type(("network", "satellite", "vcenter"), data_provider, scans)
+
+    output_pkg = f"{uuid4()}.tar.gz"
+
+    output = report_download(
+        {source_option: source_option_attr(source_option, finished_scan), "output-file": output_pkg}
+    )
     # Test that package downloaded
     assert "successfully written to" in output, (
         "Unexpected output from qpc report download! \n"
@@ -689,7 +712,12 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     # Test that fails on non-existant path
     missing_output_path = f"/no/such/number/{output_pkg})"
     with pytest.raises(AssertionError) as no_dir_exception_info:
-        report_download({source_option: scan[source_option], "output-file": missing_output_path})
+        report_download(
+            {
+                source_option: source_option_attr(source_option, finished_scan),
+                "output-file": missing_output_path,
+            }
+        )
         expected_msg = "directory /no/such/number does not exist"
         assert no_dir_exception_info.match(expected_msg), (
             "Unexpected output from qpc report download! \n"
@@ -701,7 +729,12 @@ def test_download_report(source_option, isolated_filesystem, qpc_server_config):
     # Test that non tar.gz files fail
     non_tar_file = f"{format(uuid4())}"
     with pytest.raises(AssertionError) as tar_exception_info:
-        report_download({source_option: scan[source_option], "output-file": non_tar_file})
+        report_download(
+            {
+                source_option: source_option_attr(source_option, finished_scan),
+                "output-file": non_tar_file,
+            }
+        )
         expected_tar_error = "extension is required to be tar.gz"
         assert tar_exception_info.match(expected_tar_error), (
             "Unexpected output from qpc report download!\n"
@@ -728,14 +761,7 @@ def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc
     :expectedresults: Report is downloaded and content matches
         insights archive format.
     """
-    network_source = data_provider.sources.defined_one({"type": "network"})
-
-    def contains_source(sources):
-        return network_source.name in sources
-
-    scan = data_provider.scans.defined_one({"sources": contains_source})
-    finished_scan = scans.with_name(scan.name)
-    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
+    finished_scan = scan_with_source_type(("network",), data_provider, scans)
 
     output_file = f"insights-{uuid4()}.tar.gz"
 
@@ -778,17 +804,8 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
         3) Verify that downloaded data looks like valid JSON.
     :expectedresults: Report is downloaded and data is valid JSON.
     """
-    network_source = data_provider.sources.defined_one({})
-
-    def contains_source(sources):
-        return network_source.name in sources
-
-    scan = data_provider.scans.defined_one({"sources": contains_source})
-    finished_scan = scans.with_name(scan.name)
-    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
-
+    finished_scan = scan_with_source_type(QPC_SOURCE_TYPES, data_provider, scans)
     output_file = f"aggregate-{uuid4()}.json"
-
     output = report_aggregate({"report": finished_scan.report_id, "output-file": output_file})
 
     assert "Report written successfully" in output

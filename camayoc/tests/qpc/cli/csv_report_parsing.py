@@ -95,6 +95,7 @@ def normalize_detail_report(header_info, reader):
         "report_type": report_info["report_type"],
         "report_platform_id": report_info["report_platform_id"],
         "report_version": report_info["report_version"],
+        "number_sources": report_info["number_sources"],
         "sources": [
             {
                 "facts": [row for row in reader],
