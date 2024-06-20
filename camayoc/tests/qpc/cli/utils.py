@@ -2,7 +2,6 @@
 """Utility functions for Quipucords cli tests."""
 
 import functools
-import itertools
 import json
 import re
 import tarfile
@@ -13,7 +12,6 @@ from pprint import pformat
 import pexpect
 
 from camayoc.config import settings
-from camayoc.exceptions import ConfigFileNotFoundError
 from camayoc.exceptions import FailedScanException
 from camayoc.exceptions import WaitTimeError
 from camayoc.utils import client_cmd
@@ -33,42 +31,6 @@ def clear_all_entities():
         errors.extend(error_finder.findall(clear_output))
         output.append(clear_output)
     assert errors == [], output
-
-
-def config_credentials():
-    """Return all credentials available on configuration file for CLI scans."""
-    try:
-        config_credentials = settings.credentials
-    except ConfigFileNotFoundError:
-        config_credentials = []
-
-    if not config_credentials:
-        return []
-
-    scan_credentials = list(itertools.chain(*[source.credentials for source in config_sources()]))
-    return [credential for credential in config_credentials if credential.name in scan_credentials]
-
-
-def config_sources():
-    """Return all sources available on configuration file for CLI scans."""
-    try:
-        config_sources = settings.sources
-    except ConfigFileNotFoundError:
-        config_sources = []
-
-    if not config_sources:
-        return []
-
-    scan_sources = list(itertools.chain(*[scan.sources for scan in config_scans()]))
-    return [source for source in config_sources if source.name in scan_sources]
-
-
-def config_scans():
-    """Return all CLI scans available on the configuration file."""
-    try:
-        return settings.scans
-    except ConfigFileNotFoundError:
-        return []
 
 
 def wait_for_scan(scan_job_id, status="completed", timeout=900):

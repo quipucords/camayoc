@@ -29,47 +29,30 @@ from .utils import wait_for_scan
 
 
 @pytest.mark.runs_scan
-def test_scanjob(qpc_server_config, data_provider):
+def test_scanjob(data_provider, scans, qpc_server_config):
     """Scan a single source type.
 
     :id: 49ae6fef-ea41-4b91-b310-6054678bfbb4
     :description: Perform a scan on a single source type.
-    :steps: Run ``qpc scan start --sources <source>``
+    :steps: Run a scan and download detils report using scan job id
+        Run ``qpc scan start --sources <source>``
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
 
-    def has_single_source(sources_in_scan):
+    def contains_single_source(sources_in_scan):
         return len(sources_in_scan) == 1
 
-    try:
-        scan = data_provider.scans.defined_one({"sources": has_single_source})
-    except NoMatchingDataDefinitionException:
-        source = data_provider.sources.defined_one({})
-        scan = Scan(name=uuid4())
-        scan_add_and_check(
-            {
-                "name": scan.name,
-                "sources": source.name,
-            }
-        )
-        data_provider.mark_for_cleanup(scan)
-
-    scan_name = scan.name
-    result = scan_start({"name": scan_name})
-    match = re.match(r'Scan "(\d+)" started.', result)
-    assert match is not None
-    scan_job_id = match.group(1)
-    wait_for_scan(scan_job_id, timeout=1800)
-    result = scan_job({"id": scan_job_id})
-    assert result["status"] == "completed"
-    report_id = result["report_id"]
-    assert report_id is not None
-    output_file = "out.json"
-    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
+    scan = data_provider.scans.defined_one({"sources": contains_single_source})
+    finished_scan = scans.with_name(scan.name)
+    assert finished_scan.report_id, f"No report id was returned from scan {scan.name}"
+    output_file = f"details-{uuid4()}.json"
+    report = report_detail(
+        {"json": None, "output-file": output_file, "scan-job": finished_scan.scan_job_id}
+    )
     with open(output_file) as report_data:
         report = json.load(report_data)
-        assert report.get("sources", []) != []
+        assert report.get("sources")
 
 
 @pytest.mark.runs_scan
