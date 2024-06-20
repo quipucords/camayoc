@@ -123,7 +123,7 @@ def openshift_sources():
 
 def openshift_cluster_info(name):
     for scan_info in settings.scans:
-        if name == scan_info.name:
+        if name in scan_info.sources:
             return scan_info.expected_data[scan_info.name].cluster_info
 
 
