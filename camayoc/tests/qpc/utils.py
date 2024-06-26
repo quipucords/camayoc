@@ -61,6 +61,36 @@ def get_expected_sha256sums(directory):
     return parsed_shasums
 
 
+def assert_sha256sums(directory: Path):
+    """Verify SHA256 sums of files match. Tests helper."""
+    actual_shasums = calculate_sha256sums(directory)
+    expected_shasums = get_expected_sha256sums(directory)
+
+    for filename, expected_shasum in expected_shasums.items():
+        actual_shasum = actual_shasums.get(filename)
+        assert actual_shasum == expected_shasum
+
+
+def assert_ansible_logs(directory: Path, is_network_scan: bool):
+    """Verify that ansible log files exist (or not). Tests helper."""
+    has_ansible_logs = False
+    for file in directory.rglob("*"):
+        if not file.is_file():
+            continue
+
+        # Ansible STDERR may or may not be empty, no point in asserting size
+        if "ansible-stderr" in file.name:
+            has_ansible_logs = True
+            continue
+
+        if "ansible-stdout" in file.name:
+            has_ansible_logs = True
+
+        assert file.stat().st_size > 0
+
+    assert is_network_scan == has_ansible_logs
+
+
 def get_object_id(obj):
     """Get id of object whose name is known."""
     if obj._id:

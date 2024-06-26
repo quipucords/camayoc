@@ -21,7 +21,9 @@ class ItemsList(UIPage):
 
     def _get_item_from_current_list(self, name: str):
         default_timeout = 5000  # 5s
-        item_elem = self._driver.locator("css=strong").filter(has_text=name)
+        item_elem = self._driver.locator("css=strong").filter(
+            has=self._driver.get_by_text(name, exact=True)
+        )
         item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'quipucords-table__tr')]"
         item_elem = item_elem.locator(item_elem_locator)
         item_elem.hover(timeout=default_timeout, trial=True)

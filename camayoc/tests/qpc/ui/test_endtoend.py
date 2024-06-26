@@ -8,17 +8,14 @@
 """
 
 import random
-import shutil
 import tarfile
-import tempfile
-from pathlib import Path
 
 import pytest
 
 from camayoc.config import settings
 from camayoc.qpc_models import Scan
-from camayoc.tests.qpc.utils import calculate_sha256sums
-from camayoc.tests.qpc.utils import get_expected_sha256sums
+from camayoc.tests.qpc.utils import assert_ansible_logs
+from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
 from camayoc.ui import Client
@@ -63,8 +60,9 @@ def source_names():
         yield pytest.param(source_definition.name, id=fixture_id)
 
 
+@pytest.mark.nightly_only
 @pytest.mark.parametrize("source_name", source_names())
-def test_end_to_end(cleaning_data_provider, ui_client: Client, source_name):
+def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_name):
     """End-to-end test using web user interface.
 
     :id: f187fbd0-021c-4563-9691-61e54eb272bf
@@ -98,33 +96,10 @@ def test_end_to_end(cleaning_data_provider, ui_client: Client, source_name):
 
     is_network_scan = source_dto.select_source_type.source_type == SourceTypes.NETWORK_RANGE
     downloaded_report = ui_client.downloaded_files[-1]
-    report_directory = Path(tempfile.mkdtemp(prefix="camayoc"))
-    report_file = report_directory / downloaded_report.suggested_filename
-    shutil.copy(downloaded_report.path(), report_file)
-    tarfile.open(report_file).extractall(report_directory)
-    actual_shasums = calculate_sha256sums(report_directory)
-    expected_shasums = get_expected_sha256sums(report_directory)
 
-    for filename, expected_shasum in expected_shasums.items():
-        actual_shasum = actual_shasums.get(filename)
-        assert actual_shasum == expected_shasum
-
-    has_ansible_logs = False
-    for file in report_directory.rglob("*"):
-        if not file.is_file():
-            continue
-
-        # Ansible STDERR may or may not be empty, no point in asserting size
-        if "ansible-stderr" in file.name:
-            has_ansible_logs = True
-            continue
-
-        if "ansible-stdout" in file.name:
-            has_ansible_logs = True
-
-        assert file.stat().st_size > 0
-
-    assert is_network_scan == has_ansible_logs
+    tarfile.open(downloaded_report.path()).extractall(tmp_path)
+    assert_sha256sums(tmp_path)
+    assert_ansible_logs(tmp_path, is_network_scan)
 
 
 @pytest.mark.skip("Skipped due to intermittent failure - DISCOVERY-426")
