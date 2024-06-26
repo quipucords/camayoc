@@ -394,7 +394,7 @@ def test_clear(isolated_filesystem, qpc_server_config, data_provider, source_nam
     assert match is not None
 
 
-def test_clear_all(isolated_filesystem, qpc_server_config, data_provider):
+def test_clear_all(isolated_filesystem, qpc_server_config, cleaning_data_provider):
     """Clear all scans.
 
     :id: 29e37620-3682-11e8-b467-0ed5f89f718b
@@ -406,7 +406,7 @@ def test_clear_all(isolated_filesystem, qpc_server_config, data_provider):
     :expectedresults: All scans entries are removed.
     """
     # Create scan
-    source = data_provider.sources.defined_one({"type": "network"})
+    source = cleaning_data_provider.sources.defined_one({"type": "network"})
     scan_name = uuid4()
     scan_add_and_check({"name": scan_name, "sources": source.name})
 

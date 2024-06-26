@@ -178,6 +178,9 @@ class DataProvider:
         )
         sort_and_delete(trash)
 
+        for store in self._stores:
+            getattr(self, store)._created_models.clear()
+
 
 class ScanContainer:
     def __init__(self, data_provider: DataProvider, scans=settings.scans):

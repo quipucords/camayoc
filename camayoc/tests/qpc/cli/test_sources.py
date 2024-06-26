@@ -1624,7 +1624,7 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_source_clear.exitstatus == 1
 
 
-def test_clear_all(isolated_filesystem, qpc_server_config, source_type):
+def test_clear_all(cleaning_data_provider, isolated_filesystem, qpc_server_config, source_type):
     """Clear all sources.
 
     :id: 23234cc2-fb41-4bc4-973a-7c850b998467

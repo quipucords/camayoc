@@ -10,11 +10,18 @@ from camayoc.config import settings
 def pytest_collection_modifyitems(
     session: pytest.Session, items: list[pytest.Item], config: pytest.Config
 ) -> None:
-    for clear_all_idx, node in enumerate(items):
-        if node.nodeid.endswith("test_credentials.py::test_clear_all"):
-            break
-    clear_all_node = items.pop(clear_all_idx)
-    items.insert(0, clear_all_node)
+    cleaning_dp_node_idxs = []
+    for node_idx, node in enumerate(items):
+        if "cleaning_data_provider" in node.fixturenames:
+            cleaning_dp_node_idxs.append(node_idx)
+
+    cleaning_dp_nodes = []
+    for node_idx in sorted(cleaning_dp_node_idxs, reverse=True):
+        node = items.pop(node_idx)
+        cleaning_dp_nodes.append(node)
+
+    for node in reversed(cleaning_dp_nodes):
+        items.insert(0, node)
 
 
 @pytest.fixture

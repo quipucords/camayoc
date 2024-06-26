@@ -64,7 +64,7 @@ def source_names():
 
 
 @pytest.mark.parametrize("source_name", source_names())
-def test_end_to_end(data_provider, ui_client: Client, source_name):
+def test_end_to_end(cleaning_data_provider, ui_client: Client, source_name):
     """End-to-end test using web user interface.
 
     :id: f187fbd0-021c-4563-9691-61e54eb272bf
@@ -80,7 +80,9 @@ def test_end_to_end(data_provider, ui_client: Client, source_name):
     :expectedresults: Credential and Source are created. Scan is completed.
         Report is downloaded. User is logged out.
     """
-    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(source_name, data_provider)
+    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(
+        source_name, cleaning_data_provider
+    )
     (
         ui_client.begin()
         .login(data_factories.LoginFormDTOFactory())
@@ -127,7 +129,7 @@ def test_end_to_end(data_provider, ui_client: Client, source_name):
 
 @pytest.mark.skip("Skipped due to intermittent failure - DISCOVERY-426")
 @pytest.mark.parametrize("source_name", source_names())
-def test_trigger_scan(data_provider, ui_client: Client, source_name):
+def test_trigger_scan(cleaning_data_provider, ui_client: Client, source_name):
     """Mostly end-to-end test using web user interface (without downloading scan results).
 
     :id: ae8b2d7d-8ac2-4957-a67a-6dedd80f4f31
@@ -144,7 +146,9 @@ def test_trigger_scan(data_provider, ui_client: Client, source_name):
     :expectedresults: Credential and Source are created. Scan has started.
         User is logged out.
     """
-    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(source_name, data_provider)
+    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(
+        source_name, cleaning_data_provider
+    )
     scans_page = (
         ui_client.begin()
         .login(data_factories.LoginFormDTOFactory())

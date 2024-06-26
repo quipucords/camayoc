@@ -5,7 +5,7 @@ import pytest
 from camayoc import api
 from camayoc.data_provider import DataProvider
 from camayoc.data_provider import ScanContainer
-from camayoc.tests.qpc.utils import sort_and_delete
+from camayoc.tests.qpc.cli.utils import clear_all_entities
 
 
 @pytest.fixture(scope="session")
@@ -17,14 +17,11 @@ def data_provider():
     dp.cleanup()
 
 
-@pytest.fixture(scope="function")
-def cleanup():
-    """Fixture that cleans up any created quipucords objects after a test."""
-    trash = []
-
-    yield trash
-
-    sort_and_delete(trash)
+@pytest.fixture(scope="module")
+def cleaning_data_provider(data_provider):
+    data_provider.cleanup()
+    clear_all_entities()
+    return data_provider
 
 
 @pytest.fixture(scope="session")
