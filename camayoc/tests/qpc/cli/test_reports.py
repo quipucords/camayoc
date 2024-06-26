@@ -178,6 +178,7 @@ FACTS = (
     "fuse_camel_version",
     "fuse_cxf_version",
     "host_done",
+    "hostnamectl",
     "ifconfig_ip_addresses",
     "ifconfig_mac_addresses",
     "insights_client_id",
