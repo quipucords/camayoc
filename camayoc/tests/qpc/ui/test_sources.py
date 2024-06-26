@@ -107,7 +107,7 @@ def create_source_dto(source_type, data_provider):
 
 # FIXME: this never actually deletes in UI
 @pytest.mark.parametrize("source_type", get_args(SourceFormDTO))
-def test_create_delete_source(data_provider, ui_client: Client, source_type):
+def test_create_delete_source(cleaning_data_provider, ui_client: Client, source_type):
     """Create and then delete a source through the UI.
 
     :id: b1f64fd6-0421-4650-aa6d-149cb3099012
@@ -119,7 +119,7 @@ def test_create_delete_source(data_provider, ui_client: Client, source_type):
     :expectedresults: A new source is created with the provided information,
         then it is deleted.
     """
-    source_dto = create_source_dto(source_type, data_provider)
+    source_dto = create_source_dto(source_type, cleaning_data_provider)
     (
         ui_client.begin()
         .login(data_factories.LoginFormDTOFactory())

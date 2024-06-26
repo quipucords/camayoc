@@ -632,7 +632,7 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_clear.exitstatus == 1
 
 
-def test_clear_all(isolated_filesystem, qpc_server_config):
+def test_clear_all(isolated_filesystem, qpc_server_config, cleaning_data_provider):
     """Clear all auth entries.
 
     :id: 16aa6914-e7ae-400f-b12b-6c9d218c4e0f
