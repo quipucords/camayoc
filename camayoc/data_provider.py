@@ -210,6 +210,7 @@ class ScanContainer:
         return self._get_or_run_scans(scans=wanted_scans, ok_only=True)
 
     def _get_or_run_scans(self, scans: Sequence[str], ok_only=False) -> dict[str, FinishedScan]:
+        self._sync_finished_scans_with_dp()
         self._ensure_wanted_scans_finished(scans)
 
         scans_to_return = [
@@ -226,6 +227,22 @@ class ScanContainer:
         scans_to_return = {scan.definition.name: scan for scan in scans_to_return}
 
         return scans_to_return
+
+    def _sync_finished_scans_with_dp(self) -> None:
+        dp_scans = set(self._dp.scans._created_models.keys())
+        finished_scans = set(self._finished_scans.keys())
+        missing_in_dp = finished_scans - dp_scans
+        if missing_in_dp:
+            logger.warning(
+                (
+                    "Some scans are known to ScanContainer, but not DataProvider. "
+                    "Likely some test called data_provider.cleanup() between two tests using "
+                    "scans fixture. Scans that are missing: %s"
+                ),
+                missing_in_dp,
+            )
+        for extra_scan in missing_in_dp:
+            self._finished_scans.pop(extra_scan)
 
     def _ensure_wanted_scans_finished(self, scans: Sequence[str]):
         finished_scans = set(self._finished_scans.keys())

@@ -35,7 +35,13 @@ SCANS = [
 ]
 
 
-def mocked_run_scans(wanted_scans: set[str], errored_scans: set[str] = set()):
+def mocked_run_scans(
+    wanted_scans: set[str], errored_scans: set[str] = set(), dp: DataProvider | None = None
+):
+    if dp:
+        for wanted_scan_name in wanted_scans:
+            dp.scans._created_models[wanted_scan_name] = None
+
     finished_scans = []
     for scan_name in wanted_scans:
         scan_definition = [scan for scan in SCANS if scan.name == scan_name][0]
@@ -139,8 +145,9 @@ def test_dont_run_scans_twice():
     """ScanContainer.all() runs each scan only once."""
     dp = DataProvider(credentials=[], sources=[], scans=SCANS)
     sc = ScanContainer(data_provider=dp, scans=SCANS)
+    my_mocked_run_scans = partial(mocked_run_scans, dp=dp)
     with mock.patch.object(
-        sc, "_run_scans", autospec=True, side_effect=mocked_run_scans
+        sc, "_run_scans", autospec=True, side_effect=my_mocked_run_scans
     ) as mock_run_scans:
         first_scans = sc.all()
         second_scans = sc.all()
@@ -155,8 +162,9 @@ def test_run_only_missing_scans():
     """ScanContainer.all() runs only scans that were not run before."""
     dp = DataProvider(credentials=[], sources=[], scans=SCANS)
     sc = ScanContainer(data_provider=dp, scans=SCANS)
+    my_mocked_run_scans = partial(mocked_run_scans, dp=dp)
     with mock.patch.object(
-        sc, "_run_scans", autospec=True, side_effect=mocked_run_scans
+        sc, "_run_scans", autospec=True, side_effect=my_mocked_run_scans
     ) as mock_run_scans:
         distro_scans = sc.ok_with_expected_data_attr("distribution")
         assert mock_run_scans.call_count == 1
@@ -169,3 +177,27 @@ def test_run_only_missing_scans():
         assert mock_run_scans.call_args.args == ({"VCenterOnly"},)
         assert len(sc._finished_scans) == len(SCANS)
         assert len(all_scans) == len(SCANS)
+
+
+def test_re_run_scans_after_dp_cleanup():
+    """ScanContainer will run scans again if they were removed from DataProvider."""
+    dp = DataProvider(credentials=[], sources=[], scans=SCANS)
+    sc = ScanContainer(data_provider=dp, scans=SCANS)
+    with mock.patch.object(
+        sc, "_run_scans", autospec=True, side_effect=mocked_run_scans
+    ) as mock_run_scans:
+        sc.all()
+        assert mock_run_scans.call_count == 1
+        assert mock_run_scans.call_args.args == ({"networkscan", "VCenterOnly"},)
+    # dp.cleanup()
+    # The idea is to get to the point where ScanContainer considers some scans finished,
+    # while they are not in DataProvider. Normally we would call dp.cleanup() here,
+    # but since we never put any scans into DataProvider, we are already in the state
+    # we need
+    assert sc._finished_scans
+    with mock.patch.object(
+        sc, "_run_scans", autospec=True, side_effect=mocked_run_scans
+    ) as mock_run_scans:
+        sc.all()
+        assert mock_run_scans.call_count == 1
+        assert mock_run_scans.call_args.args == ({"networkscan", "VCenterOnly"},)
