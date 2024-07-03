@@ -43,6 +43,8 @@ def get_cli_version():
         ]
         rpm_qa_result = subprocess.run(cmd, capture_output=True, check=True, text=True)
         for pkg_line in rpm_qa_result.stdout.split("\n"):
+            if not pkg_line:
+                continue
             pkg_name, pkg_version = pkg_line.split(":", maxsplit=1)
             if pkg_name in ("qpc", "discovery-cli"):
                 return pkg_version
