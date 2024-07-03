@@ -16,6 +16,7 @@ from camayoc.tests.qpc.utils import all_scan_names
 from camayoc.types.scans import ScanSimplifiedStatusEnum
 
 
+@pytest.mark.slow
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_name", all_scan_names())
 def test_scan_complete(scans, scan_name):

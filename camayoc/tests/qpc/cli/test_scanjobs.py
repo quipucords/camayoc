@@ -55,6 +55,7 @@ def test_scanjob(data_provider, scans, qpc_server_config):
 
 
 @pytest.mark.nightly_only
+@pytest.mark.slow
 @pytest.mark.runs_scan
 def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
     """Scan multiple source types.
@@ -103,6 +104,7 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
 
 
 @pytest.mark.nightly_only
+@pytest.mark.slow
 @pytest.mark.runs_scan
 def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config, data_provider):
     """Perform a scan with optional products disabled.
@@ -162,6 +164,7 @@ def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config, 
 
 
 @pytest.mark.nightly_only
+@pytest.mark.slow
 @pytest.mark.runs_scan
 def test_scanjob_with_enabled_extended_products(qpc_server_config, data_provider):
     """Perform a scan with extended products enabled.

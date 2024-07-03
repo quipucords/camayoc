@@ -336,6 +336,7 @@ def source_option_attr(source_option, finished_scan):
     return getattr(finished_scan, attr_name)
 
 
+@pytest.mark.slow
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("source_option", REPORT_SOURCE_OPTIONS)
 @pytest.mark.parametrize("output_format", REPORT_OUTPUT_FORMATS)

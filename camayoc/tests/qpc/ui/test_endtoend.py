@@ -60,6 +60,7 @@ def source_names():
         yield pytest.param(source_definition.name, id=fixture_id)
 
 
+@pytest.mark.slow
 @pytest.mark.nightly_only
 @pytest.mark.parametrize("source_name", source_names())
 def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_name):
