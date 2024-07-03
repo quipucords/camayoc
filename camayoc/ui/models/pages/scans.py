@@ -18,7 +18,8 @@ class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
         scan_locator = "td[class*=-c-table__action] button[data-ouia-component-id=download]"
         timeout_start = time.monotonic()
-        while 10 * 60 > (time.monotonic() - timeout_start):
+        timeout = self._client._camayoc_config.camayoc.scan_timeout
+        while timeout > (time.monotonic() - timeout_start):
             try:
                 with self.locator.page.expect_download() as download_info:
                     self.locator.locator(scan_locator).click(timeout=10_000)
