@@ -25,6 +25,7 @@ has_installed_products = partial(expected_data_has_attribute, attr_name="install
 has_raw_facts = partial(expected_data_has_attribute, attr_name="raw_facts")
 
 
+@pytest.mark.slow
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_name", scan_names(has_product))
 def test_products_found_deployment_report(scans, scan_name):
@@ -96,6 +97,7 @@ def test_products_found_deployment_report(scans, scan_name):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.runs_scan
 @pytest.mark.parametrize("scan_name", scan_names(has_distribution))
 def test_OS_found_deployment_report(scans, scan_name):
