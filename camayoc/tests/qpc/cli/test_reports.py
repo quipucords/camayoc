@@ -212,7 +212,6 @@ FACTS = (
     "internal_sys_manufacturer",
     "internal_system_user_count",
     "internal_user_login_history",
-    "internal_virt_what_error",
     "internal_xen_guest",
     "internal_xen_privcmd_found",
     "ip_address_show_ipv4",
@@ -294,7 +293,7 @@ FACTS = (
     "virt_num_running_guests",
     "virt_type",
     "virt_virt",
-    "virt_what_type",
+    "virt_what",
     "yum_enabled_repolist",
 )
 """Common detail report expected facts."""
