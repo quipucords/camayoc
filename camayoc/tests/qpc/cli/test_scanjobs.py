@@ -16,7 +16,6 @@ import pytest
 from littletable import Table
 
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
-from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Scan
 from camayoc.utils import uuid4
 
@@ -65,26 +64,27 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
     :expectedresults: The scan must completed without any error and a report
         should be available.
     """
+    source_generator = data_provider.sources.defined_many(
+        {"type": Table.is_in(("network", "satellite", "vcenter"))}
+    )
+    sources = [next(source_generator)]
+    while True:
+        new_source = next(source_generator)
+        if new_source.source_type == sources[0].source_type:
+            continue
+        sources.append(new_source)
+        break
 
-    def has_two_sources(sources_in_scan):
-        return len(sources_in_scan) >= 2
-
-    try:
-        scan = data_provider.scans.defined_one({"sources": has_two_sources})
-    except NoMatchingDataDefinitionException:
-        source_generator = data_provider.sources.defined_many({})
-        source1 = next(source_generator)
-        source2 = next(source_generator)
-        scan = Scan(name=uuid4())
-        scan_add_and_check(
-            {
-                "name": scan.name,
-                "sources": f"{source1.name} {source2.name}",
-            }
-        )
-        data_provider.mark_for_cleanup(scan)
-
+    scan = Scan(name=uuid4())
     scan_name = scan.name
+    scan_add_and_check(
+        {
+            "name": scan_name,
+            "sources": " ".join(s.name for s in sources),
+        }
+    )
+    data_provider.mark_for_cleanup(scan)
+
     result = scan_start({"name": scan_name})
     match = re.match(r'Scan "(\d+)" started.', result)
     assert match is not None
