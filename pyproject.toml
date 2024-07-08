@@ -53,12 +53,6 @@ pre-commit = "^3.3.2"
 isort = "^5.11.4"
 ruff = "^0.4.2"
 
-[tool.poetry.group.jenkins]
-optional = true
-
-[tool.poetry.group.jenkins.dependencies]
-qpc = {path = "../qpc", develop = true}
-koji = "^1.33.0"
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"
