@@ -106,6 +106,52 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
 @pytest.mark.nightly_only
 @pytest.mark.slow
 @pytest.mark.runs_scan
+def test_scanjob_with_all_sources(qpc_server_config, data_provider):
+    """Scan with all known source types.
+
+    :id: 6fde0327-5553-41b8-8c90-1acf7258dec3
+    :description: Perform a scan on all known source types.
+    :steps: Run ``qpc scan start --sources <source1> <source2> ...``
+    :expectedresults: The scan must completed without any error and a report
+        should be available.
+    """
+    source_generator = data_provider.sources.defined_many({})
+    sources = []
+    for new_source in source_generator:
+        known_source_types = [source.source_type for source in sources]
+        if new_source.source_type in known_source_types:
+            continue
+        sources.append(new_source)
+
+    scan = Scan(name=uuid4())
+    scan_name = scan.name
+    scan_add_and_check(
+        {
+            "name": scan_name,
+            "sources": " ".join(s.name for s in sources),
+        }
+    )
+    data_provider.mark_for_cleanup(scan)
+
+    result = scan_start({"name": scan_name})
+    match = re.match(r'Scan "(\d+)" started.', result)
+    assert match is not None
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id, timeout=1200)
+    result = scan_job({"id": scan_job_id})
+    assert result["status"] == "completed"
+    report_id = result["report_id"]
+    assert report_id is not None
+    output_file = "out.json"
+    report = report_detail({"json": None, "output-file": output_file, "report": report_id})
+    with open(output_file) as report_data:
+        report = json.load(report_data)
+        assert report.get("sources", []) != []
+
+
+@pytest.mark.nightly_only
+@pytest.mark.slow
+@pytest.mark.runs_scan
 def test_scanjob_with_disabled_products(isolated_filesystem, qpc_server_config, data_provider):
     """Perform a scan with optional products disabled.
 
