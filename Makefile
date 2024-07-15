@@ -11,6 +11,7 @@ help:
 	@echo "  install-dev       to install in editable mode plus the "
 	@echo "                    dev packages and install pre-commit hooks"
 	@echo "  lint              to run all linters"
+	@echo "  update-deps	   to update the dependencies"
 	@echo "  pre-commit        to run pre-commit against all the files"
 	@echo "  test              to run unit tests"
 	@echo "  test-coverage     to run unit tests and measure test coverage"
@@ -35,6 +36,9 @@ install:
 install-dev:
 	poetry install --with dev
 	poetry run pre-commit install --install-hooks
+
+update-deps:
+	poetry update --no-cache
 
 pre-commit:
 	poetry run pre-commit run --all-files
