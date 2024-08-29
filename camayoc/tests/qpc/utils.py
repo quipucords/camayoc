@@ -161,7 +161,7 @@ def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
     return matching_scans
 
 
-def wait_until_state(scanjob, timeout=3600, state="completed"):
+def wait_until_state(scanjob, timeout=settings.camayoc.scan_timeout, state="completed"):
     """Wait until the scanjob has failed or reached desired state.
 
     The default state is 'completed'.
@@ -175,11 +175,15 @@ def wait_until_state(scanjob, timeout=3600, state="completed"):
     This method should not be called on scanjob jobs that have not yet been
     created or are canceled.
 
-    The default timeout is set to 3600 seconds (an hour), but can be
-    overridden. An hour is an extremely long time. We use this because
-    it is been proven that in general the server is accurate when
-    reporting that a task really is still running. All other terminal
-    states will cause this function to return.
+    The default timeout is specified by scan_timeout setting, which
+    currently is set to 600 seconds (10 minutes). In the past it was
+    an hour. Hour was used because it has been proven that in general
+    the server is accurate when reporting that a task really is still
+    running. Data from pipeline runs in 2024 indicates that standard
+    scan in our environment takes no more than 5 minutes to complete.
+
+    All other terminal states will cause this function to return before
+    reaching the timeout.
     """
     valid_states = QPC_SCAN_STATES + ("stopped",)
     stopped_states = QPC_SCAN_TERMINAL_STATES + ("stopped",)
