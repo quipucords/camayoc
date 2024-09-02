@@ -284,12 +284,14 @@ class ScanContainer:
                 report.retrieve_from_scan_job(scan_job_id=scanjob._id)
                 details_report = report.details().json()
                 deployments_report = report.deployments().json()
+                aggregate_report = report.aggregate().json()
                 finished_scan = evolve(
                     scan,
                     status=ScanSimplifiedStatusEnum.COMPLETED,
                     report_id=report._id,
                     details_report=details_report,
                     deployments_report=deployments_report,
+                    aggregate_report=aggregate_report,
                 )
                 logger.info(
                     "Finished scanjob %s for scan %s", scan.scan_job_id, scan.definition.name

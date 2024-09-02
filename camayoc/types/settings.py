@@ -144,12 +144,18 @@ class ExpectedOpenShiftData(BaseModel):
     operators: list[str]
 
 
+class ExpectedAggregateData(BaseModel):
+    results: dict[str, Any]
+    diagnostics: dict[str, int]
+
+
 class ExpectedScanData(BaseModel):
     distribution: Optional[ExpectedDistributionData] = None
     products: Optional[list[ExpectedProductData]] = None
     cluster_info: Optional[ExpectedOpenShiftData] = None
     installed_products: Optional[list[str]] = None
     raw_facts: Optional[dict[str, Any]] = None
+    aggregate: Optional[ExpectedAggregateData] = None
 
 
 class ScanOptions(BaseModel):

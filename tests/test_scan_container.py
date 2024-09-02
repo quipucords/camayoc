@@ -64,6 +64,7 @@ def mocked_run_scans(
                 report_id=1,
                 details_report={},
                 deployments_report={},
+                aggregate_report={},
             )
         finished_scans.append(finished_scan)
     return finished_scans

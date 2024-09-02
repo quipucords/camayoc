@@ -708,3 +708,13 @@ class Report(QPCObject):
         path = urljoin(self.endpoint, "{}/deployments/".format(self._id))
         response = self.client.get(path, **kwargs)
         return response
+
+    def aggregate(self, **kwargs):
+        """Send GET request to self.endpoint/{id}/aggregate/ to view the aggregate report.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(self.endpoint, "{}/aggregate/".format(self._id))
+        response = self.client.get(path, **kwargs)
+        return response
