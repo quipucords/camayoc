@@ -23,4 +23,6 @@ class FinishedScan:
     report_id: Optional[int] = None
     details_report: Optional[dict] = None
     deployments_report: Optional[dict] = None
+    aggregate_report: Optional[dict] = None
+
     error: Optional[Exception] = None
