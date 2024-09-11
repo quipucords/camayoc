@@ -23,6 +23,7 @@ has_product = partial(expected_data_has_attribute, attr_name="products")
 has_distribution = partial(expected_data_has_attribute, attr_name="distribution")
 has_installed_products = partial(expected_data_has_attribute, attr_name="installed_products")
 has_raw_facts = partial(expected_data_has_attribute, attr_name="raw_facts")
+has_aggregate = partial(expected_data_has_attribute, attr_name="aggregate")
 
 
 @pytest.mark.slow
@@ -332,5 +333,64 @@ def test_raw_facts_details_report(scans, scan_name):
         "Full results for this scan were: {scan_results}".format(
             errors="\n\n======================================\n\n".join(errors_found),
             scan_results=pformat(report_content),
+        )
+    )
+
+
+@pytest.mark.runs_scan
+@pytest.mark.parametrize("scan_name", scan_names(has_aggregate))
+def test_aggregate_report(scans, scan_name):
+    """Test that aggregate values are correct for the source.
+
+    :id: dd310642-75b3-47ca-a410-523f9f541ceb
+    :description: Test that aggregate values are correctly tallied for the source.
+    :steps:
+        1) Request the aggregate json report for the scan.
+        2) Assert that the found aggregate values match these listed
+           in the configuration file for the source.
+    :expectedresults: There are inspection results for each source we scanned
+        and the aggregate values are correctly tallied.
+    """
+    all_matching_scans = scans.ok_with_expected_data_attr("aggregate")
+    finished_scan = all_matching_scans.get(scan_name)
+    assert finished_scan, f"Scan {scan_name} must have encountered errors"
+    assert finished_scan.report_id, f"No report id was returned from scan {scan_name}"
+    aggregate_content = finished_scan.aggregate_report
+    results = aggregate_content.get("results")
+    diagnostics = aggregate_content.get("diagnostics")
+    errors_found = []
+    for hostname, expected_data in finished_scan.definition.expected_data.items():
+        expected_aggregate = expected_data.aggregate
+        if not expected_aggregate:
+            continue
+        for (
+            expected_diagnostic_name,
+            expected_diagnostic_value,
+        ) in expected_aggregate.diagnostics.items():
+            if diagnostics[expected_diagnostic_name] != expected_diagnostic_value:
+                errors_found.append(
+                    "Host {0} expected diagnostic for {1} to have value {2} but found {3}".format(
+                        hostname,
+                        expected_diagnostic_name,
+                        expected_diagnostic_value,
+                        diagnostics[expected_diagnostic_name],
+                    )
+                )
+        for expected_result_name, expected_result_value in expected_aggregate.results.items():
+            if results[expected_result_name] != expected_result_value:
+                errors_found.append(
+                    "Host {0} expected result for {1} to have value {2} but found {3}".format(
+                        hostname,
+                        expected_result_name,
+                        expected_result_value,
+                        results[expected_result_name],
+                    )
+                )
+    assert len(errors_found) == 0, (
+        "Aggregate report values do not match!\n"
+        "Differences are listed below: \n {errors}.\n"
+        "Full results for this scan were: {scan_results}".format(
+            errors="\n\n======================================\n\n".join(errors_found),
+            scan_results=pformat(aggregate_content),
         )
     )
