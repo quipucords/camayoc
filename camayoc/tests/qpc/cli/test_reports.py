@@ -782,7 +782,8 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
         1) Run ``qpc report aggregate --report <report id>``.
         2) Verify that command succeeded.
         3) Verify that downloaded data looks like valid JSON.
-    :expectedresults: Report is downloaded and data is valid JSON.
+        4) Verify if data looks sane.
+    :expectedresults: Report is downloaded and data is valid JSON and sane.
     """
     finished_scan = scan_with_source_type(QPC_SOURCE_TYPES, data_provider, scans)
     output_file = f"aggregate-{uuid4()}.json"
@@ -796,3 +797,15 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
     with open(output_file) as fh:
         json_formatted = json.load(fh)
     assert len(json_formatted)
+    assert json_formatted["diagnostics"]
+    assert json_formatted["results"]
+    instances_filter = (
+        "instances_hypervisor",
+        "instances_not_redhat",
+        "instances_physical",
+        "instances_unknown",
+        "instances_virtual",
+    )
+    num_instances = sum({k: json_formatted["results"][k] for k in instances_filter}.values())
+    num_success_instances = json_formatted["diagnostics"]["inspect_result_status_success"]
+    assert num_instances == num_success_instances
