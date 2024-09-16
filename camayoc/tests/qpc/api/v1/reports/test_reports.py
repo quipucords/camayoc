@@ -38,7 +38,7 @@ def test_products_found_deployment_report(scans, scan_name):
     :steps:
         1) Request the json report for the scan.
         2) Assert that any products marked as present are expected to be found
-           as is listed in the configuration file for the source.
+           as is listed in the configuration file for the scan.
     :expectedresults: There are inspection results for each source we scanned
         and any products found are correctly identified.
     """
@@ -110,7 +110,7 @@ def test_OS_found_deployment_report(scans, scan_name):
     :steps:
         1) Request the json report for the scan.
         2) Assert that the OS identified is expected to be found
-           as is listed in the configuration file for the source.
+           as is listed in the configuration file for the scan.
     :expectedresults: There are inspection results for each source we scanned
         and the operating system is correctly identified.
     """
@@ -215,7 +215,7 @@ def test_installed_products_deployment_report(scans, scan_name):
     :steps:
         1) Request the json report for the scan.
         2) Assert that the installed products expected to be found,
-           as listed in the configuration file for the source, are present.
+           as listed in the configuration file for the scan, are present.
     :expectedresults: There are inspection results for each source we scanned
         and the installed products are correctly identified.
     """
@@ -280,7 +280,7 @@ def test_raw_facts_details_report(scans, scan_name):
     :steps:
         1) Request the json report for the scan.
         2) Assert that the found raw facts match these listed
-           in the configuration file for the source.
+           in the configuration file for the scan.
     :expectedresults: There are inspection results for each source we scanned
         and the raw facts are matching.
     """
@@ -347,7 +347,7 @@ def test_aggregate_report(scans, scan_name):
     :steps:
         1) Request the aggregate json report for the scan.
         2) Assert that the found aggregate values match these listed
-           in the configuration file for the source.
+           in the configuration file for the scan.
     :expectedresults: There are inspection results for each source we scanned
         and the aggregate values are correctly tallied.
     """
