@@ -806,6 +806,6 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
         "instances_unknown",
         "instances_virtual",
     )
-    num_instances = sum({k: json_formatted["results"][k] for k in instances_filter}.values())
+    num_instances = sum(json_formatted["results"][k] for k in instances_filter)
     num_success_instances = json_formatted["diagnostics"]["inspect_result_status_success"]
     assert num_instances == num_success_instances
