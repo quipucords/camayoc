@@ -30,7 +30,9 @@ from camayoc.utils import client_cmd
 def generate_show_output(data):
     """Generate a regex pattern with the data for a qpc cred show output."""
     cred_type = data.get("cred_type", "network")
+    auth_type = data.get("auth_type", "(auth_token|password|ssh_key|ssh_keyfile|unknown)")
     output = "{\r\n"
+    output += '    "auth_type": "{}",\r\n'.format(auth_type)
     if cred_type == "network":
         output += '    "become_method": "{}",\r\n'.format(data.get("become_method", "sudo"))
         if "become_password" in data:
@@ -75,6 +77,7 @@ def test_add_with_username_password(isolated_filesystem, qpc_server_config, sour
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -109,6 +112,7 @@ def test_add_with_username_password_become_password(isolated_filesystem, qpc_ser
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -144,6 +148,7 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
                 "name": name,
                 "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
                 "username": username,
+                "auth_type": "ssh_keyfile",
             }
         ),
     )
@@ -187,6 +192,7 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
                 "name": name,
                 "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
                 "username": username,
+                "auth_type": "ssh_keyfile",
             }
         ),
     )
@@ -217,6 +223,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -238,6 +245,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": new_username,
+                "auth_type": "password",
             }
         ),
     )
@@ -296,6 +304,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -316,6 +325,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -411,6 +421,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -433,6 +444,7 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -508,6 +520,7 @@ def test_clear(isolated_filesystem, qpc_server_config):
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
@@ -568,6 +581,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
                 "name": cred_name,
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
+                "auth_type": "password",
             }
         ),
     )
