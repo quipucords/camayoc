@@ -155,6 +155,10 @@ class ExpectedScanData(BaseModel):
     cluster_info: Optional[ExpectedOpenShiftData] = None
     installed_products: Optional[list[str]] = None
     raw_facts: Optional[dict[str, Any]] = None
+    # Here this aggregate attribute contains data about the *entire scan* and
+    # it isn't tied to a specific host, like the other attributes are.
+    # When in use in the configuration file, this attribute must be placed
+    # inside any host for the scan, to set the expected aggregate values.
     aggregate: Optional[ExpectedAggregateData] = None
 
 
