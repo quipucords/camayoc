@@ -19,6 +19,7 @@ from camayoc.types.settings import Configuration
 default_dynaconf_validators = [
     Validator("camayoc.run_scans", default=False),
     Validator("camayoc.scan_timeout", default=600),
+    Validator("camayoc.use_uiv2", default=False),
     Validator("quipucords_server.hostname", default=""),
     Validator("quipucords_server.https", default=False),
     Validator("quipucords_server.port", default=8000),
