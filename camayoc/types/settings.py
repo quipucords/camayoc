@@ -12,6 +12,7 @@ from typing_extensions import Annotated
 class CamayocOptions(BaseModel):
     run_scans: Optional[bool] = False
     scan_timeout: Optional[int] = 600
+    use_uiv2: Optional[bool] = False
 
 
 class QuipucordsServerOptions(BaseModel):

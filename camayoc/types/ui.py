@@ -48,6 +48,7 @@ class Session(Protocol):
 class UIPage(Protocol):
     _client: Client
     _driver: Page
+    _use_uiv2: bool
 
     def _new_page(self, class_or_page) -> UIPage: ...
 
