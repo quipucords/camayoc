@@ -40,12 +40,14 @@ class CredentialForm(Form, PopUp, AbstractPage):
 class NetworkCredentialForm(CredentialForm):
     class FormDefinition:
         authentication_type = SelectField("div[data-ouia-component-id=auth_type] > button")
+        authentication_type_v2 = SelectField("button[data-ouia-component-id=auth_type]")
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
         password = InputField("input[data-ouia-component-id=password]")
         ssh_key_file = InputField("input[data-ouia-component-id=ssh_keyfile]")
         passphrase = InputField("input[data-ouia-component-id=ssh_passphrase]")
         become_method = SelectField("div[data-ouia-component-id=become_method] > button")
+        become_method_v2 = SelectField("button[data-ouia-component-id=become_method]")
         become_user = InputField("input[data-ouia-component-id=become_user]")
         become_password = InputField("input[data-ouia-component-id=become_password]")
 
@@ -167,6 +169,40 @@ class CredentialsMainPage(MainPageMixin):
                 "class": RHACSCredentialForm,
             },
         }
+
+        # these selectors get few characters over allowed line length limit,
+        # in part due to indentation caused by conditional. Temporarily
+        # disable ruff rule for a file - we'll introduce correct solution when
+        # we remove old UI support
+        # ruff: noqa: E501
+        if self._use_uiv2:
+            create_credential_button = "button[data-ouia-component-id=add_credential_button]"
+            source_type_map = {
+                CredentialTypes.NETWORK: {
+                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=network]",
+                    "class": NetworkCredentialForm,
+                },
+                CredentialTypes.SATELLITE: {
+                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=satellite]",
+                    "class": SatelliteCredentialForm,
+                },
+                CredentialTypes.VCENTER: {
+                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=vcenter]",
+                    "class": VCenterCredentialForm,
+                },
+                CredentialTypes.OPENSHIFT: {
+                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=openshift]",
+                    "class": OpenShiftCredentialForm,
+                },
+                CredentialTypes.ANSIBLE: {
+                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=ansible]",
+                    "class": AnsibleCredentialForm,
+                },
+                CredentialTypes.RHACS: {
+                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=rhacs]",
+                    "class": RHACSCredentialForm,
+                },
+            }
 
         selector, cls = source_type_map.get(source_type).values()
 
