@@ -31,6 +31,9 @@ class PopUp(UIPage):
         result_cls_name = "SAVE_RESULT_CLASS"
         if self._use_uiv2:
             locator_cls_name = "SAVE_LOCATOR_V2"
+            result_cls_name_v2 = "SAVE_RESULT_CLASS_V2"
+            if hasattr(self, result_cls_name_v2):
+                result_cls_name = result_cls_name_v2
 
         return self._click_button(locator_cls_name, result_cls_name)
 

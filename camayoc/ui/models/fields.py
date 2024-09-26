@@ -44,6 +44,26 @@ class CheckboxField(Field):
             elem.uncheck()
 
 
+class FilteredMultipleSelectField(Field):
+    def do_fill(self, value: list[str]):
+        filter_input = ' div[data-ouia-component-id="credentials_list_input"] input'
+
+        # First click opens the list. Second hides it and enables us to type.
+        for _ in range(2):
+            self.driver.locator(self.locator).locator(filter_input).click()
+
+        for actual_value in value:
+            self.driver.locator(self.locator).locator(filter_input).fill(actual_value)
+            values_list = self.driver.locator(self.locator).locator(
+                "xpath=following-sibling::div//ul[contains(@id, 'select')]"
+            )
+            values_list.locator(f"text='{actual_value}'").click()
+            self.driver.locator(self.locator).locator(filter_input).clear()
+
+        if values_list.is_visible():
+            self.driver.locator(self.locator).locator(filter_input).click()
+
+
 class InputField(Field):
     def do_fill(self, value):
         self.driver.fill(self.locator, value)
