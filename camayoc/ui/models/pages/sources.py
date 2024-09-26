@@ -23,6 +23,7 @@ from ..components.items_list import AbstractListItem
 from ..components.popup import PopUp
 from ..components.wizard import WizardStep
 from ..fields import CheckboxField
+from ..fields import FilteredMultipleSelectField
 from ..fields import InputField
 from ..fields import MultipleSelectField
 from ..fields import RadioGroupField
@@ -75,6 +76,12 @@ class SourceCredentialsForm(Form, WizardStep, AbstractPage):
     NEXT_STEP_RESULT_CLASS = Pages.SOURCES_RESULTS_PAGE
     PREV_STEP_RESULT_CLASS = SelectSourceTypeForm
     CANCEL_RESULT_CLASS = CancelWizardPopup
+    SAVE_RESULT_CLASS_V2 = Pages.SOURCES
+
+    def confirm(self):
+        if self._use_uiv2:
+            return PopUp.confirm(self)
+        return super().confirm()
 
     def cancel(self) -> CancelWizardPopup:
         popup = super().cancel()
@@ -92,6 +99,9 @@ class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
         port = InputField("input[data-ouia-component-id=port]", transform_input=lambda i: str(i))
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
+        )
+        credentials_v2 = FilteredMultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select]"
         )
         use_paramiko = CheckboxField("input[data-ouia-component-id=options_paramiko]")
 
@@ -111,7 +121,11 @@ class SatelliteSourceCredentialsForm(SourceCredentialsForm):
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
+        credentials_v2 = FilteredMultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select]"
+        )
         connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        connection_v2 = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
@@ -130,7 +144,11 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
+        credentials_v2 = FilteredMultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select]"
+        )
         connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        connection_v2 = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
@@ -149,7 +167,11 @@ class OpenShiftSourceCredentialsForm(SourceCredentialsForm):
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
+        credentials_v2 = FilteredMultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select]"
+        )
         connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        connection_v2 = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
@@ -168,7 +190,11 @@ class AnsibleSourceCredentialsForm(SourceCredentialsForm):
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
+        credentials_v2 = FilteredMultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select]"
+        )
         connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        connection_v2 = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
@@ -187,7 +213,11 @@ class RHACSSourceCredentialsForm(SourceCredentialsForm):
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
+        credentials_v2 = FilteredMultipleSelectField(
+            "div[data-ouia-component-id=add_credentials_select]"
+        )
         connection = SelectField("div[data-ouia-component-id=options_ssl_protocol] > button")
+        connection_v2 = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
 
     @overload
@@ -244,6 +274,9 @@ class SourcesMainPage(MainPageMixin):
 
     @service
     def add_source(self, data: AddSourceDTO) -> SourcesMainPage:
+        if self._use_uiv2:
+            return self._add_source_v2(data)
+
         add_source_wizard = self.open_add_source()
         # page 1 - Select source type
         add_source_wizard.fill(data.select_source_type)
@@ -267,3 +300,45 @@ class SourcesMainPage(MainPageMixin):
         popup = item.open_scan()
         popup.fill(data.scan_form)
         return popup.confirm()
+
+    def _add_source_v2(self, data: AddSourceDTO) -> SourcesMainPage:
+        add_sources_popup = self._open_add_source_v2(data.select_source_type.source_type)
+        add_sources_popup.fill(data.source_form)
+        return add_sources_popup.confirm()
+
+    @record_action
+    def _open_add_source_v2(self, source_type: SourceTypes) -> SourceCredentialsForm:
+        create_source_button = "button[data-ouia-component-id=add_source_button]"
+        source_type_map = {
+            SourceTypes.NETWORK_RANGE: {
+                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=network]",
+                "class": NetworkRangeSourceCredentialsForm,
+            },
+            SourceTypes.SATELLITE: {
+                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=satellite]",
+                "class": SatelliteSourceCredentialsForm,
+            },
+            SourceTypes.VCENTER_SERVER: {
+                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=vcenter]",
+                "class": VCenterSourceCredentialsForm,
+            },
+            SourceTypes.OPENSHIFT: {
+                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=openshift]",
+                "class": OpenShiftSourceCredentialsForm,
+            },
+            SourceTypes.ANSIBLE_CONTROLLER: {
+                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=ansible]",
+                "class": AnsibleSourceCredentialsForm,
+            },
+            SourceTypes.RHACS: {
+                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=rhacs]",
+                "class": RHACSSourceCredentialsForm,
+            },
+        }
+
+        selector, cls = source_type_map.get(source_type).values()
+
+        self._driver.click(create_source_button)
+        self._driver.click(selector)
+
+        return self._new_page(cls)
