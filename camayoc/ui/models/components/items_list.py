@@ -21,19 +21,26 @@ class ItemsList(UIPage):
 
     def _get_item_from_current_list(self, name: str):
         default_timeout = 5000  # 5s
-        item_elem = self._driver.locator("css=strong").filter(
+        item_label_locator = "css=strong"
+        item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'quipucords-table__tr')]"
+
+        if self._use_uiv2:
+            item_label_locator = "td[data-label=Name]"
+            item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'table__tr')]"
+
+        item_elem = self._driver.locator(item_label_locator).filter(
             has=self._driver.get_by_text(name, exact=True)
         )
-        item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'quipucords-table__tr')]"
         item_elem = item_elem.locator(item_elem_locator)
         item_elem.hover(timeout=default_timeout, trial=True)
         return item_elem
 
     # We probably should have separate component for filters
     # that exposes wider array of actions (filtering by any field,
-    # by multiple fileds, clearing filters, sorting?).
+    # by multiple fields, clearing filters, sorting?).
     # But YAGNI tells us this will do for now
     def _search_for_item_by_name(self, name: str):
+        # FIXME: implement for v2
         filter_field_button = self._driver.locator(
             "div[class*=-c-toolbar__content] button[id]:has(span[class*=-c-select__toggle-arrow])"
         ).locator("nth=0")

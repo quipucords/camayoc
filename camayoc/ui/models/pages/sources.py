@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import overload
 
+from camayoc.config import settings
 from camayoc.types.ui import AddSourceDTO
 from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
@@ -265,6 +266,8 @@ class ScanForm(Form, PopUp, AbstractPage):
 class SourceListElem(AbstractListItem):
     def open_scan(self) -> ScanForm:
         scan_locator = 'td.quipucords-table__td-action button:has-text("Scan")'
+        if settings.camayoc.use_uiv2:
+            scan_locator = 'button[data-ouia-component-id="scan_button"]'
         self.locator.locator(scan_locator).click()
         return ScanForm(client=self._client)
 
