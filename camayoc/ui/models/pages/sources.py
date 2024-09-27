@@ -119,6 +119,7 @@ class SatelliteSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
+        port_v2 = InputField("input[data-ouia-component-id=port]")
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
@@ -142,6 +143,7 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
+        port_v2 = InputField("input[data-ouia-component-id=port]")
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
@@ -165,6 +167,7 @@ class OpenShiftSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
+        port_v2 = InputField("input[data-ouia-component-id=port]")
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
@@ -188,6 +191,7 @@ class AnsibleSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
+        port_v2 = InputField("input[data-ouia-component-id=port]")
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
@@ -211,6 +215,7 @@ class RHACSSourceCredentialsForm(SourceCredentialsForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
+        port_v2 = InputField("input[data-ouia-component-id=port]")
         credentials = MultipleSelectField(
             "div[data-ouia-component-id=add_credentials_select] > button"
         )
@@ -248,11 +253,17 @@ class ScanForm(Form, PopUp, AbstractPage):
 
     class FormDefinition:
         scan_name = InputField("input[name=scanName]")
+        scan_name_v2 = InputField("input[data-ouia-component-id=name][id=scan-name]")
         max_concurrent_scans = InputField("input#scanConcurrency")
+        max_concurrent_scans_v2 = InputField("div[data-ouia-component-id=scan_concurrency] input")
         jboss_eap = CheckboxField("input[name=jbossEap]")
+        jboss_eap_v2 = CheckboxField("input[data-ouia-component-id=options_jboss_eap]")
         fuse = CheckboxField("input[name=jbossFuse]")
+        fuse_v2 = CheckboxField("input[data-ouia-component-id=options_jboss_fuse]")
         jboss_web_server = CheckboxField("input[name=jbossWs]")
+        jboss_web_server_v2 = CheckboxField("input[data-ouia-component-id=options_jboss_ws]")
         alternate_dirs = InputField("textarea[name=displayScanDirectories]")
+        alternate_dirs_v2 = InputField("textarea[data-ouia-component-id=scan_alt_dirs]")
 
     @overload
     def fill(self, data: NewScanFormDTO): ...
