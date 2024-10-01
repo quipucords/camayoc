@@ -22,6 +22,11 @@ class Form(UIPage):
             raise MisconfiguredWidgetException(msg.format(type(self).__name__, self))
 
         field_names = [f.name for f in fields(type(data))]
+        # we can't filter out _v2 fields every time because there are
+        # cases where new UI introduces completely new field, and we can't
+        # find them if we only look for oldfield_v2
+        if not settings.camayoc.use_uiv2:
+            field_names = [fname for fname in field_names if not fname.endswith("_v2")]
         form_fields = [f for f in form_definition.__dict__ if not f.startswith("_")]
         ordered_field_names = [f for f in form_fields if f in field_names]
 

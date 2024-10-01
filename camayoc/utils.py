@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 import uuid
+from pathlib import Path
 from urllib.parse import urlunparse
 
 from camayoc.config import settings
@@ -68,3 +69,17 @@ def expected_data_has_attribute(scan_definition: ScanOptions, attr_name: str) ->
         if getattr(expected_data, attr_name, None):
             return True
     return False
+
+
+def server_container_ssh_key_content(container_path: str):
+    ssh_key_filename = Path(container_path).relative_to("/sshkeys/")
+    for product_name in ("quipucords", "discovery"):
+        # FIXME: could/should we re-purpose settings.quipucords_server.ssh_keyfile_path ?
+        ssh_dir = f"~/.local/share/{product_name}/sshkeys/"
+        ssh_key_path = Path(ssh_dir).expanduser().resolve() / ssh_key_filename
+        try:
+            return ssh_key_path.read_text()
+        except OSError:
+            continue
+    msg = f"SSH file not found in local file system: {ssh_key_filename}"
+    raise OSError(msg)

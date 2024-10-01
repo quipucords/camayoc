@@ -22,6 +22,7 @@ from camayoc.ui.enums import NetworkCredentialAuthenticationTypes
 from camayoc.ui.enums import NetworkCredentialBecomeMethods
 from camayoc.ui.enums import SourceConnectionTypes
 from camayoc.ui.enums import SourceTypes
+from camayoc.utils import server_container_ssh_key_content
 
 if TYPE_CHECKING:
     from camayoc.ui import Client
@@ -117,6 +118,7 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
         NetworkCredentialAuthenticationTypes.SSH_KEY
     )
     ssh_key_file: str = field(kw_only=True)
+    ssh_key_file_v2: Optional[str] = field(default=None, kw_only=True)
     passphrase: Optional[str] = None
 
     @classmethod
@@ -127,10 +129,16 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
         except AttributeError:
             become_method = next(iter(NetworkCredentialBecomeMethods))
 
+        ssh_key = {
+            "ssh_key_file": model.ssh_keyfile,
+        }
+        if settings.camayoc.use_uiv2:
+            ssh_key["ssh_key_file_v2"] = server_container_ssh_key_content(model.ssh_keyfile)
+
         return cls(
             credential_name=model.name,
             username=model.username,
-            ssh_key_file=model.ssh_keyfile,
+            **ssh_key,
             passphrase=model.auth_token,
             become_method=become_method,
             become_user=getattr(model, "become_user", None),

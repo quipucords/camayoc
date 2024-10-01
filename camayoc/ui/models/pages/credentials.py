@@ -45,6 +45,9 @@ class NetworkCredentialForm(CredentialForm):
         username = InputField("input[data-ouia-component-id=username]")
         password = InputField("input[data-ouia-component-id=password]")
         ssh_key_file = InputField("input[data-ouia-component-id=ssh_keyfile]")
+        # FIXME: this should be called `ssh_key_v2`, but using v1 field name
+        # makes things easier during transition period
+        ssh_key_file_v2 = InputField("textarea[data-ouia-component-id=ssh_key]")
         passphrase = InputField("input[data-ouia-component-id=ssh_passphrase]")
         become_method = SelectField("div[data-ouia-component-id=become_method] > button")
         become_method_v2 = SelectField("button[data-ouia-component-id=become_method]")
