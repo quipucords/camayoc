@@ -15,6 +15,7 @@ from camayoc.ui.decorators import service
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import Pages
 
+from ..components.add_new_dropdown import AddNewDropdown
 from ..components.form import Form
 from ..components.popup import PopUp
 from ..fields import InputField
@@ -136,7 +137,9 @@ class RHACSCredentialForm(CredentialForm):
         return self
 
 
-class CredentialsMainPage(MainPageMixin):
+class CredentialsMainPage(AddNewDropdown, MainPageMixin):
+    ADD_BUTTON_LOCATOR = "button[data-ouia-component-id=add_credential_button]"
+
     @service
     def add_credential(self, data: AddCredentialDTO) -> CredentialsMainPage:
         add_credential_popup = self.open_add_credential(data.credential_type)
@@ -145,6 +148,9 @@ class CredentialsMainPage(MainPageMixin):
 
     @record_action
     def open_add_credential(self, source_type: CredentialTypes) -> CredentialForm:
+        if self._use_uiv2:
+            return self._open_add_credential_v2(source_type)
+
         create_credential_button = "div[data-ouia-component-id=add_credential] > button"
         source_type_map = {
             CredentialTypes.NETWORK: {
@@ -173,43 +179,41 @@ class CredentialsMainPage(MainPageMixin):
             },
         }
 
-        # these selectors get few characters over allowed line length limit,
-        # in part due to indentation caused by conditional. Temporarily
-        # disable ruff rule for a file - we'll introduce correct solution when
-        # we remove old UI support
-        # ruff: noqa: E501
-        if self._use_uiv2:
-            create_credential_button = "button[data-ouia-component-id=add_credential_button]"
-            source_type_map = {
-                CredentialTypes.NETWORK: {
-                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=network]",
-                    "class": NetworkCredentialForm,
-                },
-                CredentialTypes.SATELLITE: {
-                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=satellite]",
-                    "class": SatelliteCredentialForm,
-                },
-                CredentialTypes.VCENTER: {
-                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=vcenter]",
-                    "class": VCenterCredentialForm,
-                },
-                CredentialTypes.OPENSHIFT: {
-                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=openshift]",
-                    "class": OpenShiftCredentialForm,
-                },
-                CredentialTypes.ANSIBLE: {
-                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=ansible]",
-                    "class": AnsibleCredentialForm,
-                },
-                CredentialTypes.RHACS: {
-                    "selector": f"{create_credential_button} ~ div ul li[data-ouia-component-id=rhacs]",
-                    "class": RHACSCredentialForm,
-                },
-            }
-
         selector, cls = source_type_map.get(source_type).values()
 
         self._driver.click(create_credential_button)
         self._driver.click(selector)
 
+        return self._new_page(cls)
+
+    def _open_add_credential_v2(self, source_type: CredentialTypes) -> CredentialForm:
+        source_type_map = {
+            CredentialTypes.NETWORK: {
+                "ouiaid": "network",
+                "class": NetworkCredentialForm,
+            },
+            CredentialTypes.SATELLITE: {
+                "ouiaid": "satellite",
+                "class": SatelliteCredentialForm,
+            },
+            CredentialTypes.VCENTER: {
+                "ouiaid": "vcenter",
+                "class": VCenterCredentialForm,
+            },
+            CredentialTypes.OPENSHIFT: {
+                "ouiaid": "openshift",
+                "class": OpenShiftCredentialForm,
+            },
+            CredentialTypes.ANSIBLE: {
+                "ouiaid": "ansible",
+                "class": AnsibleCredentialForm,
+            },
+            CredentialTypes.RHACS: {
+                "ouiaid": "rhacs",
+                "class": RHACSCredentialForm,
+            },
+        }
+
+        ouiaid, cls = source_type_map.get(source_type).values()
+        self.open_create_new_modal(type_ouiaid=ouiaid)
         return self._new_page(cls)

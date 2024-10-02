@@ -19,6 +19,7 @@ from camayoc.ui.decorators import service
 from camayoc.ui.enums import Pages
 from camayoc.ui.enums import SourceTypes
 
+from ..components.add_new_dropdown import AddNewDropdown
 from ..components.form import Form
 from ..components.items_list import AbstractListItem
 from ..components.popup import PopUp
@@ -283,8 +284,9 @@ class SourceListElem(AbstractListItem):
         return ScanForm(client=self._client)
 
 
-class SourcesMainPage(MainPageMixin):
+class SourcesMainPage(AddNewDropdown, MainPageMixin):
     ITEM_CLASS = SourceListElem
+    ADD_BUTTON_LOCATOR = "button[data-ouia-component-id=add_source_button]"
 
     @service
     def add_source(self, data: AddSourceDTO) -> SourcesMainPage:
@@ -322,37 +324,33 @@ class SourcesMainPage(MainPageMixin):
 
     @record_action
     def _open_add_source_v2(self, source_type: SourceTypes) -> SourceCredentialsForm:
-        create_source_button = "button[data-ouia-component-id=add_source_button]"
         source_type_map = {
             SourceTypes.NETWORK_RANGE: {
-                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=network]",
+                "ouiaid": "network",
                 "class": NetworkRangeSourceCredentialsForm,
             },
             SourceTypes.SATELLITE: {
-                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=satellite]",
+                "ouiaid": "satellite",
                 "class": SatelliteSourceCredentialsForm,
             },
             SourceTypes.VCENTER_SERVER: {
-                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=vcenter]",
+                "ouiaid": "vcenter",
                 "class": VCenterSourceCredentialsForm,
             },
             SourceTypes.OPENSHIFT: {
-                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=openshift]",
+                "ouiaid": "openshift",
                 "class": OpenShiftSourceCredentialsForm,
             },
             SourceTypes.ANSIBLE_CONTROLLER: {
-                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=ansible]",
+                "ouiaid": "ansible",
                 "class": AnsibleSourceCredentialsForm,
             },
             SourceTypes.RHACS: {
-                "selector": f"{create_source_button} ~ div ul li[data-ouia-component-id=rhacs]",
+                "ouiaid": "rhacs",
                 "class": RHACSSourceCredentialsForm,
             },
         }
 
-        selector, cls = source_type_map.get(source_type).values()
-
-        self._driver.click(create_source_button)
-        self._driver.click(selector)
-
+        ouiaid, cls = source_type_map.get(source_type).values()
+        self.open_create_new_modal(type_ouiaid=ouiaid)
         return self._new_page(cls)
