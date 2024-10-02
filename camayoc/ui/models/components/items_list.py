@@ -40,13 +40,22 @@ class ItemsList(UIPage):
     # by multiple fields, clearing filters, sorting?).
     # But YAGNI tells us this will do for now
     def _search_for_item_by_name(self, name: str):
-        # FIXME: implement for v2
-        filter_field_button = self._driver.locator(
+        filter_field_button_locator = (
             "div[class*=-c-toolbar__content] button[id]:has(span[class*=-c-select__toggle-arrow])"
-        ).locator("nth=0")
+        )
+        filter_field_values_locator = "xpath=following-sibling::ul"
+        if self._use_uiv2:
+            filter_field_button_locator = (
+                "div[class*=-c-toolbar__item] button[id]:has(span[class*=-c-menu-toggle])"
+            )
+            filter_field_values_locator = (
+                "xpath=following-sibling::div[contains(@class, '-c-menu')]"
+            )
+
+        filter_field_button = self._driver.locator(filter_field_button_locator).locator("nth=0")
         if filter_field_button.text_content() != "Name":
             filter_field_button.click()
-            values_list = filter_field_button.locator("xpath=following-sibling::ul")
+            values_list = filter_field_button.locator(filter_field_values_locator)
             values_list.locator("text='Name'").click()
         self._driver.fill("input[placeholder$=name]", name)
         self._driver.keyboard.press("Enter")
