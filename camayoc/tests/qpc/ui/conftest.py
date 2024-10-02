@@ -20,7 +20,7 @@ def pytest_exception_interact(node, call, report):
 
 @pytest.fixture(scope="session")
 def browser_context_args(browser_context_args):
-    extra_context_args = {}
+    extra_context_args = {"viewport": {"width": 1920, "height": 1080}}
     verify_ssl = settings.quipucords_server.ssl_verify
     if not verify_ssl:
         extra_context_args["ignore_https_errors"] = True
