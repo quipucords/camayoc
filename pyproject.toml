@@ -23,7 +23,7 @@ build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core"]
 
 [tool.poetry.dependencies]
-python = "~3.11"
+python = ">= 3.11, < 3.14"
 attrs = "^23.1.0"
 dynaconf = "^3.2.4"
 factory_boy = "^3.2.1"
