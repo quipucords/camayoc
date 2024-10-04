@@ -25,8 +25,8 @@ class AddNewDropdown(UIPage):
         exp = TimeoutError(exp_msg)
         for _ in range(5):
             try:
-                self._driver.locator(add_button_locator).click(timeout=default_timeout)
-                self._driver.locator(dropdown_item_locator).click(timeout=default_timeout)
+                self._driver.locator(add_button_locator).first.click(timeout=default_timeout)
+                self._driver.locator(dropdown_item_locator).first.click(timeout=default_timeout)
                 return
             except TimeoutError as e:
                 exp = e
