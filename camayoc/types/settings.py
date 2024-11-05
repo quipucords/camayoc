@@ -13,6 +13,7 @@ class CamayocOptions(BaseModel):
     run_scans: Optional[bool] = False
     scan_timeout: Optional[int] = 600
     use_uiv2: Optional[bool] = False
+    db_cleanup: Optional[bool] = True
 
 
 class QuipucordsServerOptions(BaseModel):
