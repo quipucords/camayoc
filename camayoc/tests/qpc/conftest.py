@@ -3,6 +3,7 @@
 import pytest
 
 from camayoc import api
+from camayoc.config import settings
 from camayoc.data_provider import DataProvider
 from camayoc.data_provider import ScanContainer
 from camayoc.tests.qpc.cli.utils import clear_all_entities
@@ -14,7 +15,8 @@ def data_provider():
 
     yield dp
 
-    dp.cleanup()
+    if settings.camayoc.db_cleanup:
+        dp.cleanup()
 
 
 @pytest.fixture(scope="module")
