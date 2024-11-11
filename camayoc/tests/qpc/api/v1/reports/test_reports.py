@@ -151,7 +151,7 @@ def test_OS_found_deployment_report(scans, scan_name):
             found_version = ""
         found_is_redhat = actual_data.get("is_redhat", SENTINEL)
 
-        if expected_distribution.release not in found_release:
+        if found_release.startswith(expected_distribution.release) is False:
             errors_found.append(
                 "Expected OS release {0} for host {1} but " "found OS release {2}".format(
                     expected_distribution.release,
@@ -164,7 +164,7 @@ def test_OS_found_deployment_report(scans, scan_name):
         # contained in the found name.
         # For example, if "Red Hat" is listed in config file,
         # It will pass if "Red Hat Enterprise Linux Server" is found
-        if expected_distribution.name not in found_distro:
+        if found_distro.startswith(expected_distribution.name) is False:
             errors_found.append(
                 "Expected OS named {0} for source {1} but " "found OS named {2}".format(
                     expected_distribution.name,
@@ -172,11 +172,9 @@ def test_OS_found_deployment_report(scans, scan_name):
                     found_distro,
                 )
             )
-        # We assert that the expected distro's version is at least
-        # contained in the found version.
-        # For example, if "6.9" is listed in config file,
-        # It will pass if "6.9 (Santiago)" is found
-        if expected_distribution.version not in found_version:
+        # We assert that the expected distro's version is exactly
+        # the same contained in the found version.
+        if expected_distribution.version != found_version:
             errors_found.append(
                 "Expected OS version {0} for source {1} but " "found OS version {2}".format(
                     expected_distribution.version,
