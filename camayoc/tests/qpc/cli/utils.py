@@ -276,7 +276,7 @@ def scan_add_and_check(options, status_message_regex=None, exitstatus=0):
     :param status_message_regex: Regex to match against output message.
     :param exitstatus: Expected exit status for running command.
     """
-    assert options is not {}
+    assert options != {}
     assert options.get("name") is not None
     if not status_message_regex:
         status_message_regex = r'Scan "{}" was added.'.format(options["name"])
@@ -292,7 +292,7 @@ def scan_edit_and_check(options, status_message_regex, exitstatus=0):
     :param status_message_regex: Regex to match against output message.
     :param exitstatus: Expected exit status for runnign command.
     """
-    assert options is not {}
+    assert options != {}
     assert options.get("name") is not None
 
     result = scan_edit(options, exitstatus)
