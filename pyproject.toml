@@ -24,10 +24,10 @@ requires = ["poetry-core"]
 
 [tool.poetry.dependencies]
 python = ">= 3.11, < 3.14"
-attrs = "^23.1.0"
+attrs = "^24.2.0"
 dynaconf = "^3.2.4"
 factory_boy = "^3.2.1"
-littletable = "^2.2.0"
+littletable = "^3.0.1"
 pexpect = "^4.8.0"
 # playwright needs to download browsers. We do that during Jenkins agent image
 # generation to save time during execution, but that means we need to keep
@@ -36,7 +36,7 @@ playwright = "1.47.0"
 pydantic = "^2.6.3"
 pytest = "^7.4.3"
 pytest-ibutsu = "^2.2.4"
-pytest-playwright = "^0.4.3"
+pytest-playwright = "^0.6.1"
 pyxdg = "^0.28"
 pyyaml = "^6.0"
 
@@ -49,9 +49,9 @@ pytest-cov = "^4.0.0"
 # For `make validate-docstrings`
 testimony = "^2.2.0"
 # For `make pre-commit`
-pre-commit = "^3.3.2"
+pre-commit = "^4.0.1"
 isort = "^5.11.4"
-ruff = "^0.4.2"
+ruff = "^0.8.0"
 
 
 [tool.pytest.ini_options]

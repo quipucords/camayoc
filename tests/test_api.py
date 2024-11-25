@@ -102,7 +102,7 @@ class APIClientTestCase(unittest.TestCase):
         cl = client(config=CAMAYOC_CONFIG)
         assert client.login.call_count == 1
         cl.token = uuid4()
-        assert cl.default_headers() is not {}
+        assert cl.default_headers() != {}
         client.request = MagicMock()
         cl.logout()
         assert client.request.call_count == 1
