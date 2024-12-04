@@ -17,7 +17,9 @@ from requests.exceptions import HTTPError
 
 from camayoc import exceptions
 from camayoc.config import settings
-from camayoc.constants import QPC_API_VERSION
+from camayoc.constants import QPC_API_ROOT
+from camayoc.constants import QPC_CURRENT_USER_PATH
+from camayoc.constants import QPC_LOGOUT_PATH
 from camayoc.constants import QPC_TOKEN_PATH
 
 
@@ -136,7 +138,7 @@ class Client(object):
             scheme = "https" if self.config.https else "http"
             port = str(self.config.port)
             netloc = hostname + ":{}".format(port) if port else hostname
-            self.url = urlunparse((scheme, netloc, QPC_API_VERSION, "", "", ""))
+            self.url = urlunparse((scheme, netloc, QPC_API_ROOT, "", "", ""))
 
         if not self.url:
             raise exceptions.QPCBaseUrlNotFound(
@@ -170,7 +172,7 @@ class Client(object):
         Send a PUT request /api/v1/users/logout to make
         current token invalid.
         """
-        url = urljoin(self.url, "users/logout/")
+        url = urljoin(self.url, QPC_LOGOUT_PATH)
         self.request("PUT", url, **kwargs)
         self.token = None
 
@@ -179,7 +181,7 @@ class Client(object):
 
         Send a GET request ot /api/v1/users/current/' and return the response.
         """
-        url = urljoin(self.url, "users/current/")
+        url = urljoin(self.url, QPC_CURRENT_USER_PATH)
         return self.request("GET", url, **kwargs)
 
     def default_headers(self):
