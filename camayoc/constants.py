@@ -33,22 +33,22 @@ SUDO_PASSWORD_INPUT = "Provide password for sudo.\r\nPassword:"
 VAULT_PASSWORD = utils.uuid4()
 """Vault password will be unique across Python sessions."""
 
-QPC_API_VERSION = "api/v1/"
+QPC_API_ROOT = "api/"
 """The root path to access the QPC server API."""
 
-QPC_CREDENTIALS_PATH = "credentials/"
+QPC_CREDENTIALS_PATH = "v1/credentials/"
 """The path to the credentials endpoint for CRUD tasks."""
 
-QPC_SOURCE_PATH = "sources/"
+QPC_SOURCE_PATH = "v1/sources/"
 """The path to the profiles endpoint for CRUD tasks."""
 
-QPC_SCAN_PATH = "scans/"
+QPC_SCAN_PATH = "v1/scans/"
 """The path to the scans endpoint for CRUD tasks."""
 
-QPC_SCANJOB_PATH = "jobs/"
+QPC_SCANJOB_PATH = "v1/jobs/"
 """The path to the scanjob endpoint for CRUD tasks."""
 
-QPC_REPORTS_PATH = "reports/"
+QPC_REPORTS_PATH = "v1/reports/"
 """The path to the endpoint used for obtaining reports."""
 
 QPC_SCAN_TERMINAL_STATES = ("completed", "failed", "canceled")
@@ -57,8 +57,14 @@ QPC_SCAN_TERMINAL_STATES = ("completed", "failed", "canceled")
 QPC_SCAN_STATES = QPC_SCAN_TERMINAL_STATES + ("running",)
 """All the states that a quipucords scan can take."""
 
-QPC_TOKEN_PATH = "token/"
+QPC_TOKEN_PATH = "v1/token/"
 """The path to the endpoint used for obtaining an authentication token."""
+
+QPC_LOGOUT_PATH = "v1/users/logout/"
+"""The path to the endpoint used to log user out."""
+
+QPC_CURRENT_USER_PATH = "v1/users/current/"
+"""The path to the endpoint that has information about current user."""
 
 QPC_SOURCE_TYPES = (
     "vcenter",
