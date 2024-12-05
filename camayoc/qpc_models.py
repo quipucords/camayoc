@@ -17,6 +17,7 @@ from camayoc.constants import QPC_SOURCE_PATH
 from camayoc.types.settings import CredentialOptions
 from camayoc.types.settings import ScanOptions
 from camayoc.types.settings import SourceOptions
+from camayoc.utils import server_container_ssh_key_content
 from camayoc.utils import uuid4
 
 OPTIONAL_PROD_KEY = "disabled_optional_products"
@@ -176,7 +177,7 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
     Host credentials can be created by instantiating a Credential
     object. A unique name and username are provided by default.
     In order to create a valid host credential you must specify either a
-    password or ssh_keyfile or auth_token.
+    password or ssh_key or auth_token.
 
     Example::
         >>> from camayoc import api
@@ -195,7 +196,7 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
         name=None,
         username=None,
         password=None,
-        ssh_keyfile=None,
+        ssh_key=None,
         auth_token=None,
         cred_type=None,
         become_method=None,
@@ -215,7 +216,7 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
             username = uuid4()
         self.username = username
         self.password = password
-        self.ssh_keyfile = ssh_keyfile
+        self.ssh_key = ssh_key
         self.auth_token = auth_token
         self.cred_type = cred_type
         if become_method is not None:
@@ -230,7 +231,7 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
         cls, definition: CredentialOptions, dependencies: Optional[list[int]] = None
     ):
         attrs_translation_map = {
-            "sshkeyfile": "ssh_keyfile",
+            "sshkeyfile": "ssh_key",
             "type": "cred_type",
         }
         definition_data = {}
@@ -239,6 +240,8 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
                 continue
             if new_definition_key := attrs_translation_map.get(definition_key):
                 definition_key = new_definition_key
+            if definition_key == "ssh_key":
+                definition_value = server_container_ssh_key_content(definition_value)
             definition_data[definition_key] = definition_value
         return cls(**definition_data)
 
