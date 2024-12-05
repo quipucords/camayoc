@@ -25,7 +25,7 @@ MOCK_CREDENTIAL = {
     "id": 34,
     "name": "91311585-77b3-4352-a277-cf9507a04ffc",
     "password": "********",
-    "ssh_keyfile": None,
+    "ssh_key": None,
     "sudo_password": None,
     "cred_type": "network",
     "username": "6c71666b-df97-4d50-91bd-10003569e843",
@@ -66,7 +66,7 @@ class APIClientTestCase(unittest.TestCase):
     def test_create_with_config(self):
         """If a hostname is specified in the config file, we use it."""
         client = api.Client(authenticate=False, config=CAMAYOC_CONFIG)
-        self.assertEqual(client.url, "http://example.com:8000/api/v1/")
+        self.assertEqual(client.url, "http://example.com:8000/api/")
 
     def test_create_specific_url(self):
         """If a base url is specified we use it."""
@@ -93,7 +93,7 @@ class APIClientTestCase(unittest.TestCase):
         cl = client(config=CAMAYOC_CONFIG)
         u = cl.get_user().json()["username"]
         assert u == CAMAYOC_CONFIG.username
-        client.request.assert_called_once_with("GET", urljoin(cl.url, "users/current/"))
+        client.request.assert_called_once_with("GET", urljoin(cl.url, "v1/users/current/"))
 
     def test_logout(self):
         """Test that when we log out, all credentials are cleared."""
