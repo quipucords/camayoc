@@ -25,6 +25,7 @@ from camayoc.tests.qpc.cli.utils import cred_show_and_check
 from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import source_show
 from camayoc.utils import client_cmd
+from camayoc.utils import server_container_ssh_key_content
 
 
 def generate_show_output(data):
@@ -130,8 +131,7 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
     :id: 9bfb16a2-5a10-4a01-9f9d-b29445c1f4bf
     :description: Add an auth entry providing the ``--name``, ``--username``
         and ``--sshkeyfile`` options.
-    :steps: Run ``qpc cred add --name <name> --username <username> --sshkeyfile
-        <sshkeyfile>``
+    :steps: Run ``qpc cred add --name <name> --username <username> --sshkey``
     :expectedresults: A new auth entry is created with the data provided as
         input.
     """
@@ -143,7 +143,10 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
     )
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": sshkeyfile_cred.ssh_keyfile}
+        {"name": name, "username": username, "sshkey": None},
+        inputs=[
+            ("Private SSH Key:", server_container_ssh_key_content(sshkeyfile_cred.ssh_keyfile))
+        ],
     )
 
     cred_show_and_check(
@@ -151,9 +154,11 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
         generate_show_output(
             {
                 "name": name,
-                "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
+                "ssh_key": True,
                 "username": username,
-                "auth_type": "ssh_keyfile",
+                "auth_type": "ssh_key",
+                "become_method": '"sudo"',
+                "become_user": '"root"',
             }
         ),
     )
@@ -165,9 +170,9 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
 
     :id: 94a45a9b-cda7-41e7-8be5-caf598917ebb
     :description: Add an auth entry providing the ``--name``, ``--username``,
-        ``--sshkeyfile`` and ``--become-password`` options.
-    :steps: Run ``qpc cred add --name <name> --username <username> --sshkeyfile
-        <sshkeyfile> --become-password``
+        ``--sshkey`` and ``--become-password`` options.
+    :steps: Run ``qpc cred add --name <name> --username <username> --sshkey
+        --become-password``
     :expectedresults: A new auth entry is created with the data provided as
         input.
     """
@@ -182,10 +187,13 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
         {
             "name": name,
             "username": username,
-            "sshkeyfile": sshkeyfile_cred.ssh_keyfile,
+            "sshkey": None,
             "become-password": None,
         },
-        [(BECOME_PASSWORD_INPUT, utils.uuid4())],
+        inputs=[
+            ("Private SSH Key:", server_container_ssh_key_content(sshkeyfile_cred.ssh_keyfile)),
+            (BECOME_PASSWORD_INPUT, utils.uuid4()),
+        ],
     )
 
     cred_show_and_check(
@@ -197,9 +205,9 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
                 "become_user": '"root"',
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
-                "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
+                "ssh_key": True,
                 "username": username,
-                "auth_type": "ssh_keyfile",
+                "auth_type": "ssh_key",
             }
         ),
     )
@@ -381,8 +389,7 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
 
     :id: 97734b67-3d5e-4add-9282-22844fd436d1
     :description: Edit the sshkeyfile of a not created auth entry.
-    :steps: Run ``qpc cred edit --name <invalidname> --sshkeyfile
-        <newsshkeyfile>``
+    :steps: Run ``qpc cred edit --name <invalidname> --sshkey``
     :expectedresults: The command should fail with a proper message.
     """
     name = utils.uuid4()
@@ -392,15 +399,14 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
         data_only=True,
     )
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": sshkeyfile_cred.ssh_keyfile}
+        {"name": name, "username": username, "sshkey": None},
+        inputs=[
+            ("Private SSH Key:", server_container_ssh_key_content(sshkeyfile_cred.ssh_keyfile))
+        ],
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --sshkeyfile {}".format(
-            client_cmd, name, sshkeyfile_cred.ssh_keyfile
-        )
-    )
+    qpc_cred_edit = pexpect.spawn("{} -v cred edit --name={} --sshkey".format(client_cmd, name))
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
