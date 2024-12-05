@@ -21,7 +21,6 @@ from camayoc.ui.enums import NetworkCredentialAuthenticationTypes
 from camayoc.ui.enums import NetworkCredentialBecomeMethods
 from camayoc.ui.enums import SourceConnectionTypes
 from camayoc.ui.enums import SourceTypes
-from camayoc.utils import server_container_ssh_key_content
 
 if TYPE_CHECKING:
     from camayoc.ui import Client
@@ -129,7 +128,7 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
         return cls(
             credential_name=model.name,
             username=model.username,
-            ssh_key_file=server_container_ssh_key_content(model.ssh_keyfile),
+            ssh_key_file=model.ssh_key,
             passphrase=model.auth_token,
             become_method=become_method,
             become_user=getattr(model, "become_user", None),
@@ -141,7 +140,7 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
             cred_type="network",
             name=self.credential_name,
             username=self.username,
-            ssh_keyfile=self.ssh_key_file,
+            ssh_key=self.ssh_key_file,
             auth_token=self.passphrase,
             become_method=self.become_method.value,
             become_user=self.become_user,
@@ -273,7 +272,7 @@ class AddCredentialDTO:
             case "network":
                 credential_type = CredentialTypes.NETWORK
                 dto_cls = PlainNetworkCredentialFormDTO
-                if model.ssh_keyfile:
+                if model.ssh_key:
                     dto_cls = SSHNetworkCredentialFormDTO
                 credential_form_dto = dto_cls.from_model(model)
             case "satellite":
