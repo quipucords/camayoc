@@ -33,19 +33,17 @@ def generate_show_output(data):
     auth_type = data.get("auth_type", "(auth_token|password|ssh_key|ssh_keyfile|unknown)")
     output = "{\r\n"
     output += '    "auth_type": "{}",\r\n'.format(auth_type)
-    if cred_type == "network":
-        output += '    "become_method": "{}",\r\n'.format(data.get("become_method", "sudo"))
-        if "become_password" in data:
-            output += '    "become_password": "{}",\r\n'.format(data["become_password"])
-        output += '    "become_user": "{}",\r\n'.format(data.get("become_user", "root"))
+    output += '    "become_method": {},\r\n'.format(data.get("become_method", "null"))
+    output += '    "become_user": {},\r\n'.format(data.get("become_user", "null"))
     output += '    "created_at": {},\r\n'.format(data.get("created_at", ".*"))
     output += '    "cred_type": "{}",\r\n'.format(cred_type)
+    for field in ("auth_token", "become_password", "password", "ssh_key", "ssh_passphrase"):
+        value = field in data
+        output += '    "has_{}": {},\r\n'.format(field, str(value).lower())
     output += '    "id": {},\r\n'.format(data.get("id", "\\d+"))
     output += '    "name": "{}",\r\n'.format(data["name"])
-    if "password" in data:
-        output += '    "password": "{}",\r\n'.format(data["password"])
-    if "ssh_keyfile" in data:
-        output += '    "ssh_keyfile": "{}",\r\n'.format(data["ssh_keyfile"])
+    output += '    "sources": \\[.*\\],\r\n'
+    output += '    "ssh_keyfile": {},\r\n'.format(data.get("ssh_keyfile", "null"))
     output += '    "updated_at": {},\r\n'.format(data.get("updated_at", ".*"))
     output += '    "username": "{}"\r\n'.format(data["username"])
     output += "}\r\n"
@@ -69,6 +67,10 @@ def test_add_with_username_password(isolated_filesystem, qpc_server_config, sour
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
+    extra_output_args = {}
+    if source_type == "network":
+        extra_output_args["become_method"] = '"sudo"'
+        extra_output_args["become_user"] = '"root"'
     cred_show_and_check(
         {"name": name},
         generate_show_output(
@@ -78,6 +80,7 @@ def test_add_with_username_password(isolated_filesystem, qpc_server_config, sour
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
                 "auth_type": "password",
+                **extra_output_args,
             }
         ),
     )
@@ -108,6 +111,8 @@ def test_add_with_username_password_become_password(isolated_filesystem, qpc_ser
         {"name": name},
         generate_show_output(
             {
+                "become_method": '"sudo"',
+                "become_user": '"root"',
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
@@ -188,6 +193,8 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
         generate_show_output(
             {
                 "cred_type": "network",
+                "become_method": '"sudo"',
+                "become_user": '"root"',
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
                 "ssh_keyfile": sshkeyfile_cred.ssh_keyfile,
@@ -215,6 +222,10 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
         [(CONNECTION_PASSWORD_INPUT, utils.uuid4())],
     )
 
+    extra_output_args = {}
+    if source_type == "network":
+        extra_output_args["become_method"] = '"sudo"'
+        extra_output_args["become_user"] = '"root"'
     cred_show_and_check(
         {"name": name},
         generate_show_output(
@@ -224,6 +235,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
                 "auth_type": "password",
+                **extra_output_args,
             }
         ),
     )
@@ -246,6 +258,7 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": new_username,
                 "auth_type": "password",
+                **extra_output_args,
             }
         ),
     )
@@ -296,6 +309,10 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
         [(CONNECTION_PASSWORD_INPUT, password)],
     )
 
+    extra_output_args = {}
+    if source_type == "network":
+        extra_output_args["become_method"] = '"sudo"'
+        extra_output_args["become_user"] = '"root"'
     cred_show_and_check(
         {"name": name},
         generate_show_output(
@@ -305,6 +322,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
                 "auth_type": "password",
+                **extra_output_args,
             }
         ),
     )
@@ -326,6 +344,7 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
                 "auth_type": "password",
+                **extra_output_args,
             }
         ),
     )
@@ -417,6 +436,8 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
         {"name": name},
         generate_show_output(
             {
+                "become_method": '"sudo"',
+                "become_user": '"root"',
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
@@ -440,6 +461,8 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
         {"name": name},
         generate_show_output(
             {
+                "become_method": '"sudo"',
+                "become_user": '"root"',
                 "become_password": MASKED_PASSWORD_OUTPUT,
                 "name": name,
                 "password": MASKED_PASSWORD_OUTPUT,
@@ -521,6 +544,8 @@ def test_clear(isolated_filesystem, qpc_server_config):
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
                 "auth_type": "password",
+                "become_method": '"sudo"',
+                "become_user": '"root"',
             }
         ),
     )
@@ -582,6 +607,8 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
                 "password": MASKED_PASSWORD_OUTPUT,
                 "username": username,
                 "auth_type": "password",
+                "become_method": '"sudo"',
+                "become_user": '"root"',
             }
         ),
     )
