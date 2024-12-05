@@ -107,6 +107,12 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
     for prompt, value in inputs:
         assert qpc_cred_add.expect(prompt) == 0
         qpc_cred_add.sendline(value)
+        # SSH key (and potentially other fields in the future) is multiline input,
+        # which requires signaling end of input with ^D. Unfortunately, inputs
+        # is a list of 2-tuples and we can't mark *some* inputs as multiline
+        # without modifying all calls that have `inputs` param...
+        if "private ssh key" in prompt.lower():
+            qpc_cred_add.sendcontrol("d")
     if "name" in options:
         assert qpc_cred_add.expect('Credential "{}" was added'.format(options["name"])) == 0
     assert qpc_cred_add.expect(pexpect.EOF) == 0
