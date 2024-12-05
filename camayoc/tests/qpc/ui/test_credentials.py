@@ -30,7 +30,6 @@ from camayoc.ui import data_factories
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import NetworkCredentialBecomeMethods
-from camayoc.utils import server_container_ssh_key_content
 
 CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,
@@ -60,13 +59,11 @@ def create_credential_dto(credential_type, data_provider):
                 data_only=True,
             )
             ssh_factory_kwargs = {
-                "ssh_key_file": ssh_network_credential.ssh_keyfile,
+                "ssh_key_file": ssh_network_credential.ssh_key,
                 "passphrase": "123456",
             }
             if settings.camayoc.use_uiv2:
-                ssh_factory_kwargs["ssh_key_file_v2"] = server_container_ssh_key_content(
-                    ssh_network_credential.ssh_keyfile
-                )
+                ssh_factory_kwargs["ssh_key_file_v2"] = ssh_network_credential.ssh_key
             factory_kwargs.update(ssh_factory_kwargs)
         credential_form = form_factory_cls(**factory_kwargs)
         credential = data_factories.AddCredentialDTOFactory(

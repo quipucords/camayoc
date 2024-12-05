@@ -25,7 +25,7 @@ MOCK_CREDENTIAL = {
     "id": 34,
     "name": "91311585-77b3-4352-a277-cf9507a04ffc",
     "password": "********",
-    "ssh_keyfile": None,
+    "ssh_key": None,
     "sudo_password": None,
     "cred_type": "network",
     "username": "6c71666b-df97-4d50-91bd-10003569e843",

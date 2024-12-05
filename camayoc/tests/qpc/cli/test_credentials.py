@@ -25,7 +25,6 @@ from camayoc.tests.qpc.cli.utils import cred_show_and_check
 from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import source_show
 from camayoc.utils import client_cmd
-from camayoc.utils import server_container_ssh_key_content
 
 
 def generate_show_output(data):
@@ -144,9 +143,7 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
 
     cred_add_and_check(
         {"name": name, "username": username, "sshkey": None},
-        inputs=[
-            ("Private SSH Key:", server_container_ssh_key_content(sshkeyfile_cred.ssh_keyfile))
-        ],
+        inputs=[("Private SSH Key:", sshkeyfile_cred.ssh_key)],
     )
 
     cred_show_and_check(
@@ -191,7 +188,7 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
             "become-password": None,
         },
         inputs=[
-            ("Private SSH Key:", server_container_ssh_key_content(sshkeyfile_cred.ssh_keyfile)),
+            ("Private SSH Key:", sshkeyfile_cred.ssh_key),
             (BECOME_PASSWORD_INPUT, utils.uuid4()),
         ],
     )
@@ -400,9 +397,7 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
     )
     cred_add_and_check(
         {"name": name, "username": username, "sshkey": None},
-        inputs=[
-            ("Private SSH Key:", server_container_ssh_key_content(sshkeyfile_cred.ssh_keyfile))
-        ],
+        inputs=[("Private SSH Key:", sshkeyfile_cred.ssh_key)],
     )
 
     name = utils.uuid4()
