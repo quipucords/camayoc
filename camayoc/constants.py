@@ -36,7 +36,7 @@ VAULT_PASSWORD = utils.uuid4()
 QPC_API_ROOT = "api/"
 """The root path to access the QPC server API."""
 
-QPC_CREDENTIALS_PATH = "v1/credentials/"
+QPC_CREDENTIALS_PATH = "v2/credentials/"
 """The path to the credentials endpoint for CRUD tasks."""
 
 QPC_SOURCE_PATH = "v1/sources/"
