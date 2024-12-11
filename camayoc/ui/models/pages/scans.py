@@ -5,7 +5,6 @@ import time
 from playwright.sync_api import Download
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
-from camayoc.config import settings
 from camayoc.exceptions import FailedScanException
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
@@ -38,26 +37,6 @@ class ScanHistoryPopup(PopUp, AbstractPage):
 
 class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
-        if settings.camayoc.use_uiv2:
-            return self._download_scan_v2()
-
-        scan_locator = "td[class*=-c-table__action] button[data-ouia-component-id=download]"
-        timeout_start = time.monotonic()
-        timeout = self._client._camayoc_config.camayoc.scan_timeout
-        while timeout > (time.monotonic() - timeout_start):
-            try:
-                with self.locator.page.expect_download() as download_info:
-                    self.locator.locator(scan_locator).click(timeout=10_000)
-                download = download_info.value
-                download.path()  # blocks the script while file is downloaded
-                return download
-            except PlaywrightTimeoutError:
-                self._client.driver.locator(
-                    "div[class*=-c-toolbar] button[data-ouia-component-id=refresh]"
-                ).click()
-        raise FailedScanException("Scan could not be downloaded")
-
-    def _download_scan_v2(self) -> Download:
         timeout_start = time.monotonic()
         timeout = self._client._camayoc_config.camayoc.scan_timeout
         while timeout > (time.monotonic() - timeout_start):
