@@ -95,7 +95,7 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
         .logout()
     )
 
-    is_network_scan = source_dto.select_source_type.source_type == SourceTypes.NETWORK_RANGE
+    is_network_scan = source_dto.source_type == SourceTypes.NETWORK_RANGE
     downloaded_report = ui_client.downloaded_files[-1]
 
     tarfile.open(downloaded_report.path()).extractall(tmp_path)

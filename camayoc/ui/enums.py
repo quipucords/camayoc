@@ -3,11 +3,13 @@ from enum import auto
 
 
 class StrEnum(Enum):
+    @staticmethod
     def _generate_next_value_(name, start, count, last_values):
         return name.capitalize()
 
 
 class LowercasedStrEnum(Enum):
+    @staticmethod
     def _generate_next_value_(name, start, count, last_values):
         return name.lower()
 
@@ -17,7 +19,6 @@ class Pages(StrEnum):
     LOGIN = "login.Login"
     SCANS = "scans.ScansMainPage"
     SOURCES = "sources.SourcesMainPage"
-    SOURCES_RESULTS_PAGE = "sources.ResultForm"
 
 
 class MainMenuPages(StrEnum):

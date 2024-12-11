@@ -2,7 +2,6 @@ from enum import Enum
 
 from playwright.sync_api import Page
 
-from camayoc.config import settings
 from camayoc.types.ui import UIField
 
 
@@ -80,20 +79,9 @@ class MultipleSelectField(Field):
             self.driver.click(self.locator)
 
 
-class RadioGroupField(Field):
-    def do_fill(self, value):
-        if isinstance(value, Enum) and (enum_value := getattr(value, "value")):
-            value = enum_value
-
-        radio_group = self.driver.locator(self.locator)
-        radio_group.locator(f"input[value={value}]").check()
-
-
 class SelectField(Field):
     def do_fill(self, value):
-        values_list_locator = "xpath=following-sibling::ul"
-        if settings.camayoc.use_uiv2:
-            values_list_locator = "xpath=following-sibling::div//ul"
+        values_list_locator = "xpath=following-sibling::div//ul"
 
         if isinstance(value, Enum) and (enum_value := getattr(value, "value")):
             value = enum_value

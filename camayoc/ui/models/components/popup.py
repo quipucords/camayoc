@@ -5,13 +5,10 @@ from camayoc.types.ui import UIPage
 
 
 class PopUp(UIPage):
-    SAVE_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-primary"
-    CANCEL_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-secondary"
+    SAVE_LOCATOR = "*[class*=-c-modal-box__body] button.pf-m-primary"
+    CANCEL_LOCATOR = "*[class*=-c-modal-box__body] button.pf-m-link"
     SAVE_RESULT_CLASS = None
     CANCEL_RESULT_CLASS = None
-
-    SAVE_LOCATOR_V2 = "*[class*=-c-modal-box__body] button.pf-m-primary"
-    CANCEL_LOCATOR_V2 = "*[class*=-c-modal-box__body] button.pf-m-link"
 
     def _get_result_class_name(self, class_name_id) -> str:
         class_name = getattr(self, class_name_id)
@@ -27,15 +24,7 @@ class PopUp(UIPage):
         return self._new_page(result_class)
 
     def confirm(self):
-        locator_cls_name = "SAVE_LOCATOR"
-        result_cls_name = "SAVE_RESULT_CLASS"
-        if self._use_uiv2:
-            locator_cls_name = "SAVE_LOCATOR_V2"
-            result_cls_name_v2 = "SAVE_RESULT_CLASS_V2"
-            if hasattr(self, result_cls_name_v2):
-                result_cls_name = result_cls_name_v2
-
-        return self._click_button(locator_cls_name, result_cls_name)
+        return self._click_button("SAVE_LOCATOR", "SAVE_RESULT_CLASS")
 
     def cancel(self):
         return self._click_button("CANCEL_LOCATOR", "CANCEL_RESULT_CLASS")
