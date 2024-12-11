@@ -297,11 +297,6 @@ class AddCredentialDTO:
 
 
 @frozen
-class SelectSourceDTO:
-    source_type: SourceTypes
-
-
-@frozen
 class NetworkSourceFormDTO:
     source_name: str
     addresses: list[str]
@@ -446,7 +441,7 @@ SourceFormDTO = Union[
 
 @frozen
 class AddSourceDTO:
-    select_source_type: SelectSourceDTO
+    source_type: SourceTypes
     source_form: SourceFormDTO
 
     @classmethod
@@ -472,7 +467,7 @@ class AddSourceDTO:
                 source_form_dto = RHACSSourceFormDTO.from_model(model)
             case _:
                 raise ValueError(f"Can't create Source UI DTO from {model}")
-        return cls(SelectSourceDTO(source_type), source_form_dto)
+        return cls(source_type, source_form_dto)
 
 
 @frozen

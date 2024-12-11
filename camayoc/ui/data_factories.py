@@ -24,7 +24,6 @@ from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import RHACSSourceFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import SatelliteSourceFormDTO
-from camayoc.types.ui import SelectSourceDTO
 from camayoc.types.ui import SourceFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
 from camayoc.types.ui import TriggerScanDTO
@@ -194,13 +193,6 @@ class AddCredentialDTOFactory(factory.Factory):
 
     credential_type = factory.Faker("random_element", elements=list(CredentialTypes))
     credential_form_dto = LazyAttributeSubfactory(_type_dependent_credential_form_factory)
-
-
-class SelectSourceDTOFactory(factory.Factory):
-    class Meta:
-        model = SelectSourceDTO
-
-    source_type = factory.Faker("random_element", elements=list(SourceTypes))
 
 
 class NetworkSourceFormDTOFactory(factory.Factory):
@@ -376,7 +368,7 @@ class SourceFormDTOFactory(UnionDTOFactory):
 
 
 def _source_type_dependent_source_form_factory(obj):
-    source_type = obj.select_source_type.source_type
+    source_type = obj.source_type
     if source_type == SourceTypes.NETWORK_RANGE:
         return NetworkSourceFormDTOFactory
     elif source_type == SourceTypes.SATELLITE:
@@ -395,7 +387,7 @@ class AddSourceDTOFactory(factory.Factory):
     class Meta:
         model = AddSourceDTO
 
-    select_source_type = factory.SubFactory(SelectSourceDTOFactory)
+    source_type = factory.Faker("random_element", elements=list(SourceTypes))
     source_form = LazyAttributeSubfactory(_source_type_dependent_source_form_factory)
 
 
