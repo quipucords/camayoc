@@ -68,7 +68,7 @@ def create_credential_dto(credential_type, data_provider):
         credential_form = form_factory_cls(**factory_kwargs)
         credential = data_factories.AddCredentialDTOFactory(
             credential_type=CredentialTypes.NETWORK,
-            credential_form_dto=credential_form,
+            credential_form=credential_form,
         )
         data_provider.mark_for_cleanup(Credential(name=credential_form.credential_name))
         return credential
@@ -76,7 +76,7 @@ def create_credential_dto(credential_type, data_provider):
     credential = data_factories.AddCredentialDTOFactory(
         credential_type=CREDENTIAL_TYPE_MAP.get(credential_type)
     )
-    data_provider.mark_for_cleanup(Credential(name=credential.credential_form_dto.credential_name))
+    data_provider.mark_for_cleanup(Credential(name=credential.credential_form.credential_name))
     return credential
 
 

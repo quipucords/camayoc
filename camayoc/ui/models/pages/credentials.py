@@ -139,7 +139,7 @@ class CredentialsMainPage(AddNewDropdown, MainPageMixin):
     @service
     def add_credential(self, data: AddCredentialDTO) -> CredentialsMainPage:
         add_credential_popup = self.open_add_credential(data.credential_type)
-        add_credential_popup.fill(data.credential_form_dto)
+        add_credential_popup.fill(data.credential_form)
         return add_credential_popup.confirm()
 
     @record_action

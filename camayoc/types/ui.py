@@ -265,7 +265,7 @@ CredentialFormDTO = Union[
 @frozen
 class AddCredentialDTO:
     credential_type: CredentialTypes
-    credential_form_dto: CredentialFormDTO
+    credential_form: CredentialFormDTO
 
     @classmethod
     def from_model(cls, model: Credential):
