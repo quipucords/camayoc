@@ -192,7 +192,7 @@ class AddCredentialDTOFactory(factory.Factory):
         model = AddCredentialDTO
 
     credential_type = factory.Faker("random_element", elements=list(CredentialTypes))
-    credential_form_dto = LazyAttributeSubfactory(_type_dependent_credential_form_factory)
+    credential_form = LazyAttributeSubfactory(_type_dependent_credential_form_factory)
 
 
 class NetworkSourceFormDTOFactory(factory.Factory):

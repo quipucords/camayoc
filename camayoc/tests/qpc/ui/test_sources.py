@@ -85,7 +85,7 @@ def create_source_dto(source_type, data_provider):
         credential_dto = data_factories.AddCredentialDTOFactory(
             credential_type=CREDENTIAL_DTO_TYPES_MAP.get(source_type)
         )
-        credential_model = credential_dto.credential_form_dto.to_model()
+        credential_model = credential_dto.credential_form.to_model()
         credential_model.create()
         data_provider.mark_for_cleanup(credential_model)
 
