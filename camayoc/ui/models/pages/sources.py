@@ -9,7 +9,6 @@ from camayoc.types.ui import NewScanFormDTO
 from camayoc.types.ui import OpenShiftSourceFormDTO
 from camayoc.types.ui import RHACSSourceFormDTO
 from camayoc.types.ui import SatelliteSourceFormDTO
-from camayoc.types.ui import SelectSourceDTO
 from camayoc.types.ui import TriggerScanDTO
 from camayoc.types.ui import VCenterSourceFormDTO
 from camayoc.ui.decorators import creates_toast
@@ -22,72 +21,29 @@ from ..components.add_new_dropdown import AddNewDropdown
 from ..components.form import Form
 from ..components.items_list import AbstractListItem
 from ..components.popup import PopUp
-from ..components.wizard import WizardStep
 from ..fields import CheckboxField
 from ..fields import FilteredMultipleSelectField
 from ..fields import InputField
-from ..fields import RadioGroupField
 from ..fields import SelectField
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 
-class CancelWizardPopup(PopUp, AbstractPage):
-    SAVE_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-primary:text-is('Yes')"
-    CANCEL_LOCATOR = "*[class*=-c-modal-box__footer] button.pf-m-secondary:text-is('No')"
+class SourceForm(Form, PopUp, AbstractPage):
     SAVE_RESULT_CLASS = Pages.SOURCES
-    CANCEL_RESULT_CLASS = None
+    CANCEL_RESULT_CLASS = Pages.SOURCES
+
+    @record_action
+    def cancel(self) -> SourcesMainPage:
+        return super().cancel()
+
+    @creates_toast
+    @record_action
+    def confirm(self) -> SourcesMainPage:
+        return super().confirm()
 
 
-class SelectSourceTypeForm(Form, WizardStep, AbstractPage):
-    NEXT_STEP_RESULT_CLASS = None
-    PREV_STEP_RESULT_CLASS = None
-    CANCEL_RESULT_CLASS = CancelWizardPopup
-
-    class FormDefinition:
-        source_type = RadioGroupField("div[class*=-c-wizard__main-body]:not(.hidden)")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        setattr(self, "NEXT_STEP_RESULT_CLASS", NetworkRangeSourceCredentialsForm)
-
-    def cancel(self) -> CancelWizardPopup:
-        popup = super().cancel()
-        setattr(popup, "CANCEL_RESULT_CLASS", type(self))
-        return popup
-
-    def fill(self, data: SelectSourceDTO):
-        source_type_map = {
-            SourceTypes.NETWORK_RANGE: NetworkRangeSourceCredentialsForm,
-            SourceTypes.SATELLITE: SatelliteSourceCredentialsForm,
-            SourceTypes.VCENTER_SERVER: VCenterSourceCredentialsForm,
-            SourceTypes.OPENSHIFT: OpenShiftSourceCredentialsForm,
-            SourceTypes.ANSIBLE_CONTROLLER: AnsibleSourceCredentialsForm,
-            SourceTypes.RHACS: RHACSSourceCredentialsForm,
-        }
-        next_step_class = source_type_map.get(data.source_type)
-        setattr(self, "NEXT_STEP_RESULT_CLASS", next_step_class)
-        super().fill(data)
-        return self
-
-
-class SourceCredentialsForm(Form, WizardStep, AbstractPage):
-    NEXT_STEP_LOCATOR = '*[class*=-c-wizard__footer] button:has-text("Save")'
-    NEXT_STEP_RESULT_CLASS = Pages.SOURCES_RESULTS_PAGE
-    PREV_STEP_RESULT_CLASS = SelectSourceTypeForm
-    CANCEL_RESULT_CLASS = CancelWizardPopup
-    SAVE_RESULT_CLASS = Pages.SOURCES
-
-    def confirm(self):
-        return PopUp.confirm(self)
-
-    def cancel(self) -> CancelWizardPopup:
-        popup = super().cancel()
-        setattr(popup, "CANCEL_RESULT_CLASS", type(self))
-        return popup
-
-
-class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
+class NetworkRangeSourceCredentialsForm(SourceForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         addresses = InputField(
@@ -109,7 +65,7 @@ class NetworkRangeSourceCredentialsForm(SourceCredentialsForm):
         return self
 
 
-class SatelliteSourceCredentialsForm(SourceCredentialsForm):
+class SatelliteSourceCredentialsForm(SourceForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
@@ -129,7 +85,7 @@ class SatelliteSourceCredentialsForm(SourceCredentialsForm):
         return self
 
 
-class VCenterSourceCredentialsForm(SourceCredentialsForm):
+class VCenterSourceCredentialsForm(SourceForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
@@ -149,7 +105,7 @@ class VCenterSourceCredentialsForm(SourceCredentialsForm):
         return self
 
 
-class OpenShiftSourceCredentialsForm(SourceCredentialsForm):
+class OpenShiftSourceCredentialsForm(SourceForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
@@ -169,7 +125,7 @@ class OpenShiftSourceCredentialsForm(SourceCredentialsForm):
         return self
 
 
-class AnsibleSourceCredentialsForm(SourceCredentialsForm):
+class AnsibleSourceCredentialsForm(SourceForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
@@ -189,7 +145,7 @@ class AnsibleSourceCredentialsForm(SourceCredentialsForm):
         return self
 
 
-class RHACSSourceCredentialsForm(SourceCredentialsForm):
+class RHACSSourceCredentialsForm(SourceForm):
     class FormDefinition:
         source_name = InputField("input[data-ouia-component-id=name]")
         address = InputField("input[data-ouia-component-id=hosts_single]")
@@ -207,18 +163,6 @@ class RHACSSourceCredentialsForm(SourceCredentialsForm):
     def fill(self, data: RHACSSourceFormDTO):
         super().fill(data)
         return self
-
-
-class ResultForm(WizardStep, AbstractPage):
-    NEXT_STEP_LOCATOR = "*[class*=-c-wizard__footer] button.pf-m-primary"
-    NEXT_STEP_RESULT_CLASS = Pages.SOURCES
-
-    def confirm(self):
-        locator_template = "*[class*=-c-wizard] svg[data-test-state={state}]"
-        fulfilled_elem = self._driver.locator(locator_template.format(state="fulfilled"))
-        error_elem = self._driver.locator(locator_template.format(state="error"))
-        fulfilled_elem.or_(error_elem).hover(trial=True)
-        return super().confirm()
 
 
 class ScanForm(Form, PopUp, AbstractPage):
@@ -255,12 +199,12 @@ class SourcesMainPage(AddNewDropdown, MainPageMixin):
 
     @service
     def add_source(self, data: AddSourceDTO) -> SourcesMainPage:
-        add_sources_popup = self.open_add_source(data.select_source_type.source_type)
+        add_sources_popup = self.open_add_source(data.source_type)
         add_sources_popup.fill(data.source_form)
         return add_sources_popup.confirm()
 
     @record_action
-    def open_add_source(self, source_type: SourceTypes) -> SourceCredentialsForm:
+    def open_add_source(self, source_type: SourceTypes) -> SourceForm:
         source_type_map = {
             SourceTypes.NETWORK_RANGE: {
                 "ouiaid": "network",

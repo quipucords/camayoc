@@ -97,7 +97,7 @@ def create_source_dto(source_type, data_provider):
         extra_source_kwargs["source_form__address"] = source_address
 
     source_dto = AddSourceDTOFactory(
-        select_source_type__source_type=SOURCE_TYPES_MAP.get(source_type),
+        source_type=SOURCE_TYPES_MAP.get(source_type),
         source_form__credentials=[credential_model.name],
         **extra_source_kwargs,
     )
