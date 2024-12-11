@@ -2,7 +2,6 @@ from enum import Enum
 
 from playwright.sync_api import Page
 
-from camayoc.config import settings
 from camayoc.types.ui import UIField
 
 
@@ -91,9 +90,7 @@ class RadioGroupField(Field):
 
 class SelectField(Field):
     def do_fill(self, value):
-        values_list_locator = "xpath=following-sibling::ul"
-        if settings.camayoc.use_uiv2:
-            values_list_locator = "xpath=following-sibling::div//ul"
+        values_list_locator = "xpath=following-sibling::div//ul"
 
         if isinstance(value, Enum) and (enum_value := getattr(value, "value")):
             value = enum_value

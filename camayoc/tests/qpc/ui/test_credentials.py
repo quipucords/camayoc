@@ -14,7 +14,6 @@ from typing import get_args
 import pytest
 from littletable import Table
 
-from camayoc.config import settings
 from camayoc.qpc_models import Credential
 from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import CredentialFormDTO
@@ -60,13 +59,11 @@ def create_credential_dto(credential_type, data_provider):
                 data_only=True,
             )
             ssh_factory_kwargs = {
-                "ssh_key_file": ssh_network_credential.ssh_keyfile,
+                "ssh_key_file": server_container_ssh_key_content(
+                    ssh_network_credential.ssh_keyfile
+                ),
                 "passphrase": "123456",
             }
-            if settings.camayoc.use_uiv2:
-                ssh_factory_kwargs["ssh_key_file_v2"] = server_container_ssh_key_content(
-                    ssh_network_credential.ssh_keyfile
-                )
             factory_kwargs.update(ssh_factory_kwargs)
         credential_form = form_factory_cls(**factory_kwargs)
         credential = data_factories.AddCredentialDTOFactory(

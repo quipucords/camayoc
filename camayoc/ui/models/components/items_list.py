@@ -21,12 +21,8 @@ class ItemsList(UIPage):
 
     def _get_item_from_current_list(self, name: str):
         default_timeout = 5000  # 5s
-        item_label_locator = "css=strong"
-        item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'quipucords-table__tr')]"
-
-        if self._use_uiv2:
-            item_label_locator = "td[data-label=Name]"
-            item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'table__tr')]"
+        item_label_locator = "td[data-label=Name]"
+        item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'table__tr')]"
 
         item_elem = self._driver.locator(item_label_locator).filter(
             has=self._driver.get_by_text(name, exact=True)
@@ -41,16 +37,9 @@ class ItemsList(UIPage):
     # But YAGNI tells us this will do for now
     def _search_for_item_by_name(self, name: str):
         filter_field_button_locator = (
-            "div[class*=-c-toolbar__content] button[id]:has(span[class*=-c-select__toggle-arrow])"
+            "div[class*=-c-toolbar__item] button[id]:has(span[class*=-c-menu-toggle])"
         )
-        filter_field_values_locator = "xpath=following-sibling::ul"
-        if self._use_uiv2:
-            filter_field_button_locator = (
-                "div[class*=-c-toolbar__item] button[id]:has(span[class*=-c-menu-toggle])"
-            )
-            filter_field_values_locator = (
-                "xpath=following-sibling::div[contains(@class, '-c-menu')]"
-            )
+        filter_field_values_locator = "xpath=following-sibling::div[contains(@class, '-c-menu')]"
 
         filter_field_button = self._driver.locator(filter_field_button_locator).locator("nth=0")
         if filter_field_button.text_content() != "Name":

@@ -40,18 +40,14 @@ class CredentialForm(Form, PopUp, AbstractPage):
 
 class NetworkCredentialForm(CredentialForm):
     class FormDefinition:
-        authentication_type = SelectField("div[data-ouia-component-id=auth_type] > button")
-        authentication_type_v2 = SelectField("button[data-ouia-component-id=auth_type]")
+        authentication_type = SelectField("button[data-ouia-component-id=auth_type]")
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
         password = InputField("input[data-ouia-component-id=password]")
-        ssh_key_file = InputField("input[data-ouia-component-id=ssh_keyfile]")
-        # FIXME: this should be called `ssh_key_v2`, but using v1 field name
-        # makes things easier during transition period
-        ssh_key_file_v2 = InputField("textarea[data-ouia-component-id=ssh_key]")
+        # FIXME: this should be called `ssh_key`
+        ssh_key_file = InputField("textarea[data-ouia-component-id=ssh_key]")
         passphrase = InputField("input[data-ouia-component-id=ssh_passphrase]")
-        become_method = SelectField("div[data-ouia-component-id=become_method] > button")
-        become_method_v2 = SelectField("button[data-ouia-component-id=become_method]")
+        become_method = SelectField("button[data-ouia-component-id=become_method]")
         become_user = InputField("input[data-ouia-component-id=become_user]")
         become_password = InputField("input[data-ouia-component-id=become_password]")
 
@@ -148,45 +144,6 @@ class CredentialsMainPage(AddNewDropdown, MainPageMixin):
 
     @record_action
     def open_add_credential(self, source_type: CredentialTypes) -> CredentialForm:
-        if self._use_uiv2:
-            return self._open_add_credential_v2(source_type)
-
-        create_credential_button = "div[data-ouia-component-id=add_credential] > button"
-        source_type_map = {
-            CredentialTypes.NETWORK: {
-                "selector": f"{create_credential_button} ~ ul li a[data-value=network]",
-                "class": NetworkCredentialForm,
-            },
-            CredentialTypes.SATELLITE: {
-                "selector": f"{create_credential_button} ~ ul li a[data-value=satellite]",
-                "class": SatelliteCredentialForm,
-            },
-            CredentialTypes.VCENTER: {
-                "selector": f"{create_credential_button} ~ ul li a[data-value=vcenter]",
-                "class": VCenterCredentialForm,
-            },
-            CredentialTypes.OPENSHIFT: {
-                "selector": f"{create_credential_button} ~ ul li a[data-value=openshift]",
-                "class": OpenShiftCredentialForm,
-            },
-            CredentialTypes.ANSIBLE: {
-                "selector": f"{create_credential_button} ~ ul li a[data-value=ansible]",
-                "class": AnsibleCredentialForm,
-            },
-            CredentialTypes.RHACS: {
-                "selector": f"{create_credential_button} ~ ul li a[data-value=rhacs]",
-                "class": RHACSCredentialForm,
-            },
-        }
-
-        selector, cls = source_type_map.get(source_type).values()
-
-        self._driver.click(create_credential_button)
-        self._driver.click(selector)
-
-        return self._new_page(cls)
-
-    def _open_add_credential_v2(self, source_type: CredentialTypes) -> CredentialForm:
         source_type_map = {
             CredentialTypes.NETWORK: {
                 "ouiaid": "network",

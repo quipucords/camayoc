@@ -18,7 +18,6 @@ class AbstractPage(UIPage):
     def __init__(self, client: camayoc.ui.client.Client):
         self._client = client
         self._driver = client.driver
-        self._use_uiv2 = bool(self._client._camayoc_config.camayoc.use_uiv2)
 
     def _new_page(self, class_or_page: ClassOrPage) -> UIPage:
         cls = None

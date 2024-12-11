@@ -14,7 +14,6 @@ from attrs import frozen
 from playwright.sync_api import Locator
 from playwright.sync_api import Page
 
-from camayoc.config import settings
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Source
 from camayoc.ui.enums import CredentialTypes
@@ -50,7 +49,6 @@ class Session(Protocol):
 class UIPage(Protocol):
     _client: Client
     _driver: Page
-    _use_uiv2: bool
 
     def _new_page(self, class_or_page) -> UIPage: ...
 
@@ -118,7 +116,6 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
         NetworkCredentialAuthenticationTypes.SSH_KEY
     )
     ssh_key_file: str = field(kw_only=True)
-    ssh_key_file_v2: Optional[str] = field(default=None, kw_only=True)
     passphrase: Optional[str] = None
 
     @classmethod
@@ -129,16 +126,10 @@ class SSHNetworkCredentialFormDTO(_NetworkCredentialFormDTO):
         except AttributeError:
             become_method = next(iter(NetworkCredentialBecomeMethods))
 
-        ssh_key = {
-            "ssh_key_file": model.ssh_keyfile,
-        }
-        if settings.camayoc.use_uiv2:
-            ssh_key["ssh_key_file_v2"] = server_container_ssh_key_content(model.ssh_keyfile)
-
         return cls(
             credential_name=model.name,
             username=model.username,
-            **ssh_key,
+            ssh_key_file=server_container_ssh_key_content(model.ssh_keyfile),
             passphrase=model.auth_token,
             become_method=become_method,
             become_user=getattr(model, "become_user", None),
@@ -333,24 +324,21 @@ class SatelliteSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    port_v2: Optional[str] = None
+    port: Optional[str] = None
     connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
 
     @classmethod
     def from_model(cls, model: Source):
-        address = model.hosts[0]
-        address_port = {"address": address}
+        port_args = {}
         if hasattr(model, "port") and model.port:
-            if settings.camayoc.use_uiv2:
-                address_port["port_v2"] = str(model.port)
-            else:
-                address_port["address"] = f"{address}:{model.port}"
+            port_args["port"] = str(model.port)
         return cls(
             source_name=model.name,
+            address=model.hosts[0],
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
-            **address_port,
+            **port_args,
         )
 
 
@@ -359,24 +347,21 @@ class VCenterSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    port_v2: Optional[str] = None
+    port: Optional[str] = None
     connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
 
     @classmethod
     def from_model(cls, model: Source):
-        address = model.hosts[0]
-        address_port = {"address": address}
+        port_args = {}
         if hasattr(model, "port") and model.port:
-            if settings.camayoc.use_uiv2:
-                address_port["port_v2"] = str(model.port)
-            else:
-                address_port["address"] = f"{address}:{model.port}"
+            port_args["port"] = str(model.port)
         return cls(
             source_name=model.name,
+            address=model.hosts[0],
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
-            **address_port,
+            **port_args,
         )
 
 
@@ -385,24 +370,21 @@ class OpenShiftSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    port_v2: Optional[str] = None
+    port: Optional[str] = None
     connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
 
     @classmethod
     def from_model(cls, model: Source):
-        address = model.hosts[0]
-        address_port = {"address": address}
+        port_args = {}
         if hasattr(model, "port") and model.port:
-            if settings.camayoc.use_uiv2:
-                address_port["port_v2"] = str(model.port)
-            else:
-                address_port["address"] = f"{address}:{model.port}"
+            port_args["port"] = str(model.port)
         return cls(
             source_name=model.name,
+            address=model.hosts[0],
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
-            **address_port,
+            **port_args,
         )
 
 
@@ -411,24 +393,21 @@ class AnsibleSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    port_v2: Optional[str] = None
+    port: Optional[str] = None
     connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
 
     @classmethod
     def from_model(cls, model: Source):
-        address = model.hosts[0]
-        address_port = {"address": address}
+        port_args = {}
         if hasattr(model, "port") and model.port:
-            if settings.camayoc.use_uiv2:
-                address_port["port_v2"] = str(model.port)
-            else:
-                address_port["address"] = f"{address}:{model.port}"
+            port_args["port"] = str(model.port)
         return cls(
             source_name=model.name,
+            address=model.hosts[0],
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
-            **address_port,
+            **port_args,
         )
 
 
@@ -437,24 +416,21 @@ class RHACSSourceFormDTO:
     source_name: str
     address: str
     credentials: list[str]
-    port_v2: Optional[str] = None
+    port: Optional[str] = None
     connection: Optional[SourceConnectionTypes] = None
     verify_ssl: Optional[bool] = None
 
     @classmethod
     def from_model(cls, model: Source):
-        address = model.hosts[0]
-        address_port = {"address": address}
+        port_args = {}
         if hasattr(model, "port") and model.port:
-            if settings.camayoc.use_uiv2:
-                address_port["port_v2"] = str(model.port)
-            else:
-                address_port["address"] = f"{address}:{model.port}"
+            port_args["port"] = str(model.port)
         return cls(
             source_name=model.name,
+            address=model.hosts[0],
             credentials=model.credentials,
             verify_ssl=model.options.get("ssl_cert_verify"),
-            **address_port,
+            **port_args,
         )
 
 
