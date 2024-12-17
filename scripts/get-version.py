@@ -33,7 +33,7 @@ def rpm_pkg_versions(*package_names):
 
 def get_backend_version():
     api_client = api.Client()
-    server_status = api_client.get("status/")
+    server_status = api_client.get("v1/status/")
     server_version = server_status.json().get("server_version")
     return server_version
 
