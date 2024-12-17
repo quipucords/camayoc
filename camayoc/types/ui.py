@@ -19,6 +19,7 @@ from camayoc.qpc_models import Source
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import NetworkCredentialAuthenticationTypes
 from camayoc.ui.enums import NetworkCredentialBecomeMethods
+from camayoc.ui.enums import OpenShiftCredentialAuthenticationTypes
 from camayoc.ui.enums import SourceConnectionTypes
 from camayoc.ui.enums import SourceTypes
 
@@ -196,9 +197,35 @@ class VCenterCredentialFormDTO:
 
 
 @frozen
-class OpenShiftCredentialFormDTO:
+class PlainOpenShiftCredentialFormDTO:
+    credential_name: str
+    username: str
+    password: str
+    authentication_type: OpenShiftCredentialAuthenticationTypes = (
+        OpenShiftCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
+    )
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(credential_name=model.name, username=model.username, password=model.password)
+
+    def to_model(self):
+        model = Credential(
+            cred_type="openshift",
+            name=self.credential_name,
+            username=self.username,
+            password=self.password,
+        )
+        return model
+
+
+@frozen
+class TokenOpenShiftCredentialFormDTO:
     credential_name: str
     token: str
+    authentication_type: OpenShiftCredentialAuthenticationTypes = (
+        OpenShiftCredentialAuthenticationTypes.TOKEN
+    )
 
     @classmethod
     def from_model(cls, model: Credential):
@@ -211,6 +238,12 @@ class OpenShiftCredentialFormDTO:
             auth_token=self.token,
         )
         return model
+
+
+OpenShiftCredentialFormDTO = Union[
+    PlainOpenShiftCredentialFormDTO,
+    TokenOpenShiftCredentialFormDTO,
+]
 
 
 @frozen

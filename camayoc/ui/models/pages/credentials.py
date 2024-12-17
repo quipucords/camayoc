@@ -92,7 +92,10 @@ class VCenterCredentialForm(CredentialForm):
 
 class OpenShiftCredentialForm(CredentialForm):
     class FormDefinition:
+        authentication_type = SelectField("button[data-ouia-component-id=auth_type]")
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
+        username = InputField("input[data-ouia-component-id=username]")
+        password = InputField("input[data-ouia-component-id=password]")
         token = InputField("input[data-ouia-component-id=auth_token]")
 
     @overload

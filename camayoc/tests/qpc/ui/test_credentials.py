@@ -33,7 +33,6 @@ from camayoc.ui.enums import NetworkCredentialBecomeMethods
 CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,
     VCenterCredentialFormDTO: CredentialTypes.VCENTER,
-    OpenShiftCredentialFormDTO: CredentialTypes.OPENSHIFT,
     AnsibleCredentialFormDTO: CredentialTypes.ANSIBLE,
     RHACSCredentialFormDTO: CredentialTypes.RHACS,
 }
@@ -66,6 +65,14 @@ def create_credential_dto(credential_type, data_provider):
         credential = data_factories.AddCredentialDTOFactory(
             credential_type=CredentialTypes.NETWORK,
             credential_form=credential_form,
+        )
+        data_provider.mark_for_cleanup(Credential(name=credential_form.credential_name))
+        return credential
+    elif issubclass(credential_type, get_args(OpenShiftCredentialFormDTO)):
+        form_factory_cls = getattr(data_factories, f"{credential_type.__name__}Factory")
+        credential_form = form_factory_cls()
+        credential = data_factories.AddCredentialDTOFactory(
+            credential_type=CredentialTypes.OPENSHIFT, credential_form=credential_form
         )
         data_provider.mark_for_cleanup(Credential(name=credential_form.credential_name))
         return credential
