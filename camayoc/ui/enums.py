@@ -52,6 +52,11 @@ class NetworkCredentialBecomeMethods(LowercasedStrEnum):
     RUNAS = auto()
 
 
+class OpenShiftCredentialAuthenticationTypes(StrEnum):
+    USERNAME_AND_PASSWORD = "Username and Password"
+    TOKEN = "Token"
+
+
 class SourceTypes(StrEnum):
     NETWORK_RANGE = "network"
     SATELLITE = "satellite"
