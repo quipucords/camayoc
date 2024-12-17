@@ -5,6 +5,7 @@ This script is used by CI to set test run metadata.
 """
 
 import argparse
+import json
 import subprocess
 
 from camayoc import api
@@ -19,7 +20,24 @@ def get_backend_version():
 
 
 def get_frontend_version():
-    raise NotImplementedError("Obtaining frontend version is not supported yet")
+    podman_ps_a_cmd = ["podman", "ps", "-a", "--format=json"]
+    podman_ps_a_result = subprocess.run(
+        podman_ps_a_cmd, capture_output=True, text=True, check=False
+    )
+    if podman_ps_a_result.returncode != 0:
+        return
+
+    app_names = [f"{app_name}-app.cid" for app_name in ("quipucords", "discovery")]
+    containers = json.loads(podman_ps_a_result.stdout)
+    for container in containers:
+        cid = container.get("CIDFile", "")
+        if not cid.endswith(tuple(app_names)):
+            continue
+        image_id = container.get("ImageID")
+        versions = [f"image_id={image_id}"]
+        if git_sha := container.get("Labels", {}).get("quipucords.frontend.git_sha"):
+            versions.append(f"git_sha={git_sha}")
+        return " ".join(versions)
 
 
 def get_cli_version():
