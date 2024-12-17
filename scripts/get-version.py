@@ -12,6 +12,25 @@ from camayoc import api
 from camayoc.utils import client_cmd
 
 
+def rpm_pkg_versions(*package_names):
+    try:
+        cmd = [
+            "rpm",
+            "-qa",
+            "--queryformat",
+            "%{NAME}:version=%{VERSION} provideversion=%{PROVIDEVERSION}\n",
+        ]
+        rpm_qa_result = subprocess.run(cmd, capture_output=True, check=True, text=True)
+        for pkg_line in rpm_qa_result.stdout.split("\n"):
+            if not pkg_line:
+                continue
+            pkg_name, pkg_version = pkg_line.split(":", maxsplit=1)
+            if pkg_name in package_names:
+                return pkg_version
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
 def get_backend_version():
     api_client = api.Client()
     server_status = api_client.get("status/")
@@ -52,25 +71,22 @@ def get_cli_version():
         pass
 
     # Jenkins will use CLI installed from rpm package
-    try:
-        cmd = [
-            "rpm",
-            "-qa",
-            "--queryformat",
-            "%{NAME}:version=%{VERSION} provideversion=%{PROVIDEVERSION}\n",
-        ]
-        rpm_qa_result = subprocess.run(cmd, capture_output=True, check=True, text=True)
-        for pkg_line in rpm_qa_result.stdout.split("\n"):
-            if not pkg_line:
-                continue
-            pkg_name, pkg_version = pkg_line.split(":", maxsplit=1)
-            if pkg_name in ("qpc", "discovery-cli"):
-                return pkg_version
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        pass
+    if found_rpms := rpm_pkg_versions("qpc", "discovery-cli"):
+        return found_rpms
 
     # Failover value for local runs, where qpc may be installed from git
     cmd = ["git", "-C", "../qpc/", "rev-parse", "HEAD"]
+    result = subprocess.run(cmd, capture_output=True, check=True, text=True)
+    return result.stdout.strip()
+
+
+def get_installer_version():
+    # Jenkins will use CLI installed from rpm package
+    if found_rpms := rpm_pkg_versions("quipucords-installer", "discovery-installer"):
+        return found_rpms
+
+    # Failover value for local runs, where qpc may be installed from git
+    cmd = ["git", "-C", "../quipucords-installer/", "rev-parse", "HEAD"]
     result = subprocess.run(cmd, capture_output=True, check=True, text=True)
     return result.stdout.strip()
 
@@ -90,6 +106,7 @@ def main():
     group.add_argument("--frontend", action="store_true")
     group.add_argument("--cli", action="store_true")
     group.add_argument("--camayoc", action="store_true")
+    group.add_argument("--installer", action="store_true")
 
     args = parser.parse_args()
     if args.backend:
@@ -100,6 +117,8 @@ def main():
         version_number = get_cli_version()
     elif args.camayoc:
         version_number = get_camayoc_version()
+    elif args.installer:
+        version_number = get_installer_version()
 
     print(version_number)
 
