@@ -20,12 +20,14 @@ from camayoc.types.ui import NewScanFormDTO
 from camayoc.types.ui import OpenShiftCredentialFormDTO
 from camayoc.types.ui import OpenShiftSourceFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
+from camayoc.types.ui import PlainOpenShiftCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import RHACSSourceFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import SatelliteSourceFormDTO
 from camayoc.types.ui import SourceFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
+from camayoc.types.ui import TokenOpenShiftCredentialFormDTO
 from camayoc.types.ui import TriggerScanDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.types.ui import VCenterSourceFormDTO
@@ -33,6 +35,7 @@ from camayoc.types.ui import VCenterSourceFormDTO
 from .enums import CredentialTypes
 from .enums import NetworkCredentialAuthenticationTypes
 from .enums import NetworkCredentialBecomeMethods
+from .enums import OpenShiftCredentialAuthenticationTypes
 from .enums import SourceConnectionTypes
 from .enums import SourceTypes
 
@@ -46,7 +49,7 @@ class UnionDTOFactoryOptions(factory.base.FactoryOptions):
             setattr(self, "original_model", self.model)
 
         if get_origin(self.original_model) != Union:
-            msg = "Meta.model must be an Union in Factory inheriting from " "UnionDTOFactory"
+            msg = "Meta.model must be an Union in Factory inheriting from UnionDTOFactory"
             raise factory.errors.FactoryError(msg)
 
         faker = factory.Faker._get_faker()
@@ -141,12 +144,28 @@ class VCenterCredentialFormDTOFactory(factory.Factory):
     password = factory.Faker("password")
 
 
-class OpenShiftCredentialFormDTOFactory(factory.Factory):
+class PlainOpenShiftCredentialFormDTOFactory(factory.Factory):
     class Meta:
-        model = OpenShiftCredentialFormDTO
+        model = PlainOpenShiftCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    username = factory.Faker("user_name")
+    password = factory.Faker("password")
+    authentication_type = OpenShiftCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
+
+
+class TokenOpenShiftCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = TokenOpenShiftCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
     token = factory.Faker("password")
+    authentication_type = OpenShiftCredentialAuthenticationTypes.TOKEN
+
+
+class OpenShiftCredentialFormDTOFactory(UnionDTOFactory):
+    class Meta:
+        model = OpenShiftCredentialFormDTO
 
 
 class AnsibleCredentialFormDTOFactory(factory.Factory):
