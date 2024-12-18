@@ -72,3 +72,13 @@ class SourceConnectionTypes(StrEnum):
     TLS11 = "TLSv1.1"
     TLS12 = "TLSv1.2"
     DISABLE = "Disable SSL"
+
+
+class ScansPopupTableColumns(StrEnum):
+    SCAN_TIME = "header_scan_time"
+    SCAN_RESULT = "header_scan_result"
+
+
+class ColumnOrdering(StrEnum):
+    ASCENDING = "ascending"
+    DESCENDING = "descending"
