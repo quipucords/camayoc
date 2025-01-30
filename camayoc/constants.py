@@ -3,6 +3,27 @@
 
 from camayoc import utils
 
+DBSERIALIZER_CREDENTIALS_FILE_PATH = "credentials.json"
+"""Path to file that stores serialized credentials data, relative to main serializer destination."""
+
+DBSERIALIZER_SOURCES_FILE_PATH = "sources.json"
+"""Path to file that stores serialized sources data, relative to main serializer destination."""
+
+DBSERIALIZER_SCANS_FILE_PATH = "scans.json"
+"""Path to file that stores serialized scans data, relative to main serializer destination."""
+
+DBSERIALIZER_CONNECTIONJOBS_DIR_PATH = "jobs"
+"""Path to directory that stores job connections data, relative to main serializer destination."""
+
+DBSERIALIZER_SCANJOBS_DIR_PATH = "scans"
+"""Path to directory that stores scan jobs data, relative to main serializer destination."""
+
+DBSERIALIZER_REPORTS_DIR_PATH = "reports"
+"""Path to directory that stores reports, relative to main serializer destination.
+
+Each report is represented by directory named after report id. Only details.json
+and aggregate.json are stored."""
+
 VALID_BOOLEAN_CHOICES = ["true", "false"]
 """Valid qpc/dsc CLI boolean choices."""
 

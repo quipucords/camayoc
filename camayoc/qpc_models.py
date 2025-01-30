@@ -721,3 +721,14 @@ class Report(QPCObject):
         path = urljoin(self.endpoint, "{}/aggregate/".format(self._id))
         response = self.client.get(path, **kwargs)
         return response
+
+    def reports_gzip(self, **kwargs):
+        """Send GET request to self.endpoint/{id}/ to obtain report in gzip format.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        extra_headers = {"Accept": "application/gzip"}
+        path = urljoin(self.endpoint, "{}/".format(self._id))
+        response = self.client.get(path, headers=extra_headers, **kwargs)
+        return response
