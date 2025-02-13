@@ -26,6 +26,7 @@ requires = ["poetry-core"]
 python = ">= 3.11, < 3.14"
 attrs = "^24.2.0"
 dynaconf = "^3.2.4"
+deepdiff = "^8.2.0"
 factory_boy = "^3.2.1"
 littletable = "^3.0.1"
 pexpect = "^4.8.0"
@@ -62,6 +63,7 @@ markers = [
     "slow: tests that take a long time to run (on average, more than 30 seconds)",
     "nightly_only: tests to execute only during nightly (or full) run, i.e. not during PR check; note that actual selection is implemented in discovery-ci",
     "pr_only: tests to execute only during PR check run, i.e. not during nightly run; note that actual selection is implemented in discovery-ci",
+    "upgrade_only: tests to execute only during upgrade testing; note that actual selection is implemented in discovery-ci",
 ]
 
 [tool.ruff]
