@@ -22,6 +22,7 @@ default_dynaconf_validators = [
     Validator("camayoc.db_cleanup", default=True),
     Validator("camayoc.snapshot_test_reference_path", default=None),
     Validator("camayoc.snapshot_test_actual_path", default=None),
+    Validator("camayoc.snapshot_test_reference_synthetic", default=False),
     Validator("quipucords_server.hostname", default=""),
     Validator("quipucords_server.https", default=False),
     Validator("quipucords_server.port", default=8000),

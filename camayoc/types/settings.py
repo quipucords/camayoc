@@ -16,6 +16,7 @@ class CamayocOptions(BaseModel):
     db_cleanup: Optional[bool] = True
     snapshot_test_reference_path: Optional[Path] = None
     snapshot_test_actual_path: Optional[Path] = None
+    snapshot_test_reference_synthetic: Optional[bool] = False
 
 
 class QuipucordsServerOptions(BaseModel):

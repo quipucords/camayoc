@@ -6,6 +6,8 @@ import time
 from pathlib import Path
 from typing import Callable
 
+import pytest
+
 from camayoc import api
 from camayoc.config import settings
 from camayoc.constants import QPC_SCAN_STATES
@@ -159,6 +161,18 @@ def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
         scan_definition.name for scan_definition in settings.scans if predicate(scan_definition)
     ]
     return matching_scans
+
+
+def end_to_end_sources_names():
+    """Generate source names as pytest params.
+
+    This is used by CLI and UI end_to_end tests.
+    """
+    for source_definition in settings.sources:
+        if source_definition.type in ("openshift",):
+            continue
+        fixture_id = f"{source_definition.name}-{source_definition.type}"
+        yield pytest.param(source_definition.name, id=fixture_id)
 
 
 def wait_until_state(scanjob, timeout=settings.camayoc.scan_timeout, state="completed"):

@@ -710,3 +710,71 @@ def test_clear_all(isolated_filesystem, qpc_server_config, cleaning_data_provide
     )
     assert "No credentials exist yet." in output
     assert exitstatus == 0
+
+
+@pytest.mark.upgrade_only
+def test_edit_existing_credential_username(qpc_server_config, source_type):
+    """Check that credential that existed before upgrade can be edited.
+
+    We want to check all credential types, but the only field that is common
+    for all of them is the name - and this is one field that CLI can not
+    change. So we try to change username instead, but RHACS and OpenShift
+    token do not have it.
+
+    :id: 93dd6711-ef58-4370-9e4a-d427785a9bf9
+    :description: Edit existing credential
+    :steps:
+        1) Select a credential of specified type
+        2) Edit credential, changing the username
+        3) Verify that credential was changed
+        4) Edit credential again, restoring old username
+    :expectedresults: Credential is modified and changes are saved.
+    """
+    new_username = utils.uuid4()
+
+    output, _ = pexpect.run(
+        "{} -v cred list --type {}".format(client_cmd, source_type),
+        encoding="utf8",
+        withexitstatus=True,
+    )
+    try:
+        all_credentials = json.loads(output)
+    except ValueError:
+        pytest.skip("There are no credentials of this type")
+
+    filtered_credentials = [cred for cred in all_credentials if cred.get("username")]
+    if not filtered_credentials:
+        pytest.skip("No credential with username")
+
+    credential = random.choice(filtered_credentials)
+    credential_name = credential.get("name")
+
+    # Edit credential
+    output, exitstatus = pexpect.run(
+        "{} -v cred edit --name={} --username={}".format(client_cmd, credential_name, new_username),
+        encoding="utf-8",
+        withexitstatus=True,
+    )
+    assert f'Credential "{credential_name}" was updated' in output
+    assert exitstatus == 0
+
+    # Grab the new data, prepare both for comparison, compare
+    output, exitstatus = pexpect.run(
+        "{} -v cred show --name={}".format(client_cmd, credential_name),
+        encoding="utf-8",
+        withexitstatus=True,
+    )
+    updated_credential = json.loads(output)
+    expected = credential.copy()
+    expected["username"] = new_username
+    expected.pop("updated_at", None)
+    updated_credential.pop("updated_at", None)
+
+    assert expected == updated_credential
+
+    # Restore old username
+    pexpect.run(
+        "{} -v cred edit --name={} --username={}".format(
+            client_cmd, credential_name, credential.get("username")
+        )
+    )
