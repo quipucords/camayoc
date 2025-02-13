@@ -365,6 +365,25 @@ def retrieve_report(scan_job_id):
     return details, deployments
 
 
+def scans_with_source_type(source_type):
+    """Find scans created for sources of given type.
+
+    Conceptually, this belongs to DataProvider. However, DataProvider is
+    concerned with efficiently creating a data defined in settings - here, we
+    are concerned with data that exists in Quipucords database. DataProvider
+    could, and arguably should, be extended to cover this use case, but as of
+    this comment, there's a single test that needs this. Test in question is
+    run after upgrade and entities defined in settings may already exist, but
+    DataProvider is not aware of them.
+    """
+    matching_scans = []
+    all_scans = json.loads(cli_command("{} -v scan list".format(client_cmd)))
+    for scan in all_scans:
+        if any(source_type == source.get("source_type") for source in scan.get("sources", [])):
+            matching_scans.append(scan)
+    return matching_scans
+
+
 def setup_qpc():
     """Configure and login qpc with Camayoc's configuration info.
 
