@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 from typing import Literal
 from typing import Optional
@@ -13,6 +14,8 @@ class CamayocOptions(BaseModel):
     run_scans: Optional[bool] = False
     scan_timeout: Optional[int] = 600
     db_cleanup: Optional[bool] = True
+    snapshot_test_reference_path: Optional[Path] = None
+    snapshot_test_actual_path: Optional[Path] = None
 
 
 class QuipucordsServerOptions(BaseModel):
