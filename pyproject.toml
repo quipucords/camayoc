@@ -18,6 +18,9 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance",
 ]
 
+[tool.poetry.plugins.pytest11]
+camayoc = "camayoc.pytest_plugin"
+
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core"]
