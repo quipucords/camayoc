@@ -11,19 +11,25 @@
 import json
 import random
 import re
+import tarfile
 
 import pytest
 from littletable import Table
 
+from camayoc.config import settings
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
 from camayoc.qpc_models import Scan
+from camayoc.tests.qpc.utils import assert_ansible_logs
+from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.utils import uuid4
 
 from .utils import report_detail
+from .utils import report_download
 from .utils import scan_add_and_check
 from .utils import scan_cancel
 from .utils import scan_job
 from .utils import scan_start
+from .utils import scans_with_source_type
 from .utils import wait_for_scan
 
 
@@ -295,3 +301,46 @@ def test_scanjob_cancel(qpc_server_config, data_provider):
     wait_for_scan(scan_job_id, status="running", timeout=60)
     scan_cancel({"id": scan_job_id})
     wait_for_scan(scan_job_id, status="canceled", timeout=60)
+
+
+@pytest.mark.upgrade_only
+@pytest.mark.runs_scan
+@pytest.mark.skipif(
+    bool(settings.camayoc.snapshot_test_reference_synthetic),
+    reason="Snapshot reference data is synthetic, scans on rerun would fail",
+)
+def test_rerun_scanjob(tmp_path, qpc_server_config, source_type):
+    """After upgrade, run existing scan again.
+
+    :id: 283c89be-b950-481d-ad81-76b74663823e
+    :description: Find a scan that was run before the upgrade and run it again.
+    :steps:
+        1) Select a random scan that used a source of given type.
+        2) Run that scan again
+        3) Wait for scan to complete.
+        4) Download scan report.
+    :expectedresults: Scan is completed, report is downloaded.
+    """
+    matching_scans = scans_with_source_type(source_type)
+    if not matching_scans:
+        pytest.skip("There are no scans with sources of this type")
+
+    scan = random.choice(matching_scans)
+
+    result = scan_start({"name": scan.get("name")})
+    match = re.match(r'Scan "(\d+)" started.', result)
+    assert match is not None
+    scan_job_id = match.group(1)
+    wait_for_scan(scan_job_id)
+    result = scan_job({"id": scan_job_id})
+    assert result["status"] == "completed"
+    assert result["report_id"]
+
+    is_network_scan = source_type == "network"
+    downloaded_report = tmp_path / "report.tar.gz"
+
+    report_download({"scan-job": scan_job_id, "output-file": downloaded_report.as_posix()})
+
+    tarfile.open(downloaded_report).extractall(tmp_path, filter="tar")
+    assert_sha256sums(tmp_path)
+    assert_ansible_logs(tmp_path, is_network_scan)

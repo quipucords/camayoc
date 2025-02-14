@@ -16,6 +16,7 @@ from camayoc.config import settings
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_sha256sums
+from camayoc.tests.qpc.utils import end_to_end_sources_names
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
 from camayoc.ui import Client
@@ -52,17 +53,9 @@ def create_endtoend_dtos(source_name, data_provider):
     return credential_dto, source_dto, trigger_scan_dto
 
 
-def source_names():
-    for source_definition in settings.sources:
-        if source_definition.type in ("openshift",):
-            continue
-        fixture_id = f"{source_definition.name}-{source_definition.type}"
-        yield pytest.param(source_definition.name, id=fixture_id)
-
-
 @pytest.mark.slow
 @pytest.mark.nightly_only
-@pytest.mark.parametrize("source_name", source_names())
+@pytest.mark.parametrize("source_name", end_to_end_sources_names())
 def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_name):
     """End-to-end test using web user interface.
 
@@ -104,7 +97,7 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
 
 
 @pytest.mark.skip("Skipped due to intermittent failure - DISCOVERY-426")
-@pytest.mark.parametrize("source_name", source_names())
+@pytest.mark.parametrize("source_name", end_to_end_sources_names())
 def test_trigger_scan(cleaning_data_provider, ui_client: Client, source_name):
     """Mostly end-to-end test using web user interface (without downloading scan results).
 
