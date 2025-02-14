@@ -7,23 +7,6 @@ from camayoc import utils
 from camayoc.config import settings
 
 
-def pytest_collection_modifyitems(
-    session: pytest.Session, items: list[pytest.Item], config: pytest.Config
-) -> None:
-    cleaning_dp_node_idxs = []
-    for node_idx, node in enumerate(items):
-        if "cleaning_data_provider" in node.fixturenames:
-            cleaning_dp_node_idxs.append(node_idx)
-
-    cleaning_dp_nodes = []
-    for node_idx in sorted(cleaning_dp_node_idxs, reverse=True):
-        node = items.pop(node_idx)
-        cleaning_dp_nodes.append(node)
-
-    for node in reversed(cleaning_dp_nodes):
-        items.insert(0, node)
-
-
 @pytest.fixture
 def isolated_filesystem(request):
     """Fixture that creates a temporary directory.
