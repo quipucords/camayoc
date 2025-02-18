@@ -1708,3 +1708,59 @@ def test_clear_all(cleaning_data_provider, isolated_filesystem, qpc_server_confi
     assert qpc_source_list.expect(pexpect.EOF) == 0
     qpc_source_list.close()
     assert qpc_source_list.exitstatus == 0
+
+
+@pytest.mark.upgrade_only
+def test_edit_existing_source_hosts(qpc_server_config, source_type):
+    """Check that source that existed before upgrade can be edited.
+
+    :id: 2ccfb156-5a27-403b-a808-c9dc4404a158
+    :description: Edit existing source
+    :steps:
+        1) Select a source of specified type
+        2) Edit source, changing the hosts field
+        3) Verify that source was changed
+        4) Edit source again, restoring old hosts
+    :expectedresults: Source is modified and changes are saved.
+    """
+    new_hosts = "127.0.0.{}".format(random.randint(1, 254))
+
+    output, _ = pexpect.run(
+        "{} -v source list --type {}".format(client_cmd, source_type),
+        encoding="utf8",
+        withexitstatus=True,
+    )
+    try:
+        all_sources = json.loads(output)
+    except ValueError:
+        pytest.skip("There are no sources of this type")
+
+    source = random.choice(all_sources)
+    source_name = source.get("name")
+
+    # Edit source
+    output, exitstatus = pexpect.run(
+        "{} -v source edit --name={} --hosts={}".format(client_cmd, source_name, new_hosts),
+        encoding="utf-8",
+        withexitstatus=True,
+    )
+    assert f'Source "{source_name}" was updated' in output
+    assert exitstatus == 0
+
+    # Grab the new data, prepare both for comparison, compare
+    output, exitstatus = pexpect.run(
+        "{} -v source show --name={}".format(client_cmd, source_name),
+        encoding="utf-8",
+        withexitstatus=True,
+    )
+    updated_source = json.loads(output)
+    expected = source.copy()
+    expected["hosts"] = [new_hosts]
+
+    assert expected == updated_source
+
+    # Restore old username
+    old_hosts = source.get("hosts")
+    pexpect.run(
+        "{} -v cred edit --name={} --hosts={}".format(client_cmd, source_name, ",".join(old_hosts))
+    )
