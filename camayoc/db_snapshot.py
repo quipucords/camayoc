@@ -113,6 +113,13 @@ def _read_report_directory(directory: Path):
 def _read_report_details(file: Path):
     with file.open() as fh:
         data = json.load(fh)
+
+    sources = data.get("sources", [])
+    sources.sort(key=itemgetter("source_name"))
+
+    for source in sources:
+        source.get("facts", []).sort(key=_source_fact_itemgetter)
+
     return data
 
 
@@ -127,3 +134,21 @@ def _connection_job_itemgetter(item):
     credential_id = item.get("credential", {}).get("id", 0)
     name = item.get("name", "")
     return f"{name}-{credential_id}-{source_id}"
+
+
+def _source_fact_itemgetter(item):
+    vm_uuid = item.get("vm.uuid", "")
+    vm_host_uuid = item.get("vm.host.uuid", "")
+    if vm_uuid or vm_host_uuid:
+        return f"{vm_uuid}-{vm_host_uuid}"
+
+    hostname = item.get("hostname")
+    organization = item.get("organization")
+    location = item.get("location")
+    if hostname and organization and location:
+        return f"{organization}-{location}-{hostname}"
+
+    etc_id = item.get("etc_machine_id", "")
+    subman_id = item.get("subscription_manager_id", "")
+    dmi_uuid = item.get("dmi_system_uuid", "")
+    return f"{etc_id}-{subman_id}-{dmi_uuid}"
