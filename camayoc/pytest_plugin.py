@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import pytest
 
 
@@ -14,7 +16,8 @@ def pytest_collection_modifyitems(
     session: pytest.Session, items: list[pytest.Item], config: pytest.Config
 ) -> None:
     filter_pipeline_tests(items, config)
-    run_cleaning_data_provider_first(items)
+    reorder_matching_first(items, _has_fixture("cleaning_data_provider"))
+    reorder_matching_first(items, _has_marker("upgrade_only"))
 
 
 def filter_pipeline_tests(items: list[pytest.Item], config: pytest.Config) -> None:
@@ -47,20 +50,37 @@ def filter_pipeline_tests(items: list[pytest.Item], config: pytest.Config) -> No
     config.hook.pytest_deselected(items=deselected_items)
 
 
-def run_cleaning_data_provider_first(items: list[pytest.Item]) -> None:
-    """Reorder tests so these that use cleaning_data_provider fixture are run first."""
-    cleaning_dp_node_idxs = []
+def reorder_matching_first(
+    items: list[pytest.Item], predicatefn: Callable[[pytest.Item], bool]
+) -> None:
+    """Reorder tests so these that match a predicate are run first."""
+    matching_node_idxs = []
     for node_idx, node in enumerate(items):
-        if "cleaning_data_provider" in getattr(node, "fixturenames", []):
-            cleaning_dp_node_idxs.append(node_idx)
+        if predicatefn(node):
+            matching_node_idxs.append(node_idx)
 
-    cleaning_dp_nodes = []
-    for node_idx in sorted(cleaning_dp_node_idxs, reverse=True):
+    matching_nodes = []
+    for node_idx in sorted(matching_node_idxs, reverse=True):
         node = items.pop(node_idx)
-        cleaning_dp_nodes.append(node)
+        matching_nodes.append(node)
 
-    for node in reversed(cleaning_dp_nodes):
+    for node in reversed(matching_nodes):
         items.insert(0, node)
+
+
+def _has_fixture(fixture_name: str) -> Callable[[pytest.Item], bool]:
+    def predicatefn(item: pytest.Item):
+        return fixture_name in getattr(item, "fixturenames", [])
+
+    return predicatefn
+
+
+def _has_marker(marker_name: str) -> Callable[[pytest.Item], bool]:
+    def predicatefn(item: pytest.Item):
+        marker_names = [i.name for i in item.iter_markers()]
+        return marker_name in marker_names
+
+    return predicatefn
 
 
 def gather_pr_pipeline_tests(items: list[pytest.Item]) -> list[int]:
