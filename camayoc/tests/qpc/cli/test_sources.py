@@ -1740,7 +1740,7 @@ def test_edit_existing_source_hosts(qpc_server_config, source_type):
 
     # Edit source
     output, exitstatus = pexpect.run(
-        "{} -v source edit --name={} --hosts={}".format(client_cmd, source_name, new_hosts),
+        "{} -v source edit --name='{}' --hosts={}".format(client_cmd, source_name, new_hosts),
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -1749,7 +1749,7 @@ def test_edit_existing_source_hosts(qpc_server_config, source_type):
 
     # Grab the new data, prepare both for comparison, compare
     output, exitstatus = pexpect.run(
-        "{} -v source show --name={}".format(client_cmd, source_name),
+        "{} -v source show --name='{}'".format(client_cmd, source_name),
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -1759,8 +1759,10 @@ def test_edit_existing_source_hosts(qpc_server_config, source_type):
 
     assert expected == updated_source
 
-    # Restore old username
+    # Restore old hosts value
     old_hosts = source.get("hosts")
     pexpect.run(
-        "{} -v cred edit --name={} --hosts={}".format(client_cmd, source_name, ",".join(old_hosts))
+        "{} -v source edit --name='{}' --hosts {}".format(
+            client_cmd, source_name, " ".join(old_hosts)
+        )
     )

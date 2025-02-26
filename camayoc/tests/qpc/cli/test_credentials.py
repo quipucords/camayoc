@@ -751,7 +751,9 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
 
     # Edit credential
     output, exitstatus = pexpect.run(
-        "{} -v cred edit --name={} --username={}".format(client_cmd, credential_name, new_username),
+        "{} -v cred edit --name='{}' --username={}".format(
+            client_cmd, credential_name, new_username
+        ),
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -760,7 +762,7 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
 
     # Grab the new data, prepare both for comparison, compare
     output, exitstatus = pexpect.run(
-        "{} -v cred show --name={}".format(client_cmd, credential_name),
+        "{} -v cred show --name='{}'".format(client_cmd, credential_name),
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -774,7 +776,7 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
 
     # Restore old username
     pexpect.run(
-        "{} -v cred edit --name={} --username={}".format(
+        "{} -v cred edit --name='{}' --username='{}'".format(
             client_cmd, credential_name, credential.get("username")
         )
     )
