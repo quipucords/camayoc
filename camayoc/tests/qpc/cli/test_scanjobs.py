@@ -336,7 +336,7 @@ def test_rerun_scanjob(tmp_path, qpc_server_config, source_type):
     assert result["status"] == "completed"
     assert result["report_id"]
 
-    is_network_scan = source_type == "network"
+    is_network_scan = any(source.get("source_type") == "network" for source in scan.get("sources"))
     downloaded_report = tmp_path / "report.tar.gz"
 
     report_download({"scan-job": scan_job_id, "output-file": downloaded_report.as_posix()})
