@@ -36,11 +36,11 @@ pexpect = "^4.8.0"
 # playwright needs to download browsers. We do that during Jenkins agent image
 # generation to save time during execution, but that means we need to keep
 # version here in sync with version used when generating images
-playwright = "1.47.0"
+playwright = "1.50.0"
 pydantic = "^2.6.3"
 pytest = "^8.3.4"
 pytest-ibutsu = "^2.2.4"
-pytest-playwright = "^0.6.1"
+pytest-playwright = "^0.7.0"
 pyxdg = "^0.28"
 pyyaml = "^6.0"
 
