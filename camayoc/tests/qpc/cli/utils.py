@@ -2,6 +2,7 @@
 """Utility functions for Quipucords cli tests."""
 
 import functools
+import ipaddress
 import json
 import re
 import tarfile
@@ -170,12 +171,19 @@ report_aggregate = functools.partial(cli_command, "{} -v report aggregate".forma
 
 def convert_ip_format(ipaddr):
     """Convert IP strings (for generating expected test results)."""
-    if ipaddr.endswith("0/24"):
-        ipaddr = ipaddr.replace("0/24", r"\[0:255\]")
-    elif ipaddr.endswith("0/28"):
-        ipaddr = ipaddr.replace("0/28", r"\[0:15\]")
-    elif ipaddr.endswith("[1:100]"):
-        ipaddr = ipaddr.replace("[1:100]", r"\[1:100\]")
+    # Expand CIDR to a formatted list of IPs
+    if "/" in ipaddr:
+        network = ipaddress.ip_network(ipaddr, strict=False)
+        ipaddr = '",\r\n        "'.join(str(ip) for ip in network.hosts())
+    # Expand Ansible-style range
+    elif re.search(r"\[\d+:\d+\]", ipaddr):
+        match = re.match(r"(.*)\[(\d+):(\d+)\]", ipaddr)
+        if match:
+            base_ip, start, end = match.groups()
+            start, end = int(start), int(end)
+            expanded_ips = [f"{base_ip}{i}" for i in range(start, end + 1)]
+            ipaddr = '",\r\n        "'.join(expanded_ips)
+    # Convert space-separated IPs into formatted multi-line string
     elif " " in ipaddr:
         ipaddr = '",\r\n        "'.join(ipaddr.split(" "))
     return ipaddr
