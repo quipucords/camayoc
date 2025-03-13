@@ -34,7 +34,7 @@ install:
 	poetry install
 
 install-dev:
-	poetry install --with dev
+	poetry install -E dev
 	poetry run pre-commit install --install-hooks
 
 update-deps:
