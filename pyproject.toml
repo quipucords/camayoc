@@ -1,8 +1,10 @@
-[tool.poetry]
+[project]
 name = "camayoc"
 version = "1.8.5"
 description = "A GPL-licensed Python library that facilitates functional testing of Quipucords."
-authors = ["Quipucords Dev Team <quipucords@redhat.com>"]
+authors = [
+    {name = "Quipucords Dev Team", email = "quipucords@redhat.com"},
+]
 readme = "README.rst"
 license = "GPLv3"
 repository = "https://github.com/quipucords/camayoc"
@@ -13,50 +15,49 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Testing",
     "Topic :: Software Development :: Quality Assurance",
 ]
+requires-python = ">= 3.12, < 3.14"
+dependencies = [
+    "attrs (>= 24.2.0, < 25.0.0)",
+    "dynaconf (>= 3.2.4, < 4.0.0)",
+    "deepdiff (>= 8.2.0, < 9.0.0)",
+    "factory_boy (>= 3.2.1, < 4.0.0)",
+    "littletable (>= 3.0.1, < 4.0.0)",
+    "pexpect (>= 4.8.0, < 5.0.0)",
+    # playwright needs to download browsers. We do that during Jenkins agent image
+    # generation to save time during execution, but that means we need to keep
+    # version here in sync with version used when generating images
+    "playwright==1.50.0",
+    "pydantic (>= 2.6.3, < 3.0.0)",
+    "pytest (>= 8.3.4, < 9.0.0)",
+    "pytest-ibutsu (>= 2.2.4, < 3.0.0)",
+    "pytest-playwright (>= 0.7.0, < 8.0.0)",
+    "pyxdg==0.28",
+    "pyyaml (>= 6.0, < 7.0)",
+]
 
-[tool.poetry.plugins.pytest11]
+[project.optional-dependencies]
+dev = [
+    # For `make test-coverage`
+    "pytest-cov (>= 4.0.0, < 5.0.0)",
+    # For `make validate-docstrings`
+    "testimony (>= 2.2.0, < 3.0.0)",
+    # For `make pre-commit`
+    "pre-commit (>= 4.0.1, < 5.0.0)",
+    "isort (>= 5.11.4, < 6.0.0)",
+    "ruff (>= 0.8.0, < 1.0.0)",
+]
+
+[project.entry-points.pytest11]
 camayoc = "camayoc.pytest_plugin"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core"]
-
-[tool.poetry.dependencies]
-python = ">= 3.11, < 3.14"
-attrs = "^24.2.0"
-dynaconf = "^3.2.4"
-deepdiff = "^8.2.0"
-factory_boy = "^3.2.1"
-littletable = "^3.0.1"
-pexpect = "^4.8.0"
-# playwright needs to download browsers. We do that during Jenkins agent image
-# generation to save time during execution, but that means we need to keep
-# version here in sync with version used when generating images
-playwright = "1.50.0"
-pydantic = "^2.6.3"
-pytest = "^8.3.4"
-pytest-ibutsu = "^2.2.4"
-pytest-playwright = "^0.7.0"
-pyxdg = "^0.28"
-pyyaml = "^6.0"
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-# For `make test-coverage`
-pytest-cov = "^4.0.0"
-# For `make validate-docstrings`
-testimony = "^2.2.0"
-# For `make pre-commit`
-pre-commit = "^4.0.1"
-isort = "^5.11.4"
-ruff = "^0.8.0"
-
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"
