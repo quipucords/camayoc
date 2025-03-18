@@ -63,7 +63,7 @@ def test_rhacs_data(qpc_server_config, data_provider, source_definition: SourceO
     match_scan_id = re.match(r'Scan "(\d+)" started.', output)
     assert match_scan_id is not None
     scan_job_id = match_scan_id.group(1)
-    wait_for_scan(scan_job_id, timeout=1200)
+    wait_for_scan(scan_job_id)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     # to here
