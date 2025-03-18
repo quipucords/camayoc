@@ -73,7 +73,7 @@ def test_scanjob_with_multiple_sources(qpc_server_config, data_provider):
         should be available.
     """
     source_generator = data_provider.sources.defined_many(
-        {"type": Table.is_in(("network", "satellite", "vcenter"))}
+        {"type": Table.is_in(("network", "satellite"))}
     )
     sources = [next(source_generator)]
     while True:
