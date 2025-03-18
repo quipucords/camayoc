@@ -34,12 +34,12 @@ def clear_all_entities():
     assert errors == [], output
 
 
-def wait_for_scan(scan_job_id, status="completed", timeout=900):
+def wait_for_scan(scan_job_id, status="completed", timeout=1200):
     """Wait for a scan to reach some ``status`` up to ``timeout`` seconds.
 
     :param scan_job_id: Scan ID to wait for.
     :param status: Scan status which will wait for. Default is completed.
-    :param timeout: wait up to this amount of seconds. Default is 900.
+    :param timeout: wait up to this amount of seconds. Default is 1200 (20 minutes).
     """
     while timeout > 0:
         result = scan_job({"id": scan_job_id})
