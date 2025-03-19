@@ -296,7 +296,7 @@ class ScanContainer:
                 logger.info(
                     "Finished scanjob %s for scan %s", scan.scan_job_id, scan.definition.name
                 )
-            except (WaitTimeError, StoppedScanException) as e:
+            except (WaitTimeError, StoppedScanException, HTTPError) as e:
                 finished_scan = evolve(
                     scan,
                     status=ScanSimplifiedStatusEnum.FAILED,
