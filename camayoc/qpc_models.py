@@ -14,6 +14,7 @@ from camayoc.constants import QPC_REPORTS_PATH
 from camayoc.constants import QPC_SCAN_PATH
 from camayoc.constants import QPC_SCANJOB_PATH
 from camayoc.constants import QPC_SOURCE_PATH
+from camayoc.exceptions import ScanJobWithoutReportException
 from camayoc.types.settings import CredentialOptions
 from camayoc.types.settings import ScanOptions
 from camayoc.types.settings import SourceOptions
@@ -690,6 +691,20 @@ class Report(QPCObject):
         response = self.client.get(path, **kwargs)
         if response.status_code in range(200, 203):
             self._id = response.json().get("report_id")
+        if not self._id:
+            response_data = response.json()
+            msg = (
+                "Scan job does not have report_id."
+                " scan_job_id={} scan.name={} status={} status_message:\n{}"
+            )
+            raise ScanJobWithoutReportException(
+                msg.format(
+                    response_data.get("id"),
+                    response_data.get("scan", {}).get("name"),
+                    response_data.get("status"),
+                    response_data.get("status_message"),
+                )
+            )
         return response
 
     def details(self, **kwargs):

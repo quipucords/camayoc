@@ -44,6 +44,14 @@ class StoppedScanException(Exception):
     """
 
 
+class ScanJobWithoutReportException(Exception):
+    """Raised when trying to obtain report_id from ScanJob that does not have it.
+
+    Raised by Report.retrieve_from_scan_job() when ScanJob does not have report_id
+    key. Usually that happens because ScanJob failed.
+    """
+
+
 class MisconfiguredWidgetException(Exception):
     """Raised by UI Widget when expected property is not there."""
 
