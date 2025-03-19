@@ -10,6 +10,7 @@ from littletable import Table
 from camayoc.api import HTTPError
 from camayoc.config import settings
 from camayoc.exceptions import NoMatchingDataDefinitionException
+from camayoc.exceptions import ScanJobWithoutReportException
 from camayoc.exceptions import StoppedScanException
 from camayoc.exceptions import WaitTimeError
 from camayoc.qpc_models import Credential
@@ -296,7 +297,12 @@ class ScanContainer:
                 logger.info(
                     "Finished scanjob %s for scan %s", scan.scan_job_id, scan.definition.name
                 )
-            except (WaitTimeError, StoppedScanException, HTTPError) as e:
+            except (
+                WaitTimeError,
+                StoppedScanException,
+                HTTPError,
+                ScanJobWithoutReportException,
+            ) as e:
                 finished_scan = evolve(
                     scan,
                     status=ScanSimplifiedStatusEnum.FAILED,
