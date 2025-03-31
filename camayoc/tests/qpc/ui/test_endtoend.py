@@ -94,38 +94,3 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
     tarfile.open(downloaded_report.path()).extractall(tmp_path)
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
-
-
-@pytest.mark.skip("Skipped due to intermittent failure - DISCOVERY-426")
-@pytest.mark.parametrize("source_name", end_to_end_sources_names())
-def test_trigger_scan(cleaning_data_provider, ui_client: Client, source_name):
-    """Mostly end-to-end test using web user interface (without downloading scan results).
-
-    :id: ae8b2d7d-8ac2-4957-a67a-6dedd80f4f31
-    :description: This is mostly end-to-end user journey through the web user interface.
-        To save time, we don't wait for scan to complete and we don't download scan
-        results.
-    :steps:
-        1) Log into the UI.
-        2) Go to Credentials page, open Credentials modal and fill in the form.
-        3) Go to Sources page, open Sources wizard and fill in all the forms.
-        4) Trigger scan for newly created source.
-        5) Verify that scan has started.
-        6) Log out.
-    :expectedresults: Credential and Source are created. Scan has started.
-        User is logged out.
-    """
-    credential_dto, source_dto, trigger_scan_dto = create_endtoend_dtos(
-        source_name, cleaning_data_provider
-    )
-    scans_page = (
-        ui_client.begin()
-        .login(data_factories.LoginFormDTOFactory())
-        .navigate_to(MainMenuPages.CREDENTIALS)
-        .add_credential(credential_dto)
-        .navigate_to(MainMenuPages.SOURCES)
-        .add_source(source_dto)
-        .trigger_scan(trigger_scan_dto)
-        .navigate_to(MainMenuPages.SCANS)
-    )
-    assert scans_page._get_item(trigger_scan_dto.scan_form.scan_name).locator.is_visible()
