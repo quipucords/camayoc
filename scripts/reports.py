@@ -14,7 +14,10 @@ import warnings
 from datetime import datetime
 from pathlib import Path
 
+from camayoc.api import HTTPError
 from camayoc.data_provider import DataProvider
+from camayoc.exceptions import ScanJobWithoutReportException
+from camayoc.exceptions import StoppedScanException
 from camayoc.exceptions import WaitTimeError
 from camayoc.qpc_models import Report
 from camayoc.qpc_models import ScanJob
@@ -90,7 +93,13 @@ def run_scans(data_provider, timeout, fail_fast, insights_report):
         download_insights = insights_report and should_download_insights(data_provider, scan)
         try:
             run_scan(scan, timeout, download_insights)
-        except WaitTimeError:
+        except (
+            WaitTimeError,
+            StoppedScanException,
+            HTTPError,
+            ScanJobWithoutReportException,
+        ) as e:
+            logger.error("%s", e)
             if fail_fast:
                 raise SomeScanFailedException
             some_scan_failed = True
