@@ -169,7 +169,7 @@ def end_to_end_sources_names():
     This is used by CLI and UI end_to_end tests.
     """
     for source_definition in settings.sources:
-        if source_definition.type in ("openshift",):
+        if source_definition.type in ("openshift", "rhacs"):
             continue
         fixture_id = f"{source_definition.name}-{source_definition.type}"
         yield pytest.param(source_definition.name, id=fixture_id)
