@@ -6,12 +6,10 @@ authors = [
     {name = "Quipucords Dev Team", email = "quipucords@redhat.com"},
 ]
 readme = "README.rst"
-license = "GPLv3"
-repository = "https://github.com/quipucords/camayoc"
+license = "GPL-3.0-only"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -40,7 +38,13 @@ dependencies = [
     "pyyaml (>= 6.0, < 7.0)",
 ]
 
-[project.optional-dependencies]
+[project.urls]
+Repository = "https://github.com/quipucords/camayoc"
+
+[project.entry-points.pytest11]
+camayoc = "camayoc.pytest_plugin"
+
+[dependency-groups]
 dev = [
     # For `make test-coverage`
     "pytest-cov (>= 4.0.0, < 5.0.0)",
@@ -52,12 +56,14 @@ dev = [
     "ruff (>= 0.8.0, < 1.0.0)",
 ]
 
-[project.entry-points.pytest11]
-camayoc = "camayoc.pytest_plugin"
-
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core"]
+requires = ["setuptools >= 70"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["camayoc*"]
+namespaces = false
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"
@@ -128,3 +134,13 @@ max-complexity = 10
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
+
+# this section should generally be the same as in quipucords repository
+# uv is installed during Jenkins agent image generation. Version specified
+# here should be matched by version available in image.
+[tool.uv]
+package = true
+required-version = ">=0.6.11,<0.7"
+environments = [
+    "implementation_name == 'cpython' and (sys_platform == 'linux' or sys_platform == 'darwin')",
+]
