@@ -31,27 +31,28 @@ clean:
 	}
 
 install:
-	poetry install
+	uv sync --frozen
 
 install-dev:
-	poetry install -E dev
-	poetry run pre-commit install --install-hooks
+	uv sync --group dev --frozen
+	uv run pre-commit install --install-hooks
 
 update-deps:
-	poetry update --no-cache
+	uv lock --upgrade
+	uv sync --frozen
 
 pre-commit:
-	poetry run pre-commit run --all-files
+	uv run pre-commit run --all-files
 
 lint:
-	poetry run ruff check .
-	poetry run ruff format --check .
+	uv run ruff check .
+	uv run ruff format --check .
 
 test:
-	poetry run pytest $(PYTEST_OPTIONS) tests
+	uv run pytest $(PYTEST_OPTIONS) tests
 
 test-coverage:
-	poetry run pytest --verbose --cov-report term --cov-report xml:coverage.xml \
+	uv run pytest --verbose --cov-report term --cov-report xml:coverage.xml \
 	--cov=camayoc.constants \
 	--cov=camayoc.qpc_models \
 	--cov=camayoc.data_provider \
@@ -75,7 +76,7 @@ test-qpc-cli:
 
 validate-docstrings:
 	@./scripts/validate_docstrings.sh
-	@poetry run testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
+	@uv run testimony --tokens $(TESTIMONY_TOKENS) --minimum-tokens $(TESTIMONY_MINIMUM_TOKENS) validate camayoc/tests
 
 .PHONY: all clean install install-dev lint \
 	test test-coverage test-qpc \

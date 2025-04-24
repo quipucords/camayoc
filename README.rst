@@ -16,17 +16,17 @@ A GPL-licensed Python library that facilitates functional testing of quipucords_
 Installation
 ^^^^^^^^^^^^
 
-Camayoc supports Python 3.11. It uses `Poetry <https://python-poetry.org/>`_
-for dependency and virtual environment management. See Poetry documentation for
+Camayoc supports Python 3.12+. It uses `uv <https://docs.astral.sh/uv/>`_
+for dependency and virtual environment management. See uv documentation for
 installation instructions - one of the easier paths is to install it through
 `pipx <https://pypa.github.io/pipx/>`_ , which you can get from your distribution.
 
 This is a suggested install method:
 
-1. Install pipx and Poetry:
+1. Install pipx and uv:
 
     sudo dnf install -y pipx
-    pipx install poetry
+    pipx install uv
 
 2. Clone the repo and navigate to the base directory::
 
