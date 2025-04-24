@@ -462,11 +462,11 @@ def test_detail_report(  # noqa: PLR0913
         for facts in report_source["facts"]:
             report_facts = set(facts.keys())
             expected_facts = set(FACTS)
-            assert report_facts.issubset(
-                expected_facts
-            ), "Extra report facts:\n{}\n\nExtra expected facts:\n{}".format(
-                pprint.pformat(report_facts - expected_facts),
-                pprint.pformat(expected_facts - report_facts),
+            assert report_facts.issubset(expected_facts), (
+                "Extra report facts:\n{}\n\nExtra expected facts:\n{}".format(
+                    pprint.pformat(report_facts - expected_facts),
+                    pprint.pformat(expected_facts - report_facts),
+                )
             )
 
 
@@ -748,9 +748,9 @@ def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc
     output = report_insights({"report": finished_scan.report_id, "output-file": output_file})
 
     assert "Report written successfully" in output
-    assert os.path.isfile(
-        output_file
-    ), f"Insights report not found at (failed download?): {output_file}"
+    assert os.path.isfile(output_file), (
+        f"Insights report not found at (failed download?): {output_file}"
+    )
 
     tar = tarfile.open(output_file)
     tar_content = {"report_slices": {}}
@@ -766,9 +766,9 @@ def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc
             tar_content["report_slices"][key] = {"number_hosts": hosts_num}
 
     assert "metadata.json" in tar_content, "Insights report does not have metadata.json file"
-    assert (
-        tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"]
-    ), "Data in metadata.json and actual data in archive do not match"
+    assert tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"], (
+        "Data in metadata.json and actual data in archive do not match"
+    )
 
 
 @pytest.mark.runs_scan
@@ -790,9 +790,9 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
     output = report_aggregate({"report": finished_scan.report_id, "output-file": output_file})
 
     assert "Report written successfully" in output
-    assert os.path.isfile(
-        output_file
-    ), f"Aggregate report not found at (failed download?): {output_file}"
+    assert os.path.isfile(output_file), (
+        f"Aggregate report not found at (failed download?): {output_file}"
+    )
 
     with open(output_file) as fh:
         json_formatted = json.load(fh)

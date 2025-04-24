@@ -40,8 +40,7 @@ AUTH_TOKEN_INPUT = "Provide a token for authentication.\r\nToken:"
 """Connection auth_token input prompt."""
 
 BECOME_PASSWORD_INPUT = (
-    "Provide a privilege escalation password to be used when running a "
-    "network scan.\r\nPassword:"
+    "Provide a privilege escalation password to be used when running a network scan.\r\nPassword:"
 )
 """Become password input prompt."""
 

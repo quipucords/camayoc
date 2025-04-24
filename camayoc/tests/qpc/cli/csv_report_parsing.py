@@ -54,9 +54,9 @@ def normalize_deployments_report(header_info, reader):
 
     # Ensure extracted fields match expected
     expected_keys = [x.lower().replace(" ", "_") for x in EXPECTED_DEPLOYMENTS_REPORT_ID_FIELDS]
-    assert sorted(report_info.keys()) == sorted(
-        expected_keys
-    ), "Extracted Report Fields didn't match expected list"
+    assert sorted(report_info.keys()) == sorted(expected_keys), (
+        "Extracted Report Fields didn't match expected list"
+    )
 
     report = {
         "report_id": report_info["report_id"],
@@ -86,9 +86,9 @@ def normalize_detail_report(header_info, reader):
 
     # Ensure extracted fields match expected
     expected_keys = [x.lower().replace(" ", "_") for x in EXPECTED_DETAIL_REPORT_ID_FIELDS]
-    assert sorted(report_info.keys()) == sorted(
-        expected_keys
-    ), "Extracted Report Fields didn't match expected list"
+    assert sorted(report_info.keys()) == sorted(expected_keys), (
+        "Extracted Report Fields didn't match expected list"
+    )
 
     report = {
         "report_id": report_info["report_id"],

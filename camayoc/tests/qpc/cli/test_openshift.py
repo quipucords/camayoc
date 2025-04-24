@@ -77,9 +77,9 @@ def validate_operators(cluster, details):
                 has_operators = True
                 detected_operators = [operator["name"] for operator in fact["operators"]]
                 for operator in expected_operators:
-                    assert (
-                        operator in detected_operators
-                    ), f"The operator '{operator}' was not detected."
+                    assert operator in detected_operators, (
+                        f"The operator '{operator}' was not detected."
+                    )
     assert has_operators, "Could not found any operators."
 
 
@@ -99,13 +99,13 @@ def validate_openshift_with_acm(cluster, details):
         for fact in source["facts"]:
             if "acm_metrics" in fact:
                 acm_metrics = fact["acm_metrics"]
-                assert (
-                    len(acm_metrics) > 0
-                ), "Cluster has ACM and no metrics were detected (expected at least one)."
+                assert len(acm_metrics) > 0, (
+                    "Cluster has ACM and no metrics were detected (expected at least one)."
+                )
                 managed_clusters = [metric["managed_cluster_id"] for metric in acm_metrics]
-                assert (
-                    cluster_id in managed_clusters
-                ), f"Cluster has ACM and its cluster-id 'f{cluster_id}' is not in metrics."
+                assert cluster_id in managed_clusters, (
+                    f"Cluster has ACM and its cluster-id 'f{cluster_id}' is not in metrics."
+                )
                 for metric in acm_metrics:
                     assert set(EXPECTED_METRIC_KEYS) == set(list(metric))
                     assert metric["available"] in (True, False)

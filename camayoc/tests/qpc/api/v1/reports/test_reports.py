@@ -153,7 +153,7 @@ def test_OS_found_deployment_report(scans, scan_name):
 
         if found_release.startswith(expected_distribution.release) is False:
             errors_found.append(
-                "Expected OS release {0} for host {1} but " "found OS release {2}".format(
+                "Expected OS release {0} for host {1} but found OS release {2}".format(
                     expected_distribution.release,
                     hostname,
                     found_release,
@@ -166,7 +166,7 @@ def test_OS_found_deployment_report(scans, scan_name):
         # It will pass if "Red Hat Enterprise Linux Server" is found
         if found_distro.startswith(expected_distribution.name) is False:
             errors_found.append(
-                "Expected OS named {0} for source {1} but " "found OS named {2}".format(
+                "Expected OS named {0} for source {1} but found OS named {2}".format(
                     expected_distribution.name,
                     hostname,
                     found_distro,
@@ -176,7 +176,7 @@ def test_OS_found_deployment_report(scans, scan_name):
         # the same contained in the found version.
         if expected_distribution.version != found_version:
             errors_found.append(
-                "Expected OS version {0} for source {1} but " "found OS version {2}".format(
+                "Expected OS version {0} for source {1} but found OS version {2}".format(
                     expected_distribution.version,
                     hostname,
                     found_version,
@@ -185,7 +185,7 @@ def test_OS_found_deployment_report(scans, scan_name):
 
         if expected_distribution.is_redhat != found_is_redhat:
             errors_found.append(
-                "Expected is_redhat to be {0} for source {1} but " "found {2}".format(
+                "Expected is_redhat to be {0} for source {1} but found {2}".format(
                     expected_distribution.is_redhat,
                     hostname,
                     found_is_redhat,
@@ -251,7 +251,7 @@ def test_installed_products_deployment_report(scans, scan_name):
 
         if expected_installed_products != found_installed_products:
             errors_found.append(
-                "Host {0} expected installed products {1} but " "found {2}".format(
+                "Host {0} expected installed products {1} but found {2}".format(
                     hostname,
                     expected_installed_products,
                     found_installed_products,
@@ -317,7 +317,7 @@ def test_raw_facts_details_report(scans, scan_name):
             found_fact_value = actual_data.get(raw_fact_name, SENTINEL)
             if raw_fact_value != found_fact_value:
                 errors_found.append(
-                    "Host {0} expected fact {1} to have value {2} but " "found {3}".format(
+                    "Host {0} expected fact {1} to have value {2} but found {3}".format(
                         hostname,
                         raw_fact_name,
                         raw_fact_value,
