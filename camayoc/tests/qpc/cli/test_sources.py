@@ -232,7 +232,7 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --port {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --port {} --type {}".format(
             client_cmd, name, cred_name, hosts, port, source_type
         )
     )
@@ -284,7 +284,7 @@ def test_add_with_ssl_cert_verify(
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} --type {}".format(
             client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type
         )
     )
@@ -378,7 +378,7 @@ def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_ty
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} --type {}".format(
             client_cmd, name, cred_name, hosts, ssl_protocol, source_type
         )
     )
@@ -471,7 +471,7 @@ def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} --type {}".format(
             client_cmd, name, cred_name, hosts, disable_ssl, source_type
         )
     )
@@ -1254,7 +1254,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-cert-verify {} --type {}".format(
             client_cmd, name, cred_name, hosts, ssl_cert_verify, source_type
         )
     )
@@ -1328,7 +1328,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --ssl-protocol {} --type {}".format(
             client_cmd, name, cred_name, hosts, ssl_protocol, source_type
         )
     )
@@ -1400,7 +1400,7 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
     )
 
     qpc_source_add = pexpect.spawn(
-        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} " "--type {}".format(
+        "{} -v source add --name {} --cred {} --hosts {} --disable-ssl {} --type {}".format(
             client_cmd, name, cred_name, hosts, disable_ssl, source_type
         )
     )

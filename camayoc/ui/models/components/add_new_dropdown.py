@@ -19,7 +19,7 @@ class AddNewDropdown(UIPage):
         )
 
         exp_msg = (
-            "Could not open modal using dropdown menu [button locator={} ;"
+            "Could not open modal using dropdown menu [button locator={} ; "
             "dropdown item locator={}]"
         ).format(add_button_locator, dropdown_item_locator)
         exp = TimeoutError(exp_msg)

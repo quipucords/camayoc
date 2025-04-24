@@ -380,7 +380,7 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
 
         if not isinstance(other, dict):
             raise TypeError(
-                "Objects of type Source can only be compared to" "Sources objects or dictionaries."
+                "Objects of type Source can only be compared to Sources objects or dictionaries."
             )
 
         local_items = self.fields()
@@ -532,7 +532,7 @@ class Scan(QPCObject, QPCObjectBulkDeleteMixin):
 
         if not isinstance(other, dict):
             raise TypeError(
-                "Objects of type Scan can only be compared to" "Scan objects or dictionaries."
+                "Objects of type Scan can only be compared to Scan objects or dictionaries."
             )
 
         local_items = self.fields()
