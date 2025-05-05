@@ -104,7 +104,7 @@ QPC_SOURCES_DEFAULT_PORT = {
 }
 """Default sources port that the quipucords server supports."""
 
-QPC_SCAN_TYPES = ("inspect", "connect")
+QPC_SCAN_TYPES = ("inspect",)
 """Types of scans that the quipucords server supports."""
 
 QPC_HOST_MANAGER_TYPES = ("vcenter", "satellite", "openshift", "ansible")
