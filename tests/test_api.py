@@ -54,7 +54,7 @@ MOCK_SCAN = {
     "id": 21,
     "name": "testscan",
     "options": {"max_concurrency": 50},
-    "scan_type": "connect",
+    "scan_type": "inspect",
     "sources": [{"id": 153, "name": "mock_source"}],
     "status": "created",
 }
@@ -220,7 +220,7 @@ class ScanTestCase(unittest.TestCase):
     def test_equivalent(self):
         """If a hostname is specified in the config file, we use it."""
         client = api.Client(authenticate=False, config=CAMAYOC_CONFIG)
-        scn = Scan(source_ids=[153], scan_type="connect", name=MOCK_SCAN["name"], client=client)
+        scn = Scan(source_ids=[153], scan_type="inspect", name=MOCK_SCAN["name"], client=client)
         scn._id = MOCK_SCAN["id"]
         self.assertTrue(scn.equivalent(MOCK_SCAN))
         self.assertTrue(scn.equivalent(scn))

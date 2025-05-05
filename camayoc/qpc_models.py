@@ -471,7 +471,7 @@ class Scan(QPCObject, QPCObjectBulkDeleteMixin):
         self.endpoint = QPC_SCAN_PATH
         self.name = uuid4() if name is None else name
 
-        # valid scan types are 'connect' and 'inspect'
+        # only valid scan type is 'inspect'
         self.scan_type = scan_type
         self.options = {"max_concurrency": max_concurrency}
         if disabled_optional_products:
