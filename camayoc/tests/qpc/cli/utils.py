@@ -98,7 +98,9 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
         options["type"] = "network"
     command = "{} -v cred add".format(client_cmd)
     for key, value in options.items():
-        if value is None:
+        if key == "sshkey":
+            command += " --sshkeyfile -"
+        elif value is None:
             command += " --{}".format(key)
         else:
             command += " --{}={}".format(key, value)

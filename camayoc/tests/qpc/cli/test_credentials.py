@@ -401,7 +401,9 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn("{} -v cred edit --name={} --sshkey".format(client_cmd, name))
+    qpc_cred_edit = pexpect.spawn(
+        "{} -v cred edit --name={} --sshkeyfile -".format(client_cmd, name)
+    )
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
