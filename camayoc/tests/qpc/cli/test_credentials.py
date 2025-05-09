@@ -142,7 +142,7 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
     )
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkey": None},
+        {"name": name, "username": username, "sshkeyfile": "-"},
         inputs=[("Private SSH Key:", sshkeyfile_cred.ssh_key)],
     )
 
@@ -184,7 +184,7 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
         {
             "name": name,
             "username": username,
-            "sshkey": None,
+            "sshkeyfile": "-",
             "become-password": None,
         },
         inputs=[
@@ -396,7 +396,7 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
         data_only=True,
     )
     cred_add_and_check(
-        {"name": name, "username": username, "sshkey": None},
+        {"name": name, "username": username, "sshkeyfile": "-"},
         inputs=[("Private SSH Key:", sshkeyfile_cred.ssh_key)],
     )
 
