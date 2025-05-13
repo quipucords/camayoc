@@ -220,7 +220,7 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = random.randint(0, 65535)
+    port = random.randint(1, 65535)
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1124,9 +1124,9 @@ def test_edit_port(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = new_port = random.randint(0, 65535)
+    port = new_port = random.randint(1, 65535)
     while port == new_port:
-        new_port = random.randint(0, 65535)
+        new_port = random.randint(1, 65535)
     cred_add_and_check(
         {
             "name": cred_name,
@@ -1194,9 +1194,9 @@ def test_edit_port_negative(isolated_filesystem, qpc_server_config, source_type)
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
-    port = new_port = random.randint(0, 65535)
+    port = new_port = random.randint(1, 65535)
     while port == new_port:
-        new_port = random.randint(0, 65535)
+        new_port = random.randint(1, 65535)
     invalid_name = utils.uuid4()
     cred_add_and_check(
         {
