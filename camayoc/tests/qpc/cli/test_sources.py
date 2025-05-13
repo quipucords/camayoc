@@ -220,6 +220,8 @@ def test_add_with_port(isolated_filesystem, qpc_server_config, source_type):
     cred_name = utils.uuid4()
     name = utils.uuid4()
     hosts = "127.0.0.1"
+    # Technically Quipucords supports port 0, but qpc ignores it
+    # See commit 29c4edec
     port = random.randint(1, 65535)
     cred_add_and_check(
         {
