@@ -11,7 +11,6 @@
 import json
 import random
 from io import BytesIO
-from pathlib import Path
 
 import pexpect
 import pytest
@@ -178,8 +177,7 @@ def test_add_with_username_sshkeyfile_fromfile(data_provider, qpc_server_config,
     username = utils.uuid4()
     ssh_key_content = "Multi-Line\nOpenSSH Key\nFrom File\n"
     ssh_file_path = tmp_path / "test_ssh_key"
-    with Path.open(ssh_file_path, "w") as ssh_file:
-        ssh_file.write(ssh_key_content)
+    ssh_file_path.write_text(ssh_key_content)
 
     cred_add_and_check(
         {"name": name, "username": username, "sshkeyfile": ssh_file_path},
@@ -440,9 +438,7 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --sshkeyfile -".format(client_cmd, name)
-    )
+    qpc_cred_edit = pexpect.spawn(f"{client_cmd} -v cred edit --name={name} --sshkeyfile -")
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
