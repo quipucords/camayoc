@@ -102,8 +102,8 @@ def read_reports(source: Path) -> dict[str, Any]:
 
 
 def _read_report_directory(directory: Path):
-    details_data = _read_report_details(directory / "details.json")
-    aggregate_data = _read_report_aggregate(directory / "aggregate.json")
+    details_data = _read_report_details(next(directory.glob("details*.json")))
+    aggregate_data = _read_report_aggregate(next(directory.glob("aggregate*.json")))
     return {
         "details": details_data,
         "aggregate": aggregate_data,
