@@ -1,6 +1,7 @@
 import io
 import json
 import logging
+import re
 import tarfile
 from pathlib import Path
 
@@ -112,10 +113,10 @@ class DBSerializer:
                     if report_id := job.get("report_id"):
                         yield report_id
 
-        def extractfiles(tar, destination, files):
+        def extractfiles(tar, destination, filename_patterns):
             for member in tar.getmembers():
                 member_name = Path(member.name).name
-                if member_name not in files:
+                if not any(re.fullmatch(regex, member_name) for regex in filename_patterns):
                     continue
                 file_destination = destination / member_name
                 if not self.__check_destination(file_destination):
@@ -137,7 +138,7 @@ class DBSerializer:
 
             tar_bytes = io.BytesIO(gzip_response.content)
             with tarfile.open(fileobj=tar_bytes, mode="r:gz") as tar:
-                extractfiles(tar, report_destination, ("details.json", "aggregate.json"))
+                extractfiles(tar, report_destination, (r"details.*\.json", r"aggregate.*\.json"))
 
     def __list_paged(self, obj_fn):
         all_objs = []
