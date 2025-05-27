@@ -121,6 +121,7 @@ JSON_DEPLOYMENTS_REPORT_FIELDS = DEPLOYMENTS_REPORT_FIELDS + (
 
 
 FACTS = (
+    "azure_offer",
     "cloud_provider",
     "connection_host",
     "connection_port",
