@@ -61,7 +61,7 @@ def test_end_to_end(tmp_path, qpc_server_config, data_provider, source_name):
         cred_add_args["password"] = None
     if cred_ssh_key := credential_model.ssh_key:
         secret_inputs.append(("Private SSH Key:", cred_ssh_key))
-        cred_add_args["sshkeyfile"] = "-"
+        cred_add_args["sshkey"] = None
     cred_add_and_check(cred_add_args, inputs=secret_inputs)
 
     # Create a source

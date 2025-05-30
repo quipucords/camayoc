@@ -142,45 +142,8 @@ def test_add_with_username_sshkeyfile(data_provider, qpc_server_config):
     )
 
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": "-"},
+        {"name": name, "username": username, "sshkey": None},
         inputs=[("Private SSH Key:", sshkeyfile_cred.ssh_key)],
-    )
-
-    cred_show_and_check(
-        {"name": name},
-        generate_show_output(
-            {
-                "name": name,
-                "ssh_key": True,
-                "username": username,
-                "auth_type": "ssh_key",
-                "become_method": '"sudo"',
-                "become_user": '"root"',
-            }
-        ),
-    )
-
-
-@pytest.mark.ssh_keyfile_path
-def test_add_with_username_sshkeyfile_fromfile(data_provider, qpc_server_config, tmp_path):
-    """Add an auth with username and sshkeyfile from file.
-
-    :id: 9fd6b032-f78e-4056-b32b-9bd90cb41131
-    :description: Add an auth entry providing the ``--name``, ``--username``
-        and ``--sshkeyfile`` options.
-    :steps: Run ``qpc cred add --name <name> --username <username>
-        --sshkeyfile <ssh_keyfile_path>``
-    :expectedresults: A new auth entry is created with the data provided as
-        input.
-    """
-    name = utils.uuid4()
-    username = utils.uuid4()
-    ssh_key_content = "Multi-Line\nOpenSSH Key\nFrom File\n"
-    ssh_file_path = tmp_path / "test_ssh_key"
-    ssh_file_path.write_text(ssh_key_content)
-
-    cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": ssh_file_path},
     )
 
     cred_show_and_check(
@@ -221,7 +184,7 @@ def test_add_with_username_sshkeyfile_become_password(data_provider, qpc_server_
         {
             "name": name,
             "username": username,
-            "sshkeyfile": "-",
+            "sshkey": None,
             "become-password": None,
         },
         inputs=[
@@ -433,12 +396,12 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
         data_only=True,
     )
     cred_add_and_check(
-        {"name": name, "username": username, "sshkeyfile": "-"},
+        {"name": name, "username": username, "sshkey": None},
         inputs=[("Private SSH Key:", sshkeyfile_cred.ssh_key)],
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(f"{client_cmd} -v cred edit --name={name} --sshkeyfile -")
+    qpc_cred_edit = pexpect.spawn("{} -v cred edit --name={} --sshkey".format(client_cmd, name))
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
