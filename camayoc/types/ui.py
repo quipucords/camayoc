@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import TYPE_CHECKING
 from typing import Any
 from typing import Callable
@@ -516,3 +517,14 @@ class NewScanFormDTO:
 class TriggerScanDTO:
     source_name: str
     scan_form: NewScanFormDTO
+
+
+@frozen
+class SummaryReportDataPoint:
+    key: str
+    label: str
+    value: str
+    parsed_value: Any
+
+
+SummaryReportData = MappingProxyType[str, SummaryReportDataPoint]
