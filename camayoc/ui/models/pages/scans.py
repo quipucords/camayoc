@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from datetime import datetime
+from functools import wraps
 
 from playwright.sync_api import Download
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -101,50 +102,54 @@ class SummaryReportPopup(PopUp, AbstractPage):
         return report
 
 
-class ScanListElem(AbstractListItem):
-    def download_scan(self) -> Download:
-        timeout_start = time.monotonic()
+def _wait_for_scan(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
         timeout = self._client._camayoc_config.camayoc.scan_timeout
+        timeout_start = time.monotonic()
         while timeout > (time.monotonic() - timeout_start):
-            try:
-                with self._client.driver.expect_download() as download_info:
-                    self.select_action("download", timeout=10_000)
-                download = download_info.value
-                download.path()  # blocks the script while file is downloaded
-                return download
-            except PlaywrightTimeoutError:
-                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
-        raise FailedScanException("Scan could not be downloaded")
+            if result := func(self, *args, **kwargs):
+                return result
+        raise FailedScanException("Scan did not succeed in specified time")
 
+    return wrapper
+
+
+class ScanListElem(AbstractListItem):
+    @_wait_for_scan
+    def download_scan(self) -> Download | None:
+        try:
+            with self._client.driver.expect_download() as download_info:
+                self.select_action("download", timeout=10_000)
+            download = download_info.value
+            download.path()  # blocks the script while file is downloaded
+            return download
+        except PlaywrightTimeoutError:
+            self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
+
+    @_wait_for_scan
     def download_scan_modal(
         self, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering, item: int
-    ) -> Download:
-        timeout_start = time.monotonic()
-        timeout = self._client._camayoc_config.camayoc.scan_timeout
-        while timeout > (time.monotonic() - timeout_start):
-            try:
-                scans_popup = self._open_scans_popup()
-                scans_popup.sort_table(sort_by, ordering)
-                download = scans_popup.get_nth_download(item)
-                scans_popup.cancel()
-                return download
-            except PlaywrightTimeoutError:
-                scans_popup.cancel()
-                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
-        raise FailedScanException("Scan could not be downloaded")
+    ) -> Download | None:
+        try:
+            scans_popup = self._open_scans_popup()
+            scans_popup.sort_table(sort_by, ordering)
+            download = scans_popup.get_nth_download(item)
+            scans_popup.cancel()
+            return download
+        except PlaywrightTimeoutError:
+            scans_popup.cancel()
+            self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
-    def read_summary_modal(self) -> SummaryReportData:
-        timeout_start = time.monotonic()
-        timeout = self._client._camayoc_config.camayoc.scan_timeout
-        while timeout > (time.monotonic() - timeout_start):
-            try:
-                summary_popup = self._open_summary_popup()
-                data = summary_popup.get_data()
-                summary_popup.cancel()
-                return data
-            except PlaywrightTimeoutError:
-                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
-        raise FailedScanException("summary report could not be downloaded")
+    @_wait_for_scan
+    def read_summary_modal(self) -> SummaryReportData | None:
+        try:
+            summary_popup = self._open_summary_popup()
+            data = summary_popup.get_data()
+            summary_popup.cancel()
+            return data
+        except PlaywrightTimeoutError:
+            self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
     def _open_scans_popup(self) -> ScanHistoryPopup:
         last_scanned_locator = "td[data-label='Last scanned'] button"
