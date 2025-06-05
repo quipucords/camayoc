@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
 
 from playwright.sync_api import Download
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from camayoc.exceptions import FailedScanException
+from camayoc.types.ui import SummaryReportData
+from camayoc.types.ui import SummaryReportDataPoint
 from camayoc.ui.decorators import creates_toast
 from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
@@ -19,6 +22,9 @@ from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 REFRESH_BUTTON_LOCATOR = "div[class*=-c-toolbar] button[data-ouia-component-id=refresh]"
+KEBAB_ITEM_LOCATOR_TEMPLATE = (
+    "button[data-ouia-component-id=action_menu_toggle] ~ div *[data-ouia-component-id={}] button"
+)
 
 
 class ScanHistoryPopup(PopUp, AbstractPage):
@@ -53,14 +59,56 @@ class ScanHistoryPopup(PopUp, AbstractPage):
         return download
 
 
+def to_int(value: str):
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
+def to_date(value: str):
+    try:
+        dt = datetime.strptime(value.strip(), "%d %B %Y")
+        return dt.strftime("%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+class SummaryReportPopup(PopUp, AbstractPage):
+    CANCEL_LOCATOR = "*[class$='modal-box__close'] button"
+    CANCEL_RESULT_CLASS = Pages.SCANS
+    VALUE_TRANSFORMER_MAP = {
+        "system_creation_date_average": to_date,
+    }
+
+    def get_data(self) -> SummaryReportData:
+        summary_item_locator = (
+            "*[class$='modal-box__body'] div[class*='description-list'][data-ouia-component-id]"
+        )
+        all_data_points = {}
+        # .all() resolves immediately, so let's first wait until something is visible
+        self._driver.locator(summary_item_locator).first.wait_for()
+        for summary_item in self._driver.locator(summary_item_locator).all():
+            key = summary_item.get_attribute("data-ouia-component-id")
+            if not key:
+                continue
+            label = str(summary_item.locator("dt").first.text_content())
+            value = str(summary_item.locator("dd").first.text_content())
+            parsing_fn = self.VALUE_TRANSFORMER_MAP.get(key, to_int)
+            parsed_value = parsing_fn(value)
+            data_point = SummaryReportDataPoint(
+                key=key, label=label, value=value, parsed_value=parsed_value
+            )
+            all_data_points[key] = data_point
+        report = SummaryReportData(all_data_points)
+        return report
+
+
 class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
         timeout_start = time.monotonic()
         timeout = self._client._camayoc_config.camayoc.scan_timeout
-        download_locator = (
-            "button[data-ouia-component-id=action_menu_toggle] "
-            "~ div *[data-ouia-component-id=download] button"
-        )
+        download_locator = KEBAB_ITEM_LOCATOR_TEMPLATE.format("download")
         while timeout > (time.monotonic() - timeout_start):
             try:
                 self._toggle_kebab()
@@ -91,6 +139,19 @@ class ScanListElem(AbstractListItem):
                 self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
         raise FailedScanException("Scan could not be downloaded")
 
+    def read_summary_modal(self) -> SummaryReportData:
+        timeout_start = time.monotonic()
+        timeout = self._client._camayoc_config.camayoc.scan_timeout
+        while timeout > (time.monotonic() - timeout_start):
+            try:
+                summary_popup = self._open_summary_popup()
+                data = summary_popup.get_data()
+                summary_popup.cancel()
+                return data
+            except PlaywrightTimeoutError:
+                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
+        raise FailedScanException("summary report could not be downloaded")
+
     def _toggle_kebab(self) -> None:
         kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
         self.locator.locator(kebab_menu_locator).click()
@@ -99,6 +160,12 @@ class ScanListElem(AbstractListItem):
         last_scanned_locator = "td[data-label='Last scanned'] button"
         self.locator.locator(last_scanned_locator).click()
         return ScanHistoryPopup(client=self._client)
+
+    def _open_summary_popup(self) -> SummaryReportPopup:
+        summary_locator = KEBAB_ITEM_LOCATOR_TEMPLATE.format("summary")
+        self._toggle_kebab()
+        self.locator.locator(summary_locator).click()
+        return SummaryReportPopup(client=self._client)
 
 
 class ScansMainPage(MainPageMixin):
@@ -122,4 +189,12 @@ class ScansMainPage(MainPageMixin):
         scan: ScanListElem = self._get_item(scan_name)
         downloaded_report = scan.download_scan_modal(sort_by, ordering, item)
         self._client.downloaded_files.append(downloaded_report)
+        return self
+
+    @service
+    @record_action
+    def read_summary_modal(self, scan_name: str):
+        scan: ScanListElem = self._get_item(scan_name)
+        summary_data = scan.read_summary_modal()
+        self._client.page_contents.append(summary_data)
         return self
