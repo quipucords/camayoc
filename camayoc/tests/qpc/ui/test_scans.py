@@ -14,11 +14,32 @@ import pytest
 from camayoc.config import settings
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_sha256sums
+from camayoc.types.ui import SummaryReportData
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.enums import ColumnOrdering
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import ScansPopupTableColumns
+
+SUMMARY_RESULTS_ITEMS = (
+    "ansible_hosts_all",
+    "instances_hypervisor",
+    "instances_physical",
+    "instances_virtual",
+    "openshift_cores",
+    "socket_pairs",
+    "system_creation_date_average",
+    "vmware_hosts",
+)
+SUMMARY_DIAGNOSTICS_ITEMS = (
+    "inspect_result_status_failed",
+    "inspect_result_status_success",
+    "inspect_result_status_unknown",
+    "inspect_result_status_unreachable",
+    "missing_pem_files",
+    "missing_system_creation_date",
+    "missing_system_purpose",
+)
 
 
 def has_network_source(scan_name):
@@ -105,3 +126,40 @@ def test_download_scan_modal(tmp_path, scans, ui_client: Client, scan_name):
     tarfile.open(downloaded_report.path()).extractall(tmp_path)
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+
+
+@pytest.mark.parametrize("scan_name", scan_names())
+def test_show_summary_report(scans, ui_client: Client, scan_name):
+    """Open summary report modal and verify it displays correct data.
+
+    :id: e57252ad-1c4a-406f-91d3-bc8d948d82c0
+    :description: Open modal with a summary report and confirm data
+        matches API response. In standard user flow, we expect summary
+        to act as quick check of correctness before downloading a full
+        report.
+    :steps:
+        1) Log into the UI.
+        2) Open modal with Summary report for finished scan.
+        3) Verify displayed data matches API response.
+        4) Log out.
+    :expectedresults: Data in UI matches data from API. User is logged out.
+    """
+    finished_scan = scans.with_name(scan_name)
+    (
+        ui_client.begin()
+        .login(data_factories.LoginFormDTOFactory())
+        .navigate_to(MainMenuPages.SCANS)
+        .read_summary_modal(finished_scan.definition.name)
+        .logout()
+    )
+    ui_summary_report: SummaryReportData = ui_client.page_contents[-1]
+
+    for key in SUMMARY_RESULTS_ITEMS:
+        reference = finished_scan.aggregate_report.get("results", {}).get(key)
+        actual = ui_summary_report.get(key)
+        assert reference == actual.parsed_value
+
+    for key in SUMMARY_DIAGNOSTICS_ITEMS:
+        reference = finished_scan.aggregate_report.get("diagnostics", {}).get(key)
+        actual = ui_summary_report.get(key)
+        assert reference == actual.parsed_value

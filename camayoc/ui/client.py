@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from typing import Any
 from typing import Optional
 from urllib.parse import urlunparse
 
@@ -75,6 +76,7 @@ class Client:
 
         self.session = session or DummySession()
         self.downloaded_files: list[Download] = []
+        self.page_contents: list[Any] = []
         self.driver = driver
         self.page_errors = []
 
