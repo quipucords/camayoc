@@ -1,6 +1,7 @@
 from enum import Enum
 
 from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError
 
 from camayoc.types.ui import UIField
 
@@ -45,11 +46,17 @@ class CheckboxField(Field):
 
 class FilteredMultipleSelectField(Field):
     def do_fill(self, value: list[str]):
-        filter_input = ' div[data-ouia-component-id="credentials_list_input"] input'
+        filter_input = 'div[data-ouia-component-id="credentials_list_input"] input'
+
+        try:
+            self.driver.locator(self.locator).locator(
+                "button[data-ouia-component-id=credentials_list_clear_button]"
+            ).click(timeout=500)
+        except TimeoutError:
+            pass
 
         # First click opens the list. Second hides it and enables us to type.
-        for _ in range(2):
-            self.driver.locator(self.locator).locator(filter_input).click()
+        self.driver.locator(self.locator).locator(filter_input).click(click_count=2)
 
         for actual_value in value:
             self.driver.locator(self.locator).locator(filter_input).fill(actual_value)
@@ -65,7 +72,10 @@ class FilteredMultipleSelectField(Field):
 
 class InputField(Field):
     def do_fill(self, value):
-        self.driver.fill(self.locator, value)
+        input_elem = self.driver.locator(self.locator)
+        if input_elem.input_value() == value:
+            return
+        input_elem.fill(value)
 
 
 class MultipleSelectField(Field):

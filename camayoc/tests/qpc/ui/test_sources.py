@@ -12,9 +12,12 @@ import random
 from typing import get_args
 
 import pytest
+from attrs import evolve
+from attrs import fields_dict
 
 from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Source
+from camayoc.types.ui import AddSourceDTO
 from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import OpenShiftSourceFormDTO
@@ -27,6 +30,7 @@ from camayoc.ui import data_factories
 from camayoc.ui.data_factories import AddSourceDTOFactory
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
+from camayoc.ui.enums import SourceConnectionTypes
 from camayoc.ui.enums import SourceTypes
 
 SOURCE_DATA_MAP = {
@@ -105,6 +109,19 @@ def create_source_dto(source_type, data_provider):
     return source_dto
 
 
+def modify_source_dto(source_dto: AddSourceDTO, data_provider):
+    source_form_cls = source_dto.source_form.__class__
+    another_source = create_source_dto(source_form_cls, data_provider)
+    dto_fields = fields_dict(source_form_cls).keys()
+    updated_fields = random.sample(list(dto_fields), k=random.randint(1, len(dto_fields)))
+    updated_fields = {key: getattr(another_source.source_form, key) for key in updated_fields}
+    new_form_dto = evolve(source_dto.source_form, **updated_fields)
+    if getattr(new_form_dto, "connection", None) == SourceConnectionTypes.DISABLE:
+        new_form_dto = evolve(new_form_dto, verify_ssl=None)
+    new_dto = evolve(source_dto, source_form=new_form_dto)
+    return new_dto
+
+
 # FIXME: this never actually deletes in UI
 @pytest.mark.parametrize("source_type", get_args(SourceFormDTO))
 def test_create_delete_source(cleaning_data_provider, ui_client: Client, source_type):
@@ -125,5 +142,31 @@ def test_create_delete_source(cleaning_data_provider, ui_client: Client, source_
         .login(data_factories.LoginFormDTOFactory())
         .navigate_to(MainMenuPages.SOURCES)
         .add_source(source_dto)
+        .logout()
+    )
+
+
+@pytest.mark.parametrize("source_type", get_args(SourceFormDTO))
+def test_edit_source(cleaning_data_provider, ui_client: Client, source_type):
+    """Create and then a edit a source through the UI.
+
+    :id: 8c3e75fe-40d7-44c6-846a-29a724db0ea2
+    :description: Creates and edits a source in the UI.
+    :steps:
+        1) Go to the sources page and open the sources modal.
+        2) Fill in the required information and create a new source.
+        3) Open the modal for editing of created source.
+        4) Modify some of the information and save changes.
+    :expectedresults: A new source is created with the provided information,
+        then it is modified.
+    """
+    source_dto = create_source_dto(source_type, cleaning_data_provider)
+    edit_source_dto = modify_source_dto(source_dto, cleaning_data_provider)
+    (
+        ui_client.begin()
+        .login(data_factories.LoginFormDTOFactory())
+        .navigate_to(MainMenuPages.SOURCES)
+        .add_source(source_dto)
+        .edit_source(source_dto.source_form.source_name, edit_source_dto)
         .logout()
     )
