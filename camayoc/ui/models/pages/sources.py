@@ -192,6 +192,47 @@ class SourceListElem(AbstractListItem):
         self.locator.locator(scan_locator).click()
         return ScanForm(client=self._client)
 
+    def open_edit_source(self) -> SourceForm:
+        edit_locator = (
+            "button[data-ouia-component-id=action_menu_toggle] "
+            "~ div *[data-ouia-component-id=edit-source] button"
+        )
+        self._toggle_kebab()
+        self.locator.locator(edit_locator).click()
+        return SourceForm(client=self._client)
+
+    def _toggle_kebab(self) -> None:
+        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
+        self.locator.locator(kebab_menu_locator).click()
+
+
+SOURCE_TYPE_MAP = {
+    SourceTypes.NETWORK_RANGE: {
+        "ouiaid": "network",
+        "class": NetworkRangeSourceCredentialsForm,
+    },
+    SourceTypes.SATELLITE: {
+        "ouiaid": "satellite",
+        "class": SatelliteSourceCredentialsForm,
+    },
+    SourceTypes.VCENTER_SERVER: {
+        "ouiaid": "vcenter",
+        "class": VCenterSourceCredentialsForm,
+    },
+    SourceTypes.OPENSHIFT: {
+        "ouiaid": "openshift",
+        "class": OpenShiftSourceCredentialsForm,
+    },
+    SourceTypes.ANSIBLE_CONTROLLER: {
+        "ouiaid": "ansible",
+        "class": AnsibleSourceCredentialsForm,
+    },
+    SourceTypes.RHACS: {
+        "ouiaid": "rhacs",
+        "class": RHACSSourceCredentialsForm,
+    },
+}
+
 
 class SourcesMainPage(AddNewDropdown, MainPageMixin):
     ITEM_CLASS = SourceListElem
@@ -203,37 +244,23 @@ class SourcesMainPage(AddNewDropdown, MainPageMixin):
         add_sources_popup.fill(data.source_form)
         return add_sources_popup.confirm()
 
+    @service
+    def edit_source(self, name: str, data: AddSourceDTO) -> SourcesMainPage:
+        edit_source_popup = self.open_edit_source(name, data.source_type)
+        edit_source_popup.fill(data.source_form)
+        return edit_source_popup.confirm()
+
     @record_action
     def open_add_source(self, source_type: SourceTypes) -> SourceForm:
-        source_type_map = {
-            SourceTypes.NETWORK_RANGE: {
-                "ouiaid": "network",
-                "class": NetworkRangeSourceCredentialsForm,
-            },
-            SourceTypes.SATELLITE: {
-                "ouiaid": "satellite",
-                "class": SatelliteSourceCredentialsForm,
-            },
-            SourceTypes.VCENTER_SERVER: {
-                "ouiaid": "vcenter",
-                "class": VCenterSourceCredentialsForm,
-            },
-            SourceTypes.OPENSHIFT: {
-                "ouiaid": "openshift",
-                "class": OpenShiftSourceCredentialsForm,
-            },
-            SourceTypes.ANSIBLE_CONTROLLER: {
-                "ouiaid": "ansible",
-                "class": AnsibleSourceCredentialsForm,
-            },
-            SourceTypes.RHACS: {
-                "ouiaid": "rhacs",
-                "class": RHACSSourceCredentialsForm,
-            },
-        }
-
-        ouiaid, cls = source_type_map.get(source_type).values()
+        ouiaid, cls = SOURCE_TYPE_MAP.get(source_type).values()
         self.open_create_new_modal(type_ouiaid=ouiaid)
+        return self._new_page(cls)
+
+    @record_action
+    def open_edit_source(self, name: str, source_type: SourceTypes) -> SourceForm:
+        cls = SOURCE_TYPE_MAP.get(source_type).get("class")
+        item: SourceListElem = self._get_item(name)
+        item.open_edit_source()
         return self._new_page(cls)
 
     @creates_toast
