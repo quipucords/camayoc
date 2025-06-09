@@ -17,6 +17,7 @@ from camayoc.ui.enums import Pages
 
 from ..components.add_new_dropdown import AddNewDropdown
 from ..components.form import Form
+from ..components.items_list import AbstractListItem
 from ..components.popup import PopUp
 from ..fields import InputField
 from ..fields import SelectField
@@ -136,7 +137,51 @@ class RHACSCredentialForm(CredentialForm):
         return self
 
 
+class CredentialListElem(AbstractListItem):
+    def open_edit_credential(self) -> CredentialForm:
+        edit_locator = (
+            "button[data-ouia-component-id=action_menu_toggle] "
+            "~ div *[data-ouia-component-id=edit-credential] button"
+        )
+        self._toggle_kebab()
+        self.locator.locator(edit_locator).click()
+        return CredentialForm(client=self._client)
+
+    def _toggle_kebab(self) -> None:
+        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
+        self.locator.locator(kebab_menu_locator).click()
+
+
+CREDENTIAL_TYPE_MAP = {
+    CredentialTypes.NETWORK: {
+        "ouiaid": "network",
+        "class": NetworkCredentialForm,
+    },
+    CredentialTypes.SATELLITE: {
+        "ouiaid": "satellite",
+        "class": SatelliteCredentialForm,
+    },
+    CredentialTypes.VCENTER: {
+        "ouiaid": "vcenter",
+        "class": VCenterCredentialForm,
+    },
+    CredentialTypes.OPENSHIFT: {
+        "ouiaid": "openshift",
+        "class": OpenShiftCredentialForm,
+    },
+    CredentialTypes.ANSIBLE: {
+        "ouiaid": "ansible",
+        "class": AnsibleCredentialForm,
+    },
+    CredentialTypes.RHACS: {
+        "ouiaid": "rhacs",
+        "class": RHACSCredentialForm,
+    },
+}
+
+
 class CredentialsMainPage(AddNewDropdown, MainPageMixin):
+    ITEM_CLASS = CredentialListElem
     ADD_BUTTON_LOCATOR = "button[data-ouia-component-id=add_credential_button]"
 
     @service
@@ -145,35 +190,21 @@ class CredentialsMainPage(AddNewDropdown, MainPageMixin):
         add_credential_popup.fill(data.credential_form)
         return add_credential_popup.confirm()
 
-    @record_action
-    def open_add_credential(self, source_type: CredentialTypes) -> CredentialForm:
-        source_type_map = {
-            CredentialTypes.NETWORK: {
-                "ouiaid": "network",
-                "class": NetworkCredentialForm,
-            },
-            CredentialTypes.SATELLITE: {
-                "ouiaid": "satellite",
-                "class": SatelliteCredentialForm,
-            },
-            CredentialTypes.VCENTER: {
-                "ouiaid": "vcenter",
-                "class": VCenterCredentialForm,
-            },
-            CredentialTypes.OPENSHIFT: {
-                "ouiaid": "openshift",
-                "class": OpenShiftCredentialForm,
-            },
-            CredentialTypes.ANSIBLE: {
-                "ouiaid": "ansible",
-                "class": AnsibleCredentialForm,
-            },
-            CredentialTypes.RHACS: {
-                "ouiaid": "rhacs",
-                "class": RHACSCredentialForm,
-            },
-        }
+    @service
+    def edit_credential(self, name: str, data: AddCredentialDTO) -> CredentialsMainPage:
+        edit_credential_popup = self.open_edit_credential(name, data.credential_type)
+        edit_credential_popup.fill(data.credential_form)
+        return edit_credential_popup.confirm()
 
-        ouiaid, cls = source_type_map.get(source_type).values()
+    @record_action
+    def open_add_credential(self, credential_type: CredentialTypes) -> CredentialForm:
+        ouiaid, cls = CREDENTIAL_TYPE_MAP.get(credential_type).values()
         self.open_create_new_modal(type_ouiaid=ouiaid)
+        return self._new_page(cls)
+
+    @record_action
+    def open_edit_credential(self, name: str, credential_type: CredentialTypes) -> CredentialForm:
+        cls = CREDENTIAL_TYPE_MAP.get(credential_type).get("class")
+        item: CredentialListElem = self._get_item(name)
+        item.open_edit_credential()
         return self._new_page(cls)
