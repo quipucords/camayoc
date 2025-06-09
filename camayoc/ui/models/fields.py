@@ -63,7 +63,10 @@ class FilteredMultipleSelectField(Field):
             values_list = self.driver.locator(self.locator).locator(
                 "xpath=following-sibling::div//ul[contains(@id, 'select')]"
             )
-            values_list.locator(f"text='{actual_value}'").click()
+            label_elem = values_list.locator(f"text='{actual_value}'")
+            checkbox_elem = label_elem.locator("xpath=parent::span//input[@type='checkbox']")
+            if not checkbox_elem.is_checked():
+                label_elem.click()
             self.driver.locator(self.locator).locator(filter_input).clear()
 
         if values_list.is_visible():
