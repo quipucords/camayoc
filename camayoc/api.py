@@ -7,6 +7,8 @@ on the context.
 
 """
 
+import logging
+from functools import wraps
 from json import JSONDecodeError
 from pprint import pformat
 from urllib.parse import urljoin
@@ -17,10 +19,13 @@ from requests.exceptions import HTTPError
 
 from camayoc import exceptions
 from camayoc.config import settings
+from camayoc.constants import QPC_API_INVALID_TOKEN_MESSAGE
 from camayoc.constants import QPC_API_ROOT
 from camayoc.constants import QPC_CURRENT_USER_PATH
 from camayoc.constants import QPC_LOGOUT_PATH
 from camayoc.constants import QPC_TOKEN_PATH
+
+logger = logging.getLogger(__name__)
 
 
 def raise_error_for_status(response):
@@ -44,6 +49,9 @@ def raise_error_for_status(response):
         except JSONDecodeError:
             response_message = "text_error_message : {}".format(pformat(r.text))
 
+        is_invalid_token = (
+            r.status_code == 401 and QPC_API_INVALID_TOKEN_MESSAGE in response_message
+        )
         error_msgs += "\n\n".join(
             [
                 "request path : {}".format(pformat(r.request.path_url)),
@@ -56,6 +64,7 @@ def raise_error_for_status(response):
         error_msgs += "\n============================================================\n"
         exception = HTTPError(error_msgs)
         exception.api_error_message = response_message
+        exception.is_invalid_token = is_invalid_token
         raise exception
 
 
@@ -82,6 +91,31 @@ def json_handler(response):
     """
     raise_error_for_status(response)
     return response.json()
+
+
+def try_reauthenticate(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        for i in range(1, 11):
+            try:
+                return func(self, *args, **kwargs)
+            except HTTPError as e:
+                is_invalid_token = getattr(e, "is_invalid_token", False)
+                if not is_invalid_token:
+                    raise
+                logger.debug(
+                    (
+                        "Server returned Invalid token error, logging in again"
+                        " [client id=%s func=%s iteration=%s]"
+                    ),
+                    id(self),
+                    func.__name__,
+                    i,
+                )
+                self.token = None
+                self.login()
+
+    return wrapper
 
 
 class Client(object):
@@ -176,6 +210,7 @@ class Client(object):
         self.request("PUT", url, **kwargs)
         self.token = None
 
+    @try_reauthenticate
     def get_user(self, **kwargs):
         """Get the username of the user logged in.
 
