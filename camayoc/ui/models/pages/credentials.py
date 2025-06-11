@@ -138,18 +138,7 @@ class RHACSCredentialForm(CredentialForm):
 
 
 class CredentialListElem(AbstractListItem):
-    def open_edit_credential(self) -> CredentialForm:
-        edit_locator = (
-            "button[data-ouia-component-id=action_menu_toggle] "
-            "~ div *[data-ouia-component-id=edit-credential] button"
-        )
-        self._toggle_kebab()
-        self.locator.locator(edit_locator).click()
-        return CredentialForm(client=self._client)
-
-    def _toggle_kebab(self) -> None:
-        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
-        self.locator.locator(kebab_menu_locator).click()
+    pass
 
 
 CREDENTIAL_TYPE_MAP = {
@@ -206,5 +195,5 @@ class CredentialsMainPage(AddNewDropdown, MainPageMixin):
     def open_edit_credential(self, name: str, credential_type: CredentialTypes) -> CredentialForm:
         cls = CREDENTIAL_TYPE_MAP.get(credential_type).get("class")
         item: CredentialListElem = self._get_item(name)
-        item.open_edit_credential()
+        item.select_action("edit-credential")
         return self._new_page(cls)

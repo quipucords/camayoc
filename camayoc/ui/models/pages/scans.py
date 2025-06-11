@@ -22,9 +22,6 @@ from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 REFRESH_BUTTON_LOCATOR = "div[class*=-c-toolbar] button[data-ouia-component-id=refresh]"
-KEBAB_ITEM_LOCATOR_TEMPLATE = (
-    "button[data-ouia-component-id=action_menu_toggle] ~ div *[data-ouia-component-id={}] button"
-)
 
 
 class ScanHistoryPopup(PopUp, AbstractPage):
@@ -108,15 +105,12 @@ class ScanListElem(AbstractListItem):
     def download_scan(self) -> Download:
         timeout_start = time.monotonic()
         timeout = self._client._camayoc_config.camayoc.scan_timeout
-        download_locator = KEBAB_ITEM_LOCATOR_TEMPLATE.format("download")
         while timeout > (time.monotonic() - timeout_start):
             try:
-                self._toggle_kebab()
                 with self._client.driver.expect_download() as download_info:
-                    self.locator.locator(download_locator).click(timeout=10_000)
+                    self.select_action("download", timeout=10_000)
                 download = download_info.value
                 download.path()  # blocks the script while file is downloaded
-                self._toggle_kebab()
                 return download
             except PlaywrightTimeoutError:
                 self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
@@ -152,19 +146,13 @@ class ScanListElem(AbstractListItem):
                 self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
         raise FailedScanException("summary report could not be downloaded")
 
-    def _toggle_kebab(self) -> None:
-        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
-        self.locator.locator(kebab_menu_locator).click()
-
     def _open_scans_popup(self) -> ScanHistoryPopup:
         last_scanned_locator = "td[data-label='Last scanned'] button"
         self.locator.locator(last_scanned_locator).click()
         return ScanHistoryPopup(client=self._client)
 
     def _open_summary_popup(self) -> SummaryReportPopup:
-        summary_locator = KEBAB_ITEM_LOCATOR_TEMPLATE.format("summary")
-        self._toggle_kebab()
-        self.locator.locator(summary_locator).click()
+        self.select_action("summary")
         return SummaryReportPopup(client=self._client)
 
 

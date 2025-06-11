@@ -192,19 +192,6 @@ class SourceListElem(AbstractListItem):
         self.locator.locator(scan_locator).click()
         return ScanForm(client=self._client)
 
-    def open_edit_source(self) -> SourceForm:
-        edit_locator = (
-            "button[data-ouia-component-id=action_menu_toggle] "
-            "~ div *[data-ouia-component-id=edit-source] button"
-        )
-        self._toggle_kebab()
-        self.locator.locator(edit_locator).click()
-        return SourceForm(client=self._client)
-
-    def _toggle_kebab(self) -> None:
-        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
-        self.locator.locator(kebab_menu_locator).click()
-
 
 SOURCE_TYPE_MAP = {
     SourceTypes.NETWORK_RANGE: {
@@ -260,7 +247,7 @@ class SourcesMainPage(AddNewDropdown, MainPageMixin):
     def open_edit_source(self, name: str, source_type: SourceTypes) -> SourceForm:
         cls = SOURCE_TYPE_MAP.get(source_type).get("class")
         item: SourceListElem = self._get_item(name)
-        item.open_edit_source()
+        item.select_action("edit-source")
         return self._new_page(cls)
 
     @creates_toast
