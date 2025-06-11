@@ -58,6 +58,8 @@ class UIListItem(Protocol):
     locator: Locator
     _client: Client
 
+    def select_action(self, ouiaid: str, timeout: int) -> None: ...
+
 
 class UIField(Protocol):
     locator: str
