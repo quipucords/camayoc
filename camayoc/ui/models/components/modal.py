@@ -4,7 +4,7 @@ from camayoc.exceptions import MisconfiguredWidgetException
 from camayoc.types.ui import UIPage
 
 
-class PopUp(UIPage):
+class Modal(UIPage):
     SAVE_LOCATOR = "*[class*=-c-modal-box__body] button.pf-m-primary"
     CANCEL_LOCATOR = "*[class*=-c-modal-box__body] button.pf-m-link"
     SAVE_RESULT_CLASS = None

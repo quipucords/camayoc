@@ -18,14 +18,14 @@ from camayoc.ui.enums import Pages
 from ..components.add_new_dropdown import AddNewDropdown
 from ..components.form import Form
 from ..components.items_list import AbstractListItem
-from ..components.popup import PopUp
+from ..components.modal import Modal
 from ..fields import InputField
 from ..fields import SelectField
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 
-class CredentialForm(Form, PopUp, AbstractPage):
+class CredentialForm(Form, Modal, AbstractPage):
     SAVE_RESULT_CLASS = Pages.CREDENTIALS
     CANCEL_RESULT_CLASS = Pages.CREDENTIALS
 
@@ -175,15 +175,15 @@ class CredentialsMainPage(AddNewDropdown, MainPageMixin):
 
     @service
     def add_credential(self, data: AddCredentialDTO) -> CredentialsMainPage:
-        add_credential_popup = self.open_add_credential(data.credential_type)
-        add_credential_popup.fill(data.credential_form)
-        return add_credential_popup.confirm()
+        add_credential_modal = self.open_add_credential(data.credential_type)
+        add_credential_modal.fill(data.credential_form)
+        return add_credential_modal.confirm()
 
     @service
     def edit_credential(self, name: str, data: AddCredentialDTO) -> CredentialsMainPage:
-        edit_credential_popup = self.open_edit_credential(name, data.credential_type)
-        edit_credential_popup.fill(data.credential_form)
-        return edit_credential_popup.confirm()
+        edit_credential_modal = self.open_edit_credential(name, data.credential_type)
+        edit_credential_modal.fill(data.credential_form)
+        return edit_credential_modal.confirm()
 
     @record_action
     def open_add_credential(self, credential_type: CredentialTypes) -> CredentialForm:
