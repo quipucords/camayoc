@@ -15,23 +15,23 @@ from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
 from camayoc.ui.enums import ColumnOrdering
 from camayoc.ui.enums import Pages
-from camayoc.ui.enums import ScansPopupTableColumns
+from camayoc.ui.enums import ScansModalTableColumns
 
 from ..components.items_list import AbstractListItem
-from ..components.popup import PopUp
+from ..components.modal import Modal
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 REFRESH_BUTTON_LOCATOR = "div[class*=-c-toolbar] button[data-ouia-component-id=refresh]"
 
 
-class ScanHistoryPopup(PopUp, AbstractPage):
+class ScanHistoryModal(Modal, AbstractPage):
     SAVE_LOCATOR = None
     CANCEL_LOCATOR = "*[class$='modal-box__close'] button"
     SAVE_RESULT_CLASS = None
     CANCEL_RESULT_CLASS = Pages.SCANS
 
-    def sort_table(self, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering) -> None:
+    def sort_table(self, sort_by: ScansModalTableColumns, ordering: ColumnOrdering) -> None:
         tries = 0
         table_header_locator = (
             "table[data-ouia-component-id=scan_jobs_table] thead "
@@ -72,7 +72,7 @@ def to_date(value: str):
         return None
 
 
-class SummaryReportPopup(PopUp, AbstractPage):
+class SummaryReportModal(Modal, AbstractPage):
     CANCEL_LOCATOR = "*[class$='modal-box__close'] button"
     CANCEL_RESULT_CLASS = Pages.SCANS
     VALUE_TRANSFORMER_MAP = {
@@ -129,36 +129,36 @@ class ScanListElem(AbstractListItem):
 
     @_wait_for_scan
     def download_scan_modal(
-        self, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering, item: int
+        self, sort_by: ScansModalTableColumns, ordering: ColumnOrdering, item: int
     ) -> Download | None:
         try:
-            scans_popup = self._open_scans_popup()
-            scans_popup.sort_table(sort_by, ordering)
-            download = scans_popup.get_nth_download(item)
-            scans_popup.cancel()
+            scans_modal = self._open_scans_modal()
+            scans_modal.sort_table(sort_by, ordering)
+            download = scans_modal.get_nth_download(item)
+            scans_modal.cancel()
             return download
         except PlaywrightTimeoutError:
-            scans_popup.cancel()
+            scans_modal.cancel()
             self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
     @_wait_for_scan
     def read_summary_modal(self) -> SummaryReportData | None:
         try:
-            summary_popup = self._open_summary_popup()
-            data = summary_popup.get_data()
-            summary_popup.cancel()
+            summary_modal = self._open_summary_modal()
+            data = summary_modal.get_data()
+            summary_modal.cancel()
             return data
         except PlaywrightTimeoutError:
             self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
-    def _open_scans_popup(self) -> ScanHistoryPopup:
+    def _open_scans_modal(self) -> ScanHistoryModal:
         last_scanned_locator = "td[data-label='Last scanned'] button"
         self.locator.locator(last_scanned_locator).click()
-        return ScanHistoryPopup(client=self._client)
+        return ScanHistoryModal(client=self._client)
 
-    def _open_summary_popup(self) -> SummaryReportPopup:
+    def _open_summary_modal(self) -> SummaryReportModal:
         self.select_action("summary")
-        return SummaryReportPopup(client=self._client)
+        return SummaryReportModal(client=self._client)
 
 
 class ScansMainPage(MainPageMixin):
@@ -177,7 +177,7 @@ class ScansMainPage(MainPageMixin):
     @service
     @record_action
     def download_scan_modal(
-        self, scan_name: str, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering, item: int
+        self, scan_name: str, sort_by: ScansModalTableColumns, ordering: ColumnOrdering, item: int
     ) -> ScansMainPage:
         scan: ScanListElem = self._get_item(scan_name)
         downloaded_report = scan.download_scan_modal(sort_by, ordering, item)

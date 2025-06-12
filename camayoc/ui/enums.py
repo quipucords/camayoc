@@ -74,7 +74,7 @@ class SourceConnectionTypes(StrEnum):
     DISABLE = "Disable SSL"
 
 
-class ScansPopupTableColumns(StrEnum):
+class ScansModalTableColumns(StrEnum):
     SCAN_TIME = "header_scan_time"
     SCAN_RESULT = "header_scan_result"
 
