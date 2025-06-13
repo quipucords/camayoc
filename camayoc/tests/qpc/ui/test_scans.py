@@ -19,7 +19,7 @@ from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.enums import ColumnOrdering
 from camayoc.ui.enums import MainMenuPages
-from camayoc.ui.enums import ScansPopupTableColumns
+from camayoc.ui.enums import ScansModalTableColumns
 
 SUMMARY_RESULTS_ITEMS = (
     "ansible_hosts_all",
@@ -113,7 +113,7 @@ def test_download_scan_modal(tmp_path, scans, ui_client: Client, scan_name):
         .navigate_to(MainMenuPages.SCANS)
         .download_scan_modal(
             finished_scan.definition.name,
-            ScansPopupTableColumns.SCAN_TIME,
+            ScansModalTableColumns.SCAN_TIME,
             ColumnOrdering.DESCENDING,
             0,
         )

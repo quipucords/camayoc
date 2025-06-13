@@ -11,9 +11,25 @@ from camayoc.types.ui import UIPage
 
 
 class AbstractListItem(UIListItem):
+    ACTION_MENU_TOGGLE_LOCATOR = "button[data-ouia-component-id=action_menu_toggle]"
+    ACTION_MENU_ITEM_LOCATOR_TEMPLATE = (
+        ACTION_MENU_TOGGLE_LOCATOR + "~ div *[data-ouia-component-id={ouiaid}] button"
+    )
+
     def __init__(self, locator: Locator, client):
         self.locator = locator
         self._client = client
+
+    def select_action(self, ouiaid: str, timeout: int = 30_000) -> None:
+        self._open_kebab()
+        item_locator = self.ACTION_MENU_ITEM_LOCATOR_TEMPLATE.format(ouiaid=ouiaid)
+        self.locator.locator(item_locator).click(timeout=timeout)
+
+    def _open_kebab(self) -> None:
+        toggle_elem = self.locator.locator(self.ACTION_MENU_TOGGLE_LOCATOR)
+        if str(toggle_elem.get_attribute("aria-expanded")).lower() == "true":
+            return
+        toggle_elem.click()
 
 
 class ItemsList(UIPage):
