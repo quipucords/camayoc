@@ -33,6 +33,7 @@ class QPCObjectBulkDeleteMixin(object):
     same for objects that do have this endpoint.
     """
 
+    @api.try_reauthenticate
     def bulk_delete(self, ids, **kwargs):
         """Send POST request to the self.endpoint/bulk_delete/ of this object.
 
@@ -100,6 +101,7 @@ class QPCObject(object):
         """Return true if both objects are not equal."""
         return not self == other
 
+    @api.try_reauthenticate
     def create(self, **kwargs):
         """Send POST request to the self.endpoint of this object.
 
@@ -122,6 +124,7 @@ class QPCObject(object):
                 self.port = response.json().get("port")
         return response
 
+    @api.try_reauthenticate
     def list(self, **kwargs):
         """Send GET request to read all objects of this type.
 
@@ -134,6 +137,7 @@ class QPCObject(object):
         """
         return self.client.get(self.endpoint, **kwargs)
 
+    @api.try_reauthenticate
     def read(self, **kwargs):
         """Send GET request to the self.endpoint/{id} of this object.
 
@@ -145,6 +149,7 @@ class QPCObject(object):
         """
         return self.client.get(self.path(), **kwargs)
 
+    @api.try_reauthenticate
     def update(self, **kwargs):
         """Send PUT request to the self.endpoint/{id} of this object.
 
@@ -160,6 +165,7 @@ class QPCObject(object):
         """
         return self.client.put(self.path(), self.update_payload(), **kwargs)
 
+    @api.try_reauthenticate
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.
 
@@ -492,6 +498,7 @@ class Scan(QPCObject, QPCObjectBulkDeleteMixin):
         definition_data.pop("expected_data", None)
         return cls(**definition_data)
 
+    @api.try_reauthenticate
     def delete(self, **kwargs):
         """Send DELETE request to the self.endpoint/{id} of this object.
 
@@ -503,6 +510,7 @@ class Scan(QPCObject, QPCObjectBulkDeleteMixin):
         """
         return self.client.delete(self.path(), **kwargs)
 
+    @api.try_reauthenticate
     def joblist(self, **kwargs):
         """Ask the server to list the ScanJobs associated with this scan.
 
@@ -562,6 +570,7 @@ class ScanJob(QPCObject):
         self.scan_id = scan_id
         self.endpoint = QPC_SCANJOB_PATH
 
+    @api.try_reauthenticate
     def create(self, **kwargs):
         """Send POST request to the scan's job endpoint.
 
@@ -583,6 +592,7 @@ class ScanJob(QPCObject):
             self._id = response.json().get("id")
         return response
 
+    @api.try_reauthenticate
     def list(self, **kwargs):
         """Send GET request to read all scanjobs associated with the same scan.
 
@@ -599,6 +609,7 @@ class ScanJob(QPCObject):
         path = urljoin(QPC_SCAN_PATH, "{}/jobs/".format(self.scan_id))
         return self.client.get(path, **kwargs)
 
+    @api.try_reauthenticate
     def cancel(self, **kwargs):
         """Send PUT request to self.endpoint/{id}/cancel/ to cancel a scan.
 
@@ -608,6 +619,7 @@ class ScanJob(QPCObject):
         path = urljoin(self.path(), "cancel/")
         return self.client.put(path, {}, **kwargs)
 
+    @api.try_reauthenticate
     def connection_results(self, **kwargs):
         """Send a GET self.endpoint/{id}/connection/ to read scan details.
 
@@ -617,6 +629,7 @@ class ScanJob(QPCObject):
         path = urljoin(self.path(), "connection/")
         return self.client.get(path, **kwargs)
 
+    @api.try_reauthenticate
     def inspection_results(self, **kwargs):
         """Send a GET self.endpoint/{id}/inspection/ to read scan details.
 
@@ -680,6 +693,7 @@ class Report(QPCObject):
         self.endpoint = QPC_REPORTS_PATH
         self._id = _id
 
+    @api.try_reauthenticate
     def retrieve_from_scan_job(self, scan_job_id, **kwargs):
         """Send GET request to /jobs/<scan_job_id>/ to get a scanjob.
 
@@ -707,6 +721,7 @@ class Report(QPCObject):
             )
         return response
 
+    @api.try_reauthenticate
     def details(self, **kwargs):
         """Send GET request to self.endpoint/{id}/details/ to view the report details.
 
@@ -717,6 +732,7 @@ class Report(QPCObject):
         response = self.client.get(path, **kwargs)
         return response
 
+    @api.try_reauthenticate
     def deployments(self, **kwargs):
         """Send GET request to self.endpoint/{id}/deployments/ to view deployments.
 
@@ -727,6 +743,7 @@ class Report(QPCObject):
         response = self.client.get(path, **kwargs)
         return response
 
+    @api.try_reauthenticate
     def aggregate(self, **kwargs):
         """Send GET request to self.endpoint/{id}/aggregate/ to view the aggregate report.
 
@@ -737,6 +754,7 @@ class Report(QPCObject):
         response = self.client.get(path, **kwargs)
         return response
 
+    @api.try_reauthenticate
     def reports_gzip(self, **kwargs):
         """Send GET request to self.endpoint/{id}/ to obtain report in gzip format.
 

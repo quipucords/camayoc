@@ -80,6 +80,9 @@ QPC_SCAN_STATES = QPC_SCAN_TERMINAL_STATES + ("running",)
 QPC_TOKEN_PATH = "v1/token/"
 """The path to the endpoint used for obtaining an authentication token."""
 
+QPC_API_INVALID_TOKEN_MESSAGE = "'Invalid token'"
+"""String that will be in API response when request token is invalid."""
+
 QPC_LOGOUT_PATH = "v1/users/logout/"
 """The path to the endpoint used to log user out."""
 
