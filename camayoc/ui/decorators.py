@@ -1,9 +1,12 @@
+import logging
 import warnings
 from functools import wraps
 
 from camayoc.exceptions import IncorrectDecoratorUsageWarning
 from camayoc.types.ui import HistoryRecord
 from camayoc.types.ui import Session
+
+logger = logging.getLogger(__name__)
 
 
 def service(func):
@@ -44,6 +47,13 @@ def record_action(func):
 
     @wraps(func)
     def inner(*args, **kwargs):
+        logger.debug(
+            "Executing page action [class='%s' action_name='%s' args=%s kwargs=%s]",
+            type(args[0]).__name__,
+            func.__name__,
+            args[1:],
+            kwargs,
+        )
         page = func(*args, **kwargs)
 
         try:

@@ -24,6 +24,9 @@ DBSERIALIZER_REPORTS_DIR_PATH = "reports"
 Each report is represented by directory named after report id. Only details.json
 and aggregate.json are stored."""
 
+CLI_DEBUG_MSG = "Executing command: %s"
+"""Message to log when executing command through CLI."""
+
 VALID_BOOLEAN_CHOICES = ["true", "false"]
 """Valid qpc/dsc CLI boolean choices."""
 

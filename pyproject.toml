@@ -66,14 +66,25 @@ include = ["camayoc*"]
 namespaces = false
 
 [tool.pytest.ini_options]
+addopts = """
+--log-format='[%(levelname)s %(asctime)s [%(name)s] %(filename)s:%(lineno)d] %(message)s' \
+--log-date-format='%Y-%m-%dT%H:%M:%S.%f' \
+--log-file-level=DEBUG"""
 filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"
 markers = [
     "ssh_keyfile_path: mark test with SSH key file path mapped to /sshkeys/ on the server (deselect with '-m \"not ssh_keyfile_path\"')",
     "runs_scan: tests that run scans (might be slow!)",
     "slow: tests that take a long time to run (on average, more than 30 seconds)",
-    "nightly_only: tests to execute only during nightly (or full) run, i.e. not during PR check; note that actual selection is implemented in discovery-ci",
-    "pr_only: tests to execute only during PR check run, i.e. not during nightly run; note that actual selection is implemented in discovery-ci",
-    "upgrade_only: tests to execute only during upgrade testing; note that actual selection is implemented in discovery-ci",
+    "nightly_only: tests to execute only during nightly (or full) run, i.e. not during PR check; note that custom --camayoc-pipeline flag is preferred",
+    "pr_only: tests to execute only during PR check run, i.e. not during nightly run; note that custom --camayoc-pipeline flag is preferred",
+    "upgrade_only: tests to execute only during upgrade testing; note that custom --camayoc-pipeline flag is preferred",
+]
+camayoc_log_config = [
+    "asyncio: ERROR",
+    "factory.generate: ERROR",
+    "faker.factory: ERROR",
+    "urllib3: ERROR",
+    "urllib3.connectionpool: ERROR",
 ]
 
 [tool.ruff]
@@ -119,6 +130,7 @@ ignore = [
 ]
 "camayoc/data_provider.py" = ["PLW2901"]
 "camayoc/qpc_models.py" = ["PL", "C901"]
+"camayoc/tests/qpc/cli/test_sources.py" = ["PLR0915"]
 "camayoc/tests/qpc/ui/conftest.py" = ["BLE001"]
 "camayoc/tests/qpc/utils.py" = ["PLW2901"]
 "tests/test_command.py" = ["F401"]
