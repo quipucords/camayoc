@@ -4,6 +4,7 @@
 import functools
 import ipaddress
 import json
+import logging
 import re
 import tarfile
 import tempfile
@@ -13,9 +14,12 @@ from pprint import pformat
 import pexpect
 
 from camayoc.config import settings
+from camayoc.constants import CLI_DEBUG_MSG
 from camayoc.exceptions import FailedScanException
 from camayoc.exceptions import WaitTimeError
 from camayoc.utils import client_cmd
+
+logger = logging.getLogger(__name__)
 
 
 def clear_all_entities():
@@ -28,7 +32,9 @@ def clear_all_entities():
     errors = []
     output = []
     for command in ("scan", "source", "cred"):
-        clear_output = pexpect.run("{} {} clear --all".format(client_cmd, command), encoding="utf8")
+        full_command = "{} {} clear --all".format(client_cmd, command)
+        logger.debug(CLI_DEBUG_MSG, full_command)
+        clear_output = pexpect.run(full_command, encoding="utf8")
         errors.extend(error_finder.findall(clear_output))
         output.append(clear_output)
     assert errors == [], output
@@ -76,6 +82,7 @@ def cli_command(command, options=None, exitstatus=0):
             command += " --{}".format(key)
         else:
             command += " --{} {}".format(key, value)
+    logger.debug(CLI_DEBUG_MSG, command)
     output, command_exitstatus = pexpect.run(
         command, encoding="utf-8", timeout=60, withexitstatus=True
     )
@@ -102,6 +109,7 @@ def cred_add_and_check(options, inputs=None, exitstatus=0):
             command += " --{}".format(key)
         else:
             command += " --{}={}".format(key, value)
+    logger.debug(CLI_DEBUG_MSG, command)
     qpc_cred_add = pexpect.spawn(command)
     if inputs is None:
         inputs = []
@@ -139,6 +147,7 @@ def cred_show_and_check(options, output, exitstatus=0):
             command += " --{}".format(key)
         else:
             command += " --{}={}".format(key, value)
+    logger.debug(CLI_DEBUG_MSG, command)
     qpc_cred_show = pexpect.spawn(command)
     assert qpc_cred_show.expect(output) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
@@ -214,6 +223,7 @@ def source_add_and_check(options, inputs=None, exitstatus=0):
             command += " --{}".format(key)
         else:
             command += " --{} {}".format(key, value)
+    logger.debug(CLI_DEBUG_MSG, command)
     qpc_source_add = pexpect.spawn(command)
     if inputs is None:
         inputs = []
@@ -249,6 +259,7 @@ def source_edit_and_check(options, inputs=None, exitstatus=0):
             command += " --{}".format(key)
         else:
             command += " --{} {}".format(key, value)
+    logger.debug(CLI_DEBUG_MSG, command)
     qpc_source_edit = pexpect.spawn(command)
     if inputs is None:
         inputs = []
@@ -276,6 +287,7 @@ def source_show_and_check(options, output, exitstatus=0):
             command += " --{}".format(key)
         else:
             command += " --{}={}".format(key, value)
+    logger.debug(CLI_DEBUG_MSG, command)
     qpc_source_show = pexpect.spawn(command)
     assert qpc_source_show.expect(output) == 0
     assert qpc_source_show.expect(pexpect.EOF) == 0
@@ -429,11 +441,13 @@ def setup_qpc():
     command = "{} server config --host {} --port {}{}{}".format(
         client_cmd, qpc_config.hostname, qpc_config.port, https, ssl_verify
     )
+    logger.debug(CLI_DEBUG_MSG, command)
     output, exitstatus = pexpect.run(command, encoding="utf8", withexitstatus=True)
     assert exitstatus == 0, output
 
     # now login to the server
     command = "{} server login --username {}".format(client_cmd, qpc_config.username)
+    logger.debug(CLI_DEBUG_MSG, command)
     output, exitstatus = pexpect.run(
         command,
         encoding="utf8",

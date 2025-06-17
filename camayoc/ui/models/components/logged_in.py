@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from camayoc.types.ui import UIPage
@@ -9,8 +10,12 @@ if TYPE_CHECKING:
     from .login import Login
 
 
+logger = logging.getLogger(__name__)
+
+
 class LoggedIn(UIPage):
     def logout(self) -> Login:
+        logger.debug("Executing page action [action='logout']")
         app_user_dropdown_button = "button[data-ouia-component-id=user_dropdown_button]:visible"
         logout_link = f"{app_user_dropdown_button} ~ div li[data-ouia-component-id=logout]"
 
