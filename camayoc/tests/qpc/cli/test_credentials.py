@@ -9,6 +9,7 @@
 """
 
 import json
+import logging
 import random
 from io import BytesIO
 
@@ -18,6 +19,7 @@ from littletable import Table
 
 from camayoc import utils
 from camayoc.constants import BECOME_PASSWORD_INPUT
+from camayoc.constants import CLI_DEBUG_MSG
 from camayoc.constants import CONNECTION_PASSWORD_INPUT
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
@@ -25,6 +27,8 @@ from camayoc.tests.qpc.cli.utils import cred_show_and_check
 from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import source_show
 from camayoc.utils import client_cmd
+
+logger = logging.getLogger(__name__)
 
 
 def generate_show_output(data):
@@ -282,9 +286,9 @@ def test_edit_username(isolated_filesystem, qpc_server_config, source_type):
         ),
     )
 
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --username={}".format(client_cmd, name, new_username)
-    )
+    command = "{} -v cred edit --name={} --username={}".format(client_cmd, name, new_username)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
@@ -324,9 +328,9 @@ def test_edit_username_negative(isolated_filesystem, qpc_server_config):
 
     name = utils.uuid4()
     username = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --username={}".format(client_cmd, name, username)
-    )
+    command = "{} -v cred edit --name={} --username={}".format(client_cmd, name, username)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
@@ -369,7 +373,9 @@ def test_edit_password(isolated_filesystem, qpc_server_config, source_type):
         ),
     )
 
-    qpc_cred_edit = pexpect.spawn("{} -v cred edit --name={} --password".format(client_cmd, name))
+    command = "{} -v cred edit --name={} --password".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     assert qpc_cred_edit.expect(CONNECTION_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_password)
     assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
@@ -410,7 +416,9 @@ def test_edit_password_negative(isolated_filesystem, qpc_server_config):
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn("{} -v cred edit --name={} --password".format(client_cmd, name))
+    command = "{} -v cred edit --name={} --password".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
@@ -438,7 +446,9 @@ def test_edit_sshkeyfile_negative(data_provider, qpc_server_config):
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(f"{client_cmd} -v cred edit --name={name} --sshkeyfile -")
+    command = f"{client_cmd} -v cred edit --name={name} --sshkeyfile -"
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
@@ -485,9 +495,9 @@ def test_edit_become_password(isolated_filesystem, qpc_server_config):
         ),
     )
 
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --become-password".format(client_cmd, name)
-    )
+    command = "{} -v cred edit --name={} --become-password".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     assert qpc_cred_edit.expect(BECOME_PASSWORD_INPUT) == 0
     qpc_cred_edit.sendline(new_become_password)
     assert qpc_cred_edit.expect('Credential "{}" was updated'.format(name)) == 0
@@ -528,9 +538,9 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     )
 
     name = utils.uuid4()
-    qpc_cred_edit = pexpect.spawn(
-        "{} -v cred edit --name={} --become-password".format(client_cmd, name)
-    )
+    command = "{} -v cred edit --name={} --become-password".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
@@ -549,7 +559,9 @@ def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
     """
     name = utils.uuid4()
 
-    qpc_cred_edit = pexpect.spawn("{} -v cred edit --name={} --password".format(client_cmd, name))
+    command = "{} -v cred edit --name={} --password".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_edit = pexpect.spawn(command)
     qpc_cred_edit.logfile = BytesIO()
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
@@ -588,13 +600,17 @@ def test_clear(isolated_filesystem, qpc_server_config):
         ),
     )
 
-    qpc_cred_clear = pexpect.spawn("{} -v cred clear --name={}".format(client_cmd, name))
+    command = "{} -v cred clear --name={}".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_clear = pexpect.spawn(command)
     assert qpc_cred_clear.expect('Credential "{}" was removed'.format(name)) == 0
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 0
 
-    qpc_cred_show = pexpect.spawn("{} -v cred show --name={}".format(client_cmd, name))
+    command = "{} -v cred show --name={}".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_show = pexpect.spawn(command)
     assert qpc_cred_show.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
@@ -655,7 +671,9 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     output = source_show({"name": source_name})
     output = json.loads(output)
     # try to delete credential
-    qpc_cred_clear = pexpect.spawn("{} -v cred clear --name={}".format(client_cmd, cred_name))
+    command = "{} -v cred clear --name={}".format(client_cmd, cred_name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_clear = pexpect.spawn(command)
     qpc_cred_clear.logfile = BytesIO()
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     assert (
@@ -671,19 +689,25 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     assert qpc_cred_clear.exitstatus == 1
     qpc_cred_clear.close()
     # delete the source using credential
-    qpc_source_clear = pexpect.spawn("{} -v source clear --name={}".format(client_cmd, source_name))
+    command = "{} -v source clear --name={}".format(client_cmd, source_name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_source_clear = pexpect.spawn(command)
     assert qpc_source_clear.expect('Source "{}" was removed'.format(source_name)) == 0
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     qpc_source_clear.close()
     assert qpc_source_clear.exitstatus == 0
     # successfully remove credential
-    qpc_cred_clear = pexpect.spawn("{} -v cred clear --name={}".format(client_cmd, cred_name))
+    command = "{} -v cred clear --name={}".format(client_cmd, cred_name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_clear = pexpect.spawn(command)
     assert qpc_cred_clear.expect('Credential "{}" was removed'.format(cred_name)) == 0
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     qpc_cred_clear.close()
     assert qpc_cred_clear.exitstatus == 0
     # try showing cred
-    qpc_cred_show = pexpect.spawn("{} -v cred show --name={}".format(client_cmd, cred_name))
+    command = "{} -v cred show --name={}".format(client_cmd, cred_name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_show = pexpect.spawn(command)
     assert qpc_cred_show.expect('Credential "{}" does not exist'.format(cred_name)) == 0
     assert qpc_cred_show.expect(pexpect.EOF) == 0
     qpc_cred_show.close()
@@ -700,7 +724,9 @@ def test_clear_negative(isolated_filesystem, qpc_server_config):
         be removed.
     """
     name = utils.uuid4()
-    qpc_cred_clear = pexpect.spawn("{} -v cred clear --name={}".format(client_cmd, name))
+    command = "{} -v cred clear --name={}".format(client_cmd, name)
+    logger.debug(CLI_DEBUG_MSG, command)
+    qpc_cred_clear = pexpect.spawn(command)
     qpc_cred_clear.logfile = BytesIO()
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     assert qpc_cred_clear.logfile.getvalue().strip().decode(
@@ -731,8 +757,10 @@ def test_clear_all(isolated_filesystem, qpc_server_config, cleaning_data_provide
         ]
         cred_add_and_check(options, inputs)
 
+    command = "{} -v cred clear --all".format(client_cmd)
+    logger.debug(CLI_DEBUG_MSG, command)
     output, exitstatus = pexpect.run(
-        "{} -v cred clear --all".format(client_cmd),
+        command,
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -742,9 +770,9 @@ def test_clear_all(isolated_filesystem, qpc_server_config, cleaning_data_provide
     )
     assert exitstatus == 0
 
-    output, exitstatus = pexpect.run(
-        "{} -v cred list".format(client_cmd), encoding="utf8", withexitstatus=True
-    )
+    command = "{} -v cred list".format(client_cmd)
+    logger.debug(CLI_DEBUG_MSG, command)
+    output, exitstatus = pexpect.run(command, encoding="utf8", withexitstatus=True)
     assert "No credentials exist yet." in output
     assert exitstatus == 0
 
@@ -769,8 +797,10 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
     """
     new_username = utils.uuid4()
 
+    command = "{} -v cred list --type {}".format(client_cmd, source_type)
+    logger.debug(CLI_DEBUG_MSG, command)
     output, _ = pexpect.run(
-        "{} -v cred list --type {}".format(client_cmd, source_type),
+        command,
         encoding="utf8",
         withexitstatus=True,
     )
@@ -787,10 +817,12 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
     credential_name = credential.get("name")
 
     # Edit credential
+    command = "{} -v cred edit --name='{}' --username={}".format(
+        client_cmd, credential_name, new_username
+    )
+    logger.debug(CLI_DEBUG_MSG, command)
     output, exitstatus = pexpect.run(
-        "{} -v cred edit --name='{}' --username={}".format(
-            client_cmd, credential_name, new_username
-        ),
+        command,
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -798,8 +830,10 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
     assert exitstatus == 0
 
     # Grab the new data, prepare both for comparison, compare
+    command = "{} -v cred show --name='{}'".format(client_cmd, credential_name)
+    logger.debug(CLI_DEBUG_MSG, command)
     output, exitstatus = pexpect.run(
-        "{} -v cred show --name='{}'".format(client_cmd, credential_name),
+        command,
         encoding="utf-8",
         withexitstatus=True,
     )
@@ -812,8 +846,8 @@ def test_edit_existing_credential_username(qpc_server_config, source_type):
     assert expected == updated_credential
 
     # Restore old username
-    pexpect.run(
-        "{} -v cred edit --name='{}' --username='{}'".format(
-            client_cmd, credential_name, credential.get("username")
-        )
+    command = "{} -v cred edit --name='{}' --username='{}'".format(
+        client_cmd, credential_name, credential.get("username")
     )
+    logger.debug(CLI_DEBUG_MSG, command)
+    pexpect.run(command)

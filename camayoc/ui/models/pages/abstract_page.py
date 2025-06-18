@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from importlib import import_module
 from typing import TYPE_CHECKING
 from typing import Union
@@ -14,10 +15,14 @@ if TYPE_CHECKING:
     ClassOrPage = Union[Pages, "AbstractPage"]
 
 
+logger = logging.getLogger(__name__)
+
+
 class AbstractPage(UIPage):
     def __init__(self, client: camayoc.ui.client.Client):
         self._client = client
         self._driver = client.driver
+        logger.debug("Opening page: %s", self.__class__.__name__)
 
     def _new_page(self, class_or_page: ClassOrPage) -> UIPage:
         cls = None

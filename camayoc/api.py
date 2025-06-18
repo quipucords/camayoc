@@ -271,4 +271,5 @@ class Client(object):
         headers.update(kwargs.get("headers", {}))
         kwargs["headers"] = headers
         kwargs.setdefault("verify", self.verify)
+        logger.debug("Outgoing request [method='%s' url='%s' kwargs=%s]", method, url, kwargs)
         return self.response_handler(requests.request(method, url, **kwargs))

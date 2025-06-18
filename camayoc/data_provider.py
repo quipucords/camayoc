@@ -116,6 +116,11 @@ class ModelWorker:
         return new_model
 
     def defined_many(self, match_criteria):
+        logger.debug(
+            "Called DataProvider.defined_many [model=%s criteria=%s]",
+            self._model_class.__name__,
+            match_criteria,
+        )
         matching_definitions = self._select_definitions(match_criteria)
         random.shuffle(matching_definitions)
 
@@ -126,10 +131,22 @@ class ModelWorker:
             yield model
 
     def defined_one(self, match_criteria):
+        logger.debug(
+            "Called DataProvider.defined_one [model=%s criteria=%s]",
+            self._model_class.__name__,
+            match_criteria,
+        )
         defined_generator = self.defined_many(match_criteria)
         return next(defined_generator)
 
     def new_many(self, match_criteria, new_dependencies=True, data_only=True):
+        logger.debug(
+            "Called DataProvider.new_many [model=%s criteria=%s dependencies=%s data_only=%s]",
+            self._model_class.__name__,
+            match_criteria,
+            new_dependencies,
+            data_only,
+        )
         matching_definitions = self._select_definitions(match_criteria)
         random.shuffle(matching_definitions)
 
@@ -143,6 +160,13 @@ class ModelWorker:
             yield model
 
     def new_one(self, match_criteria, new_dependencies=True, data_only=True):
+        logger.debug(
+            "Called DataProvider.new_one [model=%s criteria=%s dependencies=%s data_only=%s]",
+            self._model_class.__name__,
+            match_criteria,
+            new_dependencies,
+            data_only,
+        )
         new_generator = self.new_many(
             match_criteria=match_criteria,
             new_dependencies=new_dependencies,
@@ -174,6 +198,7 @@ class DataProvider:
                     worker._created_models[obj_name] = obj
 
     def cleanup(self):
+        logger.debug("Called DataProvider.cleanup")
         trash = chain.from_iterable(
             (getattr(self, store)._created_models.values() for store in self._stores)
         )
@@ -211,6 +236,7 @@ class ScanContainer:
         return self._get_or_run_scans(scans=wanted_scans, ok_only=True)
 
     def _get_or_run_scans(self, scans: Sequence[str], ok_only=False) -> dict[str, FinishedScan]:
+        logger.debug("Called ScanContainer._get_or_run_scans [scans=%s ok_only=%s]", scans, ok_only)
         self._sync_finished_scans_with_dp()
         self._ensure_wanted_scans_finished(scans)
 

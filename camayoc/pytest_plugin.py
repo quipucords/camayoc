@@ -1,6 +1,10 @@
+import logging
 from collections.abc import Callable
 
 import pytest
+
+logger = logging.getLogger(__name__)
+LOG_CONFIG_INI_KEY = "camayoc_log_config"
 
 
 def pytest_addoption(parser: pytest.Parser, pluginmanager: pytest.PytestPluginManager) -> None:
@@ -10,6 +14,39 @@ def pytest_addoption(parser: pytest.Parser, pluginmanager: pytest.PytestPluginMa
         choices=("pr", "nightly", "upgrade"),
         help="Only run tests relevant for this pipeline type",
     )
+    parser.addini(
+        LOG_CONFIG_INI_KEY,
+        help="List of loggers and desired logging level, separated by a colon",
+        type="linelist",
+        default=[],
+    )
+
+
+def pytest_configure(config) -> None:
+    for logger_definition in config.getini(LOG_CONFIG_INI_KEY):
+        logger_name, _, logger_level = logger_definition.partition(":")
+        logger_name = logger_name.strip()
+        logger_level = logger_level.strip().upper()
+        if not logger_level:
+            logger_level = "ERROR"
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(logger_level)
+
+
+def pytest_fixture_setup(fixturedef, request):
+    logger.debug("Starting fixture %s", fixturedef)
+
+
+def pytest_fixture_post_finalizer(fixturedef, request):
+    logger.debug("Finished fixture %s", fixturedef)
+
+
+def pytest_runtest_logstart(nodeid, location):
+    logger.debug("Starting test %s", nodeid)
+
+
+def pytest_runtest_logfinish(nodeid, location):
+    logger.debug("Finished test %s", nodeid)
 
 
 def pytest_collection_modifyitems(
