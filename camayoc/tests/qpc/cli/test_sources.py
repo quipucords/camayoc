@@ -67,8 +67,10 @@ INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
 
 
 def generate_show_output(data):
-    """Generate a regex pattern with the data for a qpc cred show output."""
+    """Generate a regex pattern that matches `qpc source show` output (API v2)."""
     output = r"{\r\n"
+
+    # ─ credentials ─
     output += (
         r'    "credentials": \[\r\n'
         r"        {{\r\n"
@@ -77,28 +79,68 @@ def generate_show_output(data):
         r"        }}\r\n"
         r"    \],\r\n".format(data["cred_name"])
     )
-    if data.get("exclude_hosts"):
-        output += r'    "exclude_hosts": \[\r\n' r'        "{}"\r\n' r"    \],\r\n".format(
-            data["exclude_hosts"]
+
+    # ─ disable_ssl ─
+    disable_ssl = data.get("disable_ssl")
+    output += r'    "disable_ssl": {},\r\n'.format(
+        str(disable_ssl).lower() if disable_ssl is not None else "null"
+    )
+
+    # ─ exclude_hosts ─
+    if data.get("exclude_hosts") is not None:
+        output += (
+            r'    "exclude_hosts": \[\r\n'
+            r'        "{}"\r\n'
+            r"    \],\r\n".format(data["exclude_hosts"])
         )
-    output += r'    "hosts": \[\r\n' r'        "{}"\r\n' r"    \],\r\n".format(data["hosts"])
-    output += r'    "id": \d+,\r\n'
-    output += r'    "name": "{}",\r\n'.format(data["name"])
-    source_type = data["source_type"]
-    if source_type in QPC_HOST_MANAGER_TYPES:
-        data.setdefault("options", {}).setdefault("ssl_cert_verify", "true")
-    if data.get("options"):
-        output += '    "options": {\r\n'
-        output += ",\r\n".join(
-            [
-                '        "{}": ["]?{}["]?'.format(key, value)
-                for key, value in sorted(data["options"].items(), key=operator.itemgetter(0))
-            ]
-        )
-        output += "\r\n    },\r\n"
-    output += '    "port": {},\r\n'.format(data["port"])
-    output += '    "source_type": "{}"\r\n'.format(source_type)
-    output += "}\r\n"
+    else:
+        output += r'    "exclude_hosts": null,\r\n'
+
+    # ─ hosts ─
+    output += (
+        r'    "hosts": \[\r\n'
+        r'        "{}"\r\n'
+        r"    \],\r\n".format(data["hosts"])
+    )
+
+    # ─ id and name ─
+    output += (
+        r'    "id": \d+,\r\n'
+        r'    "name": "{}",\r\n'.format(data["name"])
+    )
+
+    # ─ port, proxy, source_type ─
+    output += r'    "port": {},\r\n'.format(data["port"])
+    output += r'    "proxy_url": null,\r\n'
+    output += r'    "source_type": "{}",\r\n'.format(data["source_type"])
+
+    # ─ ssl_cert_verify ─
+    ssl_fields_present = any(
+        key in data for key in ("ssl_cert_verify", "ssl_protocol", "disable_ssl", "use_paramiko")
+    )
+    if "ssl_cert_verify" in data:
+        output += r'    "ssl_cert_verify": {},\r\n'.format(data["ssl_cert_verify"])
+    # Backend sets default `true` for HTTP sources if no SSL field is explicitly set
+    elif data["source_type"] != "network" and not ssl_fields_present:
+        output += r'    "ssl_cert_verify": true,\r\n'
+    else:
+        output += r'    "ssl_cert_verify": null,\r\n'
+
+    # ─ ssl_protocol ─
+    if "ssl_protocol" in data:
+        output += r'    "ssl_protocol": "{}",\r\n'.format(data["ssl_protocol"])
+    else:
+        output += r'    "ssl_protocol": null,\r\n'
+
+    # ─ use_paramiko ─
+    if "use_paramiko" in data:
+        output += r'    "use_paramiko": {},\r\n'.format(str(data["use_paramiko"]).lower())
+    else:
+        output += r'    "use_paramiko": null\r\n'
+
+    # ─ close block ─
+    output += r"}\r\n"
+
     return output
 
 
@@ -302,7 +344,7 @@ def test_add_with_ssl_cert_verify(
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"ssl_cert_verify": ssl_cert_verify.lower()},
+                "ssl_cert_verify": ssl_cert_verify.lower(),
                 "port": QPC_SOURCES_DEFAULT_PORT[source_type],
                 "source_type": source_type,
             }
@@ -396,7 +438,7 @@ def test_add_with_ssl_protocol(isolated_filesystem, qpc_server_config, source_ty
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"ssl_protocol": ssl_protocol},
+                "ssl_protocol": ssl_protocol,
                 "port": QPC_SOURCES_DEFAULT_PORT[source_type],
                 "source_type": source_type,
             }
@@ -489,7 +531,7 @@ def test_add_with_disable_ssl(isolated_filesystem, qpc_server_config, source_typ
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"disable_ssl": disable_ssl.lower()},
+                "disable_ssl": disable_ssl.lower(),
                 "port": QPC_SOURCES_DEFAULT_PORT[source_type],
                 "source_type": source_type,
             }
@@ -729,7 +771,7 @@ def test_edit_cred(isolated_filesystem, qpc_server_config, source_type):
         {"name": name},
         generate_show_output(
             {
-                "cred_name": cred_name,
+                "cred_name": new_cred_name,
                 "hosts": hosts,
                 "name": name,
                 "port": port,
@@ -1272,7 +1314,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"ssl_cert_verify": ssl_cert_verify.lower()},
+                "ssl_cert_verify": ssl_cert_verify.lower(),
                 "port": port,
                 "source_type": source_type,
             }
@@ -1296,7 +1338,7 @@ def test_edit_ssl_cert_verify(isolated_filesystem, qpc_server_config, source_typ
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"ssl_cert_verify": new_ssl_cert_verify.lower()},
+                "ssl_cert_verify": new_ssl_cert_verify.lower(),
                 "port": port,
                 "source_type": source_type,
             }
@@ -1346,7 +1388,7 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"ssl_protocol": ssl_protocol},
+                "ssl_protocol": ssl_protocol,
                 "port": port,
                 "source_type": source_type,
             }
@@ -1368,9 +1410,10 @@ def test_edit_ssl_protocol(isolated_filesystem, qpc_server_config, source_type):
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"ssl_protocol": new_ssl_protocol},
+                "ssl_protocol": new_ssl_protocol,
                 "port": port,
                 "source_type": source_type,
+                "ssl_cert_verify": "true",
             }
         ),
     )
@@ -1418,7 +1461,7 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"disable_ssl": disable_ssl.lower()},
+                "disable_ssl": disable_ssl.lower(),
                 "port": port,
                 "source_type": source_type,
             }
@@ -1440,9 +1483,10 @@ def test_edit_disable_ssl(isolated_filesystem, qpc_server_config, source_type):
                 "cred_name": cred_name,
                 "hosts": hosts,
                 "name": name,
-                "options": {"disable_ssl": new_disable_ssl.lower()},
+                "disable_ssl": new_disable_ssl.lower(),
                 "port": port,
                 "source_type": source_type,
+                "ssl_cert_verify": "true",
             }
         ),
     )
@@ -1666,7 +1710,27 @@ def test_clear_all(cleaning_data_provider, isolated_filesystem, qpc_server_confi
             "source_type": source_type,
         }
         if source_type != "network":
-            source["options"] = {"ssl_cert_verify": True}
+            source.update(
+                {
+                    "ssl_cert_verify": True,
+                    "disable_ssl": None,
+                    "exclude_hosts": None,
+                    "proxy_url": None,
+                    "ssl_protocol": None,
+                    "use_paramiko": None,
+                }
+            )
+        else:
+            source.update(
+                {
+                    "disable_ssl": None,
+                    "exclude_hosts": None,
+                    "proxy_url": None,
+                    "ssl_cert_verify": None,
+                    "ssl_protocol": None,
+                    "use_paramiko": None,
+                }
+            )
         sources.append(source)
         qpc_source_add = pexpect.spawn(
             "{} -v source add --name {} --cred {} --hosts {} --type {}".format(
