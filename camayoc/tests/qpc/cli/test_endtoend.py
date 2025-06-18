@@ -76,8 +76,14 @@ def test_end_to_end(tmp_path, qpc_server_config, data_provider, source_name):
     }
     if source_port := getattr(source_model, "port", None):
         source_add_args["port"] = source_port
-    if source_options := getattr(source_model, "options", {}):
-        source_add_args.update({key.replace("_", "-"): val for key, val in source_options.items()})
+
+    for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl", "use_paramiko"):
+        value = getattr(source_model, opt, None)
+        if value is None:
+            continue
+        key = opt.replace("_", "-")
+        source_add_args[key] = value
+
     data_provider.mark_for_cleanup(source_model)
     source_add_and_check(source_add_args)
 
