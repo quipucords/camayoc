@@ -140,7 +140,6 @@ convention = "pep257"
 # here should be matched by version available in image.
 [tool.uv]
 package = true
-required-version = ">=0.6.11,<0.7"
 environments = [
     "implementation_name == 'cpython' and (sys_platform == 'linux' or sys_platform == 'darwin')",
 ]
