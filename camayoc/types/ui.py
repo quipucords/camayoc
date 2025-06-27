@@ -365,7 +365,7 @@ class SatelliteSourceFormDTO:
             source_name=model.name,
             address=model.hosts[0],
             credentials=model.credentials,
-            verify_ssl=model.options.get("ssl_cert_verify"),
+            verify_ssl=model.ssl_cert_verify,
             **port_args,
         )
 
@@ -388,7 +388,7 @@ class VCenterSourceFormDTO:
             source_name=model.name,
             address=model.hosts[0],
             credentials=model.credentials,
-            verify_ssl=model.options.get("ssl_cert_verify"),
+            verify_ssl=model.ssl_cert_verify,
             **port_args,
         )
 
@@ -411,7 +411,7 @@ class OpenShiftSourceFormDTO:
             source_name=model.name,
             address=model.hosts[0],
             credentials=model.credentials,
-            verify_ssl=model.options.get("ssl_cert_verify"),
+            verify_ssl=model.ssl_cert_verify,
             **port_args,
         )
 
@@ -434,7 +434,7 @@ class AnsibleSourceFormDTO:
             source_name=model.name,
             address=model.hosts[0],
             credentials=model.credentials,
-            verify_ssl=model.options.get("ssl_cert_verify"),
+            verify_ssl=model.ssl_cert_verify,
             **port_args,
         )
 
@@ -457,7 +457,7 @@ class RHACSSourceFormDTO:
             source_name=model.name,
             address=model.hosts[0],
             credentials=model.credentials,
-            verify_ssl=model.options.get("ssl_cert_verify"),
+            verify_ssl=model.ssl_cert_verify,
             **port_args,
         )
 

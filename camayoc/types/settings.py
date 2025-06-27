@@ -128,6 +128,10 @@ class SourceOptions(BaseModel):
     port: Optional[int] = None
     credentials: list[str]
     options: Optional[SourceOptionsOptions] = None
+    ssl_protocol: Optional[str] = None  # FIXME: should be enum
+    ssl_cert_verify: Optional[bool] = None
+    disable_ssl: Optional[bool] = None
+    use_paramiko: Optional[bool] = None
 
 
 class ExpectedDistributionData(BaseModel):

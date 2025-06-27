@@ -62,7 +62,7 @@ QPC_API_ROOT = "api/"
 QPC_CREDENTIALS_PATH = "v2/credentials/"
 """The path to the credentials endpoint for CRUD tasks."""
 
-QPC_SOURCE_PATH = "v1/sources/"
+QPC_SOURCE_PATH = "v2/sources/"
 """The path to the profiles endpoint for CRUD tasks."""
 
 QPC_SCAN_PATH = "v1/scans/"

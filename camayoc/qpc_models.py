@@ -22,6 +22,7 @@ from camayoc.utils import server_container_ssh_key_content
 from camayoc.utils import uuid4
 
 OPTIONAL_PROD_KEY = "disabled_optional_products"
+SENTINEL = object()
 
 
 class QPCObjectBulkDeleteMixin(object):
@@ -332,13 +333,18 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
         client=None,
         name=None,
         hosts=None,
+        exclude_hosts=None,
         port=None,
         credential_ids=None,
         source_type=None,
         options=None,
+        ssl_protocol=None,
+        ssl_cert_verify=None,
+        disable_ssl=None,
+        use_paramiko=None,
         _id=None,
     ):
-        """Iniitalize a Source object with given data.
+        """Initialize a Source object with given data.
 
         If no port is supplied, it will be set to 22 by default.
         A uuid4 name and api.Client are also supplied if none are provided.
@@ -350,9 +356,30 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
         if port is not None:
             self.port = port
         if options is not None:
-            self.options = options
+            for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl", "use_paramiko"):
+                value = options.get(opt, SENTINEL)
+                if value is SENTINEL:
+                    continue
+                setattr(self, opt, value)
+        if ssl_protocol is not None:
+            self.ssl_protocol = ssl_protocol
+        if ssl_cert_verify is not None:
+            self.ssl_cert_verify = ssl_cert_verify
+        if disable_ssl is not None:
+            self.disable_ssl = disable_ssl
+        if use_paramiko is not None:
+            self.use_paramiko = use_paramiko
         self.credentials = credential_ids
         self.source_type = source_type
+
+    # Sources v2 does not provide bulk_delete endpoint, DISCOVERY-1006
+    def bulk_delete(self, ids, **kwargs):
+        old_endpoint = self.endpoint
+        new_endpoint = old_endpoint.replace("v2/", "v1/")
+        self.endpoint = new_endpoint
+        retval = super().bulk_delete(ids, **kwargs)
+        self.endpoint = old_endpoint
+        return retval
 
     @classmethod
     def from_definition(cls, definition: SourceOptions, dependencies: Optional[list[int]] = None):
