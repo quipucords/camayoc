@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from datetime import datetime
+from functools import wraps
 
 from playwright.sync_api import Download
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -14,26 +15,23 @@ from camayoc.ui.decorators import record_action
 from camayoc.ui.decorators import service
 from camayoc.ui.enums import ColumnOrdering
 from camayoc.ui.enums import Pages
-from camayoc.ui.enums import ScansPopupTableColumns
+from camayoc.ui.enums import ScansModalTableColumns
 
 from ..components.items_list import AbstractListItem
-from ..components.popup import PopUp
+from ..components.modal import Modal
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 REFRESH_BUTTON_LOCATOR = "div[class*=-c-toolbar] button[data-ouia-component-id=refresh]"
-KEBAB_ITEM_LOCATOR_TEMPLATE = (
-    "button[data-ouia-component-id=action_menu_toggle] ~ div *[data-ouia-component-id={}] button"
-)
 
 
-class ScanHistoryPopup(PopUp, AbstractPage):
+class ScanHistoryModal(Modal, AbstractPage):
     SAVE_LOCATOR = None
     CANCEL_LOCATOR = "*[class$='modal-box__close'] button"
     SAVE_RESULT_CLASS = None
     CANCEL_RESULT_CLASS = Pages.SCANS
 
-    def sort_table(self, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering) -> None:
+    def sort_table(self, sort_by: ScansModalTableColumns, ordering: ColumnOrdering) -> None:
         tries = 0
         table_header_locator = (
             "table[data-ouia-component-id=scan_jobs_table] thead "
@@ -74,7 +72,7 @@ def to_date(value: str):
         return None
 
 
-class SummaryReportPopup(PopUp, AbstractPage):
+class SummaryReportModal(Modal, AbstractPage):
     CANCEL_LOCATOR = "*[class$='modal-box__close'] button"
     CANCEL_RESULT_CLASS = Pages.SCANS
     VALUE_TRANSFORMER_MAP = {
@@ -104,68 +102,63 @@ class SummaryReportPopup(PopUp, AbstractPage):
         return report
 
 
+def _wait_for_scan(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        timeout = self._client._camayoc_config.camayoc.scan_timeout
+        timeout_start = time.monotonic()
+        while timeout > (time.monotonic() - timeout_start):
+            if result := func(self, *args, **kwargs):
+                return result
+        raise FailedScanException("Scan did not succeed in specified time")
+
+    return wrapper
+
+
 class ScanListElem(AbstractListItem):
-    def download_scan(self) -> Download:
-        timeout_start = time.monotonic()
-        timeout = self._client._camayoc_config.camayoc.scan_timeout
-        download_locator = KEBAB_ITEM_LOCATOR_TEMPLATE.format("download")
-        while timeout > (time.monotonic() - timeout_start):
-            try:
-                self._toggle_kebab()
-                with self._client.driver.expect_download() as download_info:
-                    self.locator.locator(download_locator).click(timeout=10_000)
-                download = download_info.value
-                download.path()  # blocks the script while file is downloaded
-                self._toggle_kebab()
-                return download
-            except PlaywrightTimeoutError:
-                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
-        raise FailedScanException("Scan could not be downloaded")
+    @_wait_for_scan
+    def download_scan(self) -> Download | None:
+        try:
+            with self._client.driver.expect_download() as download_info:
+                self.select_action("download", timeout=10_000)
+            download = download_info.value
+            download.path()  # blocks the script while file is downloaded
+            return download
+        except PlaywrightTimeoutError:
+            self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
+    @_wait_for_scan
     def download_scan_modal(
-        self, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering, item: int
-    ) -> Download:
-        timeout_start = time.monotonic()
-        timeout = self._client._camayoc_config.camayoc.scan_timeout
-        while timeout > (time.monotonic() - timeout_start):
-            try:
-                scans_popup = self._open_scans_popup()
-                scans_popup.sort_table(sort_by, ordering)
-                download = scans_popup.get_nth_download(item)
-                scans_popup.cancel()
-                return download
-            except PlaywrightTimeoutError:
-                scans_popup.cancel()
-                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
-        raise FailedScanException("Scan could not be downloaded")
+        self, sort_by: ScansModalTableColumns, ordering: ColumnOrdering, item: int
+    ) -> Download | None:
+        try:
+            scans_modal = self._open_scans_modal()
+            scans_modal.sort_table(sort_by, ordering)
+            download = scans_modal.get_nth_download(item)
+            scans_modal.cancel()
+            return download
+        except PlaywrightTimeoutError:
+            scans_modal.cancel()
+            self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
-    def read_summary_modal(self) -> SummaryReportData:
-        timeout_start = time.monotonic()
-        timeout = self._client._camayoc_config.camayoc.scan_timeout
-        while timeout > (time.monotonic() - timeout_start):
-            try:
-                summary_popup = self._open_summary_popup()
-                data = summary_popup.get_data()
-                summary_popup.cancel()
-                return data
-            except PlaywrightTimeoutError:
-                self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
-        raise FailedScanException("summary report could not be downloaded")
+    @_wait_for_scan
+    def read_summary_modal(self) -> SummaryReportData | None:
+        try:
+            summary_modal = self._open_summary_modal()
+            data = summary_modal.get_data()
+            summary_modal.cancel()
+            return data
+        except PlaywrightTimeoutError:
+            self._client.driver.locator(REFRESH_BUTTON_LOCATOR).click()
 
-    def _toggle_kebab(self) -> None:
-        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
-        self.locator.locator(kebab_menu_locator).click()
-
-    def _open_scans_popup(self) -> ScanHistoryPopup:
+    def _open_scans_modal(self) -> ScanHistoryModal:
         last_scanned_locator = "td[data-label='Last scanned'] button"
         self.locator.locator(last_scanned_locator).click()
-        return ScanHistoryPopup(client=self._client)
+        return ScanHistoryModal(client=self._client)
 
-    def _open_summary_popup(self) -> SummaryReportPopup:
-        summary_locator = KEBAB_ITEM_LOCATOR_TEMPLATE.format("summary")
-        self._toggle_kebab()
-        self.locator.locator(summary_locator).click()
-        return SummaryReportPopup(client=self._client)
+    def _open_summary_modal(self) -> SummaryReportModal:
+        self.select_action("summary")
+        return SummaryReportModal(client=self._client)
 
 
 class ScansMainPage(MainPageMixin):
@@ -184,7 +177,7 @@ class ScansMainPage(MainPageMixin):
     @service
     @record_action
     def download_scan_modal(
-        self, scan_name: str, sort_by: ScansPopupTableColumns, ordering: ColumnOrdering, item: int
+        self, scan_name: str, sort_by: ScansModalTableColumns, ordering: ColumnOrdering, item: int
     ) -> ScansMainPage:
         scan: ScanListElem = self._get_item(scan_name)
         downloaded_report = scan.download_scan_modal(sort_by, ordering, item)
