@@ -73,9 +73,16 @@ INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
 
 def generate_show_output(data):
     """Generate a regex pattern that matches `qpc source show` output (API v2)."""
-    output = r"{\r\n"
 
-    # ─ credentials ─
+    def _nullable_field(data, key, is_string=False, trailing_comma=True):
+        if key in data:
+            val = '"{}"'.format(data[key]) if is_string else str(data[key]).lower()
+        else:
+            val = "null"
+        comma = "," if trailing_comma else ""
+        return r'    "{}": {}{}\r\n'.format(key, val, comma)
+
+    output = r"{\r\n"
     output += (
         r'    "credentials": \[\r\n'
         r"        {{\r\n"
@@ -84,15 +91,8 @@ def generate_show_output(data):
         r"        }}\r\n"
         r"    \],\r\n".format(data["cred_name"])
     )
+    output += _nullable_field(data, "disable_ssl")
 
-    # ─ disable_ssl ─
-    if "disable_ssl" in data:
-        val = str(data["disable_ssl"]).lower()
-    else:
-        val = "null"
-    output += r'    "disable_ssl": {},\r\n'.format(val)
-
-    # ─ exclude_hosts ─
     if data.get("exclude_hosts") is not None:
         output += (
             r'    "exclude_hosts": \[\r\n'
@@ -102,49 +102,29 @@ def generate_show_output(data):
     else:
         output += r'    "exclude_hosts": null,\r\n'
 
-    # ─ hosts ─
     output += (
         r'    "hosts": \[\r\n'
         r'        "{}"\r\n'
         r"    \],\r\n".format(data["hosts"])
     )
-
-    # ─ id and name ─
     output += (
         r'    "id": \d+,\r\n'
         r'    "name": "{}",\r\n'.format(data["name"])
     )
-
-    # ─ port, proxy, source_type ─
     output += r'    "port": {},\r\n'.format(data["port"])
     output += r'    "proxy_url": null,\r\n'
     output += r'    "source_type": "{}",\r\n'.format(data["source_type"])
 
-    # ─ ssl_cert_verify ─
     if "ssl_cert_verify" in data:
-        val = data["ssl_cert_verify"]
-        output += r'    "ssl_cert_verify": {},\r\n'.format(
-            str(val).lower() if val is not None else "null"
-        )
+        val = str(data["ssl_cert_verify"]).lower()
     elif data["source_type"] != "network":
-        output += r'    "ssl_cert_verify": true,\r\n'
-    else:
-        output += r'    "ssl_cert_verify": null,\r\n'
-
-    # ─ ssl_protocol ─
-    if "ssl_protocol" in data:
-        output += r'    "ssl_protocol": "{}",\r\n'.format(data["ssl_protocol"])
-    else:
-        output += r'    "ssl_protocol": null,\r\n'
-
-    # ─ use_paramiko ─
-    if "use_paramiko" in data:
-        val = str(data["use_paramiko"]).lower()
+        val = "true"
     else:
         val = "null"
-    output += r'    "use_paramiko": {}\r\n'.format(val)
+    output += r'    "ssl_cert_verify": {},\r\n'.format(val)
 
-    # ─ close block ─
+    output += _nullable_field(data, "ssl_protocol", is_string=True)
+    output += _nullable_field(data, "use_paramiko", trailing_comma=False)
     output += r"}\r\n"
 
     return output
