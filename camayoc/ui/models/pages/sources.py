@@ -20,7 +20,7 @@ from camayoc.ui.enums import SourceTypes
 from ..components.add_new_dropdown import AddNewDropdown
 from ..components.form import Form
 from ..components.items_list import AbstractListItem
-from ..components.popup import PopUp
+from ..components.modal import Modal
 from ..fields import CheckboxField
 from ..fields import FilteredMultipleSelectField
 from ..fields import InputField
@@ -29,7 +29,7 @@ from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
 
 
-class SourceForm(Form, PopUp, AbstractPage):
+class SourceForm(Form, Modal, AbstractPage):
     SAVE_RESULT_CLASS = Pages.SOURCES
     CANCEL_RESULT_CLASS = Pages.SOURCES
 
@@ -165,7 +165,7 @@ class RHACSSourceCredentialsForm(SourceForm):
         return self
 
 
-class ScanForm(Form, PopUp, AbstractPage):
+class ScanForm(Form, Modal, AbstractPage):
     SAVE_RESULT_CLASS = Pages.SOURCES
     CANCEL_RESULT_CLASS = Pages.SOURCES
 
@@ -191,19 +191,6 @@ class SourceListElem(AbstractListItem):
         scan_locator = 'button[data-ouia-component-id="scan_button"]'
         self.locator.locator(scan_locator).click()
         return ScanForm(client=self._client)
-
-    def open_edit_source(self) -> SourceForm:
-        edit_locator = (
-            "button[data-ouia-component-id=action_menu_toggle] "
-            "~ div *[data-ouia-component-id=edit-source] button"
-        )
-        self._toggle_kebab()
-        self.locator.locator(edit_locator).click()
-        return SourceForm(client=self._client)
-
-    def _toggle_kebab(self) -> None:
-        kebab_menu_locator = "button[data-ouia-component-id=action_menu_toggle]"
-        self.locator.locator(kebab_menu_locator).click()
 
 
 SOURCE_TYPE_MAP = {
@@ -240,15 +227,15 @@ class SourcesMainPage(AddNewDropdown, MainPageMixin):
 
     @service
     def add_source(self, data: AddSourceDTO) -> SourcesMainPage:
-        add_sources_popup = self.open_add_source(data.source_type)
-        add_sources_popup.fill(data.source_form)
-        return add_sources_popup.confirm()
+        add_sources_modal = self.open_add_source(data.source_type)
+        add_sources_modal.fill(data.source_form)
+        return add_sources_modal.confirm()
 
     @service
     def edit_source(self, name: str, data: AddSourceDTO) -> SourcesMainPage:
-        edit_source_popup = self.open_edit_source(name, data.source_type)
-        edit_source_popup.fill(data.source_form)
-        return edit_source_popup.confirm()
+        edit_source_modal = self.open_edit_source(name, data.source_type)
+        edit_source_modal.fill(data.source_form)
+        return edit_source_modal.confirm()
 
     @record_action
     def open_add_source(self, source_type: SourceTypes) -> SourceForm:
@@ -260,13 +247,13 @@ class SourcesMainPage(AddNewDropdown, MainPageMixin):
     def open_edit_source(self, name: str, source_type: SourceTypes) -> SourceForm:
         cls = SOURCE_TYPE_MAP.get(source_type).get("class")
         item: SourceListElem = self._get_item(name)
-        item.open_edit_source()
+        item.select_action("edit-source")
         return self._new_page(cls)
 
     @creates_toast
     @record_action
     def trigger_scan(self, data: TriggerScanDTO) -> SourcesMainPage:
         item: SourceListElem = self._get_item(data.source_name)
-        popup = item.open_scan()
-        popup.fill(data.scan_form)
-        return popup.confirm()
+        modal = item.open_scan()
+        modal.fill(data.scan_form)
+        return modal.confirm()
