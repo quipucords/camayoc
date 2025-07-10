@@ -19,3 +19,4 @@ repos:
       rev: v1.35.1
       hooks:
           - id: yamllint
+            exclude: .github/workflows/forbid-fixup-commits.yaml
