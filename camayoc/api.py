@@ -112,8 +112,12 @@ def try_reauthenticate(func):
                     func.__name__,
                     i,
                 )
-                self.token = None
-                self.login()
+                try:
+                    client = self.client
+                except AttributeError:
+                    client = self
+                client.token = None
+                client.login()
 
     return wrapper
 
