@@ -1645,7 +1645,7 @@ def test_clear_with_scans(isolated_filesystem, qpc_server_config, source_type):
     assert qpc_source_clear.expect(pexpect.EOF) == 0
     assert qpc_source_clear.logfile.getvalue().strip() == (
         "Error: Source cannot be deleted because "
-        "it is used by 1 or more scans.\r\n"
+        "it is used by one or more scans.\r\n"
         "scans: {'id': '%s', 'name': '%s'}\r\n"
         'Failed to remove source "%s".' % (scan_show_result["id"], scan_name, name)
     ).encode("utf-8")

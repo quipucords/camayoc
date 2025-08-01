@@ -678,7 +678,7 @@ def test_clear_with_source(isolated_filesystem, qpc_server_config):
     assert qpc_cred_clear.expect(pexpect.EOF) == 0
     assert (
         qpc_cred_clear.logfile.getvalue().strip().decode("utf-8")
-        == "Error: Credential cannot be deleted because it is used by 1"
+        == "Error: Credential cannot be deleted because it is used by one"
         " or more sources.\r\n"
         "sources: {'id': '%s', 'name': '%s'}\r\n"
         'Failed to remove credential "%s". '
