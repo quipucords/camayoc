@@ -9,7 +9,6 @@ from camayoc import api
 from camayoc.constants import MASKED_AUTH_TOKEN_OUTPUT
 from camayoc.constants import MASKED_PASSWORD_OUTPUT
 from camayoc.constants import QPC_CREDENTIALS_PATH
-from camayoc.constants import QPC_HOST_MANAGER_TYPES
 from camayoc.constants import QPC_REPORTS_PATH
 from camayoc.constants import QPC_SCAN_PATH
 from camayoc.constants import QPC_SCANJOB_PATH
@@ -22,7 +21,6 @@ from camayoc.utils import server_container_ssh_key_content
 from camayoc.utils import uuid4
 
 OPTIONAL_PROD_KEY = "disabled_optional_products"
-SENTINEL = object()
 
 
 class QPCObjectBulkDeleteMixin(object):
@@ -337,7 +335,6 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
         port=None,
         credential_ids=None,
         source_type=None,
-        options=None,
         ssl_protocol=None,
         ssl_cert_verify=None,
         disable_ssl=None,
@@ -355,12 +352,6 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
         self.hosts = hosts
         if port is not None:
             self.port = port
-        if options is not None:
-            for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl", "use_paramiko"):
-                value = options.get(opt, SENTINEL)
-                if value is SENTINEL:
-                    continue
-                setattr(self, opt, value)
         if ssl_protocol is not None:
             self.ssl_protocol = ssl_protocol
         if ssl_cert_verify is not None:
@@ -371,15 +362,6 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
             self.use_paramiko = use_paramiko
         self.credentials = credential_ids
         self.source_type = source_type
-
-    # Sources v2 does not provide bulk_delete endpoint, DISCOVERY-1006
-    def bulk_delete(self, ids, **kwargs):
-        old_endpoint = self.endpoint
-        new_endpoint = old_endpoint.replace("v2/", "v1/")
-        self.endpoint = new_endpoint
-        retval = super().bulk_delete(ids, **kwargs)
-        self.endpoint = old_endpoint
-        return retval
 
     @classmethod
     def from_definition(cls, definition: SourceOptions, dependencies: Optional[list[int]] = None):
@@ -425,14 +407,6 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
                 default_port = 22 if self.source_type == "network" else 443
                 if int(other.get(key)) != int(local_items.get(key, default_port)):
                     return False
-            if key == "options":
-                if self.source_type in QPC_HOST_MANAGER_TYPES:
-                    if hasattr(self, "options"):
-                        ssl_verify = self.options.get("ssl_cert_verify", True)
-                    else:
-                        ssl_verify = True
-                    if other.get(key, {}).get("ssl_cert_verify") != ssl_verify:
-                        return False
 
             if key == "credentials":
                 other_creds = other.get("credentials")
@@ -446,7 +420,7 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
                 if sorted(local_items.get(key)) != sorted(cred_ids):
                     return False
 
-            if key not in ["port", "credentials", "options"]:
+            if key not in ["port", "credentials"]:
                 if not other.get(key) == local_items.get(key):
                     return False
         return True

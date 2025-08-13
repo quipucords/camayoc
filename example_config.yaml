@@ -80,32 +80,28 @@ sources:
           - 'vcenter'
       name: 'vcenter'
       type: 'vcenter'
-      options:
-          ssl_cert_verify: false
+      ssl_cert_verify: false
     - hosts:
           - 'sat6.com'
       credentials:
           - 'sat6'
       name: 'sat6'
       type: 'satellite'
-      options:
-          ssl_cert_verify: false
+      ssl_cert_verify: false
     - hosts:
           - 'api.example.com'
       credentials:
           - 'OpenShift'
       name: 'OpenShift'
       type: 'openshift'
-      options:
-          ssl_cert_verify: false
+      ssl_cert_verify: false
     - hosts:
           - 'acs-endpoint.acs.mycluster.com'
       credentials:
           - 'rhacs'
       name: 'RHACS'
       type: 'rhacs'
-      options:
-          ssl_cert_verify: false
+      ssl_cert_verify: false
 
 # Values in "sources" field can use names present in "sources" section above
 scans:

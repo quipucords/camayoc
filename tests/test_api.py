@@ -203,7 +203,7 @@ class SourceTestCase(unittest.TestCase):
             name=MOCK_SAT6_SOURCE["name"],
             hosts=MOCK_SAT6_SOURCE["hosts"],
             credential_ids=[MOCK_SAT6_SOURCE["credentials"][0]["id"]],
-            options={"ssl_cert_verify": MOCK_SAT6_SOURCE["ssl_cert_verify"]},
+            ssl_cert_verify=MOCK_SAT6_SOURCE["ssl_cert_verify"],
             port=443,
             client=client,
         )
