@@ -44,7 +44,7 @@ SOURCES = [
             "hosts": ["my_vcenter.com"],
             "credentials": ["vcenter"],
             "type": "vcenter",
-            "options": {"ssl_cert_verify": False},
+            "ssl_cert_verify": False,
         }
     ),
 ]
