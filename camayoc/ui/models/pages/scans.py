@@ -41,7 +41,7 @@ class ScanHistoryModal(Modal, AbstractPage):
             header = self._driver.locator(table_header_locator)
             if header.get_attribute("aria-sort") == ordering.value:
                 return
-            header.click()
+            header.locator("button").click()
             tries += 1
         raise RuntimeError("Failed to sort table")
 

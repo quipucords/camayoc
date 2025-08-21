@@ -60,9 +60,7 @@ class FilteredMultipleSelectField(Field):
 
         for actual_value in value:
             self.driver.locator(self.locator).locator(filter_input).fill(actual_value)
-            values_list = self.driver.locator(self.locator).locator(
-                "xpath=following-sibling::div//ul[contains(@id, 'select')]"
-            )
+            values_list = self.driver.locator("body > div[class$=-c-menu] ul[id*=select]")
             label_elem = values_list.locator(f"text='{actual_value}'")
             checkbox_elem = label_elem.locator("xpath=parent::span//input[@type='checkbox']")
             if not checkbox_elem.is_checked():
@@ -84,7 +82,7 @@ class InputField(Field):
 class MultipleSelectField(Field):
     def do_fill(self, value: list[str]):
         self.driver.click(self.locator)
-        values_list = self.driver.locator(self.locator).locator("xpath=following-sibling::ul")
+        values_list = self.driver.locator("body > div[class$=-c-menu] ul")
         for actual_value in value:
             values_list.locator(f"text='{actual_value}'").click()
 
@@ -94,11 +92,11 @@ class MultipleSelectField(Field):
 
 class SelectField(Field):
     def do_fill(self, value):
-        values_list_locator = "xpath=following-sibling::div//ul"
+        values_list_locator = "body > div[class$=-c-menu] ul"
 
         if isinstance(value, Enum) and (enum_value := getattr(value, "value")):
             value = enum_value
 
         self.driver.click(self.locator)
-        values_list = self.driver.locator(self.locator).locator(values_list_locator)
+        values_list = self.driver.locator(values_list_locator)
         values_list.locator(f"text='{value}'").click()
