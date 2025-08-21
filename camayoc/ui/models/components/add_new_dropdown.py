@@ -14,9 +14,7 @@ class AddNewDropdown(UIPage):
             msg = "{} requires class property 'ADD_BUTTON_LOCATOR' to be set [object={}]"
             raise MisconfiguredWidgetException(msg.format(type(self).__name__, self))
 
-        dropdown_item_locator = (
-            f"{add_button_locator} ~ div ul li[data-ouia-component-id={type_ouiaid}]"
-        )
+        dropdown_item_locator = f"div ul li[data-ouia-component-id={type_ouiaid}]"
 
         exp_msg = (
             "Could not open modal using dropdown menu [button locator={} ; "

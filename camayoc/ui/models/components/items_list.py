@@ -13,7 +13,7 @@ from camayoc.types.ui import UIPage
 class AbstractListItem(UIListItem):
     ACTION_MENU_TOGGLE_LOCATOR = "button[data-ouia-component-id=action_menu_toggle]"
     ACTION_MENU_ITEM_LOCATOR_TEMPLATE = (
-        ACTION_MENU_TOGGLE_LOCATOR + "~ div *[data-ouia-component-id={ouiaid}] button"
+        "body > div[class$=-c-menu] *[data-ouia-component-id={ouiaid}] button"
     )
 
     def __init__(self, locator: Locator, client):
@@ -23,7 +23,7 @@ class AbstractListItem(UIListItem):
     def select_action(self, ouiaid: str, timeout: int = 30_000) -> None:
         self._open_kebab()
         item_locator = self.ACTION_MENU_ITEM_LOCATOR_TEMPLATE.format(ouiaid=ouiaid)
-        self.locator.locator(item_locator).click(timeout=timeout)
+        self._client.driver.locator(item_locator).click(timeout=timeout)
 
     def _open_kebab(self) -> None:
         toggle_elem = self.locator.locator(self.ACTION_MENU_TOGGLE_LOCATOR)
@@ -55,12 +55,12 @@ class ItemsList(UIPage):
         filter_field_button_locator = (
             "div[class*=-c-toolbar__item] button[id]:has(span[class*=-c-menu-toggle])"
         )
-        filter_field_values_locator = "xpath=following-sibling::div[contains(@class, '-c-menu')]"
+        filter_field_values_locator = "body > div[class$=-c-menu]"
 
         filter_field_button = self._driver.locator(filter_field_button_locator).locator("nth=0")
         if filter_field_button.text_content() != "Name":
             filter_field_button.click()
-            values_list = filter_field_button.locator(filter_field_values_locator)
+            values_list = self._driver.locator(filter_field_values_locator)
             values_list.locator("text='Name'").click()
         self._driver.fill("input[placeholder$=name]", name)
         self._driver.keyboard.press("Enter")

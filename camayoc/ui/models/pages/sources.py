@@ -52,7 +52,7 @@ class NetworkRangeSourceCredentialsForm(SourceForm):
         )
         port = InputField("input[data-ouia-component-id=port]", transform_input=lambda i: str(i))
         credentials = FilteredMultipleSelectField(
-            "div[data-ouia-component-id=add_credentials_select]"
+            "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
         use_paramiko = CheckboxField("input[data-ouia-component-id=options_paramiko]")
 
@@ -71,7 +71,7 @@ class SatelliteSourceCredentialsForm(SourceForm):
         address = InputField("input[data-ouia-component-id=hosts_single]")
         port = InputField("input[data-ouia-component-id=port]")
         credentials = FilteredMultipleSelectField(
-            "div[data-ouia-component-id=add_credentials_select]"
+            "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
         connection = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
@@ -91,7 +91,7 @@ class VCenterSourceCredentialsForm(SourceForm):
         address = InputField("input[data-ouia-component-id=hosts_single]")
         port = InputField("input[data-ouia-component-id=port]")
         credentials = FilteredMultipleSelectField(
-            "div[data-ouia-component-id=add_credentials_select]"
+            "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
         connection = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
@@ -111,7 +111,7 @@ class OpenShiftSourceCredentialsForm(SourceForm):
         address = InputField("input[data-ouia-component-id=hosts_single]")
         port = InputField("input[data-ouia-component-id=port]")
         credentials = FilteredMultipleSelectField(
-            "div[data-ouia-component-id=add_credentials_select]"
+            "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
         connection = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
@@ -131,7 +131,7 @@ class AnsibleSourceCredentialsForm(SourceForm):
         address = InputField("input[data-ouia-component-id=hosts_single]")
         port = InputField("input[data-ouia-component-id=port]")
         credentials = FilteredMultipleSelectField(
-            "div[data-ouia-component-id=add_credentials_select]"
+            "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
         connection = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
@@ -151,7 +151,7 @@ class RHACSSourceCredentialsForm(SourceForm):
         address = InputField("input[data-ouia-component-id=hosts_single]")
         port = InputField("input[data-ouia-component-id=port]")
         credentials = FilteredMultipleSelectField(
-            "div[data-ouia-component-id=add_credentials_select]"
+            "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
         connection = SelectField("button[data-ouia-component-id=options_ssl_protocol]")
         verify_ssl = CheckboxField("input[data-ouia-component-id=options_ssl_cert]")
