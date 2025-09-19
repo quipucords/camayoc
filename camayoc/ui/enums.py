@@ -17,6 +17,7 @@ class LowercasedStrEnum(Enum):
 class Pages(StrEnum):
     CREDENTIALS = "credentials.CredentialsMainPage"
     LOGIN = "login.Login"
+    OVERVIEW = "overview.OverviewMainPage"
     SCANS = "scans.ScansMainPage"
     SOURCES = "sources.SourcesMainPage"
 
@@ -25,6 +26,7 @@ class MainMenuPages(StrEnum):
     SOURCES = auto()
     SCANS = auto()
     CREDENTIALS = auto()
+    OVERVIEW = auto()
 
 
 class CredentialTypes(StrEnum):
