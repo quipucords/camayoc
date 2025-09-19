@@ -35,4 +35,4 @@ class Login(AbstractPage):
             self._driver.fill(password_input, data.password)
             self._driver.click(submit_button)
 
-        return self._new_page(Pages.CREDENTIALS)
+        return self._new_page(Pages.OVERVIEW)
