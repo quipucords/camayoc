@@ -20,6 +20,7 @@ from ..components.form import Form
 from ..components.items_list import AbstractListItem
 from ..components.modal import Modal
 from ..fields import InputField
+from ..fields import SecretInputField
 from ..fields import SelectField
 from ..mixins import MainPageMixin
 from .abstract_page import AbstractPage
@@ -44,13 +45,13 @@ class NetworkCredentialForm(CredentialForm):
         authentication_type = SelectField("button[data-ouia-component-id=auth_type]")
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
-        password = InputField("input[data-ouia-component-id=password]")
+        password = SecretInputField("input[data-ouia-component-id=password]")
         # FIXME: this should be called `ssh_key`
         ssh_key_file = InputField("textarea[data-ouia-component-id=ssh_key]")
-        passphrase = InputField("input[data-ouia-component-id=ssh_passphrase]")
+        passphrase = SecretInputField("input[data-ouia-component-id=ssh_passphrase]")
         become_method = SelectField("button[data-ouia-component-id=become_method]")
         become_user = InputField("input[data-ouia-component-id=become_user]")
-        become_password = InputField("input[data-ouia-component-id=become_password]")
+        become_password = SecretInputField("input[data-ouia-component-id=become_password]")
 
     @overload
     def fill(self, data: NetworkCredentialFormDTO): ...
@@ -65,7 +66,7 @@ class SatelliteCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
-        password = InputField("input[data-ouia-component-id=password]")
+        password = SecretInputField("input[data-ouia-component-id=password]")
 
     @overload
     def fill(self, data: SatelliteCredentialFormDTO): ...
@@ -80,7 +81,7 @@ class VCenterCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
-        password = InputField("input[data-ouia-component-id=password]")
+        password = SecretInputField("input[data-ouia-component-id=password]")
 
     @overload
     def fill(self, data: VCenterCredentialFormDTO): ...
@@ -96,8 +97,8 @@ class OpenShiftCredentialForm(CredentialForm):
         authentication_type = SelectField("button[data-ouia-component-id=auth_type]")
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
-        password = InputField("input[data-ouia-component-id=password]")
-        token = InputField("input[data-ouia-component-id=auth_token]")
+        password = SecretInputField("input[data-ouia-component-id=password]")
+        token = SecretInputField("input[data-ouia-component-id=auth_token]")
 
     @overload
     def fill(self, data: OpenShiftCredentialFormDTO): ...
@@ -112,7 +113,7 @@ class AnsibleCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
-        password = InputField("input[data-ouia-component-id=password]")
+        password = SecretInputField("input[data-ouia-component-id=password]")
 
     @overload
     def fill(self, data: AnsibleCredentialFormDTO): ...
@@ -126,7 +127,7 @@ class AnsibleCredentialForm(CredentialForm):
 class RHACSCredentialForm(CredentialForm):
     class FormDefinition:
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
-        token = InputField("input[data-ouia-component-id=auth_token]")
+        token = SecretInputField("input[data-ouia-component-id=auth_token]")
 
     @overload
     def fill(self, data: RHACSCredentialFormDTO): ...
