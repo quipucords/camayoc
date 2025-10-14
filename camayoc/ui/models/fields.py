@@ -79,6 +79,17 @@ class InputField(Field):
         input_elem.fill(value)
 
 
+class SecretInputField(InputField):
+    def do_fill(self, value):
+        input_elem = self.driver.locator(self.locator)
+        if input_elem.is_disabled():
+            self.driver.click(
+                f"div[class*=input-group]:has({self.locator})"
+                " button[data-ouia-component-id=secret-edit]"
+            )
+        super().do_fill(value)
+
+
 class MultipleSelectField(Field):
     def do_fill(self, value: list[str]):
         self.driver.click(self.locator)
