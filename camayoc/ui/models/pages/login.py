@@ -10,12 +10,12 @@ from camayoc.ui.enums import Pages
 from .abstract_page import AbstractPage
 
 if TYPE_CHECKING:
-    from .credentials import CredentialsMainPage
+    from .overview import OverviewMainPage
 
 
 class Login(AbstractPage):
     @record_action
-    def login(self, data: LoginFormDTO) -> CredentialsMainPage:
+    def login(self, data: LoginFormDTO) -> OverviewMainPage:
         login_page_indicator = "main[class$=login__main]"
         username_input = "input[name=pf-login-username-id]"
         password_input = "input[name=pf-login-password-id]"
