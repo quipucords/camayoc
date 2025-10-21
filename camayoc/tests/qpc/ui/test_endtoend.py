@@ -94,3 +94,58 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
     tarfile.open(downloaded_report.path()).extractall(tmp_path)
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+
+
+def test_translations(ui_client: Client):
+    """Test that translations are correctly loaded.
+
+    :id: 56248920-f838-4e10-81b7-7d7dc45b65c4
+    :description: Verify that translations are loaded and not completely broken.
+    :steps:
+        1) Log into the UI.
+        2) Read static content from Overview page.
+        3) Interact with FAQ section on Overview page.
+        4) Go to Sources page.
+        5) Assert text displayed in "Refresh" button.
+        6) Log out.
+    :expectedresults: All the static text is translated. User is logged out.
+    """
+    products = ("Discovery", "Quipucords")
+    key_process_text = (
+        "To use {product}, first configure credentials to securely access your systems."
+        " Then add sources, such as hostnames or IP ranges. With credentials and sources"
+        " in place, you can run scans to collect system data and gain insights into your"
+        " environment without sharing sensitive information unless you choose to."
+    )
+    faq_answer_text = (
+        "No, {product} does not automatically send any data to Red Hat."
+        " All data is stored locally and creates reports on the local file system."
+    )
+
+    page = (
+        ui_client.begin()
+        .login(data_factories.LoginFormDTOFactory())
+        .navigate_to(MainMenuPages.OVERVIEW)
+    )
+
+    key_process = page._driver.locator(
+        "div[data-ouia-component-id=MultiContentCard-content-2] div[class*=card__body] div"
+    ).nth(1)
+    assert key_process.inner_text() in [
+        key_process_text.format(product=product) for product in products
+    ]
+
+    page._driver.locator("#faqAccordionItem2").click()
+    faq_answer_elem = page._driver.locator("#faqAccordionItemExpand2")
+    assert faq_answer_elem.inner_text() in [
+        faq_answer_text.format(product=product) for product in products
+    ]
+
+    page.navigate_to(MainMenuPages.SOURCES)
+
+    refresh_button = page._driver.locator(
+        "button[data-ouia-component-id=refresh] span[class$=button__text]"
+    )
+    assert refresh_button.inner_text() == "Refreshed just now"
+
+    page.logout()
