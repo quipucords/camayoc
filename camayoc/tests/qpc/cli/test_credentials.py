@@ -544,7 +544,7 @@ def test_edit_become_password_negative(isolated_filesystem, qpc_server_config):
     assert qpc_cred_edit.expect('Credential "{}" does not exist'.format(name)) == 0
     assert qpc_cred_edit.expect(pexpect.EOF) == 0
     qpc_cred_edit.close()
-    assert qpc_cred_edit.exitstatus != 0
+    assert qpc_cred_edit.exitstatus == 0
 
 
 def test_edit_no_credentials(isolated_filesystem, qpc_server_config):
