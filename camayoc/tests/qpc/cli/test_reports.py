@@ -205,6 +205,7 @@ FACTS = (
     "internal_xen_guest",
     "internal_xen_privcmd_found",
     "ip_address_show_ipv4",
+    "ip_address_show_ipv6",
     "ip_address_show_mac",
     "jboss_activemq_ver",
     "jboss_camel_ver",
