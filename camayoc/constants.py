@@ -121,3 +121,10 @@ QPC_BECOME_METHODS = ("doas", "dzdo", "ksu", "pbrun", "pfexec", "runas", "su", "
 
 QPC_OPTIONAL_PRODUCTS = ("jboss_eap", "jboss_fuse", "jboss_ws")
 """Optional products that can be enabled or disabled for a scan."""
+
+SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT = (
+    "vcenter",
+    "network",
+    "satellite",
+)
+"""Types of sources that can generate lightspeed reports."""

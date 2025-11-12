@@ -13,7 +13,9 @@ import pytest
 
 from camayoc.config import settings
 from camayoc.tests.qpc.utils import assert_ansible_logs
+from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
+from camayoc.tests.qpc.utils import scan_should_have_lightspeed_report
 from camayoc.types.ui import SummaryReportData
 from camayoc.ui import Client
 from camayoc.ui import data_factories
@@ -83,11 +85,13 @@ def test_download_scan(tmp_path, scans, ui_client: Client, scan_name):
     )
 
     is_network_scan = has_network_source(scan_name)
+    expect_lightspeed_report = scan_should_have_lightspeed_report(finished_scan)
     downloaded_report = ui_client.downloaded_files[-1]
 
     tarfile.open(downloaded_report.path()).extractall(tmp_path)
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+    assert_lightspeed_report(tmp_path, expect_lightspeed_report)
 
 
 @pytest.mark.nightly_only
@@ -121,11 +125,13 @@ def test_download_scan_modal(tmp_path, scans, ui_client: Client, scan_name):
     )
 
     is_network_scan = has_network_source(scan_name)
+    expect_lightspeed_report = scan_should_have_lightspeed_report(finished_scan)
     downloaded_report = ui_client.downloaded_files[-1]
 
     tarfile.open(downloaded_report.path()).extractall(tmp_path)
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+    assert_lightspeed_report(tmp_path, expect_lightspeed_report)
 
 
 @pytest.mark.parametrize("scan_name", scan_names())
