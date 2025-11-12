@@ -18,8 +18,10 @@ from littletable import Table
 
 from camayoc.config import settings
 from camayoc.constants import QPC_OPTIONAL_PRODUCTS
+from camayoc.constants import SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import assert_ansible_logs
+from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.utils import uuid4
 
@@ -337,6 +339,10 @@ def test_rerun_scanjob(tmp_path, qpc_server_config, source_type):
     assert result["report_id"]
 
     is_network_scan = any(source.get("source_type") == "network" for source in scan.get("sources"))
+    scan_source_types = {source.get("source_type") for source in scan.get("sources")}
+    expect_lightspeed_report = bool(
+        scan_source_types.intersection(set(SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT))
+    )
     downloaded_report = tmp_path / "report.tar.gz"
 
     report_download({"scan-job": scan_job_id, "output-file": downloaded_report.as_posix()})
@@ -344,3 +350,4 @@ def test_rerun_scanjob(tmp_path, qpc_server_config, source_type):
     tarfile.open(downloaded_report).extractall(tmp_path, filter="tar")
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+    assert_lightspeed_report(tmp_path, expect_lightspeed_report)

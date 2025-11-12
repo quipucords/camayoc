@@ -1,7 +1,9 @@
 """Utility functions for quipucords server tests."""
 
 import hashlib
+import json
 import pprint
+import tarfile
 import time
 from pathlib import Path
 from typing import Callable
@@ -12,11 +14,13 @@ from camayoc import api
 from camayoc.config import settings
 from camayoc.constants import QPC_SCAN_STATES
 from camayoc.constants import QPC_SCAN_TERMINAL_STATES
+from camayoc.constants import SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
 from camayoc.exceptions import StoppedScanException
 from camayoc.exceptions import WaitTimeError
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
+from camayoc.types.scans import FinishedScan
 from camayoc.types.settings import ScanOptions
 
 
@@ -91,6 +95,53 @@ def assert_ansible_logs(directory: Path, is_network_scan: bool):
         assert file.stat().st_size > 0
 
     assert is_network_scan == has_ansible_logs
+
+
+def assert_lightspeed_report(directory: Path, expect_lightspeed_report: bool):
+    """Verify that lightspeed report exists (or not), and verify the content. Tests helper."""
+    for file in directory.rglob("*"):
+        if not file.is_file():
+            continue
+        if file.name.endswith("tar.gz") and "lightspeed" in file.name:
+            lightspeed_report_path = file.resolve()
+            break
+    # This block is executed only if there is no lightspeed report. We assert this is what
+    # caller wanted and exit early, as rest of the function focuses on report content.
+    else:
+        assert expect_lightspeed_report == False, (
+            "Lightspeed report tarball not found, caller expected it"
+        )
+        return
+
+    assert expect_lightspeed_report == True, "Unexpected Lightspeed report tarball found"
+    assert lightspeed_report_path.stat().st_size > 0
+
+    tar = tarfile.open(lightspeed_report_path)
+    tar_content = {"report_slices": {}}
+    for filename in tar.getnames():
+        file_fh = tar.extractfile(filename)
+        assert file_fh, f"Broken tar archive: {filename}"
+        file_content = json.load(file_fh)
+        if filename.endswith("metadata.json"):
+            tar_content["metadata.json"] = file_content
+        else:
+            key = Path(filename).stem
+            hosts_num = len(file_content.get("hosts", []))
+            tar_content["report_slices"][key] = {"number_hosts": hosts_num}
+
+    assert "metadata.json" in tar_content, "Insights report does not have metadata.json file"
+    assert tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"], (
+        "Data in metadata.json and actual data in archive do not match"
+    )
+
+
+def scan_should_have_lightspeed_report(finished_scan: FinishedScan) -> bool:
+    """Check if this scan should have lightspeed report or not."""
+    source_name_type_map = {source.name: source.type for source in settings.sources}
+    scan_source_types = {
+        source_name_type_map.get(source) for source in finished_scan.definition.sources
+    }
+    return bool(scan_source_types.intersection(SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT))
 
 
 def get_object_id(obj):

@@ -132,7 +132,7 @@ ignore = [
 "camayoc/qpc_models.py" = ["PL", "C901"]
 "camayoc/tests/qpc/cli/test_sources.py" = ["PLR0915"]
 "camayoc/tests/qpc/ui/conftest.py" = ["BLE001"]
-"camayoc/tests/qpc/utils.py" = ["PLW2901"]
+"camayoc/tests/qpc/utils.py" = ["PLW2901", "E712"]
 "tests/test_command.py" = ["F401"]
 
 [tool.ruff.lint.isort]

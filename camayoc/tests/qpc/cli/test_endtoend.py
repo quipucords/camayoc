@@ -6,8 +6,10 @@ import pytest
 
 from camayoc.config import settings
 from camayoc.constants import CONNECTION_PASSWORD_INPUT
+from camayoc.constants import SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import assert_ansible_logs
+from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.tests.qpc.utils import end_to_end_sources_names
 from camayoc.utils import uuid4
@@ -102,6 +104,7 @@ def test_end_to_end(tmp_path, qpc_server_config, data_provider, source_name):
 
     # Download and verify a report
     is_network_scan = source_definition.type == "network"
+    expect_lightspeed_report = source_definition.type in SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
     downloaded_report = tmp_path / "report.tar.gz"
 
     report_download({"scan-job": scan_job_id, "output-file": downloaded_report.as_posix()})
@@ -109,3 +112,4 @@ def test_end_to_end(tmp_path, qpc_server_config, data_provider, source_name):
     tarfile.open(downloaded_report).extractall(tmp_path, filter="tar")
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+    assert_lightspeed_report(tmp_path, expect_lightspeed_report)

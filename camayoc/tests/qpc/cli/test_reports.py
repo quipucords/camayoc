@@ -26,6 +26,9 @@ from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.qpc_models import Report
 from camayoc.qpc_models import Source
 from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
+from camayoc.tests.qpc.utils import all_scan_names
+from camayoc.tests.qpc.utils import assert_lightspeed_report
+from camayoc.tests.qpc.utils import scan_should_have_lightspeed_report
 from camayoc.types.scans import FinishedScan
 from camayoc.types.settings import SourceOptions
 from camayoc.utils import uuid4
@@ -745,7 +748,7 @@ def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc
     """
     finished_scan = scan_with_source_type(("network",), data_provider, scans)
 
-    output_file = f"insights-{uuid4()}.tar.gz"
+    output_file = f"lightspeed-{uuid4()}.tar.gz"
 
     output = report_insights({"report": finished_scan.report_id, "output-file": output_file})
 
@@ -753,24 +756,7 @@ def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc
     assert os.path.isfile(output_file), (
         f"Insights report not found at (failed download?): {output_file}"
     )
-
-    tar = tarfile.open(output_file)
-    tar_content = {"report_slices": {}}
-    for filename in tar.getnames():
-        file_fh = tar.extractfile(filename)
-        assert file_fh, f"Broken tar archive: {filename}"
-        file_content = json.load(file_fh)
-        if filename.endswith("metadata.json"):
-            tar_content["metadata.json"] = file_content
-        else:
-            key = Path(filename).stem
-            hosts_num = len(file_content.get("hosts", []))
-            tar_content["report_slices"][key] = {"number_hosts": hosts_num}
-
-    assert "metadata.json" in tar_content, "Insights report does not have metadata.json file"
-    assert tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"], (
-        "Data in metadata.json and actual data in archive do not match"
-    )
+    assert_lightspeed_report(Path().resolve(), True)
 
 
 @pytest.mark.runs_scan
@@ -811,3 +797,42 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
     num_instances = sum(json_formatted["results"][k] for k in instances_filter)
     num_success_instances = json_formatted["diagnostics"]["inspect_result_status_success"]
     assert num_instances == num_success_instances
+
+
+@pytest.mark.slow
+@pytest.mark.runs_scan
+@pytest.mark.parametrize("scan_name", all_scan_names())
+def test_lightspeed_report_presence(
+    tmp_path, scans, isolated_filesystem, qpc_server_config, scan_name
+):
+    """Ensure lightspeed report is (not) present in scan results tarball.
+
+    :id: ce22768d-ecdf-4b3f-8438-ae41157d68d9
+    :description: Run a scan, download tarball and verify if lightspeed
+        report is (not) inside, depending on scan source types.
+    :steps:
+        1) Run ``qpc report download --report <report id>``.
+        2) Verify that command succeeded.
+        3) Verify that downloaded tarball contains, or does not contain,
+           lightspeed report file.
+    :expectedresults: Tarball is downloaded and contains/does not contain lightspeed report
+        file.
+    """
+    output_pkg = f"{uuid4()}.tar.gz"
+    all_scans = scans.all()
+    finished_scan = all_scans.get(scan_name)
+
+    output = report_download({"report": finished_scan.report_id, "output-file": output_pkg})
+    assert "successfully written to" in output, (
+        "Unexpected output from qpc report download! \n"
+        'Expected to find "successfully written to" in output.'
+        f"Actual output: {output}"
+    )
+    assert os.path.isfile(output_pkg), (
+        "Unexpected output from qpc report download!\n"
+        f"Download package not found at expected location: {output_pkg}"
+    )
+
+    lightspeed_expected = scan_should_have_lightspeed_report(finished_scan)
+    tarfile.open(output_pkg).extractall(tmp_path, filter="tar")
+    assert_lightspeed_report(tmp_path, lightspeed_expected)

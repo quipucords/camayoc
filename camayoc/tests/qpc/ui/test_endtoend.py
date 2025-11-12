@@ -13,8 +13,10 @@ import tarfile
 import pytest
 
 from camayoc.config import settings
+from camayoc.constants import SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
 from camayoc.qpc_models import Scan
 from camayoc.tests.qpc.utils import assert_ansible_logs
+from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.tests.qpc.utils import end_to_end_sources_names
 from camayoc.types.ui import AddCredentialDTO
@@ -89,11 +91,13 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
     )
 
     is_network_scan = source_dto.source_type == SourceTypes.NETWORK_RANGE
+    expect_lightspeed_report = source_dto.source_type.value in SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
     downloaded_report = ui_client.downloaded_files[-1]
 
     tarfile.open(downloaded_report.path()).extractall(tmp_path)
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
+    assert_lightspeed_report(tmp_path, expect_lightspeed_report)
 
 
 def test_translations(ui_client: Client):
