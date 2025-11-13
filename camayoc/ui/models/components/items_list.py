@@ -13,7 +13,7 @@ from camayoc.types.ui import UIPage
 class AbstractListItem(UIListItem):
     ACTION_MENU_TOGGLE_LOCATOR = "button[data-ouia-component-id=action_menu_toggle]"
     ACTION_MENU_ITEM_LOCATOR_TEMPLATE = (
-        "body > div[class$=-c-menu] *[data-ouia-component-id={ouiaid}] button"
+        "body > div[class*=-c-menu] *[data-ouia-component-id={ouiaid}] button"
     )
 
     def __init__(self, locator: Locator, client):
@@ -55,7 +55,7 @@ class ItemsList(UIPage):
         filter_field_button_locator = (
             "div[class*=-c-toolbar__item] button[id]:has(span[class*=-c-menu-toggle])"
         )
-        filter_field_values_locator = "body > div[class$=-c-menu]"
+        filter_field_values_locator = "body > div[class*=-c-menu]"
 
         filter_field_button = self._driver.locator(filter_field_button_locator).locator("nth=0")
         if filter_field_button.text_content() != "Name":
