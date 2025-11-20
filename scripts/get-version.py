@@ -91,6 +91,17 @@ def get_installer_version():
     return result.stdout.strip()
 
 
+def get_ctl_version():
+    # Jenkins will use CLI installed from rpm package
+    if found_rpms := rpm_pkg_versions("quipucordsctl", "discoveryctl"):
+        return found_rpms
+
+    # Failover value for local runs, where qpc may be installed from git
+    cmd = ["git", "-C", "../quipucordsctl/", "rev-parse", "HEAD"]
+    result = subprocess.run(cmd, capture_output=True, check=True, text=True)
+    return result.stdout.strip()
+
+
 def get_camayoc_version():
     cmd = ["git", "rev-parse", "HEAD"]
     result = subprocess.run(cmd, capture_output=True, check=True, text=True)
@@ -107,6 +118,7 @@ def main():
     group.add_argument("--cli", action="store_true")
     group.add_argument("--camayoc", action="store_true")
     group.add_argument("--installer", action="store_true")
+    group.add_argument("--ctl", action="store_true")
 
     args = parser.parse_args()
     if args.backend:
@@ -119,6 +131,8 @@ def main():
         version_number = get_camayoc_version()
     elif args.installer:
         version_number = get_installer_version()
+    elif args.ctl:
+        version_number = get_ctl_version()
 
     print(version_number)
 
