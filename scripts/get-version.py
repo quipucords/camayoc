@@ -46,11 +46,13 @@ def get_frontend_version():
     if podman_ps_a_result.returncode != 0:
         return
 
-    app_names = [f"{app_name}-app.cid" for app_name in ("quipucords", "discovery")]
+    app_cids = [f"{app_name}-app.cid" for app_name in ("quipucords", "discovery")]
+    app_names = {f"{app_name}-app" for app_name in ("quipucords", "discovery")}
     containers = json.loads(podman_ps_a_result.stdout)
     for container in containers:
         cid = container.get("CIDFile", "")
-        if not cid.endswith(tuple(app_names)):
+        names = container.get("Names", [])
+        if not cid.endswith(tuple(app_cids)) and set(names).isdisjoint(app_names):
             continue
         image_id = container.get("ImageID")
         versions = [f"image_id={image_id}"]
