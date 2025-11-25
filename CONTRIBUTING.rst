@@ -9,6 +9,8 @@ work we get done each sprint.
 When making a PR, please request a review from at least on member of the
 quipucords/quality-engineers team.
 
+**Note**: If you use AI tools to generate code, please review our `AI_POLICY.rst <AI_POLICY.rst>`_ for disclosure and quality requirements.
+
 Please squash commits into logical changesets with informative commit messages
 before merging. Additionally, rebase onto master and resolve any merge conficts
 before merging into master so master can only have fast-forward commits.
