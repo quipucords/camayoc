@@ -74,6 +74,10 @@ INVALID_SOURCE_TYPE_HOSTS_WITH_EXCLUDE = (
 def generate_show_output(data):
     """Generate a regex pattern that matches `qpc source show` output (API v2)."""
 
+    def _escape_regex(value):
+        """Escape regex special characters in host patterns (e.g., Ansible ranges)."""
+        return value.replace("[", r"\[").replace("]", r"\]")
+
     def _nullable_field(data, key, is_string=False, trailing_comma=True):
         if key in data:
             val = '"{}"'.format(data[key]) if is_string else str(data[key]).lower()
@@ -97,7 +101,7 @@ def generate_show_output(data):
         output += (
             r'    "exclude_hosts": \[\r\n'
             r'        "{}"\r\n'
-            r"    \],\r\n".format(data["exclude_hosts"])
+            r"    \],\r\n".format(_escape_regex(data["exclude_hosts"]))
         )
     else:
         output += r'    "exclude_hosts": null,\r\n'
@@ -105,7 +109,7 @@ def generate_show_output(data):
     output += (
         r'    "hosts": \[\r\n'
         r'        "{}"\r\n'
-        r"    \],\r\n".format(data["hosts"])
+        r"    \],\r\n".format(_escape_regex(data["hosts"]))
     )
     output += (
         r'    "id": \d+,\r\n'
