@@ -34,7 +34,9 @@ logger = logging.getLogger(__name__)
 def generate_show_output(data):
     """Generate a regex pattern with the data for a qpc cred show output."""
     cred_type = data.get("cred_type", "network")
-    auth_type = data.get("auth_type", "(auth_token|password|ssh_key|ssh_keyfile|unknown)")
+    auth_type = data.get(
+        "auth_type", "(auth_token|password|ssh_key|ssh_keyfile|vault_secret_path|unknown)"
+    )
     output = "{\r\n"
     output += '    "auth_type": "{}",\r\n'.format(auth_type)
     output += '    "become_method": {},\r\n'.format(data.get("become_method", "null"))
@@ -49,7 +51,9 @@ def generate_show_output(data):
     output += '    "sources": \\[.*\\],\r\n'
     output += '    "ssh_keyfile": {},\r\n'.format(data.get("ssh_keyfile", "null"))
     output += '    "updated_at": {},\r\n'.format(data.get("updated_at", ".*"))
-    output += '    "username": "{}"\r\n'.format(data["username"])
+    output += '    "username": "{}",\r\n'.format(data["username"])
+    output += '    "vault_mount_point": {},\r\n'.format(data.get("vault_mount_point", "null"))
+    output += '    "vault_secret_path": {}\r\n'.format(data.get("vault_secret_path", "null"))
     output += "}\r\n"
     return output
 
