@@ -47,6 +47,14 @@ def requestfinished_handler_factory(ui_client):
         if "/reports/" in request.url and response_status == 424:
             return
 
+        # UI probes Vault availability; GET 404 means no global Vault config (Vault auth disabled).
+        if (
+            request.method == "GET"
+            and "/api/v2/auth/hashicorp-vault/" in request.url
+            and response_status == 404
+        ):
+            return
+
         error_msg = f"{request.method} {request.url} returned {response_status}"
         ui_client._log_page_error(error_msg)
 
