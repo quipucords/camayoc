@@ -57,36 +57,37 @@ def test_products_found_deployment_report(scans, scan_name):
     for hostname, expected_data in finished_scan.definition.expected_data.items():
         if not (expected_products := expected_data.products):
             continue
-        if not found_hosts.get(hostname):
+        actual_data = found_hosts.get(hostname, {})
+        if not actual_data:
             errors_found.append(
                 f"Host '{hostname}' was expected for scan {scan_name}, but not found"
             )
-        for fingerprint in system_fingerprints:
-            present_product_names = {
-                product["name"]
-                for product in fingerprint.get("products")
-                if product["presence"] == "present"
-            }
-            expected_product_names = {
-                product.name for product in expected_products if product.presence == "present"
-            }
-            unexpected_product_names = {
-                product_name
-                for product_name in present_product_names
-                if product_name not in expected_product_names
-            }
-            if len(unexpected_product_names) > 0:
-                errors_found.append(
-                    "Found {found_products} but only expected to find\n"
-                    "{expected_products} on {host_found_on}.\n"
-                    "All information about the fingerprint was as follows\n"
-                    "{fingerprint_info}".format(
-                        found_products=unexpected_product_names,
-                        expected_products=expected_product_names,
-                        host_found_on=hostname,
-                        fingerprint_info=pformat(fingerprint),
-                    )
+            continue
+        present_product_names = {
+            product["name"]
+            for product in actual_data.get("products", [])
+            if product["presence"] == "present"
+        }
+        expected_product_names = {
+            product.name for product in expected_products if product.presence == "present"
+        }
+        unexpected_product_names = {
+            product_name
+            for product_name in present_product_names
+            if product_name not in expected_product_names
+        }
+        if len(unexpected_product_names) > 0:
+            errors_found.append(
+                "Found {found_products} but only expected to find\n"
+                "{expected_products} on {host_found_on}.\n"
+                "All information about the fingerprint was as follows\n"
+                "{fingerprint_info}".format(
+                    found_products=unexpected_product_names,
+                    expected_products=expected_product_names,
+                    host_found_on=hostname,
+                    fingerprint_info=pformat(actual_data),
                 )
+            )
     assert len(errors_found) == 0, (
         "Found {num} unexpected products!\n"
         "Errors are listed below: \n {errors}.\n"
