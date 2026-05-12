@@ -54,6 +54,7 @@ def generate_show_output(data):
     output += '    "username": "{}",\r\n'.format(data["username"])
     output += '    "vault_mount_point": {},\r\n'.format(data.get("vault_mount_point", "null"))
     output += '    "vault_secret_path": {}\r\n'.format(data.get("vault_secret_path", "null"))
+    output += '    "vault_key": {},\r\n'.format(data.get("vault_key", "null"))
     output += "}\r\n"
     return output
 
