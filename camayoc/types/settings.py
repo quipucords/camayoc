@@ -1,13 +1,14 @@
 from pathlib import Path
+from typing import Annotated
 from typing import Any
 from typing import Literal
 from typing import Optional
+from typing import Self
 from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
 from pydantic import model_validator
-from typing_extensions import Annotated
 
 
 class CamayocOptions(BaseModel):
@@ -34,6 +35,21 @@ class QuipucordsServerOptions(BaseModel):
 class QuipucordsCLIOptions(BaseModel):
     executable: Optional[str] = "qpc"
     display_name: Optional[str] = "qpc"
+
+
+class HashicorpVaultOptions(BaseModel):
+    address: str
+    port: Optional[int] = 8200
+    ssl_verify: Optional[bool] = True
+    client_cert: Path
+    client_key: Path
+    ca_cert: Optional[Path] = None
+
+    @model_validator(mode="after")
+    def check_ca_cert_when_ssl_verify(self) -> Self:
+        if self.ssl_verify and self.ca_cert is None:
+            raise ValueError("ca_cert is required when ssl_verify is True")
+        return self
 
 
 class PlainNetworkCredentialOptions(BaseModel):
@@ -97,6 +113,23 @@ class AnsibleCredentialOptions(BaseModel):
     password: str
 
 
+# TODO: these models allow config parsing but are not consumed at runtime yet
+class VaultOpenShiftCredentialOptions(BaseModel):
+    name: str
+    type: Literal["openshift"]
+    vault_secret_path: str
+    vault_secret_key: str
+    vault_mount_point: Optional[str] = None
+
+
+class VaultAnsibleCredentialOptions(BaseModel):
+    name: str
+    type: Literal["ansible"]
+    vault_secret_path: str
+    vault_secret_key: str
+    vault_mount_point: Optional[str] = None
+
+
 ServicesCredentialOptions = Annotated[
     Union[
         VCenterCredentialOptions,
@@ -113,6 +146,8 @@ CredentialOptions = Union[
     PlainNetworkCredentialOptions,
     SSHNetworkCredentialOptions,
     PlainOpenShiftCredentialOptions,
+    VaultOpenShiftCredentialOptions,
+    VaultAnsibleCredentialOptions,
     ServicesCredentialOptions,
 ]
 
@@ -181,9 +216,22 @@ class Configuration(BaseModel):
     camayoc: CamayocOptions
     quipucords_server: QuipucordsServerOptions
     quipucords_cli: QuipucordsCLIOptions
+    hashicorp_vault: Optional[HashicorpVaultOptions] = None
     credentials: list[CredentialOptions]
     sources: list[SourceOptions]
     scans: list[ScanOptions]
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_vault_config(cls, values: Any) -> Any:
+        if isinstance(values, dict):
+            has_vault_cred = any(
+                cred.get("vault_secret_path") for cred in values.get("credentials", [])
+            )
+            if has_vault_cred and not values.get("hashicorp_vault"):
+                msg = "hashicorp_vault configuration is required when vault credentials are defined"
+                raise ValueError(msg)
+        return values
 
     @model_validator(mode="before")
     @classmethod

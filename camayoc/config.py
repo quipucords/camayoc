@@ -32,6 +32,7 @@ default_dynaconf_validators = [
     Validator("quipucords_server.ssh_keyfile_path", default=""),
     Validator("quipucords_cli.executable", default="qpc"),
     Validator("quipucords_cli.display_name", default="qpc"),
+    Validator("hashicorp_vault", default=None),
     Validator("credentials", default=[]),
     Validator("sources", default=[]),
     Validator("scans", default=[]),
