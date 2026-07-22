@@ -176,6 +176,17 @@ report_insights = functools.partial(cli_command, "{} -v report insights".format(
 report_aggregate = functools.partial(cli_command, "{} -v report aggregate".format(client_cmd))
 """Run ``qpc report aggregate`` with ``options`` and return output."""
 
+report_list = functools.partial(cli_command, "{} -v report list".format(client_cmd))
+"""Run ``qpc report list`` with ``options`` and return output.
+
+Note: The CLI does not support pagination arguments or auto-follow ``next`` links.
+It returns only the first page from the server (default page_size=100). If the test
+environment has more than 100 reports, only the first page will be visible.
+"""
+
+report_show = functools.partial(cli_command, "{} -v report show".format(client_cmd))
+"""Run ``qpc report show`` with ``options`` and return output."""
+
 
 def convert_ip_format(ipaddr):
     """Format space-separated IPs for multi-line JSON display."""
