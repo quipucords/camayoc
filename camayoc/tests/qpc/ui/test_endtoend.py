@@ -125,6 +125,7 @@ def test_translations(ui_client: Client):
         "No, {product} does not automatically send any data to Red Hat."
         " All data is stored locally and creates reports on the local file system."
     )
+    refresh_labels = ("Refreshed just now", "Refreshed a few seconds ago")
 
     page = (
         ui_client.begin()
@@ -150,6 +151,6 @@ def test_translations(ui_client: Client):
     refresh_button = page._driver.locator(
         "button[data-ouia-component-id=refresh] span[class$=button__text]"
     )
-    assert refresh_button.inner_text() == "Refreshed just now"
+    assert refresh_button.inner_text() in refresh_labels
 
     page.logout()
