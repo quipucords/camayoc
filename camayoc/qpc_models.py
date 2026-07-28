@@ -13,6 +13,7 @@ from camayoc.constants import QPC_REPORTS_PATH
 from camayoc.constants import QPC_SCAN_PATH
 from camayoc.constants import QPC_SCANJOB_PATH
 from camayoc.constants import QPC_SOURCE_PATH
+from camayoc.constants import QPC_V2_REPORTS_PATH
 from camayoc.exceptions import ScanJobWithoutReportException
 from camayoc.types.settings import CredentialOptions
 from camayoc.types.settings import ScanOptions
@@ -752,6 +753,19 @@ class Report(QPCObject):
             `request.request()` method.
         """
         path = urljoin(self.endpoint, "{}/aggregate/".format(self._id))
+        response = self.client.get(path, **kwargs)
+        return response
+
+    @api.try_reauthenticate
+    def read(self, **kwargs):
+        """Send GET request to v2/reports/{id}/ to read the report metadata.
+
+        Returns JSON with fields including ``origin``, ``can_download``, etc.
+
+        :param ``**kwargs``: Additional arguments accepted by Requests's
+            `request.request()` method.
+        """
+        path = urljoin(QPC_V2_REPORTS_PATH, "{}/".format(self._id))
         response = self.client.get(path, **kwargs)
         return response
 

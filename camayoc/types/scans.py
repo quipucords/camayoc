@@ -21,6 +21,7 @@ class FinishedScan:
     status: ScanSimplifiedStatusEnum
     definition: ScanOptions
     report_id: Optional[int] = None
+    report_origin: Optional[str] = None
     details_report: Optional[dict] = None
     deployments_report: Optional[dict] = None
     aggregate_report: Optional[dict] = None

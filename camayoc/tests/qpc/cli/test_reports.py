@@ -897,7 +897,7 @@ def test_report_list_contains_scan_report(
     assert expected_fields.issubset(actual_fields), (
         "Report entry is missing expected fields: {}".format(expected_fields - actual_fields)
     )
-    assert matching_report["origin"] == "local"
+    assert matching_report["origin"] == finished_scan.report_origin
     assert matching_report["can_download"] is True
 
 
