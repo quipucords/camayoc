@@ -22,6 +22,7 @@ class FinishedScan:
     definition: ScanOptions
     report_id: Optional[int] = None
     report_origin: Optional[str] = None
+    report_can_download: Optional[bool] = None
     details_report: Optional[dict] = None
     deployments_report: Optional[dict] = None
     aggregate_report: Optional[dict] = None
