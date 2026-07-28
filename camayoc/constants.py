@@ -74,6 +74,9 @@ QPC_SCANJOB_PATH = "v1/jobs/"
 QPC_REPORTS_PATH = "v1/reports/"
 """The path to the endpoint used for obtaining reports."""
 
+QPC_V2_REPORTS_PATH = "v2/reports/"
+"""The path to the v2 reports endpoint, which returns report metadata as JSON."""
+
 QPC_SCAN_TERMINAL_STATES = ("completed", "failed", "canceled")
 """Scans to not change from these states without intervention."""
 

@@ -309,6 +309,7 @@ class ScanContainer:
                 wait_until_state(scanjob)
                 report = Report()
                 report.retrieve_from_scan_job(scan_job_id=scanjob._id)
+                report_origin = report.read().json().get("origin")
                 details_report = report.details().json()
                 deployments_report = report.deployments().json()
                 aggregate_report = report.aggregate().json()
@@ -316,6 +317,7 @@ class ScanContainer:
                     scan,
                     status=ScanSimplifiedStatusEnum.COMPLETED,
                     report_id=report._id,
+                    report_origin=report_origin,
                     details_report=details_report,
                     deployments_report=deployments_report,
                     aggregate_report=aggregate_report,

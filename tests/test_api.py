@@ -2,6 +2,7 @@
 """Unit tests for :mod:`camayoc.api`."""
 
 import json
+import random
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
@@ -11,6 +12,7 @@ import requests
 
 from camayoc import api
 from camayoc.qpc_models import Credential
+from camayoc.qpc_models import Report
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import ScanJob
 from camayoc.qpc_models import Source
@@ -226,6 +228,19 @@ class ScanTestCase(unittest.TestCase):
         self.assertTrue(scn.equivalent(scn))
         with self.assertRaises(TypeError):
             scn.equivalent([])
+
+
+class ReportTestCase(unittest.TestCase):
+    """Test camayoc.qpc_models.Report."""
+
+    def test_read_uses_v2_path(self):
+        """Report.read() sends GET to v2/reports/{id}/."""
+        report_id = random.randint(1, 9999)
+        mock_client = MagicMock()
+        report = Report(client=mock_client, _id=report_id)
+        result = report.read()
+        mock_client.get.assert_called_once_with(f"v2/reports/{report_id}/")
+        self.assertIs(result, mock_client.get.return_value)
 
 
 class ScanJobTestCase(unittest.TestCase):
