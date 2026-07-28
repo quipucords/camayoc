@@ -898,7 +898,7 @@ def test_report_list_contains_scan_report(
         "Report entry is missing expected fields: {}".format(expected_fields - actual_fields)
     )
     assert matching_report["origin"] == finished_scan.report_origin
-    assert matching_report["can_download"] is True
+    assert matching_report["can_download"] is finished_scan.report_can_download
 
 
 @pytest.mark.runs_scan
