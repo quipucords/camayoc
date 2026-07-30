@@ -88,7 +88,8 @@ def test_download_scan(tmp_path, scans, ui_client: Client, scan_name):
     expect_lightspeed_report = scan_should_have_lightspeed_report(finished_scan)
     downloaded_report = ui_client.downloaded_files[-1]
 
-    tarfile.open(downloaded_report.path()).extractall(tmp_path)
+    with tarfile.open(downloaded_report.path()) as archive:
+        archive.extractall(tmp_path, filter="data")
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
     assert_lightspeed_report(tmp_path, expect_lightspeed_report)
@@ -128,7 +129,8 @@ def test_download_scan_modal(tmp_path, scans, ui_client: Client, scan_name):
     expect_lightspeed_report = scan_should_have_lightspeed_report(finished_scan)
     downloaded_report = ui_client.downloaded_files[-1]
 
-    tarfile.open(downloaded_report.path()).extractall(tmp_path)
+    with tarfile.open(downloaded_report.path()) as archive:
+        archive.extractall(tmp_path, filter="data")
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
     assert_lightspeed_report(tmp_path, expect_lightspeed_report)

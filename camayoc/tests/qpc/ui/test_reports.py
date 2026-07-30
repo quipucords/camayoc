@@ -75,5 +75,6 @@ def test_download_report(tmp_path, scans, ui_client: Client, scan_name):
 
     downloaded_report = ui_client.downloaded_files[-1]
 
-    tarfile.open(downloaded_report.path()).extractall(tmp_path)
+    with tarfile.open(downloaded_report.path()) as archive:
+        archive.extractall(tmp_path, filter="data")
     assert_sha256sums(tmp_path)
