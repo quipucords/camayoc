@@ -72,6 +72,11 @@ def test_read_example_config():
     assert settings.hashicorp_vault is None
     vault_creds = [c for c in settings.credentials if hasattr(c, "vault_secret_path")]
     assert vault_creds == []
+    ansible_cred = next(c for c in settings.credentials if c.name == "ansible")
+    assert ansible_cred.type == "ansible"
+    ansible_source = next(s for s in settings.sources if s.name == "ansible")
+    assert ansible_source.type == "ansible"
+    assert ansible_source.credentials == ["ansible"]
 
 
 def test_valid_hashicorp_vault_config(tmp_path, example_config):
