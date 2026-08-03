@@ -64,6 +64,10 @@ credentials:
     - name: 'rhacs'
       type: 'rhacs'
       auth_token: 'these_tend_to_be_very_long'
+    - name: 'ansible'
+      type: 'ansible'
+      username: 'admin'
+      password: 'CHANGEME'
 
 # Values in "credentials" field can use names present in "credentials" section
 # above
@@ -101,6 +105,13 @@ sources:
           - 'rhacs'
       name: 'RHACS'
       type: 'rhacs'
+      ssl_cert_verify: false
+    - hosts:
+          - 'aap.example.com'
+      credentials:
+          - 'ansible'
+      name: 'ansible'
+      type: 'ansible'
       ssl_cert_verify: false
 
 # Values in "sources" field can use names present in "sources" section above

@@ -366,20 +366,42 @@ def scan_job(options=None, exitstatus=0):
     return json.loads(cli_command("{} -v scan job".format(client_cmd), options, exitstatus))
 
 
+def _report_json_member(member_name: str, report_type: str) -> bool:
+    """Return True if tar member is a JSON report of the given type.
+
+    Quipucords download compatibility: report tarballs from Quipucords use
+    report-id suffixed names such as ``details-1.json`` (see Quipucords
+    ``create_filename(..., detailed_filename=True)``). Older Camayoc matching
+    only accepted unsuffixed names like ``details.json``; both forms are
+    accepted here.
+    """
+    basename = member_name.rsplit("/", 1)[-1]
+    return bool(re.fullmatch(rf"{report_type}(-\d+)?\.json", basename))
+
+
 def retrieve_report(scan_job_id):
+    """Download a scan-job report tarball and return parsed JSON reports.
+
+    Returns ``(details, deployments, aggregate)``. Filename matching includes a
+    Quipucords download compatibility fix for report-id suffixed members
+    (for example ``details-1.json``).
+    """
     with tempfile.TemporaryDirectory() as tmpdirname:
         output_file = f"{tmpdirname}/report.tar.gz"
         report_download({"scan-job": scan_job_id, "output-file": output_file})
-        details = deployments = None
+        details = deployments = aggregate = None
         with tarfile.open(output_file) as pkg:
             for member in pkg.getmembers():
-                if member.name.endswith("details.json"):
+                if _report_json_member(member.name, "details"):
                     data = pkg.extractfile(member).read()
                     details = json.loads(data)
-                if member.name.endswith("deployments.json"):
+                if _report_json_member(member.name, "deployments"):
                     data = pkg.extractfile(member).read()
                     deployments = json.loads(data)
-    return details, deployments
+                if _report_json_member(member.name, "aggregate"):
+                    data = pkg.extractfile(member).read()
+                    aggregate = json.loads(data)
+    return details, deployments, aggregate
 
 
 def scans_with_source_type(source_type):

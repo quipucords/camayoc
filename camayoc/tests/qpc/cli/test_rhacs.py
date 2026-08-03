@@ -67,7 +67,7 @@ def test_rhacs_data(qpc_server_config, data_provider, source_definition: SourceO
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
     # to here
-    details, deployments = retrieve_report(scan_job_id)
+    details, deployments, _aggregate = retrieve_report(scan_job_id)
     for report_source in details.get("sources"):
         assert report_source.get("source_name") == source.name
         for fact in report_source.get("facts"):

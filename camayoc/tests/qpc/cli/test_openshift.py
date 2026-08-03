@@ -153,7 +153,7 @@ def test_openshift_clusters(qpc_server_config, data_provider, source_definition:
     wait_for_scan(scan_job_id)
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
-    details, deployments = retrieve_report(scan_job_id)
+    details, deployments, _aggregate = retrieve_report(scan_job_id)
     cluster_info = openshift_cluster_info(source_definition.name)
     validate_openshift_report(cluster_info, details, deployments)
     validate_operators(cluster_info, details)
