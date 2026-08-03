@@ -35,6 +35,7 @@ class AbstractListItem(UIListItem):
 class ItemsList(UIPage):
     ITEM_CLASS: Optional[AbstractListItem] = None
     ITEM_LABEL_LOCATOR = "td[data-label=Name]"
+    NAME_FIELD_LABEL = "Name"
 
     def _get_item_from_current_list(self, name: str):
         default_timeout = 5000  # 5s
@@ -58,12 +59,13 @@ class ItemsList(UIPage):
         )
         filter_field_values_locator = "body > div[class*=-c-menu]"
 
+        field_label = self.NAME_FIELD_LABEL
         filter_field_button = self._driver.locator(filter_field_button_locator).locator("nth=0")
-        if filter_field_button.text_content() != "Name":
+        if filter_field_button.text_content() != field_label:
             filter_field_button.click()
             values_list = self._driver.locator(filter_field_values_locator)
-            values_list.locator("text='Name'").click()
-        self._driver.fill("input[placeholder$=name]", name)
+            values_list.locator(f"text='{field_label}'").click()
+        self._driver.fill(f"input[placeholder$='{field_label.lower()}']", name)
         self._driver.keyboard.press("Enter")
 
     def _get_item(self, name: str):

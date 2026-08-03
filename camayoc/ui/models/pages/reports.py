@@ -22,20 +22,7 @@ class ReportListElem(AbstractListItem):
 class ReportsMainPage(MainPageMixin):
     ITEM_CLASS = ReportListElem
     ITEM_LABEL_LOCATOR = "td[data-label='Scan name']"
-
-    def _search_for_item_by_name(self, name: str):
-        filter_field_button_locator = (
-            "div[class*=-c-toolbar__item] button[id]:has(span[class*=-c-menu-toggle])"
-        )
-        filter_field_values_locator = "body > div[class*=-c-menu]"
-
-        filter_field_button = self._driver.locator(filter_field_button_locator).locator("nth=0")
-        if filter_field_button.text_content() != "Scan name":
-            filter_field_button.click()
-            values_list = self._driver.locator(filter_field_values_locator)
-            values_list.locator("text='Scan name'").click()
-        self._driver.fill("input[placeholder$='scan name']", name)
-        self._driver.keyboard.press("Enter")
+    NAME_FIELD_LABEL = "Scan name"
 
     @creates_toast
     @service
