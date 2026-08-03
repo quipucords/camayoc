@@ -17,7 +17,6 @@ SOURCE_TYPES = ("network", "satellite", "vcenter")
 VAULT_SERVER_CONFIG = {
     "address": "vault.example.com",
     "port": 8200,
-    "ssl_verify": True,
     "client_cert": "/path/to/client.crt",
     "client_key": "/path/to/client.key",
     "ca_cert": "/path/to/ca.crt",
@@ -84,34 +83,19 @@ def test_valid_hashicorp_vault_config(tmp_path, example_config):
     assert settings.hashicorp_vault is not None
     assert settings.hashicorp_vault.address == "vault.example.com"
     assert settings.hashicorp_vault.port == 8200
-    assert settings.hashicorp_vault.ssl_verify is True
     assert settings.hashicorp_vault.client_cert == Path("/path/to/client.crt")
     assert settings.hashicorp_vault.client_key == Path("/path/to/client.key")
     assert settings.hashicorp_vault.ca_cert == Path("/path/to/ca.crt")
 
 
-def test_hashicorp_vault_ssl_verify_requires_ca_cert(tmp_path, example_config):
-    example_config["hashicorp_vault"] = {
-        **VAULT_SERVER_CONFIG,
-        "ca_cert": None,
-    }
-    config_file = write_config(tmp_path, example_config)
-
-    with pytest.raises(ValidationError):
-        get_settings(config_file)
-
-
-def test_hashicorp_vault_ssl_verify_false_without_ca_cert(tmp_path, example_config):
-    vault_config = {**VAULT_SERVER_CONFIG, "ssl_verify": False}
+def test_hashicorp_vault_requires_ca_cert(tmp_path, example_config):
+    vault_config = {**VAULT_SERVER_CONFIG}
     vault_config.pop("ca_cert")
     example_config["hashicorp_vault"] = vault_config
     config_file = write_config(tmp_path, example_config)
 
-    settings = get_settings(config_file)
-
-    assert settings.hashicorp_vault is not None
-    assert settings.hashicorp_vault.ssl_verify is False
-    assert settings.hashicorp_vault.ca_cert is None
+    with pytest.raises(ValidationError):
+        get_settings(config_file)
 
 
 def test_valid_vault_openshift_credential(tmp_path, example_config):

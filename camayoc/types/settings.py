@@ -3,7 +3,6 @@ from typing import Annotated
 from typing import Any
 from typing import Literal
 from typing import Optional
-from typing import Self
 from typing import Union
 
 from pydantic import BaseModel
@@ -40,16 +39,9 @@ class QuipucordsCLIOptions(BaseModel):
 class HashicorpVaultOptions(BaseModel):
     address: str
     port: Optional[int] = 8200
-    ssl_verify: Optional[bool] = True
     client_cert: Path
     client_key: Path
-    ca_cert: Optional[Path] = None
-
-    @model_validator(mode="after")
-    def check_ca_cert_when_ssl_verify(self) -> Self:
-        if self.ssl_verify and self.ca_cert is None:
-            raise ValueError("ca_cert is required when ssl_verify is True")
-        return self
+    ca_cert: Path
 
 
 class PlainNetworkCredentialOptions(BaseModel):
