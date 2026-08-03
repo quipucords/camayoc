@@ -67,6 +67,16 @@ def get_expected_sha256sums(directory):
     return parsed_shasums
 
 
+def has_network_source(scan_name: str) -> bool:
+    """Check if any source for the named scan is a network source."""
+    network_sources = {source.name for source in settings.sources if source.type == "network"}
+    return any(
+        bool(network_sources.intersection(scan.sources))
+        for scan in settings.scans
+        if scan.name == scan_name
+    )
+
+
 def assert_sha256sums(directory: Path):
     """Verify SHA256 sums of files match. Tests helper."""
     actual_shasums = calculate_sha256sums(directory)

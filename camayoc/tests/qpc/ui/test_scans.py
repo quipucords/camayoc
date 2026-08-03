@@ -15,6 +15,7 @@ from camayoc.config import settings
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
+from camayoc.tests.qpc.utils import has_network_source
 from camayoc.tests.qpc.utils import scan_should_have_lightspeed_report
 from camayoc.types.ui import SummaryReportData
 from camayoc.ui import Client
@@ -42,16 +43,6 @@ SUMMARY_DIAGNOSTICS_ITEMS = (
     "missing_system_creation_date",
     "missing_system_purpose",
 )
-
-
-def has_network_source(scan_name):
-    network_sources = set([source.name for source in settings.sources if source.type == "network"])
-    for scan_definition in settings.scans:
-        if scan_definition.name != scan_name:
-            continue
-        scan_sources = set(scan_definition.sources)
-        return bool(network_sources.intersection(scan_sources))
-    return False
 
 
 def scan_names():
