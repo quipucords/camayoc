@@ -21,18 +21,7 @@ class ReportListElem(AbstractListItem):
 
 class ReportsMainPage(MainPageMixin):
     ITEM_CLASS = ReportListElem
-
-    def _get_item_from_current_list(self, name: str):
-        default_timeout = 5000
-        item_label_locator = "td[data-label='Scan name']"
-        item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'table__tr')]"
-
-        item_elem = self._driver.locator(item_label_locator).filter(
-            has=self._driver.get_by_text(name, exact=True)
-        )
-        item_elem = item_elem.locator(item_elem_locator)
-        item_elem.hover(timeout=default_timeout, trial=True)
-        return item_elem
+    ITEM_LABEL_LOCATOR = "td[data-label='Scan name']"
 
     def _search_for_item_by_name(self, name: str):
         filter_field_button_locator = (

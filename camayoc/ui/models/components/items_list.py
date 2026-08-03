@@ -34,10 +34,11 @@ class AbstractListItem(UIListItem):
 
 class ItemsList(UIPage):
     ITEM_CLASS: Optional[AbstractListItem] = None
+    ITEM_LABEL_LOCATOR = "td[data-label=Name]"
 
     def _get_item_from_current_list(self, name: str):
         default_timeout = 5000  # 5s
-        item_label_locator = "td[data-label=Name]"
+        item_label_locator = self.ITEM_LABEL_LOCATOR
         item_elem_locator = "xpath=./ancestor::tr[contains(@class, 'table__tr')]"
 
         item_elem = self._driver.locator(item_label_locator).filter(
