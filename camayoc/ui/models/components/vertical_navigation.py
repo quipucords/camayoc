@@ -12,10 +12,11 @@ from camayoc.ui.enums import Pages
 
 if TYPE_CHECKING:
     from ..credentials import CredentialsMainPage
+    from ..reports import ReportsMainPage
     from ..scans import ScansMainPage
     from ..sources import SourcesMainPage
 
-    NavigateToPage = Union[CredentialsMainPage, ScansMainPage, SourcesMainPage]
+    NavigateToPage = Union[CredentialsMainPage, ScansMainPage, SourcesMainPage, ReportsMainPage]
 
 LEFT_NAV = "nav[class*=-c-nav]"
 
@@ -29,6 +30,9 @@ class VerticalNavigation(UIPage):
 
     @overload
     def navigate_to(self, page_name: Literal[MainMenuPages.SCANS]) -> ScansMainPage: ...
+
+    @overload
+    def navigate_to(self, page_name: Literal[MainMenuPages.REPORTS]) -> ReportsMainPage: ...
 
     @overload
     def navigate_to(self, page_name: MainMenuPages) -> NavigateToPage: ...

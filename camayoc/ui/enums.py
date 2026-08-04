@@ -18,6 +18,7 @@ class Pages(StrEnum):
     CREDENTIALS = "credentials.CredentialsMainPage"
     LOGIN = "login.Login"
     OVERVIEW = "overview.OverviewMainPage"
+    REPORTS = "reports.ReportsMainPage"
     SCANS = "scans.ScansMainPage"
     SOURCES = "sources.SourcesMainPage"
 
@@ -27,6 +28,7 @@ class MainMenuPages(StrEnum):
     SCANS = auto()
     CREDENTIALS = auto()
     OVERVIEW = auto()
+    REPORTS = auto()
 
 
 class CredentialTypes(StrEnum):
