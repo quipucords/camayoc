@@ -9,6 +9,7 @@ import tarfile
 import tempfile
 import time
 from pprint import pformat
+from typing import Optional
 
 import pexpect
 
@@ -16,9 +17,12 @@ from camayoc.config import settings
 from camayoc.constants import CLI_DEBUG_MSG
 from camayoc.exceptions import FailedScanException
 from camayoc.exceptions import WaitTimeError
+from camayoc.types.settings import HashicorpVaultOptions
 from camayoc.utils import client_cmd
 
 logger = logging.getLogger(__name__)
+
+VAULT_CONFIG_SUCCESS = "HashiCorp Vault configuration was successfully configured."
 
 
 def clear_all_entities():
@@ -87,6 +91,46 @@ def cli_command(command, options=None, exitstatus=0):
     )
     assert command_exitstatus == exitstatus, output
     return output
+
+
+def hashicorp_vault_cli_options(vault: HashicorpVaultOptions) -> dict:
+    """Map Camayoc ``hashicorp_vault`` settings to ``qpc vault add`` options."""
+    options = {
+        "address": vault.address,
+        "port": vault.port,
+        "ssl-verify": "true" if vault.ssl_verify else "false",
+        "client-cert": str(vault.client_cert),
+        "client-key": str(vault.client_key),
+    }
+    if vault.ca_cert is not None:
+        options["ca-cert"] = str(vault.ca_cert)
+    return options
+
+
+def vault_add_and_check(options=None, exitstatus=0):
+    """Configure the server HashiCorp Vault integration via CLI.
+
+    :param options: A dictionary mapping ``qpc vault add`` option names and
+        their values. Pass ``None`` for flag options.
+    :param exitstatus: Expected exit status code.
+    :returns: Command output.
+    """
+    output = cli_command("{} -v vault add".format(client_cmd), options, exitstatus)
+    if exitstatus == 0:
+        assert VAULT_CONFIG_SUCCESS in output, output
+    return output
+
+
+def configure_server_vault(vault_settings: Optional[HashicorpVaultOptions] = None):
+    """Configure Discovery server vault settings from Camayoc config.
+
+    Uses ``settings.hashicorp_vault`` when ``vault_settings`` is omitted.
+    Raises ``ValueError`` when no vault configuration is available.
+    """
+    vault = settings.hashicorp_vault if vault_settings is None else vault_settings
+    if vault is None:
+        raise ValueError("hashicorp_vault is not configured")
+    return vault_add_and_check(hashicorp_vault_cli_options(vault))
 
 
 def cred_add_and_check(options, inputs=None, exitstatus=0):

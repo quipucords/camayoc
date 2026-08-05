@@ -25,6 +25,18 @@ quipucords_server:
 quipucords_cli:
     executable: qpc
 
+# HashiCorp Vault server configuration for Discovery Vault integration.
+# Cert paths are local file paths. Camayoc configures the server via
+# ``qpc vault add`` / ``dsc vault add``, which base64-encodes the certs.
+# Required when any credential below uses vault_secret_path.
+# hashicorp_vault:
+#     address: vault.example.com
+#     port: 8200
+#     ssl_verify: true
+#     client_cert: /path/to/client.crt
+#     client_key: /path/to/client.key
+#     ca_cert: /path/to/ca.crt
+
 # We host most of our test machines on a VCenter instance
 # and this section contains its URL and the credentials
 # needed to log in to it
