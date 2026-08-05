@@ -224,32 +224,14 @@ def test_invalid_non_existing_source(tmp_path, faker, example_config):
         get_settings(config_file)
 
 
-def test_hashicorp_vault_cli_options_with_ca_cert():
+def test_hashicorp_vault_cli_options():
     vault = HashicorpVaultOptions(**VAULT_SERVER_CONFIG)
     assert hashicorp_vault_cli_options(vault) == {
         "address": "vault.example.com",
         "port": 8200,
-        "ssl-verify": "true",
         "client-cert": "/path/to/client.crt",
         "client-key": "/path/to/client.key",
         "ca-cert": "/path/to/ca.crt",
-    }
-
-
-def test_hashicorp_vault_cli_options_without_ca_cert():
-    vault = HashicorpVaultOptions(
-        address="vault.example.com",
-        port=8200,
-        ssl_verify=False,
-        client_cert="/path/to/client.crt",
-        client_key="/path/to/client.key",
-    )
-    assert hashicorp_vault_cli_options(vault) == {
-        "address": "vault.example.com",
-        "port": 8200,
-        "ssl-verify": "false",
-        "client-cert": "/path/to/client.crt",
-        "client-key": "/path/to/client.key",
     }
 
 

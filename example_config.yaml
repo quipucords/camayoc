@@ -32,7 +32,6 @@ quipucords_cli:
 # hashicorp_vault:
 #     address: vault.example.com
 #     port: 8200
-#     ssl_verify: true
 #     client_cert: /path/to/client.crt
 #     client_key: /path/to/client.key
 #     ca_cert: /path/to/ca.crt

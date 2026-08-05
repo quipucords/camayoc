@@ -95,16 +95,13 @@ def cli_command(command, options=None, exitstatus=0):
 
 def hashicorp_vault_cli_options(vault: HashicorpVaultOptions) -> dict:
     """Map Camayoc ``hashicorp_vault`` settings to ``qpc vault add`` options."""
-    options = {
+    return {
         "address": vault.address,
         "port": vault.port,
-        "ssl-verify": "true" if vault.ssl_verify else "false",
         "client-cert": str(vault.client_cert),
         "client-key": str(vault.client_key),
+        "ca-cert": str(vault.ca_cert),
     }
-    if vault.ca_cert is not None:
-        options["ca-cert"] = str(vault.ca_cert)
-    return options
 
 
 def vault_add_and_check(options=None, exitstatus=0):
