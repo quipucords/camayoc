@@ -105,7 +105,8 @@ class AnsibleCredentialOptions(BaseModel):
     password: str
 
 
-# TODO: these models allow config parsing but are not consumed at runtime yet
+# VaultOpenShiftCredentialOptions is parsed from config but not yet consumed
+# by runtime helpers (OpenShift vault e2e is out of scope for DISCOVERY-1367).
 class VaultOpenShiftCredentialOptions(BaseModel):
     name: str
     type: Literal["openshift"]
@@ -114,6 +115,7 @@ class VaultOpenShiftCredentialOptions(BaseModel):
     vault_mount_point: Optional[str] = None
 
 
+# Consumed by CLI vault Ansible e2e tests (DISCOVERY-1367).
 class VaultAnsibleCredentialOptions(BaseModel):
     name: str
     type: Literal["ansible"]

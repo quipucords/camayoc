@@ -80,6 +80,17 @@ credentials:
       type: 'ansible'
       username: 'admin'
       password: 'CHANGEME'
+    # Vault-backed credentials (require hashicorp_vault server config above):
+    # - name: 'OpenShiftVault'
+    #   type: 'openshift'
+    #   vault_secret_path: vault/dev/ocp-token
+    #   vault_secret_key: auth_token
+    #   vault_mount_point: discovery
+    # - name: 'AnsibleVault'
+    #   type: 'ansible'
+    #   vault_secret_path: vault/dev/aap-token
+    #   vault_secret_key: password
+    #   vault_mount_point: discovery
 
 # Values in "credentials" field can use names present in "credentials" section
 # above
@@ -125,6 +136,21 @@ sources:
       name: 'ansible'
       type: 'ansible'
       ssl_cert_verify: false
+    # Vault-backed source examples (uncomment with Vault credentials above):
+    # - hosts:
+    #       - 'api.vault-ocp.example.com'
+    #   credentials:
+    #       - 'OpenShiftVault'
+    #   name: 'OpenShiftVault'
+    #   type: 'openshift'
+    #   ssl_cert_verify: false
+    # - hosts:
+    #       - 'aap.example.com'
+    #   credentials:
+    #       - 'AnsibleVault'
+    #   name: 'AnsibleVault'
+    #   type: 'ansible'
+    #   ssl_cert_verify: false
 
 # Values in "sources" field can use names present in "sources" section above
 scans:
