@@ -366,17 +366,7 @@ def scan_job(options=None, exitstatus=0):
     return json.loads(cli_command("{} -v scan job".format(client_cmd), options, exitstatus))
 
 
-def _report_json_member(member_name: str, report_type: str) -> bool:
-    """Return True if tar member is a JSON report of the given type.
-
-    Quipucords download compatibility: report tarballs from Quipucords use
-    report-id suffixed names such as ``details-1.json`` (see Quipucords
-    ``create_filename(..., detailed_filename=True)``). Older Camayoc matching
-    only accepted unsuffixed names like ``details.json``; both forms are
-    accepted here.
-    """
-    basename = member_name.rsplit("/", 1)[-1]
-    return bool(re.fullmatch(rf"{report_type}(-\d+)?\.json", basename))
+_REPORT_MEMBER_RE = re.compile(r"(?P<report_type>details|deployments|aggregate)(-\d+)?\.json")
 
 
 def retrieve_report(scan_job_id):
@@ -389,19 +379,15 @@ def retrieve_report(scan_job_id):
     with tempfile.TemporaryDirectory() as tmpdirname:
         output_file = f"{tmpdirname}/report.tar.gz"
         report_download({"scan-job": scan_job_id, "output-file": output_file})
-        details = deployments = aggregate = None
+        reports = {"details": None, "deployments": None, "aggregate": None}
         with tarfile.open(output_file) as pkg:
             for member in pkg.getmembers():
-                if _report_json_member(member.name, "details"):
-                    data = pkg.extractfile(member).read()
-                    details = json.loads(data)
-                if _report_json_member(member.name, "deployments"):
-                    data = pkg.extractfile(member).read()
-                    deployments = json.loads(data)
-                if _report_json_member(member.name, "aggregate"):
-                    data = pkg.extractfile(member).read()
-                    aggregate = json.loads(data)
-    return details, deployments, aggregate
+                basename = member.name.rsplit("/", 1)[-1]
+                match = _REPORT_MEMBER_RE.fullmatch(basename)
+                if not match:
+                    continue
+                reports[match.group("report_type")] = json.loads(pkg.extractfile(member).read())
+    return reports["details"], reports["deployments"], reports["aggregate"]
 
 
 def scans_with_source_type(source_type):

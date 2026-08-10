@@ -30,14 +30,6 @@ def ansible_sources():
         yield pytest.param(source_definition, id=source_definition.name)
 
 
-def _merged_facts(facts):
-    """Merge per-system fact dicts from the details report into one mapping."""
-    merged = {}
-    for fact in facts or []:
-        merged.update(fact)
-    return merged
-
-
 def _run_ansible_scan(data_provider, source_definition: SourceOptions):
     source = data_provider.sources.new_one({"name": source_definition.name}, data_only=False)
     scan_name = uuid4()
@@ -55,7 +47,10 @@ def _run_ansible_scan(data_provider, source_definition: SourceOptions):
 
 
 def validate_ansible_report_minimum(source_name, details, deployments, aggregate):
-    """Validate minimal ansible report attributes (empty inventory is OK)."""
+    """Validate minimal ansible report attributes (empty inventory is OK).
+
+    :id: 3f8c2a71-6d4e-4b9a-9e2f-1a7c5d8b0e44
+    """
     assert details is not None, "details report missing from download"
     assert deployments is not None, "deployments report missing from download"
     assert aggregate is not None, "aggregate report missing from download"
@@ -69,7 +64,9 @@ def validate_ansible_report_minimum(source_name, details, deployments, aggregate
     report_source = ansible_sources_in_report[0]
     assert report_source.get("source_name") == source_name
 
-    fact = _merged_facts(report_source.get("facts"))
+    facts = report_source.get("facts", [])
+    assert len(facts) == 1
+    fact = facts[0]
     assert "instance_details" in fact
     assert "hosts" in fact
 
@@ -92,7 +89,7 @@ def validate_ansible_report_minimum(source_name, details, deployments, aggregate
     assert len(ansible_fingerprints) >= 1
     assert ansible_fingerprints[0].get("os_version") == version
 
-    results = aggregate.get("results") or {}
+    results = aggregate.get("results", {})
     assert results.get("ansible_hosts_in_database") == host_count
 
 
@@ -105,13 +102,11 @@ def validate_ansible_unique_hosts_collected(source_name, details, deployments, a
         for report_source in details.get("sources", [])
         if report_source.get("source_type") == "ansible"
     )
-    fact = _merged_facts(report_source.get("facts"))
+    facts = report_source.get("facts", [])
+    assert len(facts) == 1
+    fact = facts[0]
     missing = [key for key in ("jobs", "comparison") if key not in fact]
-    assert not missing, (
-        f"Details facts missing required keys: {missing}. "
-        "Missing jobs/comparison usually means unique-hosts collection failed "
-        "(for example host_metrics 40x without /jobs/ fallback)."
-    )
+    assert not missing, f"Details facts missing required keys: {missing}"
 
     hosts = fact["hosts"]
     host_count = len(hosts)
@@ -122,40 +117,19 @@ def validate_ansible_unique_hosts_collected(source_name, details, deployments, a
     comparison = fact["comparison"]
     assert comparison.get("number_of_hosts_in_inventory") == host_count
     assert comparison.get("number_of_hosts_only_in_jobs") == len(
-        comparison.get("hosts_only_in_jobs") or []
+        comparison.get("hosts_only_in_jobs", [])
     )
-    assert set(comparison.get("hosts_in_inventory") or []) == {host.get("name") for host in hosts}
+    assert set(comparison.get("hosts_in_inventory", [])) == {host.get("name") for host in hosts}
 
-    results = aggregate.get("results") or {}
-    diagnostics = aggregate.get("diagnostics") or {}
+    results = aggregate.get("results", {})
+    diagnostics = aggregate.get("diagnostics", {})
     assert results.get("ansible_hosts_in_jobs") == len(set(jobs["unique_hosts"]))
     assert results.get("ansible_hosts_all") == len(
-        set(comparison.get("hosts_in_inventory") or [])
-        | set(comparison.get("hosts_only_in_jobs") or [])
+        set(comparison.get("hosts_in_inventory", []))
+        | set(comparison.get("hosts_only_in_jobs", []))
     )
     assert diagnostics.get("inspect_result_status_success") == 1
     assert diagnostics.get("inspect_result_status_failed") == 0
-
-
-@pytest.mark.runs_scan
-@pytest.mark.parametrize("source_definition", ansible_sources())
-def test_ansible_report_minimum(qpc_server_config, data_provider, source_definition: SourceOptions):
-    """Scan an ansible source and validate minimal report attributes.
-
-    :id: 3f8c2a71-6d4e-4b9a-9e2f-1a7c5d8b0e44
-    :description: Perform an ansible / AAP scan and check details, deployments,
-        and aggregate for attributes that are always expected when connect and
-        basic inspect succeed. Inventory may be empty.
-    :steps:
-        1. Add source with credential for an AAP / Ansible Controller
-        2. Perform a scan
-        3. Collect the report
-    :expectedresults: Scan finishes, report can be downloaded, controller
-        fingerprint matches instance_details, and aggregate inventory count
-        matches ``len(hosts)`` (including zero).
-    """
-    source, details, deployments, aggregate = _run_ansible_scan(data_provider, source_definition)
-    validate_ansible_report_minimum(source.name, details, deployments, aggregate)
 
 
 @pytest.mark.runs_scan
@@ -170,7 +144,8 @@ def test_ansible_unique_hosts_collected(
         (``jobs`` and ``comparison``) are present with a successful inspect
         status. This covers the host_metrics 40x fallback to ``/jobs/``: when
         host_metrics is advertised but returns 401/403/404, Discovery should
-        still collect unique hosts via jobs instead of failing inspect.
+        still collect unique hosts via jobs instead of failing inspect. Also
+        validates minimal report attributes (details, deployments, aggregate).
     :steps:
         1. Add source with credential for an AAP / Ansible Controller
         2. Perform a scan
@@ -178,6 +153,8 @@ def test_ansible_unique_hosts_collected(
     :expectedresults: Scan finishes with successful inspect diagnostics;
         details include jobs and comparison; aggregate host metrics are
         internally consistent. Empty unique_hosts / job_ids are allowed.
+        Controller fingerprint matches instance_details, and aggregate
+        inventory count matches ``len(hosts)`` (including zero).
     """
     source, details, deployments, aggregate = _run_ansible_scan(data_provider, source_definition)
     validate_ansible_unique_hosts_collected(source.name, details, deployments, aggregate)
