@@ -58,14 +58,6 @@ _SKIP_NO_VAULT_ANSIBLE = pytest.mark.skip(
 )
 
 
-def _merged_facts(facts):
-    """Merge per-system fact dicts from the details report into one mapping."""
-    merged = {}
-    for fact in facts or []:
-        merged.update(fact)
-    return merged
-
-
 def validate_ansible_vault_report(source_name, details, deployments):
     """Validate report attributes expected from a successful vault-backed AAP scan."""
     assert details is not None, "details report missing from download"
@@ -80,7 +72,9 @@ def validate_ansible_vault_report(source_name, details, deployments):
     report_source = ansible_sources_in_report[0]
     assert report_source.get("source_name") == source_name
 
-    fact = _merged_facts(report_source.get("facts"))
+    facts = report_source.get("facts", [])
+    assert len(facts) == 1
+    fact = facts[0]
     assert "instance_details" in fact
     assert "hosts" in fact
 
@@ -183,5 +177,5 @@ def test_ansible_scan_with_vault_credential(
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
 
-    details, deployments = retrieve_report(scan_job_id)
+    details, deployments, _aggregate = retrieve_report(scan_job_id)
     validate_ansible_vault_report(source_name, details, deployments)
