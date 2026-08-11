@@ -20,6 +20,7 @@ from .utils import scan_add_and_check
 from .utils import scan_job
 from .utils import scan_start
 from .utils import source_add_and_check
+from .utils import source_to_cli_options
 from .utils import wait_for_scan
 
 
@@ -70,24 +71,14 @@ def test_end_to_end(tmp_path, qpc_server_config, data_provider, source_name):
     source_model = data_provider.sources.new_one(
         {"name": source_definition.name}, new_dependencies=True, data_only=True
     )
-    source_add_args = {
-        "name": source_model.name,
-        "cred": [credential_model.name],
-        "hosts": source_model.hosts,
-        "type": source_model.source_type,
-    }
-    if source_port := getattr(source_model, "port", None):
-        source_add_args["port"] = source_port
-
-    for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl", "use_paramiko"):
-        value = getattr(source_model, opt, None)
-        if value is None:
-            continue
-        key = opt.replace("_", "-")
-        source_add_args[key] = value
-
     data_provider.mark_for_cleanup(source_model)
-    source_add_and_check(source_add_args)
+    source_add_and_check(
+        source_to_cli_options(
+            source_model,
+            name=source_model.name,
+            credentials=[credential_model.name],
+        )
+    )
 
     # Create and run a scan
     data_provider.mark_for_cleanup(Scan(name=scan_name))

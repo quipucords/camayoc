@@ -1,10 +1,13 @@
 # coding=utf-8
 """Unit tests for :mod:`camayoc.utils`."""
 
+from pathlib import Path
 from tempfile import mkdtemp
 from unittest import mock
 
 from camayoc import utils
+from camayoc.tests.qpc.cli.utils import hashicorp_vault_cli_options
+from camayoc.types.settings import HashicorpVaultOptions
 from camayoc.types.settings import QuipucordsServerOptions
 from camayoc.types.settings import ScanOptions
 
@@ -90,3 +93,38 @@ def test_expected_data_has_attribute_no_expected_data():
         }
     )
     assert not utils.expected_data_has_attribute(scan, "distribution")
+
+
+def test_hashicorp_vault_cli_options():
+    vault = HashicorpVaultOptions(
+        address="vault.example.com",
+        port=8200,
+        client_cert=Path("/path/to/client.crt"),
+        client_key=Path("/path/to/client.key"),
+        ca_cert=Path("/path/to/ca.crt"),
+    )
+    assert hashicorp_vault_cli_options(vault) == {
+        "address": "vault.example.com",
+        "port": 8200,
+        "client-cert": "/path/to/client.crt",
+        "client-key": "/path/to/client.key",
+        "ca-cert": "/path/to/ca.crt",
+    }
+
+
+def test_hashicorp_vault_cli_options_omits_null_port():
+    vault = HashicorpVaultOptions(
+        address="vault.example.com",
+        port=None,
+        client_cert=Path("/path/to/client.crt"),
+        client_key=Path("/path/to/client.key"),
+        ca_cert=Path("/path/to/ca.crt"),
+    )
+    options = hashicorp_vault_cli_options(vault)
+    assert "port" not in options
+    assert options == {
+        "address": "vault.example.com",
+        "client-cert": "/path/to/client.crt",
+        "client-key": "/path/to/client.key",
+        "ca-cert": "/path/to/ca.crt",
+    }

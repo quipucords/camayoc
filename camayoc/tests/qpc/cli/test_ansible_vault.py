@@ -16,6 +16,8 @@ from camayoc.config import settings
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
+from camayoc.tests.qpc.cli.test_ansible import validate_ansible_report_minimum
+from camayoc.tests.qpc.cli.utils import clear_server_vault
 from camayoc.tests.qpc.cli.utils import configure_server_vault
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
 from camayoc.tests.qpc.cli.utils import retrieve_report
@@ -23,92 +25,42 @@ from camayoc.tests.qpc.cli.utils import scan_add_and_check
 from camayoc.tests.qpc.cli.utils import scan_job
 from camayoc.tests.qpc.cli.utils import scan_start
 from camayoc.tests.qpc.cli.utils import source_add_and_check
+from camayoc.tests.qpc.cli.utils import source_to_cli_options
 from camayoc.tests.qpc.cli.utils import wait_for_scan
 from camayoc.types.settings import SourceOptions
 from camayoc.types.settings import VaultAnsibleCredentialOptions
 
 
-def _vault_ansible_credentials_for_source(source_definition: SourceOptions):
-    credentials_by_name = {credential.name: credential for credential in settings.credentials}
-    for credential_name in source_definition.credentials:
-        credential = credentials_by_name.get(credential_name)
-        if isinstance(credential, VaultAnsibleCredentialOptions):
-            yield credential
-
-
 def vault_ansible_sources():
-    """Yield ansible sources that use vault-backed credentials.
-
-    Skips collection when ``hashicorp_vault`` or matching sources are missing.
-    """
-    if settings.hashicorp_vault is None:
-        return
-
+    """Yield ansible sources that use a vault-backed credential."""
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
     for source_definition in settings.sources:
         if source_definition.type != "ansible":
             continue
-        if not any(_vault_ansible_credentials_for_source(source_definition)):
+        credential = credentials_by_name.get(source_definition.credentials[0])
+        if not isinstance(credential, VaultAnsibleCredentialOptions):
             continue
         yield pytest.param(source_definition, id=source_definition.name)
 
 
 _VAULT_ANSIBLE_SOURCES = list(vault_ansible_sources())
-_SKIP_NO_VAULT_ANSIBLE = pytest.mark.skip(
-    reason="No hashicorp_vault config or vault-backed ansible sources configured"
-)
-
-
-def validate_ansible_vault_report(source_name, details, deployments):
-    """Validate report attributes expected from a successful vault-backed AAP scan."""
-    assert details is not None, "details report missing from download"
-    assert deployments is not None, "deployments report missing from download"
-
-    ansible_sources_in_report = [
-        report_source
-        for report_source in details.get("sources", [])
-        if report_source.get("source_type") == "ansible"
-    ]
-    assert len(ansible_sources_in_report) == 1
-    report_source = ansible_sources_in_report[0]
-    assert report_source.get("source_name") == source_name
-
-    facts = report_source.get("facts", [])
-    assert len(facts) == 1
-    fact = facts[0]
-    assert "instance_details" in fact
-    assert "hosts" in fact
-
-    instance_details = fact["instance_details"]
-    system_name = instance_details.get("system_name")
-    version = instance_details.get("version")
-    assert isinstance(system_name, str) and system_name
-    assert isinstance(version, str) and version
-    assert isinstance(fact["hosts"], list)
-
-    ansible_fingerprints = [
-        fingerprint
-        for fingerprint in deployments.get("system_fingerprints", [])
-        if fingerprint.get("name") == system_name
-        and any(source.get("source_type") == "ansible" for source in fingerprint.get("sources", []))
-    ]
-    assert len(ansible_fingerprints) >= 1
-    assert ansible_fingerprints[0].get("os_version") == version
 
 
 @pytest.fixture
 def configured_vault_server(qpc_server_config):
-    """Configure Discovery server vault settings from Camayoc config, or skip."""
-    if settings.hashicorp_vault is None:
-        pytest.skip("hashicorp_vault is not configured in camayoc config")
+    """Configure Discovery server vault settings for the test, then clear them."""
+    clear_server_vault()
     configure_server_vault()
+    yield
+    clear_server_vault()
 
 
 @pytest.mark.runs_scan
-@pytest.mark.parametrize(
-    "source_definition",
-    _VAULT_ANSIBLE_SOURCES
-    or [pytest.param(None, id="no-vault-ansible-config", marks=_SKIP_NO_VAULT_ANSIBLE)],
+@pytest.mark.skipif(
+    not _VAULT_ANSIBLE_SOURCES,
+    reason="No vault-backed ansible sources configured",
 )
+@pytest.mark.parametrize("source_definition", _VAULT_ANSIBLE_SOURCES)
 def test_ansible_scan_with_vault_credential(
     configured_vault_server, data_provider, source_definition: SourceOptions
 ):
@@ -129,7 +81,8 @@ def test_ansible_scan_with_vault_credential(
         created, the scan completes, and the report contains ansible
         instance_details and hosts facts with a matching fingerprint.
     """
-    vault_credential = next(_vault_ansible_credentials_for_source(source_definition))
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
+    vault_credential = credentials_by_name[source_definition.credentials[0]]
 
     cred_name = str(uuid4())
     source_name = str(uuid4())
@@ -147,22 +100,14 @@ def test_ansible_scan_with_vault_credential(
     cred_add_and_check(cred_options)
     data_provider.mark_for_cleanup(Credential(name=cred_name, cred_type="ansible"))
 
-    source_options = {
-        "name": source_name,
-        "type": "ansible",
-        "hosts": source_definition.hosts,
-        "cred": [cred_name],
-    }
-    if source_definition.port is not None:
-        source_options["port"] = source_definition.port
-    if source_definition.ssl_cert_verify is not None:
-        source_options["ssl-cert-verify"] = str(source_definition.ssl_cert_verify).lower()
-    if source_definition.disable_ssl is not None:
-        source_options["disable-ssl"] = str(source_definition.disable_ssl).lower()
-    if source_definition.ssl_protocol is not None:
-        source_options["ssl-protocol"] = source_definition.ssl_protocol
-
-    source_add_and_check(source_options)
+    source_add_and_check(
+        source_to_cli_options(
+            source_definition,
+            name=source_name,
+            credentials=[cred_name],
+            source_type="ansible",
+        )
+    )
     data_provider.mark_for_cleanup(Source(name=source_name, source_type="ansible"))
 
     scan_add_and_check({"name": scan_name, "sources": source_name})
@@ -177,5 +122,5 @@ def test_ansible_scan_with_vault_credential(
     result = scan_job({"id": scan_job_id})
     assert result["status"] == "completed"
 
-    details, deployments, _aggregate = retrieve_report(scan_job_id)
-    validate_ansible_vault_report(source_name, details, deployments)
+    details, deployments, aggregate = retrieve_report(scan_job_id)
+    validate_ansible_report_minimum(source_name, details, deployments, aggregate)
