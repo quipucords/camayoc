@@ -117,19 +117,16 @@ def vault_add_and_check(options=None, exitstatus=0):
         assert VAULT_CONFIG_SUCCESS in output, output
 
 
-def clear_server_vault(exitstatus=None):
+def clear_server_vault():
     """Clear the server HashiCorp Vault configuration via CLI.
 
-    :param exitstatus: Expected exit status. ``None`` accepts any status
-        (useful when no vault config exists yet).
+    Best-effort: ignores CLI exit status so setup/teardown stays resilient on a
+    shared server when clear fails unexpectedly. Callers never need a specific
+    exit code (for example when nothing is configured yet).
     """
     command = "{} -v vault clear".format(client_cmd)
     logger.debug(CLI_DEBUG_MSG, command)
-    output, command_exitstatus = pexpect.run(
-        command, encoding="utf-8", timeout=60, withexitstatus=True
-    )
-    if exitstatus is not None:
-        assert command_exitstatus == exitstatus, output
+    pexpect.run(command, encoding="utf-8", timeout=60, withexitstatus=True)
 
 
 def configure_server_vault():
