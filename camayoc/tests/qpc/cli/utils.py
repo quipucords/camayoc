@@ -16,9 +16,12 @@ from camayoc.config import settings
 from camayoc.constants import CLI_DEBUG_MSG
 from camayoc.exceptions import FailedScanException
 from camayoc.exceptions import WaitTimeError
+from camayoc.types.settings import HashicorpVaultOptions
 from camayoc.utils import client_cmd
 
 logger = logging.getLogger(__name__)
+
+VAULT_CONFIG_SUCCESS = "HashiCorp Vault configuration was successfully configured."
 
 
 def clear_all_entities():
@@ -87,6 +90,83 @@ def cli_command(command, options=None, exitstatus=0):
     )
     assert command_exitstatus == exitstatus, output
     return output
+
+
+def hashicorp_vault_cli_options(vault: HashicorpVaultOptions) -> dict:
+    """Map Camayoc ``hashicorp_vault`` settings to ``qpc vault add`` options."""
+    options = {
+        "address": vault.address,
+        "client-cert": str(vault.client_cert),
+        "client-key": str(vault.client_key),
+        "ca-cert": str(vault.ca_cert),
+    }
+    if vault.port is not None:
+        options["port"] = vault.port
+    return options
+
+
+def vault_add_and_check(options=None, exitstatus=0):
+    """Configure the server HashiCorp Vault integration via CLI.
+
+    :param options: A dictionary mapping ``qpc vault add`` option names and
+        their values. Pass ``None`` for flag options.
+    :param exitstatus: Expected exit status code.
+    """
+    output = cli_command("{} -v vault add".format(client_cmd), options, exitstatus)
+    if exitstatus == 0:
+        assert VAULT_CONFIG_SUCCESS in output, output
+
+
+def clear_server_vault():
+    """Clear the server HashiCorp Vault configuration via CLI.
+
+    Best-effort: ignores CLI exit status so setup/teardown stays resilient on a
+    shared server when clear fails unexpectedly. Callers never need a specific
+    exit code (for example when nothing is configured yet).
+    """
+    command = "{} -v vault clear".format(client_cmd)
+    logger.debug(CLI_DEBUG_MSG, command)
+    pexpect.run(command, encoding="utf-8", timeout=60, withexitstatus=True)
+
+
+def configure_server_vault():
+    """Configure Discovery server vault settings from Camayoc config.
+
+    Uses ``settings.hashicorp_vault``. Raises ``ValueError`` when vault is not
+    configured. Does not clear existing server vault settings; callers (usually
+    fixtures) own that lifecycle.
+    """
+    vault = settings.hashicorp_vault
+    if vault is None:
+        raise ValueError("hashicorp_vault is not configured")
+    vault_add_and_check(hashicorp_vault_cli_options(vault))
+
+
+def source_to_cli_options(source, *, name, credentials, source_type=None):
+    """Build ``qpc source add`` options from a source definition or model.
+
+    ``source`` may be a settings ``SourceOptions`` or a ``Source`` model. Boolean
+    SSL flags are lowercased for the CLI. ``port`` is included only when set.
+    """
+    resolved_type = source_type
+    if resolved_type is None:
+        resolved_type = getattr(source, "type", None) or getattr(source, "source_type", None)
+    options = {
+        "name": name,
+        "type": resolved_type,
+        "hosts": list(source.hosts),
+        "cred": list(credentials),
+    }
+    port = getattr(source, "port", None)
+    if port is not None:
+        options["port"] = port
+    for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl", "use_paramiko"):
+        value = getattr(source, opt, None)
+        if value is None:
+            continue
+        key = opt.replace("_", "-")
+        options[key] = str(value).lower() if isinstance(value, bool) else value
+    return options
 
 
 def cred_add_and_check(options, inputs=None, exitstatus=0):

@@ -25,6 +25,17 @@ quipucords_server:
 quipucords_cli:
     executable: qpc
 
+# HashiCorp Vault server configuration for Discovery Vault integration.
+# Cert paths are local file paths. Camayoc configures the server via
+# ``qpc vault add`` / ``dsc vault add``, which base64-encodes the certs.
+# Required when any credential below uses vault_secret_path.
+# hashicorp_vault:
+#     address: vault.example.com
+#     port: 8200
+#     client_cert: /path/to/client.crt
+#     client_key: /path/to/client.key
+#     ca_cert: /path/to/ca.crt
+
 # We host most of our test machines on a VCenter instance
 # and this section contains its URL and the credentials
 # needed to log in to it
@@ -68,6 +79,17 @@ credentials:
       type: 'ansible'
       username: 'admin'
       password: 'CHANGEME'
+    # Vault-backed credentials (require hashicorp_vault server config above):
+    # - name: 'OpenShiftVault'
+    #   type: 'openshift'
+    #   vault_secret_path: vault/dev/ocp-token
+    #   vault_secret_key: auth_token
+    #   vault_mount_point: discovery
+    # - name: 'AnsibleVault'
+    #   type: 'ansible'
+    #   vault_secret_path: vault/dev/aap-token
+    #   vault_secret_key: password
+    #   vault_mount_point: discovery
 
 # Values in "credentials" field can use names present in "credentials" section
 # above
@@ -113,6 +135,21 @@ sources:
       name: 'ansible'
       type: 'ansible'
       ssl_cert_verify: false
+    # Vault-backed source examples (uncomment with Vault credentials above):
+    # - hosts:
+    #       - 'api.vault-ocp.example.com'
+    #   credentials:
+    #       - 'OpenShiftVault'
+    #   name: 'OpenShiftVault'
+    #   type: 'openshift'
+    #   ssl_cert_verify: false
+    # - hosts:
+    #       - 'aap.example.com'
+    #   credentials:
+    #       - 'AnsibleVault'
+    #   name: 'AnsibleVault'
+    #   type: 'ansible'
+    #   ssl_cert_verify: false
 
 # Values in "sources" field can use names present in "sources" section above
 scans:
