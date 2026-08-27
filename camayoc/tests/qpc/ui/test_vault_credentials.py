@@ -243,8 +243,8 @@ def test_edit_vault_credential(
     )
     data_provider.mark_for_cleanup(Credential(name=credential_form.credential_name))
 
-    # Create modified version for editing
-    modified_form = credential_factory()
+    # Create modified version for editing - keep the same credential name for cleanup
+    modified_form = credential_factory(credential_name=credential_form.credential_name)
     edit_credential_dto = data_factories.AddCredentialDTOFactory(
         credential_type=credential_type,
         credential_form=modified_form,

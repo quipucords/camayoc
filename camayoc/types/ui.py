@@ -267,9 +267,9 @@ class VaultOpenShiftCredentialFormDTO:
         model = Credential(
             cred_type="openshift",
             name=self.credential_name,
-            vault_secret_path=self.vault_secret_path,
-            vault_secret_key=self.vault_secret_key,
         )
+        model.vault_secret_path = self.vault_secret_path
+        model.vault_secret_key = self.vault_secret_key
         if self.vault_mount_point:
             model.vault_mount_point = self.vault_mount_point
         return model
@@ -328,9 +328,9 @@ class VaultAnsibleCredentialFormDTO:
         model = Credential(
             cred_type="ansible",
             name=self.credential_name,
-            vault_secret_path=self.vault_secret_path,
-            vault_secret_key=self.vault_secret_key,
         )
+        model.vault_secret_path = self.vault_secret_path
+        model.vault_secret_key = self.vault_secret_key
         if self.vault_mount_point:
             model.vault_mount_point = self.vault_mount_point
         return model
@@ -370,6 +370,24 @@ CredentialFormDTO = Union[
 ]
 
 
+def _select_openshift_dto_class(model: Credential):
+    """Select concrete OpenShift DTO class based on model fields."""
+    if hasattr(model, "vault_secret_path") and model.vault_secret_path:
+        return VaultOpenShiftCredentialFormDTO
+    elif hasattr(model, "auth_token") and model.auth_token:
+        return TokenOpenShiftCredentialFormDTO
+    else:
+        return PlainOpenShiftCredentialFormDTO
+
+
+def _select_ansible_dto_class(model: Credential):
+    """Select concrete Ansible DTO class based on model fields."""
+    if hasattr(model, "vault_secret_path") and model.vault_secret_path:
+        return VaultAnsibleCredentialFormDTO
+    else:
+        return PlainAnsibleCredentialFormDTO
+
+
 @frozen
 class AddCredentialDTO:
     credential_type: CredentialTypes
@@ -392,10 +410,12 @@ class AddCredentialDTO:
                 credential_form_dto = VCenterCredentialFormDTO.from_model(model)
             case "openshift":
                 credential_type = CredentialTypes.OPENSHIFT
-                credential_form_dto = OpenShiftCredentialFormDTO.from_model(model)
+                dto_cls = _select_openshift_dto_class(model)
+                credential_form_dto = dto_cls.from_model(model)
             case "ansible":
                 credential_type = CredentialTypes.ANSIBLE
-                credential_form_dto = AnsibleCredentialFormDTO.from_model(model)
+                dto_cls = _select_ansible_dto_class(model)
+                credential_form_dto = dto_cls.from_model(model)
             case "rhacs":
                 credential_type = CredentialTypes.RHACS
                 credential_form_dto = RHACSCredentialFormDTO.from_model(model)
