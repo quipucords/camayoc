@@ -59,6 +59,12 @@ class NetworkCredentialBecomeMethods(LowercasedStrEnum):
 class OpenShiftCredentialAuthenticationTypes(StrEnum):
     USERNAME_AND_PASSWORD = "Username and Password"
     TOKEN = "Token"
+    VAULT_SECRET_PATH = "Vault secret path"
+
+
+class AnsibleCredentialAuthenticationTypes(StrEnum):
+    USERNAME_AND_PASSWORD = "Username and Password"
+    VAULT_SECRET_PATH = "Vault secret path"
 
 
 class SourceTypes(StrEnum):
