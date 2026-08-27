@@ -19,6 +19,7 @@ from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import NewScanFormDTO
 from camayoc.types.ui import OpenShiftCredentialFormDTO
 from camayoc.types.ui import OpenShiftSourceFormDTO
+from camayoc.types.ui import PlainAnsibleCredentialFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
 from camayoc.types.ui import PlainOpenShiftCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
@@ -29,9 +30,12 @@ from camayoc.types.ui import SourceFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
 from camayoc.types.ui import TokenOpenShiftCredentialFormDTO
 from camayoc.types.ui import TriggerScanDTO
+from camayoc.types.ui import VaultAnsibleCredentialFormDTO
+from camayoc.types.ui import VaultOpenShiftCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.types.ui import VCenterSourceFormDTO
 
+from .enums import AnsibleCredentialAuthenticationTypes
 from .enums import CredentialTypes
 from .enums import NetworkCredentialAuthenticationTypes
 from .enums import NetworkCredentialBecomeMethods
@@ -163,18 +167,46 @@ class TokenOpenShiftCredentialFormDTOFactory(factory.Factory):
     authentication_type = OpenShiftCredentialAuthenticationTypes.TOKEN
 
 
+class VaultOpenShiftCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = VaultOpenShiftCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    vault_secret_path = factory.Faker("file_path", depth=3, category="secret")
+    vault_secret_key = factory.Faker("word")
+    vault_mount_point = factory.Faker("optional", result=factory.Faker("word"), ratio=0.3)
+    authentication_type = OpenShiftCredentialAuthenticationTypes.VAULT_SECRET_PATH
+
+
 class OpenShiftCredentialFormDTOFactory(UnionDTOFactory):
     class Meta:
         model = OpenShiftCredentialFormDTO
 
 
-class AnsibleCredentialFormDTOFactory(factory.Factory):
+class PlainAnsibleCredentialFormDTOFactory(factory.Factory):
     class Meta:
-        model = AnsibleCredentialFormDTO
+        model = PlainAnsibleCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
     username = factory.Faker("user_name")
     password = factory.Faker("password")
+    authentication_type = AnsibleCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
+
+
+class VaultAnsibleCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = VaultAnsibleCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    vault_secret_path = factory.Faker("file_path", depth=3, category="secret")
+    vault_secret_key = factory.Faker("word")
+    vault_mount_point = factory.Faker("optional", result=factory.Faker("word"), ratio=0.3)
+    authentication_type = AnsibleCredentialAuthenticationTypes.VAULT_SECRET_PATH
+
+
+class AnsibleCredentialFormDTOFactory(UnionDTOFactory):
+    class Meta:
+        model = AnsibleCredentialFormDTO
 
 
 class RHACSCredentialFormDTOFactory(factory.Factory):

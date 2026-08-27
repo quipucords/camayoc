@@ -99,6 +99,9 @@ class OpenShiftCredentialForm(CredentialForm):
         username = InputField("input[data-ouia-component-id=username]")
         password = SecretInputField("input[data-ouia-component-id=password]")
         token = SecretInputField("input[data-ouia-component-id=auth_token]")
+        vault_secret_path = InputField("input[data-ouia-component-id=vault_secret_path]")
+        vault_secret_key = InputField("input[data-ouia-component-id=vault_secret_key]")
+        vault_mount_point = InputField("input[data-ouia-component-id=vault_mount_point]")
 
     @overload
     def fill(self, data: OpenShiftCredentialFormDTO): ...
@@ -111,9 +114,13 @@ class OpenShiftCredentialForm(CredentialForm):
 
 class AnsibleCredentialForm(CredentialForm):
     class FormDefinition:
+        authentication_type = SelectField("button[data-ouia-component-id=auth_type]")
         credential_name = InputField("input[data-ouia-component-id=cred_name]")
         username = InputField("input[data-ouia-component-id=username]")
         password = SecretInputField("input[data-ouia-component-id=password]")
+        vault_secret_path = InputField("input[data-ouia-component-id=vault_secret_path]")
+        vault_secret_key = InputField("input[data-ouia-component-id=vault_secret_key]")
+        vault_mount_point = InputField("input[data-ouia-component-id=vault_mount_point]")
 
     @overload
     def fill(self, data: AnsibleCredentialFormDTO): ...
