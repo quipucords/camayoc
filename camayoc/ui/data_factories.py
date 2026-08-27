@@ -10,7 +10,6 @@ from camayoc.config import settings
 from camayoc.data_provider import DataProvider
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
-from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import CredentialFormDTO
 from camayoc.types.ui import LoginFormDTO
@@ -204,9 +203,20 @@ class VaultAnsibleCredentialFormDTOFactory(factory.Factory):
     authentication_type = AnsibleCredentialAuthenticationTypes.VAULT_SECRET_PATH
 
 
-class AnsibleCredentialFormDTOFactory(UnionDTOFactory):
+class AnsibleCredentialFormDTOFactory(factory.Factory):
+    """Factory that defaults to plain Ansible credentials.
+
+    Use VaultAnsibleCredentialFormDTOFactory explicitly for vault credentials.
+    This prevents accidentally selecting the vault option when vault is not configured.
+    """
+
     class Meta:
-        model = AnsibleCredentialFormDTO
+        model = PlainAnsibleCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    username = factory.Faker("user_name")
+    password = factory.Faker("password")
+    authentication_type = AnsibleCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
 
 
 class RHACSCredentialFormDTOFactory(factory.Factory):
