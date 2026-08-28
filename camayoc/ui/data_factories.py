@@ -110,6 +110,12 @@ def _existing_ssh_key_file():
     return filename
 
 
+def _optional_vault_mount_point():
+    """Return a vault mount point 30% of the time, None otherwise."""
+    faker = factory.Faker._get_faker()
+    return faker.word() if faker.random.random() < 0.3 else None
+
+
 class SSHNetworkCredentialFormDTOFactory(factory.Factory):
     class Meta:
         model = SSHNetworkCredentialFormDTO
@@ -171,9 +177,9 @@ class VaultOpenShiftCredentialFormDTOFactory(factory.Factory):
         model = VaultOpenShiftCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
-    vault_secret_path = factory.Faker("file_path", depth=3, category="secret")
+    vault_secret_path = factory.Faker("file_path", depth=3)
     vault_secret_key = factory.Faker("word")
-    vault_mount_point = factory.Faker("optional", result=factory.Faker("word"), ratio=0.3)
+    vault_mount_point = factory.LazyFunction(_optional_vault_mount_point)
     authentication_type = OpenShiftCredentialAuthenticationTypes.VAULT_SECRET_PATH
 
 
@@ -197,9 +203,9 @@ class VaultAnsibleCredentialFormDTOFactory(factory.Factory):
         model = VaultAnsibleCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
-    vault_secret_path = factory.Faker("file_path", depth=3, category="secret")
+    vault_secret_path = factory.Faker("file_path", depth=3)
     vault_secret_key = factory.Faker("word")
-    vault_mount_point = factory.Faker("optional", result=factory.Faker("word"), ratio=0.3)
+    vault_mount_point = factory.LazyFunction(_optional_vault_mount_point)
     authentication_type = AnsibleCredentialAuthenticationTypes.VAULT_SECRET_PATH
 
 
