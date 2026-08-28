@@ -57,7 +57,8 @@ def test_vault_option_disabled_when_not_configured(
     :expectedresults: The "Vault secret path" option appears in the dropdown
         but has aria-disabled="true" attribute, preventing selection.
     """
-    # Ensure vault is cleared
+    # Ensure vault is cleared (initialize CLI first to avoid order-dependency)
+    setup_qpc()
     clear_server_vault()
 
     # Navigate to credentials and open the form

@@ -106,6 +106,11 @@ class PlainNetworkCredentialFormDTOFactory(factory.Factory):
 
 
 def _existing_ssh_key_file():
+    """Create a temporary SSH key file and return its path.
+
+    Returns:
+        str: Path to the temporary file.
+    """
     _, filename = tempfile.mkstemp()
     return filename
 
@@ -239,6 +244,14 @@ class CredentialFormDTOFactory(UnionDTOFactory):
 
 
 def _type_dependent_credential_form_factory(obj):
+    """Return the appropriate credential form factory based on credential type.
+
+    Args:
+        obj: An object with a credential_type attribute.
+
+    Returns:
+        Factory class for the specified credential type.
+    """
     credential_type = obj.credential_type
     if credential_type == CredentialTypes.NETWORK:
         return NetworkCredentialFormDTOFactory
@@ -293,6 +306,14 @@ class NetworkSourceFormDTOFactory(factory.Factory):
 
 
 def _verify_ssl_based_on_connection(obj):
+    """Return verify_ssl value based on connection type.
+
+    Args:
+        obj: An object with a connection attribute.
+
+    Returns:
+        None if connection is DISABLE, otherwise a random boolean or None.
+    """
     if obj.connection == SourceConnectionTypes.DISABLE:
         return None
     faker = factory.Faker._get_faker()
@@ -435,6 +456,14 @@ class SourceFormDTOFactory(UnionDTOFactory):
 
 
 def _source_type_dependent_source_form_factory(obj):
+    """Return the appropriate source form factory based on source type.
+
+    Args:
+        obj: An object with a source_type attribute.
+
+    Returns:
+        Factory class for the specified source type.
+    """
     source_type = obj.source_type
     if source_type == SourceTypes.NETWORK_RANGE:
         return NetworkSourceFormDTOFactory
