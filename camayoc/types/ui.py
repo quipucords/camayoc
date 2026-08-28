@@ -268,6 +268,11 @@ class VaultOpenShiftCredentialFormDTO:
             cred_type="openshift",
             name=self.credential_name,
         )
+        # Explicitly clear non-vault auth fields (API requires only one auth method)
+        model.username = None
+        model.password = None
+        model.auth_token = None
+        # Set vault fields
         model.vault_secret_path = self.vault_secret_path
         model.vault_secret_key = self.vault_secret_key
         if self.vault_mount_point:
@@ -329,6 +334,10 @@ class VaultAnsibleCredentialFormDTO:
             cred_type="ansible",
             name=self.credential_name,
         )
+        # Explicitly clear non-vault auth fields (API requires only one auth method)
+        model.username = None
+        model.password = None
+        # Set vault fields
         model.vault_secret_path = self.vault_secret_path
         model.vault_secret_key = self.vault_secret_key
         if self.vault_mount_point:

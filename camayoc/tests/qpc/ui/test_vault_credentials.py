@@ -13,6 +13,7 @@ import pytest
 from camayoc.qpc_models import Credential
 from camayoc.tests.qpc.cli.utils import clear_server_vault
 from camayoc.tests.qpc.cli.utils import configure_server_vault
+from camayoc.tests.qpc.cli.utils import setup_qpc
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.enums import CredentialTypes
@@ -20,8 +21,9 @@ from camayoc.ui.enums import MainMenuPages
 
 
 @pytest.fixture
-def configured_vault_server(qpc_server_config):
+def configured_vault_server():
     """Configure Discovery server vault settings for the test, then clear them."""
+    setup_qpc()  # Configure and login qpc CLI
     clear_server_vault()
     configure_server_vault()
     yield
@@ -71,9 +73,8 @@ def test_vault_option_disabled_when_not_configured(
     auth_dropdown.click()
 
     # Check that vault option exists but is disabled
-    vault_option = page._driver.locator(
-        f"body > div[class*=-c-menu] ul li:has-text('{auth_type_label}')"
-    )
+    # PatternFly DropdownItem renders menu items with role="menuitem"
+    vault_option = page._driver.locator(f"[role='menuitem']:has-text('{auth_type_label}')")
     assert vault_option.is_visible(), f"Vault option '{auth_type_label}' should be visible"
     assert vault_option.get_attribute("aria-disabled") == "true", (
         f"Vault option '{auth_type_label}' should be disabled when vault not configured"
@@ -123,9 +124,8 @@ def test_vault_option_enabled_when_configured(
     auth_dropdown.click()
 
     # Check that vault option exists and is enabled
-    vault_option = page._driver.locator(
-        f"body > div[class*=-c-menu] ul li:has-text('{auth_type_label}')"
-    )
+    # PatternFly DropdownItem renders menu items with role="menuitem"
+    vault_option = page._driver.locator(f"[role='menuitem']:has-text('{auth_type_label}')")
     assert vault_option.is_visible(), f"Vault option '{auth_type_label}' should be visible"
     aria_disabled = vault_option.get_attribute("aria-disabled")
     assert aria_disabled != "true", (
