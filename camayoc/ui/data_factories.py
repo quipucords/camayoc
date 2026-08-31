@@ -16,7 +16,6 @@ from camayoc.types.ui import LoginFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import NewScanFormDTO
-from camayoc.types.ui import OpenShiftCredentialFormDTO
 from camayoc.types.ui import OpenShiftSourceFormDTO
 from camayoc.types.ui import PlainAnsibleCredentialFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
@@ -115,10 +114,18 @@ def _existing_ssh_key_file():
     return filename
 
 
+def _random_vault_secret_path():
+    """Return a vault secret path with random depth (1-5) and no file extension."""
+    faker = factory.Faker._get_faker()
+    return faker.file_path(depth=faker.random_int(1, 5), extension=[])
+
+
 def _optional_vault_mount_point():
     """Return a vault mount point 30% of the time, None otherwise."""
     faker = factory.Faker._get_faker()
-    return faker.word() if faker.random.random() < 0.3 else None
+    if faker.random.random() < 0.3:
+        return faker.word()
+    return None
 
 
 class SSHNetworkCredentialFormDTOFactory(factory.Factory):
@@ -182,15 +189,27 @@ class VaultOpenShiftCredentialFormDTOFactory(factory.Factory):
         model = VaultOpenShiftCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
-    vault_secret_path = factory.Faker("file_path", depth=3)
+    vault_secret_path = factory.LazyFunction(_random_vault_secret_path)
     vault_secret_key = factory.Faker("word")
     vault_mount_point = factory.LazyFunction(_optional_vault_mount_point)
     authentication_type = OpenShiftCredentialAuthenticationTypes.VAULT_SECRET_PATH
 
 
+_NonVaultOpenShiftCredentialFormDTO = Union[
+    PlainOpenShiftCredentialFormDTO,
+    TokenOpenShiftCredentialFormDTO,
+]
+
+
 class OpenShiftCredentialFormDTOFactory(UnionDTOFactory):
+    """Factory that randomly selects from non-vault OpenShift credential types.
+
+    Use VaultOpenShiftCredentialFormDTOFactory explicitly for vault credentials.
+    This prevents accidentally selecting the vault option when vault is not configured.
+    """
+
     class Meta:
-        model = OpenShiftCredentialFormDTO
+        model = _NonVaultOpenShiftCredentialFormDTO
 
 
 class PlainAnsibleCredentialFormDTOFactory(factory.Factory):
@@ -208,7 +227,7 @@ class VaultAnsibleCredentialFormDTOFactory(factory.Factory):
         model = VaultAnsibleCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
-    vault_secret_path = factory.Faker("file_path", depth=3)
+    vault_secret_path = factory.LazyFunction(_random_vault_secret_path)
     vault_secret_key = factory.Faker("word")
     vault_mount_point = factory.LazyFunction(_optional_vault_mount_point)
     authentication_type = AnsibleCredentialAuthenticationTypes.VAULT_SECRET_PATH

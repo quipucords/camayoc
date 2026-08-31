@@ -28,8 +28,6 @@ from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
 from camayoc.types.ui import TokenOpenShiftCredentialFormDTO
-from camayoc.types.ui import VaultAnsibleCredentialFormDTO
-from camayoc.types.ui import VaultOpenShiftCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
@@ -39,12 +37,7 @@ from camayoc.ui.enums import MainMenuPages
 CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,
     VCenterCredentialFormDTO: CredentialTypes.VCENTER,
-    PlainAnsibleCredentialFormDTO: CredentialTypes.ANSIBLE,
-    VaultAnsibleCredentialFormDTO: CredentialTypes.ANSIBLE,
     RHACSCredentialFormDTO: CredentialTypes.RHACS,
-    PlainOpenShiftCredentialFormDTO: CredentialTypes.OPENSHIFT,
-    TokenOpenShiftCredentialFormDTO: CredentialTypes.OPENSHIFT,
-    VaultOpenShiftCredentialFormDTO: CredentialTypes.OPENSHIFT,
 }
 
 
@@ -146,7 +139,6 @@ def test_create_delete_credential(data_provider, ui_client: Client, credential_t
 
     :id: d9fd61f5-1e8e-4091-b8c5-bc787884c6be
     :description: Go to the credentials page and follow the creation process.
-        Note: Deletion through UI is not yet implemented in page objects.
     :steps:
         1) Log into the UI.
         2) Go to the credentials page and open the Add Credential modal.

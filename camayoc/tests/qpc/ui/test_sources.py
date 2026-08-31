@@ -86,18 +86,9 @@ def create_source_dto(source_type, data_provider):
             {"type": credential_dp_type}, data_only=False
         )
     except NoMatchingDataDefinitionException:
-        # Create non-vault credentials since vault is not configured in these tests
         credential_type = CREDENTIAL_DTO_TYPES_MAP.get(source_type)
-        if credential_type == CredentialTypes.OPENSHIFT:
-            # Explicitly use token auth (non-vault) for OpenShift
-            credential_form = data_factories.TokenOpenShiftCredentialFormDTOFactory()
-        elif credential_type == CredentialTypes.ANSIBLE:
-            # Explicitly use plain auth (non-vault) for Ansible
-            credential_form = data_factories.PlainAnsibleCredentialFormDTOFactory()
-        else:
-            # For other types, use the factory as normal
-            credential_dto = data_factories.AddCredentialDTOFactory(credential_type=credential_type)
-            credential_form = credential_dto.credential_form
+        credential_dto = data_factories.AddCredentialDTOFactory(credential_type=credential_type)
+        credential_form = credential_dto.credential_form
 
         credential_model = credential_form.to_model()
         credential_model.create()
