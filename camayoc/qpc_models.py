@@ -209,10 +209,11 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
         become_method=None,
         become_password=None,
         become_user=None,
+        _id=None,
+        *,
         vault_secret_path=None,
         vault_secret_key=None,
         vault_mount_point=None,
-        _id=None,
     ):
         """Create a host credential with given data.
 
