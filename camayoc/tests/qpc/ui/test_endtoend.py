@@ -14,16 +14,22 @@ import pytest
 
 from camayoc.config import settings
 from camayoc.constants import SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
+from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
+from camayoc.qpc_models import Source
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.tests.qpc.utils import end_to_end_sources_names
+from camayoc.tests.qpc.utils import vault_ansible_sources
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
+from camayoc.ui.data_factories import AnsibleSourceFormDTOFactory
 from camayoc.ui.data_factories import TriggerScanDTOFactory
+from camayoc.ui.data_factories import VaultAnsibleCredentialFormDTOFactory
+from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import SourceTypes
 
@@ -99,6 +105,102 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
     assert_lightspeed_report(tmp_path, expect_lightspeed_report)
+
+
+_VAULT_ANSIBLE_SOURCES = list(vault_ansible_sources())
+
+
+def create_vault_endtoend_dtos(source_definition, data_provider):
+    """Build credential, source, and scan DTOs for a vault-backed Ansible e2e test."""
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
+    vault_credential_config = credentials_by_name[source_definition.credentials[0]]
+
+    credential_form = VaultAnsibleCredentialFormDTOFactory(
+        vault_secret_path=vault_credential_config.vault_secret_path,
+        vault_secret_key=vault_credential_config.vault_secret_key,
+        vault_mount_point=vault_credential_config.vault_mount_point,
+    )
+    credential_dto = data_factories.AddCredentialDTOFactory(
+        credential_type=CredentialTypes.ANSIBLE,
+        credential_form=credential_form,
+    )
+
+    source_form = AnsibleSourceFormDTOFactory(
+        address=source_definition.hosts[0],
+        credentials=[credential_form.credential_name],
+    )
+    source_dto = data_factories.AddSourceDTOFactory(
+        source_type=SourceTypes.ANSIBLE_CONTROLLER,
+        source_form=source_form,
+    )
+
+    trigger_scan_dto = TriggerScanDTOFactory(
+        source_name=source_form.source_name,
+        scan_form__jboss_eap=None,
+        scan_form__fuse=None,
+        scan_form__jboss_web_server=None,
+    )
+    data_provider.mark_for_cleanup(
+        Credential(name=credential_form.credential_name),
+        Source(name=source_form.source_name),
+        Scan(name=trigger_scan_dto.scan_form.scan_name),
+    )
+    return credential_dto, source_dto, trigger_scan_dto
+
+
+@pytest.mark.slow
+@pytest.mark.runs_scan
+@pytest.mark.skipif(
+    not _VAULT_ANSIBLE_SOURCES,
+    reason="No vault-backed ansible sources configured",
+)
+@pytest.mark.parametrize("source_definition", _VAULT_ANSIBLE_SOURCES)
+def test_vault_ansible_endtoend(
+    tmp_path, configured_vault_server, cleaning_data_provider, ui_client: Client, source_definition
+):
+    """End-to-end test for vault-backed Ansible credential via UI.
+
+    :id: c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f
+    :description: Complete user journey through UI using vault-backed Ansible
+        credential - create credential, create source, run scan, download report.
+    :steps:
+        1) Configure global HashiCorp Vault settings on the server
+        2) Log into the UI
+        3) Go to Credentials page and create a vault-backed Ansible credential
+        4) Go to Sources page and create an Ansible source using the vault credential
+        5) Trigger a scan for the newly created source
+        6) Wait for scan to complete
+        7) Download scan report
+        8) Log out
+        9) Validate the downloaded report contains ansible data
+    :expectedresults: Vault configuration succeeds, credential and source are
+        created via UI, scan completes successfully, and the report contains
+        valid ansible instance_details and hosts facts.
+    """
+    credential_dto, source_dto, trigger_scan_dto = create_vault_endtoend_dtos(
+        source_definition, cleaning_data_provider
+    )
+
+    (
+        ui_client.begin()
+        .login(data_factories.LoginFormDTOFactory())
+        .navigate_to(MainMenuPages.CREDENTIALS)
+        .add_credential(credential_dto)
+        .navigate_to(MainMenuPages.SOURCES)
+        .add_source(source_dto)
+        .trigger_scan(trigger_scan_dto)
+        .navigate_to(MainMenuPages.SCANS)
+        .download_scan(trigger_scan_dto.scan_form.scan_name)
+        .logout()
+    )
+
+    downloaded_report = ui_client.downloaded_files[-1]
+
+    with tarfile.open(downloaded_report.path()) as archive:
+        archive.extractall(tmp_path, filter="data")
+
+    assert_sha256sums(tmp_path)
+    assert_ansible_logs(tmp_path, is_network_scan=False)
 
 
 def test_translations(ui_client: Client):
