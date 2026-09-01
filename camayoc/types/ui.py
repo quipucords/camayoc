@@ -337,7 +337,6 @@ class NetworkSourceFormDTO:
     addresses: list[str]
     credentials: list[str]
     port: Optional[int] = None
-    use_paramiko: Optional[bool] = None
 
     @classmethod
     def from_model(cls, model: Source):

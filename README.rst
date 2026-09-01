@@ -65,7 +65,7 @@ Configuration Template
 """"""""""""""""""""""
 
 The Jenkins automation jobs often use a template configuration file when
-running camaoyc. This template config has default values (such as
+running camayoc. This template config has default values (such as
 ``${jenkins_ssh_file}``) that are swapped out for values which Jenkins
 provides.  Additionally, ssh key files need to be set with the proper
 permissions.
