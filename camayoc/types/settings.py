@@ -160,7 +160,6 @@ class SourceOptions(BaseModel):
     ssl_protocol: Optional[str] = None  # FIXME: should be enum
     ssl_cert_verify: Optional[bool] = None
     disable_ssl: Optional[bool] = None
-    use_paramiko: Optional[bool] = None
 
 
 class ExpectedDistributionData(BaseModel):
