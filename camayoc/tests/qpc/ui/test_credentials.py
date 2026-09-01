@@ -134,7 +134,7 @@ NON_VAULT_CREDENTIAL_TYPES = [
 
 # FIXME: this never actually deletes in UI (deletion not implemented in page objects)
 @pytest.mark.parametrize("credential_type", NON_VAULT_CREDENTIAL_TYPES)
-def test_create_delete_credential(data_provider, ui_client: Client, credential_type):
+def test_create_credential(data_provider, ui_client: Client, credential_type):
     """Create a credential in the quipucords UI.
 
     :id: d9fd61f5-1e8e-4091-b8c5-bc787884c6be

@@ -70,7 +70,7 @@ def test_vault_option_disabled_when_not_configured(
     vault_option = page._driver.locator(f"[role='menuitem']:has-text('{VAULT_AUTH_LABEL}')")
     assert vault_option.is_visible(), f"Vault option '{VAULT_AUTH_LABEL}' should be visible"
     assert vault_option.get_attribute("aria-disabled") == "true", (
-        f"Vault option '{VAULT_AUTH_LABEL}' should be disabled when vault not configured"
+        f"Vault option '{VAULT_AUTH_LABEL}' should be disabled when vault is not configured"
     )
 
     page.cancel().logout()
