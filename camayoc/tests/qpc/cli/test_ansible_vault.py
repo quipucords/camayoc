@@ -17,8 +17,6 @@ from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
 from camayoc.tests.qpc.cli.test_ansible import validate_ansible_report_minimum
-from camayoc.tests.qpc.cli.utils import clear_server_vault
-from camayoc.tests.qpc.cli.utils import configure_server_vault
 from camayoc.tests.qpc.cli.utils import cred_add_and_check
 from camayoc.tests.qpc.cli.utils import retrieve_report
 from camayoc.tests.qpc.cli.utils import scan_add_and_check
@@ -27,32 +25,10 @@ from camayoc.tests.qpc.cli.utils import scan_start
 from camayoc.tests.qpc.cli.utils import source_add_and_check
 from camayoc.tests.qpc.cli.utils import source_to_cli_options
 from camayoc.tests.qpc.cli.utils import wait_for_scan
+from camayoc.tests.qpc.utils import vault_ansible_sources
 from camayoc.types.settings import SourceOptions
-from camayoc.types.settings import VaultAnsibleCredentialOptions
-
-
-def vault_ansible_sources():
-    """Yield ansible sources that use a vault-backed credential."""
-    credentials_by_name = {credential.name: credential for credential in settings.credentials}
-    for source_definition in settings.sources:
-        if source_definition.type != "ansible":
-            continue
-        credential = credentials_by_name.get(source_definition.credentials[0])
-        if not isinstance(credential, VaultAnsibleCredentialOptions):
-            continue
-        yield pytest.param(source_definition, id=source_definition.name)
-
 
 _VAULT_ANSIBLE_SOURCES = list(vault_ansible_sources())
-
-
-@pytest.fixture
-def configured_vault_server(qpc_server_config):
-    """Configure Discovery server vault settings for the test, then clear them."""
-    clear_server_vault()
-    configure_server_vault()
-    yield
-    clear_server_vault()
 
 
 @pytest.mark.runs_scan

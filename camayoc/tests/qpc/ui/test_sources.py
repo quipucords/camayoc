@@ -86,10 +86,11 @@ def create_source_dto(source_type, data_provider):
             {"type": credential_dp_type}, data_only=False
         )
     except NoMatchingDataDefinitionException:
-        credential_dto = data_factories.AddCredentialDTOFactory(
-            credential_type=CREDENTIAL_DTO_TYPES_MAP.get(source_type)
-        )
-        credential_model = credential_dto.credential_form.to_model()
+        credential_type = CREDENTIAL_DTO_TYPES_MAP.get(source_type)
+        credential_dto = data_factories.AddCredentialDTOFactory(credential_type=credential_type)
+        credential_form = credential_dto.credential_form
+
+        credential_model = credential_form.to_model()
         credential_model.create()
         data_provider.mark_for_cleanup(credential_model)
 

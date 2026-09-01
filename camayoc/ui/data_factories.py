@@ -10,15 +10,14 @@ from camayoc.config import settings
 from camayoc.data_provider import DataProvider
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
-from camayoc.types.ui import AnsibleCredentialFormDTO
 from camayoc.types.ui import AnsibleSourceFormDTO
 from camayoc.types.ui import CredentialFormDTO
 from camayoc.types.ui import LoginFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
 from camayoc.types.ui import NetworkSourceFormDTO
 from camayoc.types.ui import NewScanFormDTO
-from camayoc.types.ui import OpenShiftCredentialFormDTO
 from camayoc.types.ui import OpenShiftSourceFormDTO
+from camayoc.types.ui import PlainAnsibleCredentialFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
 from camayoc.types.ui import PlainOpenShiftCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
@@ -29,9 +28,12 @@ from camayoc.types.ui import SourceFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
 from camayoc.types.ui import TokenOpenShiftCredentialFormDTO
 from camayoc.types.ui import TriggerScanDTO
+from camayoc.types.ui import VaultAnsibleCredentialFormDTO
+from camayoc.types.ui import VaultOpenShiftCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.types.ui import VCenterSourceFormDTO
 
+from .enums import AnsibleCredentialAuthenticationTypes
 from .enums import CredentialTypes
 from .enums import NetworkCredentialAuthenticationTypes
 from .enums import NetworkCredentialBecomeMethods
@@ -103,8 +105,27 @@ class PlainNetworkCredentialFormDTOFactory(factory.Factory):
 
 
 def _existing_ssh_key_file():
+    """Create a temporary SSH key file and return its path.
+
+    Returns:
+        str: Path to the temporary file.
+    """
     _, filename = tempfile.mkstemp()
     return filename
+
+
+def _random_vault_secret_path():
+    """Return a vault secret path with random depth (1-5) and no file extension."""
+    faker = factory.Faker._get_faker()
+    return faker.file_path(depth=faker.random_int(1, 5), extension=[])
+
+
+def _optional_vault_mount_point():
+    """Return a vault mount point 30% of the time, None otherwise."""
+    faker = factory.Faker._get_faker()
+    if faker.random.random() < 0.3:
+        return faker.word()
+    return None
 
 
 class SSHNetworkCredentialFormDTOFactory(factory.Factory):
@@ -163,18 +184,69 @@ class TokenOpenShiftCredentialFormDTOFactory(factory.Factory):
     authentication_type = OpenShiftCredentialAuthenticationTypes.TOKEN
 
 
+class VaultOpenShiftCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = VaultOpenShiftCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    vault_secret_path = factory.LazyFunction(_random_vault_secret_path)
+    vault_secret_key = factory.Faker("word")
+    vault_mount_point = factory.LazyFunction(_optional_vault_mount_point)
+    authentication_type = OpenShiftCredentialAuthenticationTypes.VAULT_SECRET_PATH
+
+
+_NonVaultOpenShiftCredentialFormDTO = Union[
+    PlainOpenShiftCredentialFormDTO,
+    TokenOpenShiftCredentialFormDTO,
+]
+
+
 class OpenShiftCredentialFormDTOFactory(UnionDTOFactory):
+    """Factory that randomly selects from non-vault OpenShift credential types.
+
+    Use VaultOpenShiftCredentialFormDTOFactory explicitly for vault credentials.
+    This prevents accidentally selecting the vault option when vault is not configured.
+    """
+
     class Meta:
-        model = OpenShiftCredentialFormDTO
+        model = _NonVaultOpenShiftCredentialFormDTO
 
 
-class AnsibleCredentialFormDTOFactory(factory.Factory):
+class PlainAnsibleCredentialFormDTOFactory(factory.Factory):
     class Meta:
-        model = AnsibleCredentialFormDTO
+        model = PlainAnsibleCredentialFormDTO
 
     credential_name = factory.Faker("text", max_nb_chars=56)
     username = factory.Faker("user_name")
     password = factory.Faker("password")
+    authentication_type = AnsibleCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
+
+
+class VaultAnsibleCredentialFormDTOFactory(factory.Factory):
+    class Meta:
+        model = VaultAnsibleCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    vault_secret_path = factory.LazyFunction(_random_vault_secret_path)
+    vault_secret_key = factory.Faker("word")
+    vault_mount_point = factory.LazyFunction(_optional_vault_mount_point)
+    authentication_type = AnsibleCredentialAuthenticationTypes.VAULT_SECRET_PATH
+
+
+class AnsibleCredentialFormDTOFactory(factory.Factory):
+    """Factory that defaults to plain Ansible credentials.
+
+    Use VaultAnsibleCredentialFormDTOFactory explicitly for vault credentials.
+    This prevents accidentally selecting the vault option when vault is not configured.
+    """
+
+    class Meta:
+        model = PlainAnsibleCredentialFormDTO
+
+    credential_name = factory.Faker("text", max_nb_chars=56)
+    username = factory.Faker("user_name")
+    password = factory.Faker("password")
+    authentication_type = AnsibleCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
 
 
 class RHACSCredentialFormDTOFactory(factory.Factory):
@@ -191,6 +263,14 @@ class CredentialFormDTOFactory(UnionDTOFactory):
 
 
 def _type_dependent_credential_form_factory(obj):
+    """Return the appropriate credential form factory based on credential type.
+
+    Args:
+        obj: An object with a credential_type attribute.
+
+    Returns:
+        Factory class for the specified credential type.
+    """
     credential_type = obj.credential_type
     if credential_type == CredentialTypes.NETWORK:
         return NetworkCredentialFormDTOFactory
@@ -245,6 +325,14 @@ class NetworkSourceFormDTOFactory(factory.Factory):
 
 
 def _verify_ssl_based_on_connection(obj):
+    """Return verify_ssl value based on connection type.
+
+    Args:
+        obj: An object with a connection attribute.
+
+    Returns:
+        None if connection is DISABLE, otherwise a random boolean or None.
+    """
     if obj.connection == SourceConnectionTypes.DISABLE:
         return None
     faker = factory.Faker._get_faker()
@@ -387,6 +475,14 @@ class SourceFormDTOFactory(UnionDTOFactory):
 
 
 def _source_type_dependent_source_form_factory(obj):
+    """Return the appropriate source form factory based on source type.
+
+    Args:
+        obj: An object with a source_type attribute.
+
+    Returns:
+        Factory class for the specified source type.
+    """
     source_type = obj.source_type
     if source_type == SourceTypes.NETWORK_RANGE:
         return NetworkSourceFormDTOFactory

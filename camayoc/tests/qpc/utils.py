@@ -22,6 +22,7 @@ from camayoc.qpc_models import Scan
 from camayoc.qpc_models import Source
 from camayoc.types.scans import FinishedScan
 from camayoc.types.settings import ScanOptions
+from camayoc.types.settings import VaultAnsibleCredentialOptions
 
 
 def calculate_sha256sums(directory):
@@ -222,6 +223,18 @@ def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
         scan_definition.name for scan_definition in settings.scans if predicate(scan_definition)
     ]
     return matching_scans
+
+
+def vault_ansible_sources():
+    """Yield ansible sources that use a vault-backed credential as pytest params."""
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
+    for source_definition in settings.sources:
+        if source_definition.type != "ansible":
+            continue
+        credential = credentials_by_name.get(source_definition.credentials[0])
+        if not isinstance(credential, VaultAnsibleCredentialOptions):
+            continue
+        yield pytest.param(source_definition, id=source_definition.name)
 
 
 def end_to_end_sources_names():

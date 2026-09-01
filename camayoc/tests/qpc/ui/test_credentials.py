@@ -19,13 +19,15 @@ from littletable import Table
 from camayoc.qpc_models import Credential
 from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AnsibleCredentialFormDTO
-from camayoc.types.ui import CredentialFormDTO
 from camayoc.types.ui import NetworkCredentialFormDTO
 from camayoc.types.ui import OpenShiftCredentialFormDTO
+from camayoc.types.ui import PlainAnsibleCredentialFormDTO
 from camayoc.types.ui import PlainNetworkCredentialFormDTO
+from camayoc.types.ui import PlainOpenShiftCredentialFormDTO
 from camayoc.types.ui import RHACSCredentialFormDTO
 from camayoc.types.ui import SatelliteCredentialFormDTO
 from camayoc.types.ui import SSHNetworkCredentialFormDTO
+from camayoc.types.ui import TokenOpenShiftCredentialFormDTO
 from camayoc.types.ui import VCenterCredentialFormDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
@@ -35,7 +37,6 @@ from camayoc.ui.enums import MainMenuPages
 CREDENTIAL_TYPE_MAP = {
     SatelliteCredentialFormDTO: CredentialTypes.SATELLITE,
     VCenterCredentialFormDTO: CredentialTypes.VCENTER,
-    AnsibleCredentialFormDTO: CredentialTypes.ANSIBLE,
     RHACSCredentialFormDTO: CredentialTypes.RHACS,
 }
 
@@ -68,6 +69,14 @@ def create_credential_dto(credential_type, data_provider):
         )
         data_provider.mark_for_cleanup(Credential(name=credential_form.credential_name))
         return credential
+    elif issubclass(credential_type, get_args(AnsibleCredentialFormDTO)):
+        form_factory_cls = getattr(data_factories, f"{credential_type.__name__}Factory")
+        credential_form = form_factory_cls()
+        credential = data_factories.AddCredentialDTOFactory(
+            credential_type=CredentialTypes.ANSIBLE, credential_form=credential_form
+        )
+        data_provider.mark_for_cleanup(Credential(name=credential_form.credential_name))
+        return credential
 
     credential = data_factories.AddCredentialDTOFactory(
         credential_type=CREDENTIAL_TYPE_MAP.get(credential_type)
@@ -81,11 +90,18 @@ def modify_credential_dto(credential_dto: AddCredentialDTO, data_provider):
     old_credential_form_cls = credential_form_cls
     network_classes = get_args(NetworkCredentialFormDTO)
     openshift_classes = get_args(OpenShiftCredentialFormDTO)
+    ansible_classes = get_args(AnsibleCredentialFormDTO)
+
+    # Only choose from non-vault types since vault is not configured in these tests
+    non_vault_openshift_classes = (PlainOpenShiftCredentialFormDTO, TokenOpenShiftCredentialFormDTO)
+    non_vault_ansible_classes = (PlainAnsibleCredentialFormDTO,)
 
     if issubclass(credential_form_cls, network_classes):
         credential_form_cls = random.choice(network_classes)
     elif issubclass(credential_form_cls, openshift_classes):
-        credential_form_cls = random.choice(openshift_classes)
+        credential_form_cls = random.choice(non_vault_openshift_classes)
+    elif issubclass(credential_form_cls, ansible_classes):
+        credential_form_cls = random.choice(non_vault_ansible_classes)
 
     another_credential = create_credential_dto(credential_form_cls, data_provider)
 
@@ -103,10 +119,23 @@ def modify_credential_dto(credential_dto: AddCredentialDTO, data_provider):
     return new_dto
 
 
-# FIXME: this never actually deletes in UI
-@pytest.mark.parametrize("credential_type", get_args(CredentialFormDTO))
-def test_create_delete_credential(data_provider, ui_client: Client, credential_type):
-    """Create and then delete a credential in the quipucords UI.
+# Non-vault credential types for tests without vault configured
+NON_VAULT_CREDENTIAL_TYPES = [
+    SatelliteCredentialFormDTO,
+    VCenterCredentialFormDTO,
+    PlainAnsibleCredentialFormDTO,
+    RHACSCredentialFormDTO,
+    PlainOpenShiftCredentialFormDTO,
+    TokenOpenShiftCredentialFormDTO,
+    PlainNetworkCredentialFormDTO,
+    SSHNetworkCredentialFormDTO,
+]
+
+
+# FIXME: this never actually deletes in UI (deletion not implemented in page objects)
+@pytest.mark.parametrize("credential_type", NON_VAULT_CREDENTIAL_TYPES)
+def test_create_credential(data_provider, ui_client: Client, credential_type):
+    """Create a credential in the quipucords UI.
 
     :id: d9fd61f5-1e8e-4091-b8c5-bc787884c6be
     :description: Go to the credentials page and follow the creation process.
@@ -114,8 +143,7 @@ def test_create_delete_credential(data_provider, ui_client: Client, credential_t
         1) Log into the UI.
         2) Go to the credentials page and open the Add Credential modal.
         3) Fill in required fields and save.
-        4) Delete the newly created credential.
-    :expectedresults: A new credential is created and then deleted.
+    :expectedresults: A new credential is created with the provided information.
     """
     credential_dto = create_credential_dto(credential_type, data_provider)
     (
@@ -127,7 +155,7 @@ def test_create_delete_credential(data_provider, ui_client: Client, credential_t
     )
 
 
-@pytest.mark.parametrize("credential_type", get_args(CredentialFormDTO))
+@pytest.mark.parametrize("credential_type", NON_VAULT_CREDENTIAL_TYPES)
 def test_edit_credential(data_provider, ui_client: Client, credential_type):
     """Create and then edit a credential in the quipucords UI.
 

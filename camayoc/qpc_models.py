@@ -210,6 +210,10 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
         become_password=None,
         become_user=None,
         _id=None,
+        *,
+        vault_secret_path=None,
+        vault_secret_key=None,
+        vault_mount_point=None,
     ):
         """Create a host credential with given data.
 
@@ -219,7 +223,9 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
         super().__init__(client=client, _id=_id)
         self.name = uuid4() if name is None else name
         self.endpoint = QPC_CREDENTIALS_PATH
-        if auth_token is None and username is None:
+        # Vault-backed credentials authenticate via the secret path, so they
+        # must not receive an auto-generated username.
+        if auth_token is None and username is None and vault_secret_path is None:
             username = uuid4()
         self.username = username
         self.password = password
@@ -232,6 +238,12 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
             self.become_password = become_password
         if become_user is not None:
             self.become_user = become_user
+        if vault_secret_path is not None:
+            self.vault_secret_path = vault_secret_path
+        if vault_secret_key is not None:
+            self.vault_secret_key = vault_secret_key
+        if vault_mount_point is not None:
+            self.vault_mount_point = vault_mount_point
 
     @classmethod
     def from_definition(
