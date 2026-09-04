@@ -12,6 +12,7 @@ import json
 import logging
 import operator
 import random
+import re
 from io import BytesIO
 
 import pexpect
@@ -127,8 +128,7 @@ def generate_show_output(data):
         val = "null"
     output += r'    "ssl_cert_verify": {},\r\n'.format(val)
 
-    output += _nullable_field(data, "ssl_protocol", is_string=True)
-    output += _nullable_field(data, "use_paramiko", trailing_comma=False)
+    output += _nullable_field(data, "ssl_protocol", is_string=True, trailing_comma=False)
     output += r"}\r\n"
 
     return output
@@ -369,7 +369,7 @@ def test_add_with_ssl_cert_verify_negative(isolated_filesystem, qpc_server_confi
     name = utils.uuid4()
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
     ssl_cert_verify = random.choice(VALID_BOOLEAN_CHOICES)
-    expected_error = "Error: Invalid SSL options for network source: ssl_cert_verify"
+    expected_error = "Error: Invalid options for 'network': ssl_cert_verify."
     exitstatus = 1
     cred_add_and_check(
         {
@@ -464,7 +464,7 @@ def test_add_with_ssl_protocol_negative(isolated_filesystem, qpc_server_config):
     name = utils.uuid4()
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
     ssl_protocol = random.choice(VALID_SSL_PROTOCOLS)
-    expected_error = "Error: Invalid SSL options for network source: ssl_protocol"
+    expected_error = re.compile(r"Error:.*[Ii]nvalid.*options.*network.*ssl_protocol")
     exitstatus = 1
     cred_add_and_check(
         {
@@ -559,7 +559,7 @@ def test_add_with_disable_ssl_negative(isolated_filesystem, qpc_server_config, s
     name = utils.uuid4()
     port = QPC_SOURCES_DEFAULT_PORT[source_type]
     disable_ssl = random.choice(VALID_BOOLEAN_CHOICES)
-    expected_error = "Error: Invalid SSL options for network source: disable_ssl"
+    expected_error = re.compile(r"Error:.*[Ii]nvalid.*options.*network.*disable_ssl")
     exitstatus = 1
     cred_add_and_check(
         {
@@ -1753,7 +1753,6 @@ def test_clear_all(cleaning_data_provider, isolated_filesystem, qpc_server_confi
             "exclude_hosts": None,
             "proxy_url": None,
             "ssl_protocol": None,
-            "use_paramiko": None,
             "ssl_cert_verify": True if source_type != "network" else None,
         }
         sources.append(source)

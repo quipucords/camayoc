@@ -241,7 +241,6 @@ class NetworkSourceFormDTOFactory(factory.Factory):
         return cred_names
 
     port = 22
-    use_paramiko = factory.Faker("random_element", elements=optional_bool)
 
 
 def _verify_ssl_based_on_connection(obj):

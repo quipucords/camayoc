@@ -339,7 +339,6 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
         ssl_protocol=None,
         ssl_cert_verify=None,
         disable_ssl=None,
-        use_paramiko=None,
         _id=None,
     ):
         """Initialize a Source object with given data.
@@ -359,8 +358,6 @@ class Source(QPCObject, QPCObjectBulkDeleteMixin):
             self.ssl_cert_verify = ssl_cert_verify
         if disable_ssl is not None:
             self.disable_ssl = disable_ssl
-        if use_paramiko is not None:
-            self.use_paramiko = use_paramiko
         self.credentials = credential_ids
         self.source_type = source_type
 
