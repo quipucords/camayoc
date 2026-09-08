@@ -53,6 +53,26 @@ def unconfigured_vault_server():
     yield
 
 
+@pytest.fixture
+def optional_vault_server():
+    """Configure Discovery server vault settings when Camayoc knows about a vault.
+
+    Unlike ``configured_vault_server``, this is a no-op when ``hashicorp_vault``
+    is missing from the Camayoc configuration file, so tests that only
+    optionally exercise vault-backed credentials still run. Yields whether the
+    server ended up with a vault configured.
+    """
+    if settings.hashicorp_vault is None:
+        yield False
+        return
+
+    setup_qpc()
+    clear_server_vault()
+    configure_server_vault()
+    yield True
+    clear_server_vault()
+
+
 @pytest.fixture()
 def shared_client():
     """Yeild a single instance of api.Client() to a test.
