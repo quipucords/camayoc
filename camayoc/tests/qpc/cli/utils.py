@@ -160,7 +160,7 @@ def source_to_cli_options(source, *, name, credentials, source_type=None):
     port = getattr(source, "port", None)
     if port is not None:
         options["port"] = port
-    for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl", "use_paramiko"):
+    for opt in ("ssl_protocol", "ssl_cert_verify", "disable_ssl"):
         value = getattr(source, opt, None)
         if value is None:
             continue

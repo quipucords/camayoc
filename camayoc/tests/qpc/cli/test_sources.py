@@ -127,8 +127,7 @@ def generate_show_output(data):
         val = "null"
     output += r'    "ssl_cert_verify": {},\r\n'.format(val)
 
-    output += _nullable_field(data, "ssl_protocol", is_string=True)
-    output += _nullable_field(data, "use_paramiko", trailing_comma=False)
+    output += _nullable_field(data, "ssl_protocol", is_string=True, trailing_comma=False)
     output += r"}\r\n"
 
     return output
@@ -1753,7 +1752,6 @@ def test_clear_all(cleaning_data_provider, isolated_filesystem, qpc_server_confi
             "exclude_hosts": None,
             "proxy_url": None,
             "ssl_protocol": None,
-            "use_paramiko": None,
             "ssl_cert_verify": True if source_type != "network" else None,
         }
         sources.append(source)

@@ -54,7 +54,6 @@ class NetworkRangeSourceCredentialsForm(SourceForm):
         credentials = FilteredMultipleSelectField(
             "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select])"
         )
-        use_paramiko = CheckboxField("input[data-ouia-component-id=options_paramiko]")
 
     @overload
     def fill(self, data: NetworkSourceFormDTO): ...
