@@ -210,7 +210,6 @@ class Credential(QPCObject, QPCObjectBulkDeleteMixin):
         become_password=None,
         become_user=None,
         _id=None,
-        *,
         vault_secret_path=None,
         vault_secret_key=None,
         vault_mount_point=None,

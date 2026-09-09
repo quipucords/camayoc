@@ -33,6 +33,8 @@ from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import MainMenuPages
 from camayoc.ui.enums import SourceTypes
 
+_VAULT_ANSIBLE_SOURCES = list(vault_ansible_sources())
+
 
 def create_endtoend_dtos(source_name, data_provider):
     known_sources_map = {
@@ -57,6 +59,44 @@ def create_endtoend_dtos(source_name, data_provider):
     )
     data_provider.mark_for_cleanup(
         credential_model, source_model, Scan(name=trigger_scan_dto.scan_form.scan_name)
+    )
+    return credential_dto, source_dto, trigger_scan_dto
+
+
+def create_vault_endtoend_dtos(source_definition, data_provider):
+    """Build credential, source, and scan DTOs for a vault-backed Ansible e2e test."""
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
+    vault_credential_config = credentials_by_name[source_definition.credentials[0]]
+
+    credential_form = VaultAnsibleCredentialFormDTOFactory(
+        vault_secret_path=vault_credential_config.vault_secret_path,
+        vault_secret_key=vault_credential_config.vault_secret_key,
+        vault_mount_point=vault_credential_config.vault_mount_point,
+    )
+    credential_dto = data_factories.AddCredentialDTOFactory(
+        credential_type=CredentialTypes.ANSIBLE,
+        credential_form=credential_form,
+    )
+
+    source_form = AnsibleSourceFormDTOFactory(
+        address=source_definition.hosts[0],
+        credentials=[credential_form.credential_name],
+    )
+    source_dto = data_factories.AddSourceDTOFactory(
+        source_type=SourceTypes.ANSIBLE_CONTROLLER,
+        source_form=source_form,
+    )
+
+    trigger_scan_dto = TriggerScanDTOFactory(
+        source_name=source_form.source_name,
+        scan_form__jboss_eap=None,
+        scan_form__fuse=None,
+        scan_form__jboss_web_server=None,
+    )
+    data_provider.mark_for_cleanup(
+        Credential(name=credential_form.credential_name),
+        Source(name=source_form.source_name),
+        Scan(name=trigger_scan_dto.scan_form.scan_name),
     )
     return credential_dto, source_dto, trigger_scan_dto
 
@@ -105,47 +145,6 @@ def test_end_to_end(tmp_path, cleaning_data_provider, ui_client: Client, source_
     assert_sha256sums(tmp_path)
     assert_ansible_logs(tmp_path, is_network_scan)
     assert_lightspeed_report(tmp_path, expect_lightspeed_report)
-
-
-_VAULT_ANSIBLE_SOURCES = list(vault_ansible_sources())
-
-
-def create_vault_endtoend_dtos(source_definition, data_provider):
-    """Build credential, source, and scan DTOs for a vault-backed Ansible e2e test."""
-    credentials_by_name = {credential.name: credential for credential in settings.credentials}
-    vault_credential_config = credentials_by_name[source_definition.credentials[0]]
-
-    credential_form = VaultAnsibleCredentialFormDTOFactory(
-        vault_secret_path=vault_credential_config.vault_secret_path,
-        vault_secret_key=vault_credential_config.vault_secret_key,
-        vault_mount_point=vault_credential_config.vault_mount_point,
-    )
-    credential_dto = data_factories.AddCredentialDTOFactory(
-        credential_type=CredentialTypes.ANSIBLE,
-        credential_form=credential_form,
-    )
-
-    source_form = AnsibleSourceFormDTOFactory(
-        address=source_definition.hosts[0],
-        credentials=[credential_form.credential_name],
-    )
-    source_dto = data_factories.AddSourceDTOFactory(
-        source_type=SourceTypes.ANSIBLE_CONTROLLER,
-        source_form=source_form,
-    )
-
-    trigger_scan_dto = TriggerScanDTOFactory(
-        source_name=source_form.source_name,
-        scan_form__jboss_eap=None,
-        scan_form__fuse=None,
-        scan_form__jboss_web_server=None,
-    )
-    data_provider.mark_for_cleanup(
-        Credential(name=credential_form.credential_name),
-        Source(name=source_form.source_name),
-        Scan(name=trigger_scan_dto.scan_form.scan_name),
-    )
-    return credential_dto, source_dto, trigger_scan_dto
 
 
 @pytest.mark.slow
