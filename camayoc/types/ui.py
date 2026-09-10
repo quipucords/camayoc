@@ -17,6 +17,7 @@ from playwright.sync_api import Page
 
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Source
+from camayoc.ui.enums import AnsibleCredentialAuthenticationTypes
 from camayoc.ui.enums import CredentialTypes
 from camayoc.ui.enums import NetworkCredentialAuthenticationTypes
 from camayoc.ui.enums import NetworkCredentialBecomeMethods
@@ -243,17 +244,50 @@ class TokenOpenShiftCredentialFormDTO:
         return model
 
 
+@frozen
+class VaultOpenShiftCredentialFormDTO:
+    credential_name: str
+    vault_secret_path: str
+    vault_secret_key: str
+    vault_mount_point: Optional[str] = None
+    authentication_type: OpenShiftCredentialAuthenticationTypes = (
+        OpenShiftCredentialAuthenticationTypes.VAULT_SECRET_PATH
+    )
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(
+            credential_name=model.name,
+            vault_secret_path=model.vault_secret_path,
+            vault_secret_key=model.vault_secret_key,
+            vault_mount_point=getattr(model, "vault_mount_point", None),
+        )
+
+    def to_model(self):
+        return Credential(
+            cred_type="openshift",
+            name=self.credential_name,
+            vault_secret_path=self.vault_secret_path,
+            vault_secret_key=self.vault_secret_key,
+            vault_mount_point=self.vault_mount_point,
+        )
+
+
 OpenShiftCredentialFormDTO = Union[
     PlainOpenShiftCredentialFormDTO,
     TokenOpenShiftCredentialFormDTO,
+    VaultOpenShiftCredentialFormDTO,
 ]
 
 
 @frozen
-class AnsibleCredentialFormDTO:
+class PlainAnsibleCredentialFormDTO:
     credential_name: str
     username: str
     password: str
+    authentication_type: AnsibleCredentialAuthenticationTypes = (
+        AnsibleCredentialAuthenticationTypes.USERNAME_AND_PASSWORD
+    )
 
     @classmethod
     def from_model(cls, model: Credential):
@@ -267,6 +301,41 @@ class AnsibleCredentialFormDTO:
             password=self.password,
         )
         return model
+
+
+@frozen
+class VaultAnsibleCredentialFormDTO:
+    credential_name: str
+    vault_secret_path: str
+    vault_secret_key: str
+    vault_mount_point: Optional[str] = None
+    authentication_type: AnsibleCredentialAuthenticationTypes = (
+        AnsibleCredentialAuthenticationTypes.VAULT_SECRET_PATH
+    )
+
+    @classmethod
+    def from_model(cls, model: Credential):
+        return cls(
+            credential_name=model.name,
+            vault_secret_path=model.vault_secret_path,
+            vault_secret_key=model.vault_secret_key,
+            vault_mount_point=getattr(model, "vault_mount_point", None),
+        )
+
+    def to_model(self):
+        return Credential(
+            cred_type="ansible",
+            name=self.credential_name,
+            vault_secret_path=self.vault_secret_path,
+            vault_secret_key=self.vault_secret_key,
+            vault_mount_point=self.vault_mount_point,
+        )
+
+
+AnsibleCredentialFormDTO = Union[
+    PlainAnsibleCredentialFormDTO,
+    VaultAnsibleCredentialFormDTO,
+]
 
 
 @frozen
@@ -297,6 +366,26 @@ CredentialFormDTO = Union[
 ]
 
 
+def _select_network_dto_class(model: Credential):
+    if model.ssh_key:
+        return SSHNetworkCredentialFormDTO
+    return PlainNetworkCredentialFormDTO
+
+
+def _select_openshift_dto_class(model: Credential):
+    if getattr(model, "vault_secret_path", None):
+        return VaultOpenShiftCredentialFormDTO
+    if getattr(model, "auth_token", None):
+        return TokenOpenShiftCredentialFormDTO
+    return PlainOpenShiftCredentialFormDTO
+
+
+def _select_ansible_dto_class(model: Credential):
+    if getattr(model, "vault_secret_path", None):
+        return VaultAnsibleCredentialFormDTO
+    return PlainAnsibleCredentialFormDTO
+
+
 @frozen
 class AddCredentialDTO:
     credential_type: CredentialTypes
@@ -307,10 +396,7 @@ class AddCredentialDTO:
         match model.cred_type:
             case "network":
                 credential_type = CredentialTypes.NETWORK
-                dto_cls = PlainNetworkCredentialFormDTO
-                if model.ssh_key:
-                    dto_cls = SSHNetworkCredentialFormDTO
-                credential_form_dto = dto_cls.from_model(model)
+                credential_form_dto = _select_network_dto_class(model).from_model(model)
             case "satellite":
                 credential_type = CredentialTypes.SATELLITE
                 credential_form_dto = SatelliteCredentialFormDTO.from_model(model)
@@ -319,10 +405,10 @@ class AddCredentialDTO:
                 credential_form_dto = VCenterCredentialFormDTO.from_model(model)
             case "openshift":
                 credential_type = CredentialTypes.OPENSHIFT
-                credential_form_dto = OpenShiftCredentialFormDTO.from_model(model)
+                credential_form_dto = _select_openshift_dto_class(model).from_model(model)
             case "ansible":
                 credential_type = CredentialTypes.ANSIBLE
-                credential_form_dto = AnsibleCredentialFormDTO.from_model(model)
+                credential_form_dto = _select_ansible_dto_class(model).from_model(model)
             case "rhacs":
                 credential_type = CredentialTypes.RHACS
                 credential_form_dto = RHACSCredentialFormDTO.from_model(model)

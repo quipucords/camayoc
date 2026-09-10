@@ -177,6 +177,64 @@ class CredentialTestCase(unittest.TestCase):
         with self.assertRaises(TypeError):
             h.equivalent([])
 
+    def test_vault_credential_sets_vault_fields(self):
+        """A vault-backed Credential exposes its vault fields in the payload."""
+        with mock.patch("camayoc.api.Client"):
+            cred = Credential(
+                cred_type="ansible",
+                name="vault-cred",
+                vault_secret_path="/secret/data/ansible",
+                vault_secret_key="password",
+                vault_mount_point="secret",
+            )
+
+        self.assertEqual(cred.vault_secret_path, "/secret/data/ansible")
+        self.assertEqual(cred.vault_secret_key, "password")
+        self.assertEqual(cred.vault_mount_point, "secret")
+
+        payload = cred.payload()
+        self.assertEqual(payload["vault_secret_path"], "/secret/data/ansible")
+        self.assertEqual(payload["vault_secret_key"], "password")
+        self.assertEqual(payload["vault_mount_point"], "secret")
+        # Vault credentials authenticate via the secret path, so no username is
+        # auto-generated and non-vault auth fields stay empty.
+        self.assertIsNone(payload["username"])
+        self.assertIsNone(payload["password"])
+        self.assertIsNone(payload["auth_token"])
+
+    def test_vault_credential_omits_unset_mount_point(self):
+        """An unset vault_mount_point is not added to the payload."""
+        with mock.patch("camayoc.api.Client"):
+            cred = Credential(
+                cred_type="openshift",
+                name="vault-cred-no-mount",
+                vault_secret_path="/secret/data/openshift",
+                vault_secret_key="token",
+            )
+
+        self.assertEqual(cred.vault_secret_path, "/secret/data/openshift")
+        self.assertEqual(cred.vault_secret_key, "token")
+        self.assertFalse(hasattr(cred, "vault_mount_point"))
+        self.assertNotIn("vault_mount_point", cred.payload())
+
+    def test_non_vault_credential_has_no_vault_fields(self):
+        """A regular Credential does not gain vault attributes or payload keys."""
+        with mock.patch("camayoc.api.Client"):
+            cred = Credential(
+                cred_type="network",
+                name="plain-cred",
+                username="user",
+                password="pass",
+            )
+
+        self.assertFalse(hasattr(cred, "vault_secret_path"))
+        self.assertFalse(hasattr(cred, "vault_secret_key"))
+        self.assertFalse(hasattr(cred, "vault_mount_point"))
+        payload = cred.payload()
+        self.assertNotIn("vault_secret_path", payload)
+        self.assertNotIn("vault_secret_key", payload)
+        self.assertNotIn("vault_mount_point", payload)
+
 
 class SourceTestCase(unittest.TestCase):
     """Test :mod:camayoc.api."""
