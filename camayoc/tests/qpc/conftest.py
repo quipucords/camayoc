@@ -35,7 +35,7 @@ def scans(data_provider):
     yield scan_container
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def configured_vault_server():
     """Configure Discovery server vault settings for the test, then clear them."""
     setup_qpc()
@@ -53,7 +53,7 @@ def unconfigured_vault_server():
     yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def optional_vault_server():
     """Configure Discovery server vault settings when Camayoc knows about a vault.
 
