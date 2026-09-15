@@ -275,7 +275,7 @@ FACTS = (
     "system_user_count",
     "uname_all",
     "uname_hostname",
-    "uname_processor",
+    "uname_machine",
     "user_has_sudo",
     "virt_num_guests",
     "virt_num_running_guests",
