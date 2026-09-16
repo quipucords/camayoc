@@ -5,7 +5,10 @@ from pathlib import Path
 from tempfile import mkdtemp
 from unittest import mock
 
+import pytest
+
 from camayoc import utils
+from camayoc.tests.qpc.cli import utils as qpc_cli_utils
 from camayoc.tests.qpc.cli.utils import hashicorp_vault_cli_options
 from camayoc.types.settings import HashicorpVaultOptions
 from camayoc.types.settings import QuipucordsServerOptions
@@ -128,3 +131,44 @@ def test_hashicorp_vault_cli_options_omits_null_port():
         "client-key": "/path/to/client.key",
         "ca-cert": "/path/to/ca.crt",
     }
+
+
+def test_configure_server_vault_retries_failed_authentication():
+    vault = HashicorpVaultOptions(
+        address="vault.example.com",
+        client_cert=Path("/path/to/client.crt"),
+        client_key=Path("/path/to/client.key"),
+        ca_cert=Path("/path/to/ca.crt"),
+    )
+    with (
+        mock.patch.object(utils.settings, "hashicorp_vault", vault),
+        mock.patch.object(
+            qpc_cli_utils,
+            "vault_add_and_check",
+            side_effect=[AssertionError, AssertionError, None],
+        ) as vault_add,
+    ):
+        qpc_cli_utils.configure_server_vault()
+
+    assert vault_add.call_count == 3
+
+
+def test_configure_server_vault_fails_after_many_attempts():
+    vault = HashicorpVaultOptions(
+        address="vault.example.com",
+        client_cert=Path("/path/to/client.crt"),
+        client_key=Path("/path/to/client.key"),
+        ca_cert=Path("/path/to/ca.crt"),
+    )
+    with (
+        mock.patch.object(utils.settings, "hashicorp_vault", vault),
+        mock.patch.object(
+            qpc_cli_utils,
+            "vault_add_and_check",
+            side_effect=AssertionError("authentication failed"),
+        ) as vault_add,
+    ):
+        with pytest.raises(AssertionError):
+            qpc_cli_utils.configure_server_vault()
+
+    assert vault_add.call_count == 5
