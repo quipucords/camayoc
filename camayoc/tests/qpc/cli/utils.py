@@ -139,7 +139,18 @@ def configure_server_vault():
     vault = settings.hashicorp_vault
     if vault is None:
         raise ValueError("hashicorp_vault is not configured")
-    vault_add_and_check(hashicorp_vault_cli_options(vault))
+
+    for i in range(1, 6):
+        try:
+            vault_add_and_check(hashicorp_vault_cli_options(vault))
+            return
+        except AssertionError as error:
+            last_error = error
+            logger.debug(
+                "Vault authentication failed [attempt=%s]",
+                i,
+            )
+    raise last_error
 
 
 def source_to_cli_options(source, *, name, credentials, source_type=None):
