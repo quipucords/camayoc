@@ -1,0 +1,71 @@
+language: en-US
+
+reviews:
+  profile: "chill"
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_usernames:
+      - "dependabot[bot]"
+      - "konflux-internal-p02[bot]"
+      - "mintmaker[bot]"
+
+  path_filters:
+    - "!uv.lock"
+    - "!*.egg-info/**"
+
+  instructions: |
+    - Camayoc is black-box test framework.
+      It focuses on functional tests, integration
+      and end to end tests.
+    - Camayoc requires an internal configuration file
+      (see example_config.yaml) with credentials and
+      server details that cannot be shared publicly.
+      Most tests under camayoc/tests/ need this config
+      to reach live infrastructure. The unit tests
+      under tests/ can run without access to secrets.
+    - Tests use pytest; prefer standalone test functions
+      over test classes, but if a file already uses
+      classes, keep new tests in classes for local
+      consistency.
+
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        - Camayoc is black-box test framework.
+          It focuses on functional tests, integration
+          and end to end tests.
+        - Camayoc requires an internal configuration file
+          (see example_config.yaml) with credentials and
+          server details that cannot be shared publicly.
+          Most tests under camayoc/tests/ need this config
+          to reach live infrastructure. The unit tests
+          under tests/ can run without access to secrets.
+        - Tests use pytest; prefer standalone test functions
+          over test classes, but if a file already uses
+          classes, keep new tests in classes for local
+          consistency.
+    - path: "camayoc/tests/**"
+      instructions: |
+        - Functional/integration tests against a live
+          Quipucords server.
+        - Assertions should target specific records, not assume ordering.
+        - Flag tests that use sleep or hardcoded waits.
+        - Use pytest patterns instead of stdlib unittest patterns.
+        - Naming convention: test_<function>_<scenario>.
+    - path: "camayoc/ui/**"
+      instructions: |
+        - Page object models for Playwright-based UI tests.
+        - Check for proper use of Playwright locators and selectors.
+        - Use Playwright's built-in auto-waiting,
+          not explicit sleeps.
+    - path: "camayoc/api.py"
+      instructions: |
+        - API client utilities for interacting
+          with Quipucords.
+        - Ensure proper error handling for HTTP responses.
+        - Check that credentials and secrets are not logged or exposed.
+    - path: "tests/**"
+      instructions: |
+        - These are unit tests for camayoc itself (the library).
+        - Use pytest patterns instead of stdlib unittest patterns.
