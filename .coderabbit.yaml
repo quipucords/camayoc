@@ -14,21 +14,6 @@ reviews:
     - "!uv.lock"
     - "!*.egg-info/**"
 
-  instructions: |
-    - Camayoc is black-box test framework.
-      It focuses on functional tests, integration
-      and end to end tests.
-    - Camayoc requires an internal configuration file
-      (see example_config.yaml) with credentials and
-      server details that cannot be shared publicly.
-      Most tests under camayoc/tests/ need this config
-      to reach live infrastructure. The unit tests
-      under tests/ can run without access to secrets.
-    - Tests use pytest; prefer standalone test functions
-      over test classes, but if a file already uses
-      classes, keep new tests in classes for local
-      consistency.
-
   path_instructions:
     - path: "**/*"
       instructions: |
