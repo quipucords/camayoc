@@ -18,14 +18,20 @@ from camayoc.tests.qpc.cli.utils import scan_job
 from camayoc.tests.qpc.cli.utils import scan_start
 from camayoc.tests.qpc.cli.utils import wait_for_scan
 from camayoc.types.settings import SourceOptions
+from camayoc.types.settings import VaultAnsibleCredentialOptions
 
 from .utils import retrieve_report
 from .utils import scan_add_and_check
 
 
 def ansible_sources():
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
     for source_definition in settings.sources:
         if source_definition.type != "ansible":
+            continue
+        if isinstance(
+            credentials_by_name.get(source_definition.credentials[0]), VaultAnsibleCredentialOptions
+        ):
             continue
         yield pytest.param(source_definition, id=source_definition.name)
 
