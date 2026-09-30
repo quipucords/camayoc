@@ -31,6 +31,10 @@ def cleaning_data_provider(data_provider):
 
 @pytest.fixture(scope="session")
 def scans(data_provider):
+    if settings.hashicorp_vault is not None:
+        setup_qpc()
+        clear_server_vault()
+        configure_server_vault()
     scan_container = ScanContainer(data_provider)
     yield scan_container
 
