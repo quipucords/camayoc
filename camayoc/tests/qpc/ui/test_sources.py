@@ -14,6 +14,7 @@ from typing import get_args
 import pytest
 from attrs import evolve
 from attrs import fields_dict
+from playwright.sync_api import expect
 
 from camayoc.exceptions import NoMatchingDataDefinitionException
 from camayoc.qpc_models import Source
@@ -170,3 +171,36 @@ def test_edit_source(cleaning_data_provider, ui_client: Client, source_type):
         .edit_source(source_dto.source_form.source_name, edit_source_dto)
         .logout()
     )
+
+
+def test_credential_select_closes_on_outside_click(cleaning_data_provider, ui_client: Client):
+    """Credentials dropdown closes when user clicks outside of it.
+
+    :id: 7ef6531e-a249-4ca8-87d1-7aea469ec06d
+    :description: Verify that credentials dropdown closes automatically.
+    :steps:
+        1) Go to the sources page and open the sources modal.
+        2) Open Credentials dropdown.
+        3) Click somewhere outside of dropdown
+    :expectedresults: Credentials dropdown closes automatically.
+    """
+    credentials_list_selector = "div#multi-typeahead-checkbox-select-with-search"
+    source_type = random.choice(get_args(SourceFormDTO))
+    source_dto = create_source_dto(source_type, cleaning_data_provider)
+    modal = (
+        ui_client.begin()
+        .login(data_factories.LoginFormDTOFactory())
+        .navigate_to(MainMenuPages.SOURCES)
+        .open_add_source(source_dto.source_type)
+    )
+
+    modal._driver.locator(
+        "div[class*=typeahead]:has(button[data-ouia-component-id=add_credentials_select]) "
+        "div[data-ouia-component-id='credentials_list_input'] input"
+    ).click()
+    expect(modal._driver.locator(f"{credentials_list_selector} li label").first).to_be_visible()
+    modal._driver.locator("input[data-ouia-component-id=name]").click()
+    expect(modal._driver.locator(credentials_list_selector)).not_to_be_visible()
+
+    page = modal.cancel()
+    page.logout()
