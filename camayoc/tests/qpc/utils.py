@@ -205,8 +205,25 @@ def sort_and_delete(trash):
         assert response.status_code < 500, response.content
 
 
-def all_source_names() -> list[str]:
-    """Grab a list of all source names, excluding vault-backed sources."""
+def _uses_vault_credential(source_definition):
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
+    return any(
+        isinstance(credentials_by_name.get(name), VaultAnsibleCredentialOptions)
+        for name in source_definition.credentials
+    )
+
+
+def _scan_uses_vault(scan_definition):
+    sources_by_name = {source.name: source for source in settings.sources}
+    return any(
+        _uses_vault_credential(sources_by_name[name])
+        for name in scan_definition.sources
+        if name in sources_by_name
+    )
+
+
+def standalone_source_names() -> list[str]:
+    """Grab source names that don't require external dependencies like Vault."""
     return [
         source_definition.name
         for source_definition in settings.sources
@@ -214,10 +231,13 @@ def all_source_names() -> list[str]:
     ]
 
 
-def all_scan_names() -> list[str]:
-    """Grab a list of all scan names."""
-    matching_scans = [scan_definition.name for scan_definition in settings.scans]
-    return matching_scans
+def standalone_scan_names() -> list[str]:
+    """Grab scan names that don't require external dependencies like Vault."""
+    return [
+        scan_definition.name
+        for scan_definition in settings.scans
+        if not _scan_uses_vault(scan_definition)
+    ]
 
 
 def scan_names(predicate: Callable[[ScanOptions], bool]) -> list[str]:
@@ -240,19 +260,11 @@ def vault_ansible_sources():
         yield pytest.param(source_definition, id=source_definition.name)
 
 
-def _uses_vault_credential(source_definition):
-    credentials_by_name = {credential.name: credential for credential in settings.credentials}
-    return any(
-        isinstance(credentials_by_name.get(name), VaultAnsibleCredentialOptions)
-        for name in source_definition.credentials
-    )
-
-
 def end_to_end_sources_names():
     """Generate source names as pytest params.
 
     This is used by CLI and UI end_to_end tests.
-    Excludes vault-backed sources, which have their own dedicated tests.
+    Excludes vault-backed sources.
     """
     for source_definition in settings.sources:
         if source_definition.type in ("openshift", "rhacs"):

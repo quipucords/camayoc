@@ -11,24 +11,19 @@ import tarfile
 
 import pytest
 
-from camayoc.config import settings
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.tests.qpc.utils import has_network_source
 from camayoc.tests.qpc.utils import scan_should_have_lightspeed_report
+from camayoc.tests.qpc.utils import standalone_scan_names
 from camayoc.ui import Client
 from camayoc.ui import data_factories
 from camayoc.ui.enums import MainMenuPages
 
 
-def scan_names():
-    for scan_definition in settings.scans:
-        yield pytest.param(scan_definition.name)
-
-
 @pytest.mark.pr_only
-@pytest.mark.parametrize("scan_name", scan_names())
+@pytest.mark.parametrize("scan_name", standalone_scan_names())
 def test_download_report(tmp_path, scans, ui_client: Client, scan_name):
     """Download a report from the Reports view page.
 
