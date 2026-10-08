@@ -13,7 +13,23 @@ from camayoc.tests.qpc.cli.utils import setup_qpc
 
 
 @pytest.fixture(scope="session")
-def data_provider():
+def ensure_vault():
+    """Ensure Discovery server has vault configured when Camayoc config has vault settings.
+
+    Session-scoped and idempotent: safe to request from any fixture or test
+    without worrying about ordering or double-configuration errors.
+    """
+    if settings.hashicorp_vault is None:
+        yield False
+        return
+
+    setup_qpc()
+    configure_server_vault()
+    yield True
+
+
+@pytest.fixture(scope="session")
+def data_provider(ensure_vault):
     dp = DataProvider()
 
     yield dp
@@ -31,10 +47,6 @@ def cleaning_data_provider(data_provider):
 
 @pytest.fixture(scope="session")
 def scans(data_provider):
-    if settings.hashicorp_vault is not None:
-        setup_qpc()
-        clear_server_vault()
-        configure_server_vault()
     scan_container = ScanContainer(data_provider)
     yield scan_container
 

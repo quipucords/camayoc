@@ -133,8 +133,7 @@ def configure_server_vault():
     """Configure Discovery server vault settings from Camayoc config.
 
     Uses ``settings.hashicorp_vault``. Raises ``ValueError`` when vault is not
-    configured. Does not clear existing server vault settings; callers (usually
-    fixtures) own that lifecycle.
+    configured. Idempotent: succeeds when vault is already configured.
     """
     vault = settings.hashicorp_vault
     if vault is None:
@@ -145,6 +144,9 @@ def configure_server_vault():
             vault_add_and_check(hashicorp_vault_cli_options(vault))
             return
         except AssertionError as error:
+            if "already exists" in str(error):
+                logger.debug("Vault is already configured, nothing to do")
+                return
             last_error = error
             logger.debug(
                 "Vault authentication failed [attempt=%s]",
