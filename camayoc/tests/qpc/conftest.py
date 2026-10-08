@@ -10,11 +10,25 @@ from camayoc.tests.qpc.cli.utils import clear_all_entities
 from camayoc.tests.qpc.cli.utils import clear_server_vault
 from camayoc.tests.qpc.cli.utils import configure_server_vault
 from camayoc.tests.qpc.cli.utils import setup_qpc
+from camayoc.tests.qpc.utils import _uses_vault_credential
+from camayoc.types.settings import VaultAnsibleCredentialOptions
+
+
+def _standalone_definitions():
+    """Return credentials, sources, and scans that don't require Vault."""
+    credentials = [
+        c for c in settings.credentials if not isinstance(c, VaultAnsibleCredentialOptions)
+    ]
+    sources = [s for s in settings.sources if not _uses_vault_credential(s)]
+    standalone_source_names = {s.name for s in sources}
+    scans = [sc for sc in settings.scans if all(sn in standalone_source_names for sn in sc.sources)]
+    return credentials, sources, scans
 
 
 @pytest.fixture(scope="session")
 def data_provider():
-    dp = DataProvider()
+    credentials, sources, scans = _standalone_definitions()
+    dp = DataProvider(credentials=credentials, sources=sources, scans=scans)
 
     yield dp
 
@@ -31,7 +45,8 @@ def cleaning_data_provider(data_provider):
 
 @pytest.fixture(scope="session")
 def scans(data_provider):
-    scan_container = ScanContainer(data_provider)
+    _, _, standalone_scans = _standalone_definitions()
+    scan_container = ScanContainer(data_provider, scans=standalone_scans)
     yield scan_container
 
 

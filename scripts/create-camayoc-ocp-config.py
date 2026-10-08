@@ -11,7 +11,7 @@ Example:
    --api-url api.shrocp4upi415ovn.lab \
    --insecure \
    --auth-token sha256~... \
-   --output config.local.yaml
+   --output config-ocp.yaml
 """
 
 import argparse

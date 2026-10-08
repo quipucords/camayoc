@@ -28,9 +28,9 @@ from camayoc.constants import QPC_SOURCE_TYPES
 from camayoc.qpc_models import Report
 from camayoc.qpc_models import Source
 from camayoc.tests.qpc.cli.csv_report_parsing import normalize_csv_report
-from camayoc.tests.qpc.utils import all_scan_names
 from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import scan_should_have_lightspeed_report
+from camayoc.tests.qpc.utils import standalone_scan_names
 from camayoc.types.scans import FinishedScan
 from camayoc.types.settings import SourceOptions
 from camayoc.utils import uuid4
@@ -807,7 +807,7 @@ def test_download_aggregate_report(data_provider, scans, isolated_filesystem, qp
 
 @pytest.mark.slow
 @pytest.mark.runs_scan
-@pytest.mark.parametrize("scan_name", all_scan_names())
+@pytest.mark.parametrize("scan_name", standalone_scan_names())
 def test_lightspeed_report_presence(
     tmp_path, scans, isolated_filesystem, qpc_server_config, scan_name
 ):

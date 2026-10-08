@@ -11,12 +11,12 @@ import tarfile
 
 import pytest
 
-from camayoc.config import settings
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
 from camayoc.tests.qpc.utils import has_network_source
 from camayoc.tests.qpc.utils import scan_should_have_lightspeed_report
+from camayoc.tests.qpc.utils import standalone_scan_names
 from camayoc.types.ui import SummaryReportData
 from camayoc.ui import Client
 from camayoc.ui import data_factories
@@ -45,13 +45,8 @@ SUMMARY_DIAGNOSTICS_ITEMS = (
 )
 
 
-def scan_names():
-    for scan_definition in settings.scans:
-        yield pytest.param(scan_definition.name)
-
-
 @pytest.mark.pr_only
-@pytest.mark.parametrize("scan_name", scan_names())
+@pytest.mark.parametrize("scan_name", standalone_scan_names())
 def test_download_scan(tmp_path, scans, ui_client: Client, scan_name):
     """Download finished scan and verify basic content properties.
 
@@ -87,7 +82,7 @@ def test_download_scan(tmp_path, scans, ui_client: Client, scan_name):
 
 
 @pytest.mark.nightly_only
-@pytest.mark.parametrize("scan_name", scan_names())
+@pytest.mark.parametrize("scan_name", standalone_scan_names())
 def test_download_scan_modal(tmp_path, scans, ui_client: Client, scan_name):
     """Download finished scan using modal and verify basic content properties.
 
@@ -127,7 +122,7 @@ def test_download_scan_modal(tmp_path, scans, ui_client: Client, scan_name):
     assert_lightspeed_report(tmp_path, expect_lightspeed_report)
 
 
-@pytest.mark.parametrize("scan_name", scan_names())
+@pytest.mark.parametrize("scan_name", standalone_scan_names())
 def test_show_summary_report(scans, ui_client: Client, scan_name):
     """Open summary report modal and verify it displays correct data.
 

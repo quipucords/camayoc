@@ -13,7 +13,7 @@ import re
 
 import pytest
 
-from camayoc.tests.qpc.utils import all_source_names
+from camayoc.tests.qpc.utils import standalone_source_names
 from camayoc.utils import client_cmd_name
 from camayoc.utils import uuid4
 
@@ -26,7 +26,7 @@ from .utils import source_show
 NEGATIVE_CASES = [1, -100, "redhat_packages", "ifconfig", {}, [], ["/foo/bar/"]]
 
 
-@pytest.mark.parametrize("source_name", all_source_names())
+@pytest.mark.parametrize("source_name", standalone_source_names())
 def test_create_scan(isolated_filesystem, qpc_server_config, data_provider, source_name):
     """Create a single source scan.
 
@@ -356,7 +356,7 @@ def test_edit_scan_negative(isolated_filesystem, qpc_server_config, data_provide
     )
 
 
-@pytest.mark.parametrize("source_name", all_source_names())
+@pytest.mark.parametrize("source_name", standalone_source_names())
 def test_clear(isolated_filesystem, qpc_server_config, data_provider, source_name):
     """Create a single source scan.
 
