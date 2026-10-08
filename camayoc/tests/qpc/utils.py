@@ -205,13 +205,18 @@ def sort_and_delete(trash):
         assert response.status_code < 500, response.content
 
 
+def _uses_vault_credential(source_definition):
+    credentials_by_name = {credential.name: credential for credential in settings.credentials}
+    return any(
+        isinstance(credentials_by_name.get(name), VaultAnsibleCredentialOptions)
+        for name in source_definition.credentials
+    )
+
+
 def all_source_names() -> list[str]:
-    """Grab a list of all source names, excluding vault-backed sources."""
-    return [
-        source_definition.name
-        for source_definition in settings.sources
-        if not _uses_vault_credential(source_definition)
-    ]
+    """Grab a list of all source names."""
+    matching_sources = [source_definition.name for source_definition in settings.sources]
+    return matching_sources
 
 
 def all_scan_names() -> list[str]:
@@ -240,19 +245,11 @@ def vault_ansible_sources():
         yield pytest.param(source_definition, id=source_definition.name)
 
 
-def _uses_vault_credential(source_definition):
-    credentials_by_name = {credential.name: credential for credential in settings.credentials}
-    return any(
-        isinstance(credentials_by_name.get(name), VaultAnsibleCredentialOptions)
-        for name in source_definition.credentials
-    )
-
-
 def end_to_end_sources_names():
     """Generate source names as pytest params.
 
     This is used by CLI and UI end_to_end tests.
-    Excludes vault-backed sources, which have their own dedicated tests.
+    Excludes vault-backed sources.
     """
     for source_definition in settings.sources:
         if source_definition.type in ("openshift", "rhacs"):
