@@ -261,8 +261,8 @@ report_deployments = functools.partial(cli_command, "{} -v report deployments".f
 report_download = functools.partial(cli_command, "{} -v report download".format(client_cmd))
 """Run ``qpc report download`` with ``options`` and return output."""
 
-report_insights = functools.partial(cli_command, "{} -v report insights".format(client_cmd))
-"""Run ``qpc report insights`` with ``options`` and return output."""
+report_lightspeed = functools.partial(cli_command, "{} -v report lightspeed".format(client_cmd))
+"""Run ``qpc report lightspeed`` with ``options`` and return output."""
 
 report_aggregate = functools.partial(cli_command, "{} -v report aggregate".format(client_cmd))
 """Run ``qpc report aggregate`` with ``options`` and return output."""
