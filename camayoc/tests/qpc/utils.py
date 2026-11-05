@@ -140,7 +140,7 @@ def assert_lightspeed_report(directory: Path, expect_lightspeed_report: bool):
             hosts_num = len(file_content.get("hosts", []))
             tar_content["report_slices"][key] = {"number_hosts": hosts_num}
 
-    assert "metadata.json" in tar_content, "Insights report does not have metadata.json file"
+    assert "metadata.json" in tar_content, "Lightspeed report does not have metadata.json file"
     assert tar_content["metadata.json"].get("report_slices", {}) == tar_content["report_slices"], (
         "Data in metadata.json and actual data in archive do not match"
     )

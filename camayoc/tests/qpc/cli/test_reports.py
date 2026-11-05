@@ -39,7 +39,7 @@ from .utils import report_aggregate
 from .utils import report_deployments
 from .utils import report_detail
 from .utils import report_download
-from .utils import report_insights
+from .utils import report_lightspeed
 from .utils import report_list
 from .utils import report_merge
 from .utils import report_show
@@ -736,31 +736,31 @@ def test_download_report(
 
 
 @pytest.mark.runs_scan
-def test_download_insights_report(data_provider, scans, isolated_filesystem, qpc_server_config):
-    """Ensure insights report can be downloaded.
+def test_download_lightspeed_report(data_provider, scans, isolated_filesystem, qpc_server_config):
+    """Ensure lightspeed report can be downloaded.
 
     :id: 3f5e87c2-8a4d-42a0-afda-6fcaf77142c3
-    :description: Request insights report file, download it and verify
+    :description: Request lightspeed report file, download it and verify
         it appears to be correct. Full upload-verify hosts-verify
         subscriptions flow is tested by iqe-foreman-rh-cloud-plugin.
     :steps:
-        1) Run ``qpc report insights --report <report id>
+        1) Run ``qpc report lightspeed --report <report id>
            --output-file <path>``.
         2) Verify that command succeeded.
         3) Verify that downloaded archive looks like valid
-           insights archive.
+           lightspeed archive.
     :expectedresults: Report is downloaded and content matches
-        insights archive format.
+        lightspeed archive format.
     """
     finished_scan = scan_with_source_type(("network",), data_provider, scans)
 
     output_file = f"lightspeed-{uuid4()}.tar.gz"
 
-    output = report_insights({"report": finished_scan.report_id, "output-file": output_file})
+    output = report_lightspeed({"report": finished_scan.report_id, "output-file": output_file})
 
     assert "Report written successfully" in output
     assert os.path.isfile(output_file), (
-        f"Insights report not found at (failed download?): {output_file}"
+        f"Lightspeed report not found at (failed download?): {output_file}"
     )
     assert_lightspeed_report(Path().resolve(), True)
 

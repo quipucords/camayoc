@@ -36,19 +36,19 @@ logger = logging.getLogger()
 
 TIMEOUT_IN_SECONDS = 240
 REPORT_URL = "/api/v1/reports/{id}/"
-INSIGHTS_REPORT_URL = REPORT_URL + "insights/"
+LIGHTSPEED_REPORT_URL = REPORT_URL + "lightspeed/"
 REPORT_EXTRA_HEADERS = {"Accept": "application/gzip"}
-OUTPUT_FILENAME = "{name}_{insights}_{today.year:04}{today.month:02}{today.day:02}.tar.gz"
+OUTPUT_FILENAME = "{name}_{lightspeed}_{today.year:04}{today.month:02}{today.day:02}.tar.gz"
 
 
 class SomeScanFailedException(Exception):
     pass
 
 
-def should_download_insights(data_provider, scan):
-    """Decide if insights report should be downloaded.
+def should_download_lightspeed(data_provider, scan):
+    """Decide if lightspeed report should be downloaded.
 
-    Insights makes sense only for network sources.
+    Lightspeed makes sense only for network sources.
     """
     source_types = {
         source._id: source.source_type for source in data_provider.sources._created_models.values()
@@ -56,7 +56,7 @@ def should_download_insights(data_provider, scan):
     return any(source_types.get(s, "") == "network" for s in scan.sources)
 
 
-def run_scan(scan, timeout, include_insights_report):
+def run_scan(scan, timeout, include_lightspeed_report):
     """Start a scan and download report files."""
     logger.info("=== Processing scan '%s' ===", scan.name)
     today = datetime.now()
@@ -66,7 +66,7 @@ def run_scan(scan, timeout, include_insights_report):
     report = Report()
     report.retrieve_from_scan_job(scan_job_id=scanjob._id)
 
-    report_dest = OUTPUT_FILENAME.format(name=scan.name, insights="", today=today).replace(
+    report_dest = OUTPUT_FILENAME.format(name=scan.name, lightspeed="", today=today).replace(
         "__", "_"
     )
     logger.info("Saving report to %s", Path(report_dest).resolve().as_posix())
@@ -74,25 +74,27 @@ def run_scan(scan, timeout, include_insights_report):
     with open(report_dest, "bw") as fh:
         fh.write(report_content.content)
 
-    if not include_insights_report:
+    if not include_lightspeed_report:
         return
 
-    insights_report_dest = OUTPUT_FILENAME.format(name=scan.name, insights="insights", today=today)
-    logger.info("Saving insights report to %s", Path(insights_report_dest).resolve().as_posix())
-    report_content = scan.client.get(
-        INSIGHTS_REPORT_URL.format(id=report._id), headers=REPORT_EXTRA_HEADERS
+    lightspeed_report_dest = OUTPUT_FILENAME.format(
+        name=scan.name, lightspeed="lightspeed", today=today
     )
-    with open(insights_report_dest, "bw") as fh:
+    logger.info("Saving lightspeed report to %s", Path(lightspeed_report_dest).resolve().as_posix())
+    report_content = scan.client.get(
+        LIGHTSPEED_REPORT_URL.format(id=report._id), headers=REPORT_EXTRA_HEADERS
+    )
+    with open(lightspeed_report_dest, "bw") as fh:
         fh.write(report_content.content)
 
 
-def run_scans(data_provider, timeout, fail_fast, insights_report):
+def run_scans(data_provider, timeout, fail_fast, lightspeed_report):
     """Run all the scans - main program loop."""
     some_scan_failed = False
     for scan in data_provider.scans.defined_many({}):
-        download_insights = insights_report and should_download_insights(data_provider, scan)
+        download_lightspeed = lightspeed_report and should_download_lightspeed(data_provider, scan)
         try:
-            run_scan(scan, timeout, download_insights)
+            run_scan(scan, timeout, download_lightspeed)
         except (
             WaitTimeError,
             StoppedScanException,
@@ -113,7 +115,7 @@ def main(args):
 
     retcode = 0
     try:
-        run_scans(dp, args.timeout, args.fail_fast, args.insights_report)
+        run_scans(dp, args.timeout, args.fail_fast, args.lightspeed_report)
     except SomeScanFailedException:
         retcode = 1
 
@@ -150,11 +152,11 @@ def parse_args():
         help="Keep scans, sources and credentials after the execution",
     )
     parser.add_argument(
-        "-i",
-        "--insights-report",
+        "-l",
+        "--lightspeed-report",
         action="store_true",
-        default=(os.environ.get("INSIGHTS_REPORT", "False").capitalize() == "True"),
-        help="Also download insights reports (only for network scans)",
+        default=(os.environ.get("LIGHTSPEED_REPORT", "False").capitalize() == "True"),
+        help="Also download lightspeed reports (only for network scans)",
     )
     args = parser.parse_args()
     return args
