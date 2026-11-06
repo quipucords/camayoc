@@ -82,6 +82,8 @@ def get_settings_files(xdg_config_dir, xdg_config_file):
 def get_settings(path=None) -> Configuration:
     if not path:
         settings_files = get_settings_files("camayoc", "config.yaml")
+        for config_dir in BaseDirectory.xdg_config_dirs:
+            settings_files.append(os.path.join(config_dir, "camayoc", "config-*.yaml"))
         dynaconf_validators = default_dynaconf_validators
     else:
         settings_files = [path]
