@@ -216,7 +216,7 @@ def test_translations(ui_client: Client):
         6) Log out.
     :expectedresults: All the static text is translated. User is logged out.
     """
-    products = ("Discovery", "Quipucords")
+    products = ("Red Hat Asset Discovery", "Quipucords")
     key_process_text = (
         "To use {product}, first configure credentials to securely access your systems."
         " Then add sources, such as hostnames or IP ranges. With credentials and sources"
