@@ -25,5 +25,5 @@ def test_login_logout(ui_client: Client):
     :expectedresults: Both login and logout must work.
     """
     page = ui_client.begin().login(data_factories.LoginFormDTOFactory())
-    assert page._driver.title() in ("Quipucords", "Discovery")
+    assert page._driver.title() in ("Quipucords", "Red Hat Asset Discovery")
     page.logout()
