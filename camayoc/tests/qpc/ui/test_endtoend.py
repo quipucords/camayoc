@@ -16,7 +16,6 @@ from camayoc.config import settings
 from camayoc.constants import SOURCE_TYPES_WITH_LIGHTSPEED_SUPPORT
 from camayoc.qpc_models import Credential
 from camayoc.qpc_models import Scan
-from camayoc.qpc_models import Source
 from camayoc.tests.qpc.utils import assert_ansible_logs
 from camayoc.tests.qpc.utils import assert_lightspeed_report
 from camayoc.tests.qpc.utils import assert_sha256sums
@@ -26,7 +25,6 @@ from camayoc.types.ui import AddCredentialDTO
 from camayoc.types.ui import AddSourceDTO
 from camayoc.ui import Client
 from camayoc.ui import data_factories
-from camayoc.ui.data_factories import AnsibleSourceFormDTOFactory
 from camayoc.ui.data_factories import TriggerScanDTOFactory
 from camayoc.ui.data_factories import VaultAnsibleCredentialFormDTOFactory
 from camayoc.ui.enums import CredentialTypes
@@ -78,24 +76,21 @@ def create_vault_endtoend_dtos(source_definition, data_provider):
         credential_form=credential_form,
     )
 
-    source_form = AnsibleSourceFormDTOFactory(
-        address=source_definition.hosts[0],
-        credentials=[credential_form.credential_name],
+    source_model = data_provider.sources.new_one(
+        {"name": source_definition.name}, new_dependencies=True, data_only=True
     )
-    source_dto = data_factories.AddSourceDTOFactory(
-        source_type=SourceTypes.ANSIBLE_CONTROLLER,
-        source_form=source_form,
-    )
+    source_model.credentials = [credential_form.credential_name]
+    source_dto = AddSourceDTO.from_model(source_model)
 
     trigger_scan_dto = TriggerScanDTOFactory(
-        source_name=source_form.source_name,
+        source_name=source_model.name,
         scan_form__jboss_eap=None,
         scan_form__fuse=None,
         scan_form__jboss_web_server=None,
     )
     data_provider.mark_for_cleanup(
         Credential(name=credential_form.credential_name),
-        Source(name=source_form.source_name),
+        source_model,
         Scan(name=trigger_scan_dto.scan_form.scan_name),
     )
     return credential_dto, source_dto, trigger_scan_dto
