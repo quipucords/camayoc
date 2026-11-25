@@ -53,12 +53,12 @@ def scans(data_provider):
 
 @pytest.fixture(scope="module")
 def configured_vault_server():
-    """Configure Discovery server vault settings for the test, then clear them."""
+    """Configure Discovery server vault settings for the test."""
     setup_qpc()
-    clear_server_vault()
     configure_server_vault()
     yield
-    clear_server_vault()
+    if settings.hashicorp_vault is None:
+        clear_server_vault()
 
 
 @pytest.fixture
@@ -67,6 +67,9 @@ def unconfigured_vault_server():
     setup_qpc()
     clear_server_vault()
     yield
+    if settings.hashicorp_vault is not None:
+        setup_qpc()
+        configure_server_vault()
 
 
 @pytest.fixture(scope="module")
@@ -83,10 +86,10 @@ def optional_vault_server():
         return
 
     setup_qpc()
-    clear_server_vault()
     configure_server_vault()
     yield True
-    clear_server_vault()
+    if settings.hashicorp_vault is None:
+        clear_server_vault()
 
 
 @pytest.fixture()
